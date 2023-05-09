@@ -1800,7 +1800,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             throw new GlobalException("没有找到跟单信息！",ResultCode.FAILED);
         }
         //通过模板读入文件流
-        ClassPathResource classPathResource = new ClassPathResource("excel/" + "heatTreatLabel.xlsx");
+        ClassPathResource classPathResource = new ClassPathResource("excel/" + "knockoutLabel.xlsx");
         ExcelWriter writer;
         try {
             writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
