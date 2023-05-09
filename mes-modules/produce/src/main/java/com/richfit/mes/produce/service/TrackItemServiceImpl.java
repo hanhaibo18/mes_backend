@@ -244,7 +244,6 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         // resetType 1:重置派工,2:重置报工,3:重置质检,4:重置调度审核,5:重置当前工序的所有记录
         if (resetType != null && item != null) {
             if (resetType == 5) {
-                item.setIsFinalComplete("0");
                 item.setIsTrackSequenceComplete(0);
             }
 

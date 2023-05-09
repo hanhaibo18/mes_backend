@@ -607,15 +607,19 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
             }
         }
         //6、零部件校验
-        List<String> drawNoAndMaterNoList = new ArrayList<>(list.stream().map(item -> item.getDrawingNo() + "&" + item.getMaterialNo()).collect(Collectors.toSet()));
+        List<String> drawNoAndMaterNoList = new ArrayList<>(list.stream().map(item -> DrawingNoUtil.drawingNo(item.getDrawingNo().trim()) + "&" + item.getMaterialNo()).collect(Collectors.toSet()));
         List<String> drawNoList = new ArrayList<>(list.stream().map(item -> item.getDrawingNo()).collect(Collectors.toSet()));
 
-        QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
-                .in(drawNoList.size() > 0, "drawing_no", drawNoList);
+
         //本地存在的物料
-        List<Product> materials = productService.list(queryWrapper);
-        List<String> localInfo = new ArrayList<>(materials.stream().map(item -> item.getDrawingNo().trim() + "&" + item.getMaterialNo().trim()).collect(Collectors.toSet()));
+        List<Product> materials = new ArrayList<>();
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if(drawNoList.size()>0){
+            DrawingNoUtil.queryIn(queryWrapper, "drawing_no", drawNoList);
+            materials = productService.list(queryWrapper);
+        }
+        List<String> localInfo = new ArrayList<>(materials.stream().map(item -> DrawingNoUtil.drawingNo(item.getDrawingNo().trim()) + "&" + item.getMaterialNo().trim()).collect(Collectors.toSet()));
         //根据图号和物料号校验物料提示信息
         StringBuilder materialExitInfo = new StringBuilder();
 

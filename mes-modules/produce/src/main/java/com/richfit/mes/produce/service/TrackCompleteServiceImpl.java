@@ -1,8 +1,11 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -43,14 +46,20 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.ConcurrentUtil;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,6 +110,20 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private RawMaterialRecordService rawMaterialRecordService;
     @Autowired
     private TrackItemMapper trackItemMapper;
+    @Autowired
+    private KnockoutService knockoutService;
+    @Autowired
+    private ModelingCoreService modelingCoreService;
+    @Autowired
+    private LayingOffCacheService layingOffCacheService;
+    @Autowired
+    private ForgControlRecordCacheService forgControlRecordCacheService;
+    @Autowired
+    private RawMaterialRecordCacheService rawMaterialRecordCacheService;
+    @Autowired
+    private ModelingCoreCacheService modelingCoreCacheService;
+    @Autowired
+    private KnockoutCacheService knockoutCacheService;
 
     public static final String END_START_WORK = "2";
 
@@ -464,11 +487,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 assign.setState(2);
                 trackAssignService.updateById(assign);
                 //修改预装炉状态为完工
-                if(!StringUtils.isNullOrEmpty(assign.getPrechargeFurnaceId())){
+                if (!StringUtils.isNullOrEmpty(assign.getPrechargeFurnaceId())) {
                     UpdateWrapper<PrechargeFurnace> prechargeFurnaceUpdateWrapper = new UpdateWrapper<>();
-                    prechargeFurnaceUpdateWrapper.eq("id",assign.getPrechargeFurnaceId())
-                            .set("status",END_START_WORK)
-                            .set("step_status",END_START_WORK);
+                    prechargeFurnaceUpdateWrapper.eq("id", assign.getPrechargeFurnaceId())
+                            .set("status", END_START_WORK)
+                            .set("step_status", END_START_WORK);
                     prechargeFurnaceService.update(prechargeFurnaceUpdateWrapper);
                 }
 
@@ -479,8 +502,20 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
             //保存下料信息和锻造信息
             saveLayingOffAndForgControlRecord(completeDto);
+            //删除下料和锻造缓存
+            removeLayingOffAndForgControlRecordCache(completeDto);
+            //保存造型/制芯工序报工信息
+            saveModelingAndCore(completeDto);
+            //删除造型/制芯工序报工信息缓存
+            removeModelingAndCoreCache(completeDto);
+            //保存扣箱工序报工信息
+            saveKnockout(completeDto);
+            //删除扣箱工序报工信息缓存
+            removeKnockoutCache(completeDto);
             //保存原材料消耗信息
             saveRawMaterialRecord(completeDto);
+            //删除原材料消耗信息缓存
+            removeRawMaterialRecord(completeDto);
 
             //记录报工操作
             actionService.saveAction(ActionUtil.buildAction(
@@ -488,6 +523,57 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     OperationLogAspect.getIpAddress(request)));
         }
         return CommonResult.success(true);
+    }
+
+    private void removeRawMaterialRecord(CompleteDto completeDto) {
+        QueryWrapper<RawMaterialRecordCache> queryWrapperRawMaterialRecordCache = new QueryWrapper<>();
+        queryWrapperRawMaterialRecordCache.eq("item_id", completeDto.getTiId());
+        rawMaterialRecordCacheService.remove(queryWrapperRawMaterialRecordCache);
+    }
+
+    private void removeKnockoutCache(CompleteDto completeDto) {
+        QueryWrapper<KnockoutCache> queryWrapperKnockoutCache = new QueryWrapper<>();
+        queryWrapperKnockoutCache.eq("item_id", completeDto.getTiId());
+        knockoutCacheService.remove(queryWrapperKnockoutCache);
+    }
+
+    private void removeModelingAndCoreCache(CompleteDto completeDto) {
+        QueryWrapper<ModelingCoreCache> queryWrapperModelingCore = new QueryWrapper<>();
+        queryWrapperModelingCore.eq("item_id", completeDto.getTiId());
+        modelingCoreCacheService.remove(queryWrapperModelingCore);
+    }
+
+    private void removeLayingOffAndForgControlRecordCache(CompleteDto completeDto) {
+        //删除下料缓存
+        QueryWrapper<LayingOffCache> queryWrapperLayingOffCache = new QueryWrapper<>();
+        queryWrapperLayingOffCache.eq("item_id", completeDto.getTiId());
+        layingOffCacheService.remove(queryWrapperLayingOffCache);
+        //删除锻造缓存
+        QueryWrapper<ForgControlRecordCache> queryWrapperForgControlRecordCache = new QueryWrapper<>();
+        queryWrapperForgControlRecordCache.eq("item_id", completeDto.getTiId());
+        forgControlRecordCacheService.remove(queryWrapperForgControlRecordCache);
+    }
+
+    private void saveKnockout(CompleteDto completeDto) {
+        if (!ObjectUtil.isEmpty(completeDto.getKnockout())) {
+            //先删除该已保存过的
+            QueryWrapper<Knockout> queryWrapperKnockout = new QueryWrapper<>();
+            queryWrapperKnockout.eq("item_id", completeDto.getTiId());
+            knockoutService.remove(queryWrapperKnockout);
+            completeDto.getKnockout().setItemId(completeDto.getTiId());
+            knockoutService.saveOrUpdate(completeDto.getKnockout());
+        }
+    }
+
+    private void saveModelingAndCore(CompleteDto completeDto) {
+        if (!ObjectUtil.isEmpty(completeDto.getModelingCore())) {
+            //先删除该已保存过的
+            QueryWrapper<ModelingCore> queryWrapperModelingCore = new QueryWrapper<>();
+            queryWrapperModelingCore.eq("item_id", completeDto.getTiId());
+            modelingCoreService.remove(queryWrapperModelingCore);
+            completeDto.getModelingCore().setItemId(completeDto.getTiId());
+            modelingCoreService.saveOrUpdate(completeDto.getModelingCore());
+        }
     }
 
     private void saveRawMaterialRecord(CompleteDto completeDto) {
@@ -591,6 +677,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         List<ForgControlRecord> forgControlRecordList = new ArrayList<>();
         List<RawMaterialRecord> rawMaterialRecordList = new ArrayList<>();
         LayingOff layingOff = new LayingOff();
+        ModelingCore modelingCore = new ModelingCore();
+        Knockout knockout = new Knockout();
         //state=0时从缓存取数据显示
         if (0 == state) {
             completeList = trackCompleteMapper.queryCompleteCache(queryWrapper);
@@ -598,6 +686,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             forgControlRecordList = buildForgControlRecords(queryWorkingTimeVo, forgControlRecordList);
             layingOff = layingOffService.queryLayingOffCacheByItemId(tiId);
             rawMaterialRecordList = rawMaterialRecordService.queryrawMaterialRecordCacheByItemId(tiId);
+            modelingCore = modelingCoreService.queryCacheByItemId(tiId);
+            knockout = knockoutService.queryCacheByItemId(tiId);
 
         } else {
             completeList = this.list(queryWrapper);
@@ -611,6 +701,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             QueryWrapper<RawMaterialRecord> rawMaterialRecordQueryWrapper = new QueryWrapper<>();
             rawMaterialRecordQueryWrapper.eq("item_id", tiId);
             rawMaterialRecordList = rawMaterialRecordService.list(rawMaterialRecordQueryWrapper);
+            QueryWrapper<Knockout> knockoutQueryWrapper = new QueryWrapper<>();
+            knockoutQueryWrapper.eq("item_id", tiId);
+            knockout = knockoutService.getOne(knockoutQueryWrapper);
+            QueryWrapper<ModelingCore> modelingCoreQueryWrapper = new QueryWrapper<>();
+            modelingCoreQueryWrapper.eq("item_id", tiId);
+            modelingCore = modelingCoreService.getOne(modelingCoreQueryWrapper);
         }
 
         TrackItem trackItem = trackItemService.getById(tiId);
@@ -621,6 +717,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWorkingTimeVo.setLayingOff(layingOff);
         queryWorkingTimeVo.setForgControlRecordList(forgControlRecordList);
         queryWorkingTimeVo.setRawMaterialRecordList(rawMaterialRecordList);
+        queryWorkingTimeVo.setKnockout(knockout);
+        queryWorkingTimeVo.setModelingCore(modelingCore);
         return CommonResult.success(queryWorkingTimeVo);
     }
 
@@ -629,7 +727,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
      * @return
      */
     @Override
-    public CommonResult<QueryWorkingTimeVo>  queryDetailsHot(Integer state, String furnaceId,String classes) {
+    public CommonResult<QueryWorkingTimeVo> queryDetailsHot(Integer state, String furnaceId, String classes) {
         //查出炉内所有工序
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
         itemQueryWrapper.eq("precharge_furnace_id", furnaceId);
@@ -638,8 +736,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!CollectionUtils.isEmpty(trackItems)) {
             List<String> itemsIds = trackItems.stream().map(x -> x.getId()).collect(Collectors.toList());
             //根据跟单工序id查出对应的派工数据
-            QueryWrapper<Assign> assignQueryWrapper=new QueryWrapper<>();
-            assignQueryWrapper.in("ti_id",itemsIds);
+            QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
+            assignQueryWrapper.in("ti_id", itemsIds);
             List<Assign> assigns = trackAssignMapper.query(assignQueryWrapper);
             Map<String, Assign> assignMap = assigns.stream().collect(Collectors.toMap(x -> x.getTiId(), x -> x));
             List<QueryWorkingTimeVo> list = new ArrayList<>();
@@ -777,6 +875,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         saveLayingOffAndForgControlRecord(completeDto);
         //保存原材料消耗信息
         saveRawMaterialRecord(completeDto);
+        //保存打箱工序信息
+        saveKnockout(completeDto);
+        //保存造型/制芯工序报工信息
+        saveModelingAndCore(completeDto);
 
         return CommonResult.success(this.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
     }
@@ -1684,6 +1786,39 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         System.out.println("-------------------------------");
         System.out.println(completes.size());
         return stringObjectHashMap;
+    }
+
+    @Override
+    public void knockoutLabel(HttpServletResponse response, String tiId) {
+        //根据tiId获取跟id
+        TrackItem trackItem = trackItemService.getById(tiId);
+        if (trackItem == null){
+            throw new GlobalException("没有找到工序信息！",ResultCode.FAILED);
+        }
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+        if (trackHead == null){
+            throw new GlobalException("没有找到跟单信息！",ResultCode.FAILED);
+        }
+        //通过模板读入文件流
+        ClassPathResource classPathResource = new ClassPathResource("excel/" + "heatTreatLabel.xlsx");
+        ExcelWriter writer;
+        try {
+            writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
+            writer.writeCellValue("B2", trackHead.getProductName());
+            writer.writeCellValue("D2", trackHead.getProductNo());
+            writer.writeCellValue("B3", trackHead.getDrawingNo());
+            writer.writeCellValue("D3", trackHead.getTexture());
+
+            ServletOutputStream outputStream = response.getOutputStream();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+            String time = "knockoutLabel" + LocalDateTime.now();
+            response.setHeader("Content-disposition", "attachment; filename=" + new String(time.getBytes("utf-8"),
+                    "ISO-8859-1") + ".xlsx");
+            writer.flush(outputStream, true);
+            IoUtil.close(outputStream);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
     }
 
     private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
