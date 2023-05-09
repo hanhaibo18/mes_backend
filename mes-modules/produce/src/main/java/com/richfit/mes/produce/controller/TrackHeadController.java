@@ -833,6 +833,9 @@ public class TrackHeadController extends BaseController {
             for (String thId : set) {
                 trackHeadList.add(trackHeadService.getById(thId));
             }
+            if (CollectionUtils.isEmpty(trackHeadList)) {
+                return CommonResult.failed("合格证号没有找到跟单信息，数据问题，联系维护人员进行处理");
+            }
             //用来兼容历史数据的，部分数据可能缺少工序号码数据
             TrackItem trackItem = trackItemService.getById(trackCertificateList.get(0).getTiId());
             for (TrackHead trackHead : trackHeadList) {
@@ -845,7 +848,13 @@ public class TrackHeadController extends BaseController {
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("certificate_no", certificate.getCertificateNo());
             queryWrapper.eq("branch_code", certificate.getBranchCode());
+            System.out.println("-------------------");
+            System.out.println(certificate.getCertificateNo());
+            System.out.println(certificate.getBranchCode());
             trackHeadList = trackHeadService.list(queryWrapper);
+            if (CollectionUtils.isEmpty(trackHeadList)) {
+                return CommonResult.failed("合格证号没有找到跟单信息，数据问题，联系维护人员进行处理");
+            }
             //用来兼容历史数据的，部分数据可能缺少工序号码数据
             List<TrackItem> itemList = trackItemService.queryItemByThId(trackHeadList.get(0).getId());
             TrackItem trackItem = itemList.get(itemList.size() - 1);
