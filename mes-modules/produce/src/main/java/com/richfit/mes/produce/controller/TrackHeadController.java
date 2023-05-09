@@ -821,8 +821,8 @@ public class TrackHeadController extends BaseController {
     @ApiOperation(value = "合格证关联跟单查询", notes = "根据合格证号码查询关联的跟单")
     @PostMapping("/track_head/query_by_cert_no")
     public CommonResult<List<TrackHead>> selectTrackHeadbyCertNo(@ApiParam(value = "合格证号码", required = true) @RequestBody Certificate certificate) {
+        List<TrackHead> trackHeadList = new ArrayList<>();
         if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
-            List<TrackHead> trackHeadList = new ArrayList<>();
             QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("certificate_id", certificate.getId());
             List<TrackCertificate> trackCertificateList = trackCertificateService.list(queryWrapper);
@@ -840,15 +840,21 @@ public class TrackHeadController extends BaseController {
                 trackHead.setOptName(trackItem.getOptName());
                 trackHead.setOptSequence(trackItem.getOptSequence());
             }
-            System.out.println("----------------");
-            System.out.println(JSON.toJSONString(trackHeadList));
             return CommonResult.success(trackHeadList, TRACK_HEAD_SUCCESS_MESSAGE);
         } else {
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("certificate_no", certificate.getCertificateNo());
-            queryWrapper.eq("tenant_id", certificate.getTenantId());
             queryWrapper.eq("branch_code", certificate.getBranchCode());
-            return CommonResult.success(trackHeadService.list(queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
+            trackHeadList = trackHeadService.list(queryWrapper);
+            //用来兼容历史数据的，部分数据可能缺少工序号码数据
+            List<TrackItem> itemList = trackItemService.queryItemByThId(trackHeadList.get(0).getId());
+            TrackItem trackItem = itemList.get(itemList.size() - 1);
+            for (TrackHead trackHead : trackHeadList) {
+                trackHead.setOptNo(trackItem.getOptNo());
+                trackHead.setOptName(trackItem.getOptName());
+                trackHead.setOptSequence(trackItem.getOptSequence());
+            }
+            return CommonResult.success(trackHeadList, TRACK_HEAD_SUCCESS_MESSAGE);
         }
     }
 
