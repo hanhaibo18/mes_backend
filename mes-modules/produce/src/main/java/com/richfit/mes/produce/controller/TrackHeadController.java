@@ -15,6 +15,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
@@ -70,6 +71,9 @@ public class TrackHeadController extends BaseController {
 
     @Autowired
     private TrackHeadFlowService trackFlowService;
+
+    @Autowired
+    private TrackItemService trackItemService;
 
     @Autowired
     private TrackCertificateService trackCertificateService;
@@ -812,6 +816,55 @@ public class TrackHeadController extends BaseController {
 
         return CommonResult.success(trackHeadService.queryListByCertId(certificateId), TRACK_HEAD_SUCCESS_MESSAGE);
 
+    }
+
+    @ApiOperation(value = "合格证关联跟单查询", notes = "根据合格证号码查询关联的跟单")
+    @PostMapping("/track_head/query_by_cert_no")
+    public CommonResult<List<TrackHead>> selectTrackHeadbyCertNo(@ApiParam(value = "合格证号码", required = true) @RequestBody Certificate certificate) {
+        List<TrackHead> trackHeadList = new ArrayList<>();
+        if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
+            QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("certificate_id", certificate.getId());
+            List<TrackCertificate> trackCertificateList = trackCertificateService.list(queryWrapper);
+            Set<String> set = new HashSet<>();
+            for (TrackCertificate trackCertificate : trackCertificateList) {
+                set.add(trackCertificate.getThId());
+            }
+            for (String thId : set) {
+                trackHeadList.add(trackHeadService.getById(thId));
+            }
+            if (CollectionUtils.isEmpty(trackHeadList)) {
+                return CommonResult.failed("合格证号没有找到跟单信息，数据问题，联系维护人员进行处理");
+            }
+            //用来兼容历史数据的，部分数据可能缺少工序号码数据
+            TrackItem trackItem = trackItemService.getById(trackCertificateList.get(0).getTiId());
+            for (TrackHead trackHead : trackHeadList) {
+                trackHead.setOptNo(trackItem.getOptNo());
+                trackHead.setOptName(trackItem.getOptName());
+                trackHead.setOptSequence(trackItem.getOptSequence());
+            }
+            return CommonResult.success(trackHeadList, TRACK_HEAD_SUCCESS_MESSAGE);
+        } else {
+            QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("certificate_no", certificate.getCertificateNo());
+            queryWrapper.eq("branch_code", certificate.getBranchCode());
+            System.out.println("-------------------");
+            System.out.println(certificate.getCertificateNo());
+            System.out.println(certificate.getBranchCode());
+            trackHeadList = trackHeadService.list(queryWrapper);
+            if (CollectionUtils.isEmpty(trackHeadList)) {
+                return CommonResult.failed("合格证号没有找到跟单信息，数据问题，联系维护人员进行处理");
+            }
+            //用来兼容历史数据的，部分数据可能缺少工序号码数据
+            List<TrackItem> itemList = trackItemService.queryItemByThId(trackHeadList.get(0).getId());
+            TrackItem trackItem = itemList.get(itemList.size() - 1);
+            for (TrackHead trackHead : trackHeadList) {
+                trackHead.setOptNo(trackItem.getOptNo());
+                trackHead.setOptName(trackItem.getOptName());
+                trackHead.setOptSequence(trackItem.getOptSequence());
+            }
+            return CommonResult.success(trackHeadList, TRACK_HEAD_SUCCESS_MESSAGE);
+        }
     }
 
     @ApiOperation(value = "跟单回滚查询", notes = "查询关联的跟单")

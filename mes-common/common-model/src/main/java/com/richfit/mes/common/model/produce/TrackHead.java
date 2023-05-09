@@ -369,7 +369,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     @TableField(exist = false)
     @ApiModelProperty(value = "工序顺序")
-    private String optSequence;
+    private Integer optSequence;
     @TableField(exist = false)
     @ApiModelProperty(value = "是当前的")
     private int isCurrent;

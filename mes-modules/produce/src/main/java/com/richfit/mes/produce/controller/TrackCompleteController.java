@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 /**
@@ -63,8 +64,6 @@ public class TrackCompleteController extends BaseController {
     private ForgControlRecordService forgControlRecordService;
     @Autowired
     private LayingOffService layingOffService;
-    @Autowired
-    private NormalizeDehydroRecordService normalizeDehydroRecordService;
     @Resource
     private ProduceRoleOperationService roleOperationService;
 
@@ -98,7 +97,7 @@ public class TrackCompleteController extends BaseController {
             @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string")
     })
     @GetMapping("/page")
-    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String productNo, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol,String classes) {
+    public CommonResult<IPage<TrackComplete>> page(int page, int limit, String productNo, String siteId, String tiId, String trackNo, String startTime, String endTime, String optType, String userId, String userName, String branchCode, String workNo, String routerNo, String order, String orderCol, String classes) {
         try {
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(tiId)) {
@@ -150,8 +149,8 @@ public class TrackCompleteController extends BaseController {
             //增加工序过滤
 //            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
             //锻造车间、铸钢车间、冶炼车间的工序名称过滤（锻车间人员报工不涉及正火和去氢）
-            if("4".equals(classes) || "6".equals(classes) || "7".equals(classes)){
-                queryWrapper.and(wrapper1->wrapper1.ne("opt_name","正火").ne("opt_name","去氢"));
+            if ("4".equals(classes) || "6".equals(classes) || "7".equals(classes)) {
+                queryWrapper.and(wrapper1 -> wrapper1.ne("opt_name", "正火").ne("opt_name", "去氢"));
             }
 
             if (!StringUtils.isNullOrEmpty(orderCol)) {
@@ -965,8 +964,8 @@ public class TrackCompleteController extends BaseController {
             @ApiImplicitParam(name = "furnaceId", value = "装炉id", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/queryDetails_hot")
-    public CommonResult<QueryWorkingTimeVo> queryDetails( Integer state, String furnaceId,String classes) {
-        return trackCompleteService.queryDetailsHot(state, furnaceId,classes);
+    public CommonResult<QueryWorkingTimeVo> queryDetails(Integer state, String furnaceId, String classes) {
+        return trackCompleteService.queryDetailsHot(state, furnaceId, classes);
     }
 
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
@@ -1077,38 +1076,10 @@ public class TrackCompleteController extends BaseController {
         return CommonResult.success(forgControlRecordService.removeByIds(forgControlRecordlist));
     }
 
-    @ApiOperation(value = "正火去氢工序控制记录", notes = "正火去氢工序控制记录")
-    @ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")
-    @PostMapping("/saveNormalizeDehydroRecord")
-    public CommonResult<Boolean> saveNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
-        return CommonResult.success(normalizeDehydroRecordService.saveBatch(normalizeDehydroRecordList));
-    }
-
-    @ApiOperation(value = "正火去氢工序控制查询", notes = "正火去氢工序控制查询")
-    @ApiImplicitParam(name = "itemId", value = "工序ID", required = true, dataType = "String", paramType = "query")
-    @GetMapping("/pageNormalizeDehydroRecord")
-    public CommonResult<IPage<NormalizeDehydroRecord>> pageNormalizeDehydroRecord(String itemId, String orderCol, String order, int page, int limit) {
-        QueryWrapper<NormalizeDehydroRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("item_id", itemId);
-        OrderUtil.query(queryWrapper, orderCol, order);
-        return CommonResult.success(normalizeDehydroRecordService.page(new Page<>(page, limit), queryWrapper));
-    }
-
-    @ApiOperation(value = "正火去氢工序控制修改", notes = "正火去氢工序控制修改")
-    @ApiImplicitParams({@ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")
-            , @ApiImplicitParam(name = "itemId", value = "工序ItemId", required = true, dataType = "String", paramType = "query")})
-    @PutMapping("/updateNormalizeDehydroRecord/{itemId}")
-    public CommonResult<Boolean> updateNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList, @PathVariable String itemId) {
-        return CommonResult.success(normalizeDehydroRecordService.updateBatch(normalizeDehydroRecordList, itemId));
-    }
-
-    @ApiOperation(value = "正火去氢工序控制删除", notes = "正火去氢工序控制删除")
-    @ApiImplicitParams(
-            {@ApiImplicitParam(name = "normalizeDehydroRecordList", value = "正火去氢工序控制记录实体", required = true, dataType = "List", paramType = "query")}
-    )
-    @DeleteMapping("/deleteNormalizeDehydroRecord")
-    public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
-        return CommonResult.success(normalizeDehydroRecordService.removeByIds(normalizeDehydroRecordList));
+    @ApiOperation(value = "扣箱工序标签")
+    @GetMapping("/knockoutLabel")
+    public void knockoutLabel(HttpServletResponse response,@ApiParam("工序id") @RequestParam String tiId){
+        trackCompleteService.knockoutLabel(response,tiId);
     }
 
 }

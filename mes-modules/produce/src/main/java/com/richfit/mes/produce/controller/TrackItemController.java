@@ -1,16 +1,11 @@
 package com.richfit.mes.produce.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.model.base.OperationTypeSpec;
-import com.richfit.mes.common.model.base.RouterCheck;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.ActionUtil;
-import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.ItemMessageDto;
@@ -209,6 +204,8 @@ public class TrackItemController extends BaseController {
                     .orderByAsc("product_no");
             trackItems = trackItemService.list(queryWrapper);
         }
+        //
+//        trackItems
         if (trackItems.size() > 0) {
             for (TrackItem trackItem : trackItems) {
                 trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());

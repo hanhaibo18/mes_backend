@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -40,6 +41,10 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
     private ForgControlRecordCacheService forgControlRecordCacheService;
     @Autowired
     private RawMaterialRecordCacheService rawMaterialRecordCacheService;
+    @Autowired
+    private ModelingCoreCacheService modelingCoreCacheService;
+    @Autowired
+    private KnockoutCacheService knockoutCacheService;
 
 
     @Override
@@ -140,6 +145,28 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
                     rawMaterialRecord.setItemId(completeDto.getTiId());
                 }
                 rawMaterialRecordCacheService.saveBatch(JSONArray.parseArray(JSONObject.toJSONString(completeDto.getRawMaterialRecordList()), RawMaterialRecordCache.class));
+            }
+            //保存造型/制芯工序报工缓存信息
+            if (!ObjectUtil.isEmpty(completeDto.getModelingCore())) {
+                //先删除该已保存过的
+                QueryWrapper<ModelingCoreCache> queryWrapperModelingCoreCache = new QueryWrapper<>();
+                queryWrapperModelingCoreCache.eq("item_id", completeDto.getTiId());
+                modelingCoreCacheService.remove(queryWrapperModelingCoreCache);
+                completeDto.getModelingCore().setItemId(completeDto.getTiId());
+                ModelingCoreCache modelingCoreCache = new ModelingCoreCache();
+                BeanUtils.copyProperties(completeDto.getModelingCore(), modelingCoreCache);
+                modelingCoreCacheService.saveOrUpdate(modelingCoreCache);
+            }
+            //保存打箱工序报工缓存信息
+            if (!ObjectUtil.isEmpty(completeDto.getKnockout())) {
+                //先删除该已保存过的
+                QueryWrapper<KnockoutCache> queryWrapperKnockoutCache = new QueryWrapper<>();
+                queryWrapperKnockoutCache.eq("item_id", completeDto.getTiId());
+                knockoutCacheService.remove(queryWrapperKnockoutCache);
+                completeDto.getKnockout().setItemId(completeDto.getTiId());
+                KnockoutCache knockoutCache = new KnockoutCache();
+                BeanUtils.copyProperties(completeDto.getKnockout(), knockoutCache);
+                knockoutCacheService.saveOrUpdate(knockoutCache);
             }
         }
         return CommonResult.success(true);

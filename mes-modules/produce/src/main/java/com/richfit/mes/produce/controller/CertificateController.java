@@ -11,6 +11,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
@@ -85,17 +86,21 @@ public class CertificateController {
         }
         //合格证来源 0：开出合格证 1：接收合格证
         certificate.setCertOrigin("0");
-        //检查当前工序之前有没有未完成的工序
+
         List<TrackCertificate> trackCertificates = certificate.getTrackCertificates();
-        if ("0".equals(certificate.getType())) {
+        if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
+            //检查当前工序之前有没有未完成的工序
             this.checkBefore(certificate);
+            //合格证是否已经开具过
             for (TrackCertificate trackCertificate : trackCertificates) {
-                TrackItem trackItem = trackItemService.getById(trackCertificate.getTiId());
-                if (StrUtil.isNotBlank(trackItem.getCertificateNo())) {
+                Boolean isCertRepeat = trackItemService.checkIsCertRepeat(certificate);
+                if (isCertRepeat) {
                     return CommonResult.failed(CERTIFICATE_HAS_BEEN_ISSUED);
                 }
             }
-        } else {
+        } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
+            //完工合格证
+            //合格证是否已经开具过
             for (TrackCertificate trackCertificate : trackCertificates) {
                 TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
                 if (StrUtil.isNotBlank(trackHead.getCertificateNo())) {

@@ -18,6 +18,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
+import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -199,11 +200,32 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     }
 
     @Override
+    public Boolean linkToCertNew(String thId, Certificate certificate) {
+        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("track_head_id", thId);
+        updateWrapper.eq("opt_no", certificate.getOptNo());
+        updateWrapper.eq("branch_code", certificate.getBranchCode());
+        updateWrapper.set("certificate_no", certificate.getCertificateNo());
+        return this.update(updateWrapper);
+    }
+
+    @Override
+    public Boolean checkIsCertRepeat(Certificate certificate) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_code", certificate.getBranchCode());
+        queryWrapper.eq("certificate_no", certificate.getCertificateNo());
+        if (!CollectionUtils.isEmpty(this.list(queryWrapper))) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public Boolean unLinkFromCert(String tiId) {
-        TrackItem trackItem = new TrackItem();
-        trackItem.setId(tiId);
-        trackItem.setCertificateNo(null);
-        return this.updateById(trackItem);
+        UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", tiId);
+        updateWrapper.set("certificate_no", null);
+        return this.update(updateWrapper);
     }
 
     @Override
@@ -222,7 +244,6 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         // resetType 1:重置派工,2:重置报工,3:重置质检,4:重置调度审核,5:重置当前工序的所有记录
         if (resetType != null && item != null) {
             if (resetType == 5) {
-                item.setIsFinalComplete("0");
                 item.setIsTrackSequenceComplete(0);
             }
 
@@ -671,6 +692,14 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             }
             return trackItemList;
         }
+    }
+
+    @Override
+    public List<TrackItem> queryItemByThId(String trackHeadId) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("track_head_id", trackHeadId);
+        queryWrapper.orderByAsc("opt_sequence");
+        return this.list(queryWrapper);
     }
 
     @Override

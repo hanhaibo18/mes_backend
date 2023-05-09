@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.ItemMessageDto;
@@ -79,6 +80,26 @@ public interface TrackItemService extends IService<TrackItem> {
     Boolean linkToCert(String tiId, String certNo);
 
     /**
+     * 功能描述: 绑定工序的完工合格证号
+     *
+     * @param thId        跟单id
+     * @param certificate 合格证信息
+     * @return
+     * @Author zhiqiang.lu
+     */
+    Boolean linkToCertNew(String thId, Certificate certificate);
+
+
+    /**
+     * 功能描述: 验证是否已经开具过合格证
+     *
+     * @param certificate 合格证信息
+     * @return
+     * @Author gaol
+     */
+    public Boolean checkIsCertRepeat(Certificate certificate);
+
+    /**
      * 功能描述: 置空合格证号
      *
      * @param tiId
@@ -146,7 +167,7 @@ public interface TrackItemService extends IService<TrackItem> {
     DisqualificationItemVo queryItem(String tiId, String branchCode);
 
     /**
-     * 功能描述: 根据跟单号查询当前跟单号下工序序号最大一条已派工的工序 并根据flow_id 查询全部工序
+     * 功能描述: 询当前跟根据跟单号查单号下工序序号最大一条已派工的工序 并根据flow_id 查询全部工序
      *
      * @param trackHeadId
      * @Author: xinYu.hou
@@ -154,6 +175,16 @@ public interface TrackItemService extends IService<TrackItem> {
      * @return: List<TrackItem>
      **/
     List<TrackItem> queryItemByTrackHeadId(String trackHeadId);
+
+    /**
+     * 功能描述: 通过跟单id查询所有的工序
+     *
+     * @param trackHeadId
+     * @Author: zhiqiang.lu
+     * @Date: 2023/5/8 9:57
+     * @return: List<TrackItem>
+     **/
+    List<TrackItem> queryItemByThId(String trackHeadId);
 
     /**
      * 功能描述: 根据预装炉id生成excel文件

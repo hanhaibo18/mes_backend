@@ -31,4 +31,8 @@ public class QueryWorkingTimeVo {
     private String ForgeRemark;
     @ApiModelProperty(value = "原材料信息", dataType = "List<RawMaterialRecord>")
     private List<RawMaterialRecord> rawMaterialRecordList;
+    @ApiModelProperty(value = "扣箱工序报工记录信息", dataType = "Knockout")
+    private Knockout knockout;
+    @ApiModelProperty(value = "造型/制芯工序报工信息", dataType = "ModelingCore")
+    private ModelingCore modelingCore;
 }

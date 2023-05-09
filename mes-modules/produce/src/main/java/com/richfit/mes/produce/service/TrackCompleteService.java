@@ -12,6 +12,7 @@ import com.richfit.mes.produce.entity.OutsourceCompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -132,4 +133,6 @@ public interface TrackCompleteService extends IService<TrackComplete> {
     Map<String, Object> queryTrackCompleteListByWorkNo(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
 
     Map<String, Object> queryTrackCompleteListByBranch(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
+
+    void knockoutLabel(HttpServletResponse response, String tiId);
 }

@@ -132,14 +132,8 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
         certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
         certificate.setIsPush("0");
-        certificate.setCertificateNo(Code.valueOnUpdate("hege_no", certificate.getTenantId(), certificate.getBranchCode(), codeRuleService));
         //1 保存合格证
         boolean bool = this.save(certificate);
-        // 更新最大合格证编号
-//        codeRuleService.updateCode("hege_no", "合格证编号", certificate.getCertificateNo(),
-//                Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(),
-//                certificate.getBranchCode());
-
         //2 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
         additionalBsns(certificate);
         if (bool) {
@@ -147,24 +141,20 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             certificate.getTrackCertificates().stream().forEach(track -> {
                 //工序合格证
                 if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
-                    trackItemService.linkToCert(track.getTiId(), certificate.getCertificateNo());
+                    trackItemService.linkToCertNew(track.getThId(), certificate);
                     //完工合格证
                 } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
                     trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
-
                     //更新跟单状态到 9 "已交"
                     trackHeadService.trackHeadDelivery(track.getThId());
-
                     //半成品 成品更新状态及合格证号
                     TrackHead th = trackHeadService.getById(track.getThId());
                     lineStoreService.updateCertNoByCertTrack(th);
                 }
-                track.setCertificateType(certificate.getType());
-                track.setCertificateId(certificate.getId());
             });
             //4 保存关联关系
             if (certificate.getTrackCertificates().size() > 0) {
-                trackCertificateService.saveBatch(certificate.getTrackCertificates());
+                trackCertificateService.save(certificate);
             }
             return true;
         } else {
@@ -205,7 +195,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
         //1、保存合格证
         this.updateById(certificate);
-
         if (changeTrack) {
             QueryWrapper<TrackCertificate> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("certificate_id", certificate.getId());
@@ -217,14 +206,14 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                 track.setCertificateId(certificate.getId());
                 boolean isNotHave = true;
                 for (TrackCertificate trackCertificate : result) {
-                    if (trackCertificate.getTiId().equals(track.getTiId()) && trackCertificate.getThId().equals(track.getThId())) {
+                    if (trackCertificate.getThId().equals(track.getThId())) {
                         isNotHave = false;
                         break;
                     }
                 }
                 if (isNotHave) {
                     if (CertTypeEnum.ITEM_CERT.getCode().equals(certificate.getType())) {
-                        trackItemService.linkToCert(track.getTiId(), certificate.getCertificateNo());
+                        trackItemService.linkToCertNew(track.getTiId(), certificate);
                     } else if (CertTypeEnum.FINISH_CERT.getCode().equals(certificate.getType())) {
                         trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
                         //半成品 成品入库
@@ -240,7 +229,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             List<String> delete = result.stream().filter(track -> {
                 boolean isHave = false;
                 for (TrackCertificate trackCertificate : certificate.getTrackCertificates()) {
-                    if (trackCertificate.getTiId().equals(track.getTiId()) && trackCertificate.getThId().equals(track.getThId())) {
+                    if (trackCertificate.getThId().equals(track.getThId())) {
                         isHave = true;
                         break;
                     }
@@ -279,19 +268,15 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         queryWrapper.in("certificate_id", ids);
         List<TrackCertificate> list = trackCertificateService.list(queryWrapper);
         list.stream().forEach(track -> {
-
             //对应跟单工序-合格证字段置空
             if (CertTypeEnum.ITEM_CERT.getCode().equals(track.getCertificateType())) {
                 trackItemService.unLinkFromCert(track.getTiId());
-
                 //对应跟单-合格证字段置空
             } else if (CertTypeEnum.FINISH_CERT.getCode().equals(track.getCertificateType())) {
                 trackHeadService.unLinkFromCert(track.getThId());
-
                 //清空所有该合格证号对应的成品入库信息中的合格证号
                 lineStoreService.reSetCertNoByCertNo(this.getById(track.getCertificateId()).getCertificateNo());
             }
-
             //删除关系表
             Map map = new HashMap(16);
             map.put("certificate_id", track.getCertificateId());

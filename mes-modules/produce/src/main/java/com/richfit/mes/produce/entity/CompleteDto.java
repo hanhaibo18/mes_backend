@@ -1,10 +1,6 @@
 package com.richfit.mes.produce.entity;
 
-import com.richfit.mes.common.model.produce.ForgControlRecord;
-import com.richfit.mes.common.model.produce.LayingOff;
-import com.richfit.mes.common.model.produce.TrackComplete;
-import com.richfit.mes.common.model.produce.TrackCompleteExtra;
-import com.richfit.mes.common.model.produce.RawMaterialRecord;
+import com.richfit.mes.common.model.produce.*;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -48,4 +44,8 @@ public class CompleteDto {
     private String classes;
     @ApiModelProperty(value = "原材料消耗信息", dataType = "RawMaterialRecord")
     private List<RawMaterialRecord> rawMaterialRecordList;
+    @ApiModelProperty(value = "扣箱工序报工记录信息", dataType = "Knockout")
+    private Knockout knockout;
+    @ApiModelProperty(value = "造型/制芯工序报工信息", dataType = "ModelingCore")
+    private ModelingCore modelingCore;
 }
