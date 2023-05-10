@@ -83,8 +83,10 @@ public class Order extends BaseEntity<Order> {
      * 图号
      */
     @ApiModelProperty(value = "图号")
-    @TableField(exist = false)
     private String drawingNo;
+
+    @ApiModelProperty(value = "物料类型 0铸件 1锻件 2精铸件 3成品 4下料 5模型 6半成品")
+    private String materialType;
 
     /**
      * 产品名称
