@@ -228,6 +228,8 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             orderLogService.save(log);
             return false;
         }
+        order.setDrawingNo(list.get(0).getDrawingNo());
+        order.setMaterialType(list.get(0).getMaterialType());
         //根据订单号进行查询,如果存在不进行同步
         if (order.getOrderSn() != null) {
             QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
