@@ -222,12 +222,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     @Override
     public CommonResult<?> ratify(List<String> idList, Integer ratifyState, String branchCode) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        //检查无模型数据
-        List<String> ids = hotDemandService.checkModel(idList, branchCode);
-        if (CollectionUtils.isNotEmpty(ids)) {
-            return CommonResult.failed("存在无模型需求");
-        }
-        //通过模型检查后查出所有需求信息
+        //查出所有需求信息
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
         queryWrapper.apply("(produce_ratify_state=0 or produce_ratify_state is null)");
@@ -239,6 +234,24 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             for (HotDemand hotDemand : hotDemands) {
                 if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
                     return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
+                }
+            }
+        }
+        //检查无模型数据
+//        List<String> ids = hotDemandService.checkModel(idList, branchCode);
+//        if (CollectionUtils.isNotEmpty(ids)) {
+//            return CommonResult.failed("存在无模型需求");
+//        }
+        for (HotDemand hotDemand : hotDemands) {
+            //无工艺不可批准生产
+            if(hotDemand.getIsExistProcess()==null||hotDemand.getIsExistProcess()==0){
+                throw new GlobalException(hotDemand.getDemandName()+" 无工艺",ResultCode.FAILED);
+           }
+            //毛坯类型 0锻件,1铸件,2钢锭
+            //为铸件产品时需要有模型才能批准生产
+            if(hotDemand.getWorkblankType()=="1"){
+                if(hotDemand.getIsExistModel()==null||hotDemand.getIsExistModel()==0){
+                    throw new GlobalException(hotDemand.getDemandName()+" 无模型",ResultCode.FAILED);
                 }
             }
         }
