@@ -94,20 +94,20 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     public LineStore LineStoreById(String id) {
         LineStore lineStore = lineStoreMapper.selectById(id);
-        QueryWrapper<StoreAttachRel> queryWrapper=new QueryWrapper<>();
-        queryWrapper.eq("line_store_id",lineStore.getId());
+        QueryWrapper<StoreAttachRel> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("line_store_id", lineStore.getId());
         //查询文件关联关系记录
         List<StoreAttachRel> list = storeAttachRelService.list(queryWrapper);
-        if(CollectionUtils.isNotEmpty(list)){
+        if (CollectionUtils.isNotEmpty(list)) {
             List<String> ids = list.stream().map(x -> x.getAttachmentId()).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(ids)){
+            if (CollectionUtils.isNotEmpty(ids)) {
                 //获取文件信息
                 List<Attachment> attachments = systemServiceClient.selectAttachmentsList(ids);
-                if (CollectionUtils.isNotEmpty(attachments)){
+                if (CollectionUtils.isNotEmpty(attachments)) {
                     //文件map
                     Map<String, Attachment> attachmentMap = attachments.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
                     for (StoreAttachRel storeAttachRel : list) {
-                        storeAttachRel.setFileName(attachmentMap.get(storeAttachRel.getAttachmentId())==null?"":attachmentMap.get(storeAttachRel.getAttachmentId()).getAttachName());
+                        storeAttachRel.setFileName(attachmentMap.get(storeAttachRel.getAttachmentId()) == null ? "" : attachmentMap.get(storeAttachRel.getAttachmentId()).getAttachName());
                     }
                 }
             }
@@ -447,9 +447,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             } else {
                 num = endNo - startNo + 1;
             }
-            String ordersSn ="";
+            String ordersSn = "";
             if (isAutoMatchProd.equals(2)) {
-                ordersSn= createOrder(lineStore);
+                ordersSn = createOrder(lineStore);
             }
 
 
@@ -469,7 +469,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                         }
                         entity.setProductionOrder(orderNo);
                     }
-                }else if (isAutoMatchProd.equals(2)){
+                } else if (isAutoMatchProd.equals(2)) {
                     entity.setProductionOrder(ordersSn);
                 }
                 StringBuilder stringBuilder = new StringBuilder(strartSuffix);
@@ -496,7 +496,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             //保存料单-附件关系
             for (LineStore s : list) {
 //                storeAttachRelService.batchSaveStoreFile(s.getId(), branchCode, lineStore.getFileIds());
-                if(CollectionUtils.isNotEmpty(lineStore.getFileList())){
+                if (CollectionUtils.isNotEmpty(lineStore.getFileList())) {
                     storeAttachRelService.batchSaveStoreFileNew(s.getId(), branchCode, lineStore.getFileList());
                 }
 
@@ -509,7 +509,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             bool = this.save(lineStore);
             //保存料单-附件关系
 //            storeAttachRelService.batchSaveStoreFile(lineStore.getId(), branchCode, lineStore.getFileIds());
-            if(CollectionUtils.isNotEmpty(lineStore.getFileList())){
+            if (CollectionUtils.isNotEmpty(lineStore.getFileList())) {
                 storeAttachRelService.batchSaveStoreFileNew(lineStore.getId(), branchCode, lineStore.getFileList());
             }
 
@@ -522,11 +522,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     /**
      * 根据入库料单生成订单
+     *
      * @param lineStore
      */
     private String createOrder(LineStore lineStore) {
         //生成订单
-        Order order=new Order();
+        Order order = new Order();
         String orderSn = UUID.randomUUID().toString().replaceAll("-", "");
         order.setOrderSn(orderSn);//订单号
         order.setOrderDate(new Date());//下单日期
@@ -556,7 +557,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
         //循环编号
         if (startNo != null && startNo > 0) {
-
             for (int i = startNo; i <= endNo; i++) {
                 String oldWorkblankNo = lineStore.getWorkblankNo();
                 StringBuilder stringBuilder = new StringBuilder(strartSuffix);
@@ -570,7 +570,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 }
                 String workblankNo = oldWorkblankNo + "" + stringBuilder.toString();
                 if (!StringUtils.isNullOrEmpty(suffixNo)) {
-                    workblankNo += "_" + suffixNo;
+                    workblankNo += suffixNo;
                 }
 
                 QueryWrapper<LineStore> queryWrapper = new QueryWrapper<>();
