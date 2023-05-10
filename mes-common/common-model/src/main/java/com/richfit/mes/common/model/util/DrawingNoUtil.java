@@ -22,10 +22,12 @@ public class DrawingNoUtil {
         drawingNo = drawingNo.replaceAll("[)]", "");
         drawingNo = drawingNo.replaceAll("（", "");
         drawingNo = drawingNo.replaceAll("）", "");
+        drawingNo = drawingNo.replaceAll(",", "");
+        drawingNo = drawingNo.replaceAll("，", "");
         return drawingNo;}
 
     public static String replaceStr(String colName) {
-        return "replace(replace(replace(replace(replace(replace(replace(" + colName + ", '-', ''), '.', ''),' ', ''),'(', ''),')', ''),'（', ''),'）', '')";
+        return "replace(replace(replace(replace(replace(replace(replace(replace(replace(" + colName + ", '-', ''), '.', ''),' ', ''),'(', ''),')', ''),'（', ''),'）', ''),',',''),'，','')";
     }
 
 
