@@ -105,6 +105,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setSubmitState(0);
             hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
             hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
+            hotDemand.setPlanNum(hotDemand.getNum());
             //0锻件,1铸件,2钢锭
             if(StringUtils.isNotEmpty(hotDemand.getWorkblankType())){
                 switch (hotDemand.getWorkblankType()){
@@ -165,6 +166,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setSubmitState(0);
             hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
             hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
+            hotDemand.setPlanNum(hotDemand.getNum());
             //0锻件,1铸件,2钢锭
             hotDemand.setWorkblankType("2");//冶炼
             demandList.add(hotDemand);
@@ -233,7 +235,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         } else {
             for (HotDemand hotDemand : hotDemands) {
                 if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
-                    return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
+                    return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量不能为0");
                 }
             }
         }
@@ -379,6 +381,11 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         if(CollectionUtils.isEmpty(hotDemands)){
             return CommonResult.success(ResultCode.SUCCESS,"所选需求均已排产");
+        }
+        for (HotDemand hotDemand : hotDemands) {
+            if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
+                return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量不能为0");
+            }
         }
         //将需求数据转换为生产计划并入库
         Map map = this.convertAndSave(currentUser, hotDemands, 1);

@@ -69,6 +69,7 @@ public class HotDemandController extends BaseController {
         hotDemand.setSubmitById(currentUser.getUserId());
         hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
         hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
+        hotDemand.setPlanNum(hotDemand.getNum());
         boolean save = hotDemandService.save(hotDemand);
         if (save) {
             return CommonResult.success(ResultCode.SUCCESS);
