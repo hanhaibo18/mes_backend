@@ -18,6 +18,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -201,17 +202,37 @@ public class TrackItemController extends BaseController {
                     .eq("opt_type", "3")
                     .eq("is_operation_complete", 0)
                     .eq("is_current", 1)
-                    .orderByAsc("product_no");
+                    .orderByDesc("next_opt_sequence");
             trackItems = trackItemService.list(queryWrapper);
         }
-        //
-//        trackItems
-        if (trackItems.size() > 0) {
-            for (TrackItem trackItem : trackItems) {
+        //根据FlowID分组
+        Map<String, List<TrackItem>> map = trackItems.stream().collect(Collectors.groupingBy(TrackItem::getFlowId));
+        //重新创建List每组数据组装完 向当前List填充
+        List<TrackItem> trackItemList = new ArrayList<>();
+        //拿到后续工序
+        for (List<TrackItem> trackItem : map.values()) {
+            trackItemList.addAll(trackItem);
+            nextOpt(trackItem, trackItemList);
+        }
+        if (trackItemList.size() > 0) {
+            for (TrackItem trackItem : trackItemList) {
                 trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
             }
         }
-        return CommonResult.success(trackItems, SUCCESS_MESSAGE);
+        return CommonResult.success(trackItemList, SUCCESS_MESSAGE);
+    }
+
+    private void nextOpt(List<TrackItem> trackItemList, List<TrackItem> newTrackItemList) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("original_opt_sequence", trackItemList.get(0).getNextOptSequence());
+        queryWrapper.eq("flow_id", trackItemList.get(0).getFlowId());
+        queryWrapper.eq("opt_type", "3");
+        queryWrapper.orderByDesc("original_opt_sequence");
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        if (!CollectionUtils.isEmpty(list)) {
+            newTrackItemList.addAll(list);
+            nextOpt(list, newTrackItemList);
+        }
     }
 
     @ApiOperation(value = "查询跟单分流工序", notes = "根据跟单ID查询跟单分流工序")
