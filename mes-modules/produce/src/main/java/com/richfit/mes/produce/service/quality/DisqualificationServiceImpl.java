@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service.quality;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,6 +18,7 @@ import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.quality.DisqualificationFinalResultMapper;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
 import com.richfit.mes.produce.enmus.UnitEnum;
 import com.richfit.mes.produce.entity.quality.DisqualificationDto;
@@ -30,6 +32,7 @@ import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.utils.Code;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +74,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     private DisqualificationFinalResultService finalResultService;
 
     @Resource
+    private DisqualificationFinalResultMapper finalResultMapper;
+
+    @Resource
     private DisqualificationMapper disqualificationMapper;
 
     @Resource
@@ -91,8 +97,33 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
         //只查询本人创建的不合格品申请单
         queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
-        OrderUtil.query(queryWrapper, queryInspectorDto.getOrderCol(), queryInspectorDto.getOrder());
-        return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
+        List<Disqualification> disqualificationList = disqualificationMapper.selectList(queryWrapper);
+        disqualificationList.forEach(e -> {
+            LambdaQueryWrapper<DisqualificationFinalResult> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(DisqualificationFinalResult::getId, e.getId());
+            wrapper.eq(DisqualificationFinalResult::getUnitResponsibilityWithin, SecurityUtils.getCurrentUser().getTenantId());
+            DisqualificationFinalResult disqualificationFinalResult = finalResultMapper.selectOne(wrapper);
+            if (ObjectUtils.isNotEmpty(disqualificationFinalResult)) {
+                e.setUnitTreatmentOne(disqualificationFinalResult.getUnitTreatmentOne());
+                e.setUnitTreatmentTwo(disqualificationFinalResult.getUnitTreatmentTwo());
+            }
+        });
+        if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentOne())) {
+            disqualificationList = disqualificationList.stream().filter(e -> StringUtils.isNotEmpty(e.getUnitTreatmentOne()) && e.getUnitTreatmentOne().contains(queryInspectorDto.getUnitTreatmentOne())).collect(Collectors.toList());
+        }
+        if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentTwo())) {
+            disqualificationList = disqualificationList.stream().filter(e -> StringUtils.isNotEmpty(e.getUnitTreatmentTwo()) && e.getUnitTreatmentTwo().contains(queryInspectorDto.getUnitTreatmentTwo())).collect(Collectors.toList());
+        }
+        Page<Disqualification> page = new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit(), disqualificationList.size());
+        // 当前页的数据在list位置
+        long start = (page.getCurrent() - 1) * page.getSize();
+        // 当前页在最后一条数据所在list位置
+        long end = (start + page.getSize()) > page.getTotal() ? page.getTotal() : (page.getSize() * page.getCurrent());
+        if (page.getSize()*(page.getCurrent() - 1) <= page.getTotal()) {
+            // 分隔列表, 当前页存在数据时显示
+            page.setRecords(disqualificationList.subList((int)start , (int)end));
+        }
+        return page;
     }
 
     private void getDisqualificationByQueryInspectorDto(QueryWrapper<Disqualification> queryWrapper, QueryInspectorDto queryInspectorDto) {
@@ -120,7 +151,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         try {
             //开始时间
             if (StrUtil.isNotBlank(queryInspectorDto.getStartTime())) {
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) >= UNIX_TIMESTAMP('" + queryInspectorDto.getStartTime() + " 00:00:00')");
+                queryWrapper.apply("UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('" + queryInspectorDto.getStartTime() + " 00:00:00')");
             }
             //结束时间
             if (StrUtil.isNotBlank(queryInspectorDto.getEndTime())) {
@@ -128,7 +159,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 calendar.setTime(sdf.parse(queryInspectorDto.getEndTime()));
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
-                queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
+                queryWrapper.apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
             }
         } catch (Exception e) {
             throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
