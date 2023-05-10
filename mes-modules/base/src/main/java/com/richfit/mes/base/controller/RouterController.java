@@ -621,9 +621,10 @@ public class RouterController extends BaseController {
     public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode) {
         try {
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            DrawingNoUtil.queryIn(queryWrapper, "draw_no", drawNos);
+            DrawingNoUtil.queryIn(queryWrapper, "router_no", drawNos);
 //            queryWrapper.in("draw_no", drawNos);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.eq("branch_code", branchCode);
             List<Router> routers = routerService.list(queryWrapper);
             return CommonResult.success(routers);
         } catch (Exception e) {

@@ -402,7 +402,7 @@ public class HotDemandController extends BaseController {
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
         //工艺库数据
-        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x));
+        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getRouterNo(), x -> x));
 
         //遍历毛坯需求数据,根据图号在工艺map中获取,不为空则有工艺
         for (HotDemand hotDemand : hotDemands) {
