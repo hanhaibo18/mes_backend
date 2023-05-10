@@ -359,8 +359,10 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
         // queryWrapper.eq("branch_code", branchCode);
         queryWrapper.apply("(produce_state=0 or produce_state is null)");
+        //毛坯类型 0锻件,1铸件,2钢锭
+        queryWrapper.eq("workblank_type",1);
         queryWrapper.in("id", idList);
-        //无模型"且“未排产”产品
+        //无模型"且“未排产” 的铸件产品
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         if(CollectionUtils.isEmpty(hotDemands)){
             return CommonResult.success(ResultCode.SUCCESS,"所选需求均已排产");
