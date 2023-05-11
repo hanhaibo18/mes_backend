@@ -78,15 +78,7 @@ public class NormalizeDehydroRecordController extends BaseController {
     @ApiOperation(value = "添加正火去氢工序控制记录", notes = "添加正火去氢工序控制记录")
     @PostMapping("/saveNormalizeDehydroRecord")
     public CommonResult<Boolean> saveNormalizeDehydroRecord(@RequestBody NormalizeDehydroRecord record) {
-        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        //记录编号
-        String timeStemp = String.valueOf(System.currentTimeMillis());
-        String yyyyMMddhhmmss = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss");
-        //记录编号
-        record.setSerialNo(yyyyMMddhhmmss+timeStemp.substring(timeStemp.length()-4));
-        //'审核状态 0 未通过  1 通过'
-        record.setAuditStatus(0);
-        return CommonResult.success(normalizeDehydroRecordService.save(record));
+        return CommonResult.success(normalizeDehydroRecordService.saveNormalizeDehydroRecord(record));
     }
 
     @ApiOperation(value = "根据预装炉id查询正火去氢工序控制记录", notes = "根据预装炉id查询正火去氢工序控制记录")
@@ -103,7 +95,7 @@ public class NormalizeDehydroRecordController extends BaseController {
     @ApiOperation(value = "正火去氢工序控制记录修改", notes = "正火去氢工序控制记录修改")
     @PostMapping("/updateRecordById")
     public CommonResult<Boolean> updateRecordById(@RequestBody NormalizeDehydroRecord normalizeDehydroRecord) {
-        return CommonResult.success(normalizeDehydroRecordService.updateById(normalizeDehydroRecord));
+        return CommonResult.success(normalizeDehydroRecordService.updateNormalizeDehydroRecord(normalizeDehydroRecord));
     }
 
     @ApiOperation(value = "正火去氢工序控制删除", notes = "正火去氢工序控制删除")

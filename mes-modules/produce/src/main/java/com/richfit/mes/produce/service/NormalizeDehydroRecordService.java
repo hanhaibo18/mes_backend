@@ -13,6 +13,9 @@ import java.util.List;
  */
 public interface NormalizeDehydroRecordService extends IService<NormalizeDehydroRecord> {
 
-    boolean updateBatch(List<NormalizeDehydroRecord> normalizeDehydroRecordList, String itemI);
+
+    Boolean saveNormalizeDehydroRecord(NormalizeDehydroRecord record);
+
+    boolean updateNormalizeDehydroRecord(NormalizeDehydroRecord normalizeDehydroRecord);
 }
 

@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 正火去氢工序控制记录(ProduceNormalizeDehydroRecord)表实体类
  *
@@ -38,6 +40,9 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     @ApiModelProperty(value = "结束时间", dataType = "String")
     @TableField(exist = false)
     private String endTime;
+    @ApiModelProperty(value = "工艺执行记录List", dataType = "String")
+    @TableField(exist = false)
+    private List<NormalizeDehydroExecuteRecord> executeRecord;
 
 }
 
