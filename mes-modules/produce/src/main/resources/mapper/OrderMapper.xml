@@ -37,7 +37,7 @@
                 and o.status = '${param.status}'
             </if>
             <if test="param.tenantId != null and param.tenantId != ''">
-                and o.tenant_id like '${param.tenantId}'
+                and o.tenant_id = '${param.tenantId}'
             </if>
             <if test="param.notEnd != null and param.notEnd != ''">
                 and o.status != '2'
@@ -54,13 +54,14 @@
                 from produce_plan p
                 where o.order_sn = p.order_no
                   and o.tenant_id = p.tenant_id
-               ) as proj_num,
-               (select sum(ptv.store_num)
-                from plan_track_view ptv
-                where ptv.proj_code in
-                      (select proj_code from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id)
-                  and ptv.tenant_id = o.tenant_id)
-                 as store_num
+               ) as proj_num
+<!--        ,-->
+<!--               (select sum(ptv.store_num)-->
+<!--                from plan_track_view ptv-->
+<!--                where ptv.proj_code in-->
+<!--                      (select proj_code from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id)-->
+<!--                  and ptv.tenant_id = o.tenant_id)-->
+<!--                 as store_num-->
         from produce_order o
         WHERE o.id = '${id}'
     </select>
@@ -99,7 +100,7 @@
                 and o.status = '${param.status}'
             </if>
             <if test="param.tenantId != null and param.tenantId != ''">
-                and o.tenant_id like '${param.tenantId}'
+                and o.tenant_id = '${param.tenantId}'
             </if>
             <if test="param.notEnd != null and param.notEnd != ''">
                 and o.status != '2'
@@ -147,7 +148,7 @@
                 and o.status = '${param.status}'
             </if>
             <if test="param.tenantId != null and param.tenantId != ''">
-                and o.tenant_id like '${param.tenantId}'
+                and o.tenant_id = '${param.tenantId}'
             </if>
             <if test="param.notEnd != null and param.notEnd != ''">
                 and o.status != '2'
