@@ -379,10 +379,7 @@ public class DisqualificationController extends BaseController {
         if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentTwo())) {
             objectQueryWrapper.like("unit_treatment_two", queryInspectorDto.getUnitTreatmentTwo());
         }
-        // 责任单位(本)
-        if (StrUtil.isNotBlank(queryInspectorDto.getUnitResponsibilityWithin())) {
-            objectQueryWrapper.like("unit_responsibility_within", queryInspectorDto.getUnitResponsibilityWithin());
-        }
+        objectQueryWrapper.eq("unit_responsibility_within",SecurityUtils.getCurrentUser().getTenantId());
     }
 
     /**
