@@ -105,7 +105,9 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             }
         });
         TrackItem trackItem = collect.get(collect.size() - 1);
-        certificate.setOptName(trackItem.getOptNo() + " " + trackItem.getOptName());
+        certificate.setOptSequence(trackItem.getOptSequence());
+        certificate.setOptNo(trackItem.getOptNo());
+        certificate.setOptName(trackItem.getOptName());
         certificate.setProductName(trackHead.getProductName());
         certificate.setProductNo(trackHead.getProductNo());
         certificate.setProductNoContinuous(trackHead.getProductNoContinuous());
@@ -116,6 +118,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setTestBarNumber(trackHead.getTestBarNumber());
         certificate.setTestBarType(trackHead.getTestBarType());
         certificate.setTexture(trackHead.getTexture());
+        certificate.setBatchNo(trackHead.getBatchNo());
         List<TrackCertificate> trackCertificates = new ArrayList<>();
         TrackCertificate trackCertificate = new TrackCertificate();
         trackCertificate.setThId(trackHead.getId());
