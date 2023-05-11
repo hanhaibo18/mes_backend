@@ -119,9 +119,9 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         long start = (page.getCurrent() - 1) * page.getSize();
         // 当前页在最后一条数据所在list位置
         long end = (start + page.getSize()) > page.getTotal() ? page.getTotal() : (page.getSize() * page.getCurrent());
-        if (page.getSize()*(page.getCurrent() - 1) <= page.getTotal()) {
+        if (page.getSize() * (page.getCurrent() - 1) <= page.getTotal()) {
             // 分隔列表, 当前页存在数据时显示
-            page.setRecords(disqualificationList.subList((int)start , (int)end));
+            page.setRecords(disqualificationList.subList((int) start, (int) end));
         }
         return page;
     }
@@ -712,13 +712,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                     }
                 }
                 break;
-            default:
-                //获取当前登录人姓名
-                CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(SecurityUtils.getCurrentUser().getUsername());
-                saveRecord(id, "回滚到:" + UnitEnum.getMessage(disqualification.getType()), disqualification.getType(), userAccount.getData().getEmplName());
-                break;
-
         }
+        //获取当前登录人姓名
+        CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(SecurityUtils.getCurrentUser().getUsername());
+        saveRecord(id, "回滚到:" + UnitEnum.getMessage(disqualification.getType()), disqualification.getType(), userAccount.getData().getEmplName());
         return this.updateById(disqualification);
     }
 
@@ -764,13 +761,10 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                     }
                 }
                 break;
-            default:
-                //获取当前登录人姓名
-                CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(SecurityUtils.getCurrentUser().getUsername());
-                saveRecord(id, "打回到:" + UnitEnum.getMessage(disqualification.getType()), disqualification.getType(), userAccount.getData().getEmplName());
-                break;
-
         }
+        //获取当前登录人姓名
+        CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(SecurityUtils.getCurrentUser().getUsername());
+        saveRecord(id, "打回到:" + UnitEnum.getMessage(disqualification.getType()), disqualification.getType(), userAccount.getData().getEmplName());
         return this.updateById(disqualification);
     }
 
