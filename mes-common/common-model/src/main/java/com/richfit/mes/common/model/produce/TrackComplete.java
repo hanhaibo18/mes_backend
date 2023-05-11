@@ -229,7 +229,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     private String optName;
     @TableField(exist = false)
-    private Integer optType;
+    private String optType;
     @TableField(exist = false)
     private String optNo;
     @TableField(exist = false)
