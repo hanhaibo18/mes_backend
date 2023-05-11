@@ -168,7 +168,7 @@ public class AssignHot {
     /**
      * 是当前的
      */
-    @ApiModelProperty(value = "是当前的", dataType = "String")
+    @ApiModelProperty(value = "是否当前工序 1是  0 否 ", dataType = "String")
     private Byte isCurrent;
 
     /**
