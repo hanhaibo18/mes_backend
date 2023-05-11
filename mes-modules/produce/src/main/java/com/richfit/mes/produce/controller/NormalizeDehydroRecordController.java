@@ -3,6 +3,7 @@ package com.richfit.mes.produce.controller;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
@@ -109,6 +110,16 @@ public class NormalizeDehydroRecordController extends BaseController {
     @PostMapping("/deleteNormalizeDehydroRecord")
     public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
         return CommonResult.success(normalizeDehydroRecordService.removeByIds(normalizeDehydroRecordList));
+    }
+
+    @ApiOperation(value = "正火去氢工序控审核", notes = "正火去氢工序控审核")
+    @PostMapping("/auditNormalizeDehydroRecord")
+    public CommonResult<Boolean> auditNormalizeDehydroRecord(@ApiParam(value = "idList") @RequestBody List<String> idList,
+                                                             @ApiParam(value = "审核状态 0 未通过  1 通过",required = true)@RequestParam Integer status) {
+        UpdateWrapper<NormalizeDehydroRecord> updateWrapper=new UpdateWrapper<>();
+        updateWrapper.in("id",idList);
+        updateWrapper.set("audit_status",status);
+        return CommonResult.success(normalizeDehydroRecordService.update(updateWrapper));
     }
 
 }
