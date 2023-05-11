@@ -31,7 +31,4 @@ public class QueryInspectorDto extends QueryPageDto {
     private String unitTreatmentOne;
     @ApiModelProperty(value = "处理单位2", dataType = "String")
     private String unitTreatmentTwo;
-    @ApiModelProperty(value = "责任单位内", dataType = "String")
-    private String unitResponsibilityWithin;
-
 }

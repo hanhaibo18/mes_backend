@@ -145,6 +145,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Resource
     private TrackHeadSteelIngotService trackHeadSteelIngotService;
 
+    @Resource
+    private CertificateService certificateService;
+
     @Override
     public List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead) {
         if (!StringUtils.isNullOrEmpty(trackHead.getDrawingNo())) {
@@ -880,7 +883,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
             //当跟单中存在bom(装配)
             if (!StringUtils.isNullOrEmpty(trackHeadPublicDto.getProjectBomId())) {
-                trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto,trackFlowList);
+                trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto, trackFlowList);
             }
 
             //用于在跟单存在第一道工序自动派工的情况
@@ -1058,10 +1061,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 trackAssemblyService.remove(queryWrapper);
                 //根据跟单id找到分流信息
                 QueryWrapper<TrackFlow> trackFlowQueryWrapper = new QueryWrapper<>();
-                trackFlowQueryWrapper.eq("track_head_id",trackHeadPublicDto.getId());
+                trackFlowQueryWrapper.eq("track_head_id", trackHeadPublicDto.getId());
                 List<TrackFlow> trackFlowList = trackHeadFlowService.list(trackFlowQueryWrapper);
                 //添加新的bom
-                trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto,trackFlowList);
+                trackAssemblyService.addTrackAssemblyByTrackHead(trackHeadPublicDto, trackFlowList);
             }
             trackHeadPublicDto.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             trackHeadPublicDto.setModifyTime(new Date());
@@ -1381,7 +1384,8 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //更新跟单动作
             trackHeadMapper.updateById(trackHead);
-
+            //合格证
+            certificateService.autoCertificate(trackHead);
             //计划数据更新
             planService.planData(trackHead.getWorkPlanId());
             //订单数据更新

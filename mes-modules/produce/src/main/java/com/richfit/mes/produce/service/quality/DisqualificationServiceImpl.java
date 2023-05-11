@@ -101,11 +101,11 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         disqualificationList.forEach(e -> {
             LambdaQueryWrapper<DisqualificationFinalResult> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(DisqualificationFinalResult::getId, e.getId());
+            wrapper.eq(DisqualificationFinalResult::getUnitResponsibilityWithin, SecurityUtils.getCurrentUser().getTenantId());
             DisqualificationFinalResult disqualificationFinalResult = finalResultMapper.selectOne(wrapper);
             if (ObjectUtils.isNotEmpty(disqualificationFinalResult)) {
                 e.setUnitTreatmentOne(disqualificationFinalResult.getUnitTreatmentOne());
                 e.setUnitTreatmentTwo(disqualificationFinalResult.getUnitTreatmentTwo());
-                e.setUnitResponsibilityWithin(disqualificationFinalResult.getUnitResponsibilityWithin());
             }
         });
         if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentOne())) {
@@ -113,9 +113,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         }
         if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentTwo())) {
             disqualificationList = disqualificationList.stream().filter(e -> StringUtils.isNotEmpty(e.getUnitTreatmentTwo()) && e.getUnitTreatmentTwo().contains(queryInspectorDto.getUnitTreatmentTwo())).collect(Collectors.toList());
-        }
-        if (StrUtil.isNotBlank(queryInspectorDto.getUnitResponsibilityWithin())) {
-            disqualificationList = disqualificationList.stream().filter(e -> StringUtils.isNotEmpty(e.getUnitResponsibilityWithin()) && e.getUnitResponsibilityWithin().contains(queryInspectorDto.getUnitResponsibilityWithin())).collect(Collectors.toList());
         }
         Page<Disqualification> page = new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit(), disqualificationList.size());
         // 当前页的数据在list位置

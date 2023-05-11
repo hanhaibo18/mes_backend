@@ -195,9 +195,12 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "查询跟单工序(当前外协工序)", notes = "根据跟单ID查询跟单工序(当前外协工序)")
     @PostMapping("/track_item/wxItems")
     public CommonResult<List<TrackItem>> selectTrackItemByIds(@RequestBody List<String> headIds) {
+        if (CollectionUtils.isEmpty(headIds)) {
+            return CommonResult.success(null);
+        }
         List<TrackItem> trackItems = new ArrayList<>();
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-        if (headIds.size() > 0) {
+        if (!headIds.isEmpty()) {
             queryWrapper.in("track_head_id", headIds)
                     .eq("opt_type", "3")
                     .eq("is_operation_complete", 0)
@@ -205,16 +208,26 @@ public class TrackItemController extends BaseController {
                     .orderByDesc("next_opt_sequence");
             trackItems = trackItemService.list(queryWrapper);
         }
-        //根据FlowID分组
-        Map<String, List<TrackItem>> map = trackItems.stream().collect(Collectors.groupingBy(TrackItem::getFlowId));
         //重新创建List每组数据组装完 向当前List填充
         List<TrackItem> trackItemList = new ArrayList<>();
-        //拿到后续工序
-        for (List<TrackItem> trackItem : map.values()) {
-            trackItemList.addAll(trackItem);
-            nextOpt(trackItem, trackItemList);
+        //获取List中最大当前工序值和最小工序值
+        //最大值
+        int max = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).max().getAsInt();
+        //最小值
+        int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
+        if (max != min) {
+            //过滤出所有最小的工序
+            trackItemList.addAll(trackItems.stream().filter(item -> item.getOriginalOptSequence() == min).collect(Collectors.toList()));
+        } else {
+            //根据FlowID分组
+            Map<String, List<TrackItem>> map = trackItems.stream().collect(Collectors.groupingBy(TrackItem::getFlowId));
+            //拿到后续工序
+            for (List<TrackItem> trackItem : map.values()) {
+                trackItemList.addAll(trackItem);
+                nextOpt(trackItem, trackItemList);
+            }
         }
-        if (trackItemList.size() > 0) {
+        if (!trackItemList.isEmpty()) {
             for (TrackItem trackItem : trackItemList) {
                 trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
             }

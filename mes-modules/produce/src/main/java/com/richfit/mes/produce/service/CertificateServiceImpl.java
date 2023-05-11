@@ -73,7 +73,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     @Override
     public boolean autoCertificate(TrackHead trackHead) throws Exception {
         //装配车间
-        if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
+        if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
             return true;
         }
         TenantUserDetails user = SecurityUtils.getCurrentUser();
@@ -87,9 +87,10 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setMaterialNo(trackHead.getMaterialNo());
         certificate.setNextOpt("/");
         //裝配开具并生产入库
-        certificate.setNextOptWork("BOMCO_SC");
+        if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
+            certificate.setNextOptWork("BOMCO_SC");
+        }
         certificate.setNumber(trackHead.getNumber());
-
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         queryWrapper.eq("track_head_id", trackHead.getId());
         queryWrapper.orderByDesc("opt_sequence");
