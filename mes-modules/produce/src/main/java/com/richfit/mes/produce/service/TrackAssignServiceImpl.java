@@ -110,6 +110,11 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         return pageAssignsByStatus;
     }
 
+    @Override
+    public IPage<TrackItem> getPageAssignsHot(Page page, QueryWrapper<TrackItem> qw) {
+        return trackAssignMapper.getPageAssignsHot(page, qw);
+    }
+
 
     @Override
     public IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {

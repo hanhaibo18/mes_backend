@@ -379,6 +379,13 @@ public class RouterController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "根据ID查询工艺", notes = "根据ID查询工艺")
+    @ApiImplicitParam(name = "routerId", value = "工艺id", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/getRouter")
+    public CommonResult<Router> getRouter(String routerId) {
+        return CommonResult.success(routerService.getById(routerId), "操作成功！");
+    }
+
     @ApiOperation(value = "批量图号查询工艺", notes = "批量图号获得工艺")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "routerNos", value = "批量图号（,隔开）", required = true, dataType = "String", paramType = "query"),

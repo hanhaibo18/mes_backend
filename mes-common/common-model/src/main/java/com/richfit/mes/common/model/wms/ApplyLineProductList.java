@@ -12,11 +12,20 @@ import java.io.Serializable;
 @Data
 public class ApplyLineProductList implements Serializable {
 
+    /**
+     *  MES申请单行id
+     */
     private String applyLineId;
 
+    /**
+     *  产品编号
+     */
     private String productNum;
 
-    private String quantity;
+    /**
+     *  数量
+     */
+    private Integer quantity;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

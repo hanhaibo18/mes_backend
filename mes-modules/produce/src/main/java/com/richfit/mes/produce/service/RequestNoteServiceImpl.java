@@ -149,6 +149,55 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
         return save;
     }
 
+    @Override
+    public boolean saveRequestNoteInfo(ApplyListUpload applyListUpload, TrackHead trackHead,TrackItem trackItem, String branchCode) {
+        RequestNote requestNote = new RequestNote();
+        //MES申请单ID 唯一
+        requestNote.setId(applyListUpload.getId());
+        //跟单Id
+        requestNote.setTrackHeadId(trackHead.getId());
+        //存入跟单编号
+        requestNote.setTrackNo(trackHead.getTrackNo());
+        //工序Id
+        requestNote.setTrackItemId(trackItem.getId());
+        //申请单号
+        requestNote.setRequestNoteNumber(applyListUpload.getApplyNum());
+        //所属机构
+        requestNote.setBranchCode(branchCode);
+        //所属租户
+        requestNote.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        boolean save = this.save(requestNote);
+
+        QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
+        assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
+        List<TrackAssembly> assemblyList = trackAssemblyService.list(assemblyQueryWrapper);
+
+        assemblyList.forEach(assembly -> {
+            RequestNoteDetail requestNoteDetail = new RequestNoteDetail();
+            //申请单id
+            requestNoteDetail.setNoteId(requestNote.getId());
+            //申请单号
+            requestNoteDetail.setRequestNoteNumber(applyListUpload.getApplyNum());
+            // 物料号
+            requestNoteDetail.setMaterialNo(assembly.getMaterialNo());
+            //根据物料号查询物料
+            List<Product> list = baseServiceClient.listByMaterialNo(assembly.getMaterialNo());
+            if (!CollectionUtils.isEmpty(list)) {
+                requestNoteDetail.setMaterialName(list.get(0).getProductName());
+            }
+            requestNoteDetail.setDrawingNo(assembly.getDrawingNo());
+            requestNoteDetail.setUnit(assembly.getUnit());
+            requestNoteDetail.setNumber(Double.valueOf(assembly.getNumber()));
+            requestNoteDetail.setBranchCode(SecurityUtils.getCurrentUser().getBelongOrgId());
+            requestNoteDetail.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            requestNoteDetail.setIsNeedPicking(assembly.getIsNeedPicking());
+            requestNoteDetail.setIsKeyPart(assembly.getIsKeyPart());
+            requestNoteDetail.setIsEdgeStore(assembly.getIsEdgeStore());
+            requestNoteDetailService.save(requestNoteDetail);
+        });
+        return save;
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -239,4 +288,7 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
         }
         return CommonResult.failed("申请单上传失败，请稍后再试");
     }
+
+
+
 }
