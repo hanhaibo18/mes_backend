@@ -187,6 +187,15 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "重量", dataType = "Float")
     private Float weight;
     @TableField(exist = false)
+    @ApiModelProperty(value = "锻件重量", dataType = "String")
+    private String forgWeight;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单重", dataType = "String")
+    private String pieceWeight;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "钢水重量", dataType = "String")
+    private String weightMolten;
+    @TableField(exist = false)
     @ApiModelProperty(value = "总数量", dataType = "Float")
     private Integer number;
     @TableField(exist = false)

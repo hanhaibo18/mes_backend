@@ -53,8 +53,8 @@ public class NormalizeDehydroRecordController extends BaseController {
 
 
     @ApiOperation(value = "正火去氢工序控制查询", notes = "正火去氢工序控制查询")
-    @GetMapping("/pageNormalizeDehydroRecord")
-    public CommonResult<IPage<NormalizeDehydroRecord>> pageNormalizeDehydroRecord(@RequestBody NormalizeDehydroRecord normalizeDehydroRecord, int page, int limit) {
+    @PostMapping("/pageNormalizeDehydroRecord")
+    public CommonResult<IPage<NormalizeDehydroRecord>> pageNormalizeDehydroRecord(@RequestBody NormalizeDehydroRecord normalizeDehydroRecord) {
         QueryWrapper<NormalizeDehydroRecord> queryWrapper = new QueryWrapper<>();
 
         if(!StringUtils.isNullOrEmpty(normalizeDehydroRecord.getSerialNo())){
@@ -69,7 +69,7 @@ public class NormalizeDehydroRecordController extends BaseController {
         if (!StringUtils.isNullOrEmpty(normalizeDehydroRecord.getEndTime())) {
             queryWrapper.le("create_time", normalizeDehydroRecord.getEndTime() + " 23:59:59");
         }
-        return CommonResult.success(normalizeDehydroRecordService.page(new Page<>(page, limit), queryWrapper));
+        return CommonResult.success(normalizeDehydroRecordService.page(new Page<>(normalizeDehydroRecord.getPage(),normalizeDehydroRecord.getLimit()), queryWrapper));
     }
 
 
