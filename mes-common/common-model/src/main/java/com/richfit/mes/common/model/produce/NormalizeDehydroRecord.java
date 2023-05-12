@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,7 +34,14 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     private String furnaceId;
     @ApiModelProperty(value = "问题处理", dataType = "String")
     private String problemProcessing;
-
+    @ApiModelProperty(value = "审核人", dataType = "String")
+    private String auditBy;
+    @ApiModelProperty(value = "审核时间", dataType = "Date")
+    protected Date auditTime;
+    @ApiModelProperty(value = "记录时间", dataType = "Date")
+    protected Date recordTime;
+    @ApiModelProperty(value = "文件id", dataType = "String")
+    private String fileId;
     @ApiModelProperty(value = "开始时间", dataType = "String")
     @TableField(exist = false)
     private String startTime;

@@ -100,8 +100,8 @@ public class NormalizeDehydroRecordController extends BaseController {
 
     @ApiOperation(value = "正火去氢工序控制删除", notes = "正火去氢工序控制删除")
     @PostMapping("/deleteNormalizeDehydroRecord")
-    public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
-        return CommonResult.success(normalizeDehydroRecordService.removeByIds(normalizeDehydroRecordList));
+    public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<String> idList) {
+        return CommonResult.success(normalizeDehydroRecordService.removeByIds(idList));
     }
 
     @ApiOperation(value = "正火去氢工序控审核", notes = "正火去氢工序控审核")
