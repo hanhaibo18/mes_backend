@@ -1811,8 +1811,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
             ServletOutputStream outputStream = response.getOutputStream();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-            String time = "knockoutLabel" + LocalDateTime.now();
-            response.setHeader("Content-disposition", "attachment; filename=" + new String(time.getBytes("utf-8"),
+            String fileName = trackHead.getTrackNo() + "Label";
+            response.setHeader("Content-disposition", "attachment; filename=" + new String(fileName.getBytes("utf-8"),
                     "ISO-8859-1") + ".xlsx");
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
