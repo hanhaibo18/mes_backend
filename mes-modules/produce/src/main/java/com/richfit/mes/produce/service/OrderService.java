@@ -35,12 +35,21 @@ public interface OrderService extends IService<Order> {
 
     Order findByOrderCode(String orderCode, String tenantId);
 
+
     /**
      * 功能描述: 通过订单id更新订单的交货数量方法
      *
-     * @param orderId 订单id
+     * @param trackHead 跟单信息
      */
     void orderDataTrackHead(TrackHead trackHead);
+
+    /**
+     * 功能描述: 通过订单订单号码更新订单的计划数量、毛胚使用数量方法
+     *
+     * @param branchCode 车间编码
+     * @param orderNo    订单号码
+     */
+    void orderDataUsed(String branchCode, String orderNo);
 
     Order deleteOrder(String id);
 

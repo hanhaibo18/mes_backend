@@ -88,6 +88,12 @@ public class Order extends BaseEntity<Order> {
     @ApiModelProperty(value = "物料类型 0铸件 1锻件 2精铸件 3成品 4下料 5模型 6半成品")
     private String materialType;
 
+    @ApiModelProperty(value = "毛胚使用数量")
+    private Integer blankNum;
+
+    @ApiModelProperty(value = "计划使用数量")
+    private Integer planNum;
+
     /**
      * 产品名称
      */

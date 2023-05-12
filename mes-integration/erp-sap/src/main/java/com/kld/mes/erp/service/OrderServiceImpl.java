@@ -40,7 +40,10 @@ public class OrderServiceImpl implements OrderService {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @Value("${interface.erp.order-search}")
-    private String URL;
+    private String URL_SEARCH;
+
+    @Value("${interface.erp.order-creat}")
+    private String URL_CREAT;
 
     @Autowired
     private WsTemplateFactory wsTemplateFactory;
@@ -55,10 +58,10 @@ public class OrderServiceImpl implements OrderService {
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
         List<ZPPS0008> list = new ArrayList<>();
         try {
-            ZC80PPIF009Response o = (ZC80PPIF009Response) webServiceTemplate.marshalSendAndReceive(URL, zc80PPIF009);
+            ZC80PPIF009Response o = (ZC80PPIF009Response) webServiceTemplate.marshalSendAndReceive(URL_SEARCH, zc80PPIF009);
             list = o.getTAUFK().getItem();
         } catch (Exception e) {
-            throw new GlobalException("ERP接口异常：" + URL, ResultCode.FAILED);
+            throw new GlobalException("ERP接口异常：" + URL_SEARCH, ResultCode.FAILED);
         }
         List<Order> orders = new ArrayList<>();
         char zero = 48;
@@ -104,11 +107,11 @@ public class OrderServiceImpl implements OrderService {
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate("com.kld.mes.erp.entity.order.creat");
         List<Zc80Ppif032SO> list = new ArrayList<>();
         try {
-            Zc80Ppif032Response o = (Zc80Ppif032Response) webServiceTemplate.marshalSendAndReceive(URL,zc80Ppif032);
+            Zc80Ppif032Response o = (Zc80Ppif032Response) webServiceTemplate.marshalSendAndReceive(URL_CREAT, zc80Ppif032);
             list = o.getTOut().getItem();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new GlobalException("ERP接口异常：" + URL, ResultCode.FAILED);
+            throw new GlobalException("ERP接口异常：" + URL_CREAT, ResultCode.FAILED);
         }
         return list;
     }
