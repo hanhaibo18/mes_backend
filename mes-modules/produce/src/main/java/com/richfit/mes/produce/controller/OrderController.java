@@ -114,6 +114,7 @@ public class OrderController extends BaseController {
         }
         queryWrapper.eq(StrUtil.isNotBlank(queryDto.getOrderSn()), "order_sn", queryDto.getOrderSn());
         queryWrapper.eq(StrUtil.isNotBlank(queryDto.getMaterialCode()), "material_code", queryDto.getMaterialCode());
+        queryWrapper.eq("branch_code", queryDto.getBranchCode());
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         queryWrapper.ne("status", 2);
         PageHelper.startPage(queryDto.getPage(), queryDto.getLimit());
