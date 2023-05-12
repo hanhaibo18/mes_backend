@@ -45,7 +45,7 @@ public class ApplyLineList implements Serializable {
     /**
      * 申请单数量
      */
-    private Double quantity;
+    private double quantity;
 
     /**
      *  物料类型

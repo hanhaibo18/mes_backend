@@ -24,6 +24,11 @@ public class ApplyListUpload implements Serializable {
     private String applyNum;
 
     /**
+     * 数据类型
+     */
+    private String transType;
+
+    /**
      * 工厂
      */
     private String workCode;
@@ -32,6 +37,11 @@ public class ApplyListUpload implements Serializable {
      * 车间  通过车间指向成品仓库
      */
     private String workshop;
+
+    /**
+     * 库存地点
+     */
+    private String invCode;
 
     /**
      * 工作号
