@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -252,6 +253,8 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 item.setQualityCertificateDestination("");
                 item.setScheduleCompleteBy("");
                 item.setScheduleCompleteTime(null);
+                //更新跟单主表以及跟单分流表中的数据信息；
+                this.updateTrackHeadStatus(trackHead, item, resetType);
                 actionMessage = actionMessage + ",重置调度审核";
             }
 
@@ -277,6 +280,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 QueryWrapper<CheckAttachment> attachmentQueryWrapper = new QueryWrapper<>();
                 attachmentQueryWrapper.eq("ti_id", item.getId());
                 trackCheckAttachmentService.remove(attachmentQueryWrapper);
+
+                //更新跟单主表以及跟单分流表中的数据信息；
+                this.updateTrackHeadStatus(trackHead, item, resetType);
 
                 actionMessage = actionMessage + ",重置质检";
             }
@@ -320,6 +326,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                         bindingQueryWrapper.in("item_id", item.getId());
                         trackAssemblyBindingService.remove(bindingQueryWrapper);
                     }
+
+                    //更新跟单主表以及跟单分流表中的数据信息；
+                    this.updateTrackHeadStatus(trackHead, item, resetType);
                 }
                 actionMessage = actionMessage + ",重置报工";
             }
@@ -369,6 +378,26 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     @Override
     public String nextSequence(String flowId) {
         return trackHeadNext(flowId);
+    }
+
+    private void updateTrackHeadStatus(TrackHead trackHead, TrackItem item, Integer resetType) {
+        //清楚所有，状态时初始，其余情况状态为在制；
+        String updateStatus = /*resetType == 5 ? "0" : */ "1";
+        //如果跟单已完工，重置跟单表主表状态信息；
+        if (Objects.equals(trackHead.getStatus(), "2") || Objects.equals(trackHead.getStatus(), "9")) {
+            //跟单表主表信息修改；
+            LambdaUpdateWrapper<TrackHead> trackHeadLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            trackHeadLambdaUpdateWrapper.set(TrackHead::getStatus, updateStatus);
+            trackHeadLambdaUpdateWrapper.set(TrackHead::getCompleteTime, null);
+            trackHeadLambdaUpdateWrapper.eq(TrackHead::getId, item.getTrackHeadId());
+            trackHeadService.update(trackHeadLambdaUpdateWrapper);
+            //跟单分流表信息修改；
+            LambdaUpdateWrapper<TrackFlow> trackFlowLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            trackFlowLambdaUpdateWrapper.set(TrackFlow::getStatus, updateStatus);
+            trackFlowLambdaUpdateWrapper.set(TrackFlow::getCompleteTime, null);
+            trackFlowLambdaUpdateWrapper.eq(TrackFlow::getTrackHeadId, item.getTrackHeadId());
+            trackHeadFlowService.update(trackFlowLambdaUpdateWrapper);
+        }
     }
 
     private String trackHeadNext(String flowId) {
