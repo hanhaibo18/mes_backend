@@ -66,13 +66,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public IPage<Order> queryPage(Page<Order> orderPage, OrderDto orderDto) {
-
         IPage<Order> planList = orderMapper.queryOrderList(orderPage, orderDto);
-
-        List<Branch> branchList = baseServiceClient.selectBranchChildByCode("").getData();
-
         for (Order order : planList.getRecords()) {
-            findBranchName(order, branchList);
             if (order.getProjNum() == null) {
                 order.setProjNum(0);
             }
@@ -80,7 +75,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 order.setStoreNum(0);
             }
         }
-
         return planList;
     }
 

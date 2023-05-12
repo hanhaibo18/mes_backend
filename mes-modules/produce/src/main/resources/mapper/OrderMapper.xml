@@ -21,6 +21,9 @@
             <if test="param.materialCode != null and param.materialCode != ''">
                 and o.material_code like '%${param.materialCode}%'
             </if>
+            <if test="param.drawingNo != null and param.drawingNo != ''">
+                and o.drawing_no like '%${param.drawingNo}%'
+            </if>
             <if test="param.branchCode != null and param.branchCode != ''">
                 and o.branch_code = '${param.branchCode}'
             </if>
@@ -84,6 +87,9 @@
             <if test="param.materialCode != null">
                 and o.material_code = '${param.materialCode}'
             </if>
+            <if test="param.drawingNo != null and param.drawingNo != ''">
+                and o.drawing_no like '%${param.drawingNo}%'
+            </if>
             <if test="param.branchCode != null and param.branchCode != ''">
                 and o.branch_code = '${param.branchCode}'
             </if>
@@ -131,6 +137,9 @@
             </if>
             <if test="param.materialCode != null and param.materialCode != ''">
                 and o.material_code like '%${param.materialCode}%'
+            </if>
+            <if test="param.drawingNo != null and param.drawingNo != ''">
+                and o.drawing_no like '%${param.drawingNo}%'
             </if>
             <if test="param.branchCode != null and param.branchCode != ''">
                 and o.branch_code = '${param.branchCode}'
