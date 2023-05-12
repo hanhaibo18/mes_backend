@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -168,7 +169,7 @@ public class AssignHot {
     /**
      * 是当前的
      */
-    @ApiModelProperty(value = "是当前的", dataType = "String")
+    @ApiModelProperty(value = "是否当前工序 1是  0 否 ", dataType = "String")
     private Byte isCurrent;
 
     /**
@@ -381,4 +382,12 @@ public class AssignHot {
      */
     @ApiModelProperty(value = "下料规格", dataType = "Date")
     private String blankSpecifi;
+    @ApiModelProperty(value = "锻件重量", dataType = "String")
+    private String forgWeight;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单重", dataType = "String")
+    private String pieceWeight;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "钢水重量", dataType = "String")
+    private String weightMolten;
 }

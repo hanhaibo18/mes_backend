@@ -64,12 +64,22 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
+    public CommonResult<Router> getRouter(String routerId) {
+        return null;
+    }
+
+    @Override
     public CommonResult<Router> getByRouterId(String routerId, String branchCode) {
         return CommonResult.success(null);
     }
 
     @Override
     public CommonResult<List<Router>> getByRouterNos(String routerNos, String branchCode) {
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult<List<Router>> getByRouterId(List<String> idList) {
         return CommonResult.success(null);
     }
 

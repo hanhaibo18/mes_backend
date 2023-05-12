@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
@@ -17,13 +18,16 @@ import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.TrackItemService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @Author: zhiqiang.lu
@@ -128,7 +132,30 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                 assign.setIsUpdate(0);
             }
         }
+        //设置工艺数据
+        setRouter(assigns);
         return assigns;
+    }
+
+    /**
+     * 设置工艺数据
+     * @param assigns
+     */
+    private void setRouter(List<Assign> assigns) {
+        List<String> routerIdList = assigns.stream().map(x -> x.getRouterId()).collect(Collectors.toList());
+        //根据需求图号查询工艺库
+        CommonResult<List<Router>> byDrawNo = baseServiceClient.getByRouterId(routerIdList);
+        //工艺库数据
+        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+        for (Assign assign : assigns) {
+            Router router = routerMap.get(assign.getRouterId());
+            if (ObjectUtils.isNotEmpty(router)) {
+                //设置一系列重量
+                assign.setPieceWeight(router.getPieceWeight());
+                assign.setWeightMolten(router.getWeightMolten());
+                assign.setForgWeight(router.getForgWeight());
+            }
+        }
     }
 
     @Override

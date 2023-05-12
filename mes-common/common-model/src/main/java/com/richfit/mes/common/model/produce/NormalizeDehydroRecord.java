@@ -44,5 +44,14 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     @TableField(exist = false)
     private List<NormalizeDehydroExecuteRecord> executeRecord;
 
+    @ApiModelProperty(value = "页码 ", dataType = "int")
+    @TableField(exist = false)
+    private int page;
+    @ApiModelProperty(value = "条数 ", dataType = "int")
+    @TableField(exist = false)
+    private int limit;
+    @ApiModelProperty(value = "所属机构", dataType = "String")
+    @TableField(exist = false)
+    private String branchCode;
 }
 

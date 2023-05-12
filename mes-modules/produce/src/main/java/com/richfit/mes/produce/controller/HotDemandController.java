@@ -416,7 +416,7 @@ public class HotDemandController extends BaseController {
                 //updateWrapper.set("workblank_type", );//设置毛坯类型
                 updateWrapper.set("steel_water_weight",router.getWeightMolten() );//设置钢水重量
                 updateWrapper.set("piece_weight",router.getPieceWeight());//设置单重
-                updateWrapper.set("weight", router.getForgWeight());//设置重量
+                updateWrapper.set("weight", router.getForgWeight());//设置锻件重量
                 updateWrapper.eq("id", hotDemand.getId());
                 hotDemandService.update(updateWrapper);
             }

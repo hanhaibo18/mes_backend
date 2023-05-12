@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.enmus.OptTypeEnum;
@@ -309,7 +310,23 @@ public class RouterController extends BaseController {
         }
 
     }
-
+    @ApiOperation(value = "根据idList获得工艺", notes = "根据idList获得工艺")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "根据idList获得工艺", required = true, dataType = "idList", paramType = "query")
+    })
+    @GetMapping("/getByIds")
+    public CommonResult<List<Router>> getByRouterId(List<String> idList) {
+        QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
+        if (CollectionUtils.isNotEmpty(idList)) {
+            queryWrapper.in("id", idList);
+        }
+        List<Router> routers = routerService.list(queryWrapper);
+        if (routers.size() > 0) {
+            return CommonResult.success(routers, "操作成功！");
+        } else {
+            return CommonResult.success(null, "操作成功！");
+        }
+    }
     @ApiOperation(value = "查询工艺", notes = "根据ID获得工艺")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
@@ -360,6 +377,13 @@ public class RouterController extends BaseController {
         } else {
             return CommonResult.success(null, "操作成功！");
         }
+    }
+
+    @ApiOperation(value = "根据ID查询工艺", notes = "根据ID查询工艺")
+    @ApiImplicitParam(name = "routerId", value = "工艺id", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/getRouter")
+    public CommonResult<Router> getRouter(String routerId) {
+        return CommonResult.success(routerService.getById(routerId), "操作成功！");
     }
 
     @ApiOperation(value = "批量图号查询工艺", notes = "批量图号获得工艺")

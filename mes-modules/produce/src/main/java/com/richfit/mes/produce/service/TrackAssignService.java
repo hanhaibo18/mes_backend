@@ -23,6 +23,8 @@ import java.util.List;
 public interface TrackAssignService extends IService<Assign> {
     IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);
 
+    IPage<TrackItem> getPageAssignsHot(Page page, QueryWrapper<TrackItem> qw);
+
     IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);
 
     IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);
