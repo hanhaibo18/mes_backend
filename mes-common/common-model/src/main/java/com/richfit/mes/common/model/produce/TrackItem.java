@@ -364,6 +364,19 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "材质", dataType = "String")
     private String texture;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "零件名称", dataType = "String")
+    private String materialName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ", dataType = "Integer")
+    private Integer isLongPeriod;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "计划完成时间 ", dataType = "Date")
+    private Date planEndTime;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "钢水重量 ", dataType = "Date")
+    private String weightMolten;
+
     @ApiModelProperty(value = "是否派工(未派工=0,已派工=1)", dataType = "int")
     private Integer isSchedule;
     @ApiModelProperty(value = "是否给予准结工时", dataType = "int")
