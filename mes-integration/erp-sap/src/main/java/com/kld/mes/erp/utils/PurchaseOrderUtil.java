@@ -6,6 +6,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,10 @@ import java.time.Duration;
 import java.util.*;
 
 public class PurchaseOrderUtil {
+
+    @Value("${interface.erp.order-purchase}")
+    private String URL_PURCHASE;
+
     public static void main(String[] args) {
         PurchaseOrderUtil purchaseOrderUtil = new PurchaseOrderUtil();
         String url = "http://10.30.47.134:8000/ZBZZ/HTXT/GetPurchaseInfoByTime2/service/PS/GetPurchaseInfoByTime2";

@@ -96,22 +96,6 @@ public class OrderController extends BaseController {
             orderDto.setOrder("desc");
         }
         IPage<Order> orderList = orderService.queryPage(new Page<Order>(queryDto.getPage(), queryDto.getLimit()), orderDto);
-        List<String> materialCodes = orderList.getRecords().stream().map(x -> x.getMaterialCode()).collect(Collectors.toList());
-        //根据物料号查询物料信息
-        List<Product> productList = baseServiceClient.listByMaterialNoList(materialCodes);
-        if (!CollectionUtils.isEmpty(productList)) {
-            Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x));
-            //把物料名称和图号拼接后存入订单描述字段内
-            for (Order record : orderList.getRecords()) {
-                Product product = productMap.get(record.getMaterialCode());
-                //物料不为空
-                if (!ObjectUtils.isEmpty(product)) {
-                    record.setProductName(product.getProductName());//产品名称
-                    record.setDrawingNo(product.getDrawingNo());//图号
-                }
-            }
-        }
-
         return CommonResult.success(orderList);
     }
 
@@ -145,22 +129,6 @@ public class OrderController extends BaseController {
         for (Order order : orderList.getRecords()) {
             if (order.getOrderNum() > order.getProjNum()) {
                 orderListNew.add(order);
-            }
-        }
-
-        List<String> materialCodes = orderListNew.stream().map(x -> x.getMaterialCode()).collect(Collectors.toList());
-        //根据物料号查询物料信息
-        List<Product> productList = baseServiceClient.listByMaterialNoList(materialCodes);
-        if (!CollectionUtils.isEmpty(productList)) {
-            Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(x -> x.getMaterialNo(), x -> x));
-            //把物料名称和图号拼接后存入订单描述字段内
-            for (Order record : orderListNew) {
-                Product product = productMap.get(record.getMaterialCode());
-                //物料不为空
-                if (!ObjectUtils.isEmpty(product)) {
-                    record.setProductName(product.getProductName());//产品名称
-                    record.setDrawingNo(product.getDrawingNo());//图号
-                }
             }
         }
         return CommonResult.success(orderListNew);
@@ -202,17 +170,13 @@ public class OrderController extends BaseController {
             orderDto = new OrderDto();
         }
 
-//        orderDto.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         if (StringUtils.hasText(orderDto.getOrderCol())) {
             orderDto.setOrderCol(StrUtil.toUnderlineCase(orderDto.getOrderCol()));
         } else {
             orderDto.setOrderCol("modify_time");
             orderDto.setOrder("desc");
         }
-
-
         List<Order> orderList = orderService.queryList(orderDto);
-
         return CommonResult.success(orderList);
     }
 
@@ -239,7 +203,6 @@ public class OrderController extends BaseController {
     @GetMapping("/{id}")
     public CommonResult<Order> getPlan(@PathVariable String id) throws GlobalException {
         Order order = orderService.queryOrder(id);
-        orderService.findBranchName(order);
         return CommonResult.success(order);
     }
 

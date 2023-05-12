@@ -14,6 +14,8 @@ import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.Plan;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.dao.OrderMapper;
 import com.richfit.mes.produce.dao.TrackFlowMapper;
@@ -37,6 +39,7 @@ import static com.richfit.mes.produce.aop.LogConstant.TRACK_HEAD;
  */
 @Slf4j
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderService {
 
     final int ORDER_NEW = 0;
@@ -66,13 +69,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public IPage<Order> queryPage(Page<Order> orderPage, OrderDto orderDto) {
-
         IPage<Order> planList = orderMapper.queryOrderList(orderPage, orderDto);
-
-        List<Branch> branchList = baseServiceClient.selectBranchChildByCode("").getData();
-
         for (Order order : planList.getRecords()) {
-            findBranchName(order, branchList);
             if (order.getProjNum() == null) {
                 order.setProjNum(0);
             }
@@ -80,7 +78,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 order.setStoreNum(0);
             }
         }
-
         return planList;
     }
 
@@ -166,6 +163,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return planList.getRecords().size() > 0 ? planList.getRecords().get(0) : null;
     }
 
+
     @Override
     @OperationLog(actionType = "1", actionItem = "0", argType = TRACK_HEAD)
     public void orderDataTrackHead(TrackHead trackHead) {
@@ -218,6 +216,51 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
+    public void orderDataUsed(String branchCode, String orderNo) {
+        if (StrUtil.isBlank(orderNo)) {
+            return;
+        }
+        int blankNum = 0;
+        int planNum = 0;
+        //查询有多少个料单使用了订单生成的
+        QueryWrapper<LineStore> queryWrapperLineStore = new QueryWrapper<>();
+        queryWrapperLineStore.eq("production_order", orderNo);
+        queryWrapperLineStore.eq("branch_code", branchCode);
+        List<LineStore> lineStoreList = lineStoreService.list(queryWrapperLineStore);
+        for (LineStore lineStore : lineStoreList) {
+            blankNum += lineStore.getNumber();
+        }
+        //查询有多少个计划使用了订单生成的
+        QueryWrapper<Plan> queryWrapperPlan = new QueryWrapper<>();
+        queryWrapperPlan.eq("order_no", orderNo);
+        queryWrapperPlan.eq("branch_code", branchCode);
+        List<Plan> planList = planService.list(queryWrapperPlan);
+        for (Plan plan : planList) {
+            planNum += plan.getProjNum();
+        }
+
+        QueryWrapper<Order> queryWrapperOrder = new QueryWrapper<>();
+        queryWrapperOrder.eq("order_sn", orderNo);
+        queryWrapperOrder.eq("branch_code", branchCode);
+        List<Order> orderList = this.list(queryWrapperOrder);
+        for (Order order : orderList) {
+            order.setBlankNum(blankNum);
+            order.setPlanNum(planNum);
+            int useNum = blankNum + planNum;
+            if (useNum > order.getOrderNum()) {
+                throw new GlobalException("毛胚使用：" + blankNum + "、计划使用：" + planNum + "，已超过订单的数量：" + order.getOrderNum(), ResultCode.FAILED);
+            }
+            if (useNum == 0) {
+                order.setStatus(0);
+            } else {
+                order.setStatus(1);
+            }
+            orderMapper.updateById(order);
+        }
+    }
+
+
+    @Override
     public Order deleteOrder(String id) {
         Order order = this.getById(id);
         //通过状态判断是否关联计划
@@ -247,7 +290,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public boolean saveByPlan(List<Plan> plans) {
         //先筛选出orderId为空的计划
         plans = plans.stream().filter(x -> x.getOrderId() == null).collect(Collectors.toList());

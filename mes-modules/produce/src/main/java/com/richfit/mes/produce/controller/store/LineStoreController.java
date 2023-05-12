@@ -27,10 +27,7 @@ import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
-import com.richfit.mes.produce.service.ActionService;
-import com.richfit.mes.produce.service.LineStoreService;
-import com.richfit.mes.produce.service.StoreAttachRelService;
-import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -75,6 +72,9 @@ public class LineStoreController extends BaseController {
 
     @Autowired
     private LineStoreService lineStoreService;
+
+    @Autowired
+    private OrderService orderService;
 
     @Autowired
     private TrackHeadService trackHeadService;
@@ -155,6 +155,7 @@ public class LineStoreController extends BaseController {
             return CommonResult.failed(MATERIAL_TYPE_NOT_MATCH);
         } else {
             boolean bool = lineStoreService.addStore(lineStore, startNoOld, endNoOld, suffixNo, isAutoMatchProd, isAutoMatchPur, branchCode, strartSuffix.toString());
+            orderService.orderDataUsed(lineStore.getBranchCode(), lineStore.getProductionOrder());
             if (bool) {
                 return CommonResult.success(lineStore, SUCCESS_MESSAGE);
             } else {
@@ -169,12 +170,12 @@ public class LineStoreController extends BaseController {
     @OperationLog(actionType = "0", actionItem = "3", argType = LINE_STORE)
     @PostMapping("/line_store_new")
     public CommonResult<LineStore> addLineStoreNew(@ApiParam(value = "料单详情") @RequestBody LineStore lineStore,
-                                                @ApiParam(value = "启始序列号") @RequestParam(required = false) String startNo,
-                                                @ApiParam(value = "终止序列号") @RequestParam(required = false) String endNo,
-                                                @ApiParam(value = "前缀字段") @RequestParam(required = false) String suffixNo,
-                                                @ApiParam(value = "0手动, 1自动匹配生产订单 2 逆向生成订单") @RequestParam String isAutoMatchProd,
-                                                @ApiParam(value = "自动匹配采购订单") @RequestParam Boolean isAutoMatchPur,
-                                                @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
+                                                   @ApiParam(value = "启始序列号") @RequestParam(required = false) String startNo,
+                                                   @ApiParam(value = "终止序列号") @RequestParam(required = false) String endNo,
+                                                   @ApiParam(value = "前缀字段") @RequestParam(required = false) String suffixNo,
+                                                   @ApiParam(value = "0手动, 1自动匹配生产订单 2 逆向生成订单") @RequestParam String isAutoMatchProd,
+                                                   @ApiParam(value = "自动匹配采购订单") @RequestParam Boolean isAutoMatchPur,
+                                                   @ApiParam(value = "所选分公司") @RequestParam String branchCode) throws Exception {
 
         //用来存放开始编号前缀为0
         StringBuilder strartSuffix = new StringBuilder();
@@ -189,10 +190,10 @@ public class LineStoreController extends BaseController {
             }
             //如果用Integer类型接收startNo和endNo输入数字 前面如果有0，
             // 则会将0给省略掉，所以换成用String，将0截取出来然后在拼接到开始编号前面
-            if(startNo != null){
+            if (startNo != null) {
                 startNoOld = Integer.valueOf(startNo);
             }
-            if(startNo != null){
+            if (startNo != null) {
                 endNoOld = Integer.valueOf(endNo);
             }
 //            String[] split = startNo.split("");
@@ -225,6 +226,7 @@ public class LineStoreController extends BaseController {
             return CommonResult.failed(MATERIAL_TYPE_NOT_MATCH);
         } else {
             boolean bool = lineStoreService.addStoreNew(lineStore, startNoOld, endNoOld, suffixNo, isAutoMatchProd, isAutoMatchPur, branchCode, strartSuffix.toString());
+            orderService.orderDataUsed(lineStore.getBranchCode(), lineStore.getProductionOrder());
             if (bool) {
                 return CommonResult.success(lineStore, SUCCESS_MESSAGE);
             } else {
@@ -263,11 +265,11 @@ public class LineStoreController extends BaseController {
             return CommonResult.failed(MATERIAL_TYPE_NOT_MATCH);
         } else {
             boolean bool = false;
-
             bool = lineStoreService.updateById(lineStore);
-            if(CollectionUtils.isNotEmpty(lineStore.getFileList())){
+            if (CollectionUtils.isNotEmpty(lineStore.getFileList())) {
                 storeAttachRelService.updateStoreFile(lineStore.getId(), branchCode, lineStore.getFileList());
             }
+            orderService.orderDataUsed(lineStore.getBranchCode(), lineStore.getProductionOrder());
             if (bool) {
                 return CommonResult.success(lineStore, SUCCESS_MESSAGE);
             } else {
@@ -278,31 +280,23 @@ public class LineStoreController extends BaseController {
 
     @ApiOperation(value = "删除入库信息", notes = "删除入库信息")
     @DeleteMapping("/line_store")
-    public CommonResult deleteLineStore(@ApiParam(value = "料单Id数组") @RequestBody List<String> ids, HttpServletRequest request) {
-
-        String materialNos = "";
+    public CommonResult deleteLineStore(@ApiParam(value = "料单Id数组") @RequestBody List<LineStore> lineStoreList, HttpServletRequest request) {
         //增加check逻辑  状态不是原始入库的，不能删除
-        for (String id : ids) {
-            LineStore lineStore = lineStoreService.getById(id);
-            lineStore.getMaterialNo();
+        for (LineStore lineStore : lineStoreList) {
             if (lineStore.getInputType().equals(StoreInputTypeEnum.CERT_ACCEPT.getCode())) {
                 return CommonResult.failed("来料接收料单不能删除,编号:" + lineStore.getWorkblankNo());
             }
             if (!isStatusFinish(lineStore)) {
                 return CommonResult.failed(STATUS_NOT_RIGHT_FOR_EDIT + ",编号:" + lineStore.getWorkblankNo());
             }
-            materialNos = materialNos + lineStore.getMaterialNo() + ",";
         }
-        materialNos = materialNos.substring(0, materialNos.lastIndexOf(","));
-        String branchCode = lineStoreService.getById(ids.get(0)).getBranchCode();
-        boolean bool = lineStoreService.removeByIds(ids);
-        if (bool) {
+        for (LineStore lineStore : lineStoreList) {
+            lineStoreService.removeById(lineStore);
             actionService.saveAction(ActionUtil.buildAction
-                    (branchCode, "2", "3", "删除入库，物料号:" + materialNos, OperationLogAspect.getIpAddress(request)));
-            return CommonResult.success(true, SUCCESS_MESSAGE);
-        } else {
-            return CommonResult.failed(FAILED_MESSAGE);
+                    (lineStore.getBranchCode(), "2", "3", "删除入库，物料号:" + lineStore.getMaterialNo(), OperationLogAspect.getIpAddress(request)));
+            orderService.orderDataUsed(lineStore.getBranchCode(), lineStore.getProductionOrder());
         }
+        return CommonResult.success(true, SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "分页查询入库信息", notes = "根据图号、合格证号、物料编号分页查询入库信息")
