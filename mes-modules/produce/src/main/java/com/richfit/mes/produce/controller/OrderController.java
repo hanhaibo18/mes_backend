@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.base.BasePageDto;
@@ -15,7 +17,11 @@ import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Action;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.Plan;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.ActionUtil;
+import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.util.OrderUtil;
+import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
@@ -24,10 +30,7 @@ import com.richfit.mes.produce.entity.OrderDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.ActionService;
 import com.richfit.mes.produce.service.OrderService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -102,36 +105,21 @@ public class OrderController extends BaseController {
     /**
      * 分页查询plan
      */
-    @ApiOperation(value = "查询订单信息", notes = "根据查询条件返回订单信息")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "queryDto", value = "订单属性", paramType = "BasePageDto")
-    })
-    @GetMapping("/query/use")
-    public CommonResult queryByUse(BasePageDto<String> queryDto) throws GlobalException {
-        OrderDto orderDto = null;
-        try {
-            orderDto = objectMapper.readValue(queryDto.getParam(), OrderDto.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+    @ApiOperation(value = "查询可用订单信息", notes = "根据查询条件返回订单信息")
+    @PostMapping("/query/use")
+    public CommonResult queryByUse(@ApiParam(value = "订单信息", required = true) @RequestBody OrderDto queryDto) throws GlobalException {
+        QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+        if (StrUtil.isNotBlank(queryDto.getDrawingNo())) {
+            DrawingNoUtil.queryLike(queryWrapper, "drawing_no", queryDto.getDrawingNo());
         }
-
-        if (null == orderDto) {
-            orderDto = new OrderDto();
-        }
-        if (StringUtils.hasText(orderDto.getOrderCol())) {
-            orderDto.setOrderCol(StrUtil.toUnderlineCase(orderDto.getOrderCol()));
-        } else {
-            orderDto.setOrderCol("modify_time");
-            orderDto.setOrder("desc");
-        }
-        IPage<Order> orderList = orderService.queryPage(new Page<Order>(queryDto.getPage(), queryDto.getLimit()), orderDto);
-        List<Order> orderListNew = new ArrayList<>();
-        for (Order order : orderList.getRecords()) {
-            if (order.getOrderNum() > order.getProjNum()) {
-                orderListNew.add(order);
-            }
-        }
-        return CommonResult.success(orderListNew);
+        queryWrapper.eq(StrUtil.isNotBlank(queryDto.getOrderSn()), "order_sn", queryDto.getOrderSn());
+        queryWrapper.eq(StrUtil.isNotBlank(queryDto.getMaterialCode()), "material_code", queryDto.getMaterialCode());
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        queryWrapper.ne("status", 2);
+        PageHelper.startPage(queryDto.getPage(), queryDto.getLimit());
+        List<Order> orderList = orderService.list(queryWrapper);
+        PageInfo<TrackHead> orderListPage = new PageInfo(orderList);
+        return CommonResult.success(orderListPage);
     }
 
     @GetMapping("/query/pageEqMaterialCode")
