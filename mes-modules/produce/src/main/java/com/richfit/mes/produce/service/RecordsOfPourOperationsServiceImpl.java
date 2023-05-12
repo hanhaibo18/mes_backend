@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * @author makejava
  * @since 2023-05-12 15:53:49
  */
-@Service("recordsOfPourOperationsService")
+@Service
 public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPourOperationsMapper, RecordsOfPourOperations> implements RecordsOfPourOperationsService {
 
 }
