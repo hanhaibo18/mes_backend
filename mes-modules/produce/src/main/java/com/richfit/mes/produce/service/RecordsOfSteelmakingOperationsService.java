@@ -11,5 +11,6 @@ import com.richfit.mes.common.model.produce.RecordsOfSteelmakingOperations;
  */
 public interface RecordsOfSteelmakingOperationsService extends IService<RecordsOfSteelmakingOperations> {
 
+    RecordsOfSteelmakingOperations getByPrechargeFurnaceId(Long prechargeFurnaceId);
 }
 

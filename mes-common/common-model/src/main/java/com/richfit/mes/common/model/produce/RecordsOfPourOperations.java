@@ -17,6 +17,10 @@ import java.util.List;
 public class RecordsOfPourOperations extends BaseEntity<RecordsOfPourOperations> {
 
     /**
+     * 预装炉id
+     */
+    private Long prechargeFurnaceId;
+    /**
      * 审核状态0未通过1通过
      */
     private Integer status;

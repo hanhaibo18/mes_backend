@@ -11,5 +11,6 @@ import com.richfit.mes.common.model.produce.RecordsOfPourOperations;
  */
 public interface RecordsOfPourOperationsService extends IService<RecordsOfPourOperations> {
 
+    RecordsOfPourOperations getByPrechargeFurnaceId(Long prechargeFurnaceId);
 }
 
