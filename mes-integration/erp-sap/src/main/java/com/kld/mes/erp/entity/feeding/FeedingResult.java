@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FeedingResult {
 
+    private String feedingCode;
     private String code;
     private String msg;
 }

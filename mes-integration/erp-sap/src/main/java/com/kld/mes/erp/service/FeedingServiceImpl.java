@@ -88,16 +88,24 @@ public class FeedingServiceImpl implements FeedingService {
         return feedingResult;
     }
 
+    //处理结果集
     private FeedingResult convertReturn(String tmpStr) {
         FeedingResult feedingResult = new FeedingResult();
+        String feedingCode = "";
         int codeStart = tmpStr.indexOf("<E_RETURN_TYPE>");
         int codeEnd = tmpStr.indexOf("</E_RETURN_TYPE>");
         String code = tmpStr.substring(codeStart + "<E_RETURN_TYPE>".length(), codeEnd);
         int msgStart = tmpStr.indexOf("<E_RETURN_MSG>");
         int msgEnd = tmpStr.indexOf("</E_RETURN_MSG>");
         String msg = tmpStr.substring(msgStart + "<E_RETURN_TYPE>".length(), msgEnd);
+        if (msg.contains("成功")) {
+            int feedingCodeStart = tmpStr.indexOf("<E_MBLNR>");
+            int feedingCodeEnd = tmpStr.indexOf("</E_MBLNR>");
+            feedingCode = tmpStr.substring(feedingCodeStart + "<E_MBLNR>".length(), feedingCodeEnd);
+        }
         feedingResult.setCode(code);
         feedingResult.setMsg(msg);
+        feedingResult.setFeedingCode(feedingCode);
         return feedingResult;
     }
 }
