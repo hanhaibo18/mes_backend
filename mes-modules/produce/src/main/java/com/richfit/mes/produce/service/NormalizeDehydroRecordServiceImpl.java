@@ -1,9 +1,11 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.produce.NormalizeDehydroExecuteRecord;
 import com.richfit.mes.common.model.produce.NormalizeDehydroRecord;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -56,6 +58,7 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
         }
         int insert = normalizeDehydroRecordMapper.insert(record);
         if(insert>0){
+            //修改装炉为已生成记录 record_status 记录状态 1 未生成记录，2已生成记录，3记录已审核
             return true;
         }else {
             return false;
@@ -82,6 +85,26 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
             return false;
         }
     }
+
+
+    /**
+     * 根据id查询记录
+     * @param id
+     * @return
+     */
+    @Override
+    public NormalizeDehydroRecord getById(String id) {
+        NormalizeDehydroRecord normalizeDehydroRecord = normalizeDehydroRecordMapper.selectById(id);
+        if(ObjectUtil.isNotEmpty(normalizeDehydroRecord)){
+            QueryWrapper<NormalizeDehydroExecuteRecord> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("record_id",id);
+            List<NormalizeDehydroExecuteRecord> list = normalizeDehydroExecuteRecordService.list(queryWrapper);
+            normalizeDehydroRecord.setExecuteRecord(list);
+        }
+        return normalizeDehydroRecord;
+    }
+
+
 
 }
 

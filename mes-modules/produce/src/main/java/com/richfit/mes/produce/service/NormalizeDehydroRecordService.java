@@ -17,5 +17,7 @@ public interface NormalizeDehydroRecordService extends IService<NormalizeDehydro
     Boolean saveNormalizeDehydroRecord(NormalizeDehydroRecord record);
 
     boolean updateNormalizeDehydroRecord(NormalizeDehydroRecord normalizeDehydroRecord);
+
+    NormalizeDehydroRecord getById(String id);
 }
 

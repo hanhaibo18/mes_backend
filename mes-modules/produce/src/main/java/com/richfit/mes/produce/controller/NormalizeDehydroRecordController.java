@@ -90,7 +90,12 @@ public class NormalizeDehydroRecordController extends BaseController {
         return CommonResult.success(normalizeDehydroRecordService.list(queryWrapper));
     }
 
-
+    @ApiOperation(value = "根据id查询正火去氢工序控制记录", notes = "根据id查询正火去氢工序控制记录")
+    @ApiImplicitParam(name = "furnaceId", value = "ID", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/getRecordById")
+    public CommonResult<NormalizeDehydroRecord> getRecordById(String id) {
+        return CommonResult.success(normalizeDehydroRecordService.getById(id));
+    }
 
     @ApiOperation(value = "正火去氢工序控制记录修改", notes = "正火去氢工序控制记录修改")
     @PostMapping("/updateRecordById")
@@ -111,6 +116,9 @@ public class NormalizeDehydroRecordController extends BaseController {
         UpdateWrapper<NormalizeDehydroRecord> updateWrapper=new UpdateWrapper<>();
         updateWrapper.in("id",idList);
         updateWrapper.set("audit_status",status);
+        if(status==1){
+            //修改装炉为已审核
+        }
         return CommonResult.success(normalizeDehydroRecordService.update(updateWrapper));
     }
 
