@@ -19,18 +19,18 @@ public class FeedingUtil {
 
     public static void main(String[] args) {
         FeedingUtil feedingUtil = new FeedingUtil();
-        String url = "http://10.30.47.134:8000/ZBZZ/MES/ZC80_PPIF022/service/PS/PS_ZC80_PPIF022";
+        String url = "http://10.30.47.134:8001/ZBZZ/MES/ZC80_PPIF022/service/PS/PS_ZC80_PPIF022";
         //参数
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String date = simpleDateFormat.format(new Date());
-        String WERKS = "X091";
-        String AUFNR = "1000568032";
-        String MATNR = "909091621";
-        String CHARG = "AF700303";
+        String WERKS = "X088";
+        String AUFNR = "1000001797";
+        String MATNR = "909100001";
+        String CHARG = "909100002";
         String ERFMG = "1";
-        String ERFME = "Z09";
-        String LGORT = "2000";
-        String BUDAT = date;
+        String ERFME = "吨";
+        String LGORT = "1000";
+        String BUDAT = "2022-07-01";
         String ZCANCELF = "N";
         String message = feedingUtil.creatFeeding(url, WERKS, AUFNR, MATNR, CHARG, ERFMG, ERFME, LGORT, BUDAT, ZCANCELF);
         System.out.print(message);
