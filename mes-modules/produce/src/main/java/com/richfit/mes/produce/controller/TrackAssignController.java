@@ -380,14 +380,14 @@ public class TrackAssignController extends BaseController {
                         if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
-//                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
-//                        requestNoteService.saveRequestNoteNew(ingredient, trackHead, trackHead.getBranchCode());
-//                        ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
-                        ApplyListUpload ingredient = collect(trackItem, trackHead, trackHead.getBranchCode());
-                        requestNoteService.saveRequestNoteInfo(ingredient, trackHead, trackItem, trackHead.getBranchCode());
-                        List<ApplyListUpload> list = new ArrayList<>();
-                        list.add(ingredient);
-                        ApplicationResult application = wmsServiceClient.applyListUpload(list).getData();
+                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
+                        requestNoteService.saveRequestNoteNew(ingredient, trackHead, trackHead.getBranchCode());
+                        ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+//                        ApplyListUpload ingredient = collect(trackItem, trackHead, trackHead.getBranchCode());
+//                        requestNoteService.saveRequestNoteInfo(ingredient, trackHead, trackItem, trackHead.getBranchCode());
+//                        List<ApplyListUpload> list = new ArrayList<>();
+//                        list.add(ingredient);
+//                        ApplicationResult application = wmsServiceClient.applyListUpload(list).getData();
                         //请勿重复上传！
                         boolean upload = !application.getRetMsg().contains("请勿重复上传");
                         if ("N".equals(application.getRetCode()) && upload) {
