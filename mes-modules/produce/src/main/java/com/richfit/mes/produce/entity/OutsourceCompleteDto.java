@@ -1,7 +1,6 @@
 package com.richfit.mes.produce.entity;
 
 import com.richfit.mes.common.model.produce.TrackComplete;
-import com.richfit.mes.common.model.produce.TrackItem;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -23,8 +22,6 @@ public class OutsourceCompleteDto {
     private List<String> prodNoList;
     @ApiModelProperty(value = "报工信息")
     private TrackComplete trackComplete;
-    @ApiModelProperty(value = "ItemList")
-    private List<TrackItem> trackItemList;
     @ApiModelProperty(value = "branchCode")
     private String branchCode;
 }
