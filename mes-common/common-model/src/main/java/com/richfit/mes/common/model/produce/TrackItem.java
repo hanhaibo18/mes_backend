@@ -476,4 +476,18 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "不合格Id")
     private String disqualificationId;
+
+    @ApiModelProperty(value = "浇注状态")
+    private Integer pourState;
+
+    @ApiModelProperty(value = "浇注温度")
+    private Double pourTemperature;
+
+    @ApiModelProperty(value = "浇注时间 单位秒")
+    private Integer pourTime;
+
+    @ApiModelProperty(value = "热风机关闭时间")
+    private Date fanClosedTime;
+
+
 }

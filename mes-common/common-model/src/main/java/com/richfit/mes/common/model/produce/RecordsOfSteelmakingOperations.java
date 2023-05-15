@@ -1,6 +1,7 @@
 package com.richfit.mes.common.model.produce;
 
 import java.util.Date;
+import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
@@ -15,6 +16,10 @@ import lombok.Data;
 @Data
 public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmakingOperations> {
 
+    /**
+     * 预装炉id
+     */
+    private Long prechargeFurnaceId;
     //租户ID
     private String tenantId;
     //炉号
@@ -157,6 +162,6 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     private Integer status;
     //结果分析数据
     @TableField(exist = false)
-    ResultsOfSteelmaking resultsOfSteelmaking;
+    List<ResultsOfSteelmaking> resultsOfSteelmaking;
 }
 
