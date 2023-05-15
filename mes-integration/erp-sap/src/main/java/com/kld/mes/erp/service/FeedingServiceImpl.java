@@ -1,43 +1,35 @@
-package com.kld.mes.erp.utils;
+package com.kld.mes.erp.service;
 
+import com.kld.mes.erp.entity.feeding.FeedingResult;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.Date;
 
-public class FeedingUtil {
+/**
+ * 生产订单投料
+ *
+ * @author wcy
+ * @date 2023/5/15 16:07
+ */
 
-    @Value("${interface.erp.order-purchase}")
-    private String URL_PURCHASE;
+@Slf4j
+@Service
+public class FeedingServiceImpl implements FeedingService {
 
-    public static void main(String[] args) {
-        FeedingUtil feedingUtil = new FeedingUtil();
-        String url = "http://10.30.47.134:8001/ZBZZ/MES/ZC80_PPIF022/service/PS/PS_ZC80_PPIF022";
-        //参数
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String date = simpleDateFormat.format(new Date());
-        String WERKS = "X088";
-        String AUFNR = "1000001797";
-        String MATNR = "909100001";
-        String CHARG = "909100002";
-        String ERFMG = "1";
-        String ERFME = "吨";
-        String LGORT = "1000";
-        String BUDAT = "2022-07-01";
-        String ZCANCELF = "N";
-        String message = feedingUtil.creatFeeding(url, WERKS, AUFNR, MATNR, CHARG, ERFMG, ERFME, LGORT, BUDAT, ZCANCELF);
-        System.out.print(message);
-    }
+    @Value("${interface.erp.feeding}")
+    private String url;
 
-    public String creatFeeding(String url, String WERKS, String AUFNR, String MATNR, String CHARG, String ERFMG, String ERFME,
-                               String LGORT, String BUDAT, String ZCANCELF) {
+    @Override
+    public FeedingResult sendFeeding(String erpCode, String orderCode, String materialNo, String drawingNo,
+                                     String prodQty, String unit, String lgort, String date) {
         //时间参数
         String soapRequestData = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\">" +
                 "<soapenv:Header/>" +
@@ -46,31 +38,31 @@ public class FeedingUtil {
                 "<urn:T_ITEM>" +
                 "<urn:item>" +
                 "<urn:WERKS>" +
-                WERKS +
+                erpCode +
                 "</urn:WERKS>" +
                 "<urn:AUFNR>" +
-                AUFNR +
+                orderCode +
                 "</urn:AUFNR>" +
                 "<urn:MATNR>" +
-                MATNR +
+                materialNo +
                 "</urn:MATNR>" +
                 "<urn:CHARG>" +
-                CHARG +
+                drawingNo +
                 "</urn:CHARG>" +
                 "<urn:ERFMG>" +
-                ERFMG +
+                prodQty +
                 "</urn:ERFMG>" +
                 "<urn:ERFME>" +
-                ERFME +
+                unit +
                 "</urn:ERFME>" +
                 "<urn:LGORT>" +
-                LGORT +
+                lgort +
                 "</urn:LGORT>" +
                 "<urn:BUDAT>" +
-                BUDAT +
+                date +
                 "</urn:BUDAT>" +
                 "<urn:ZCANCELF>" +
-                ZCANCELF +
+                "N" +
                 "</urn:ZCANCELF>" +
                 "</urn:item>" +
                 "</urn:T_ITEM>" +
@@ -91,7 +83,29 @@ public class FeedingUtil {
         String resultStr = restTemplate.postForObject(url, formEntity, String.class);
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
         String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
-        return tmpStr;
+        //结果集封装
+        FeedingResult feedingResult = this.convertReturn(tmpStr);
+        return feedingResult;
     }
 
+    //处理结果集
+    private FeedingResult convertReturn(String tmpStr) {
+        FeedingResult feedingResult = new FeedingResult();
+        String feedingCode = "";
+        int codeStart = tmpStr.indexOf("<E_RETURN_TYPE>");
+        int codeEnd = tmpStr.indexOf("</E_RETURN_TYPE>");
+        String code = tmpStr.substring(codeStart + "<E_RETURN_TYPE>".length(), codeEnd);
+        int msgStart = tmpStr.indexOf("<E_RETURN_MSG>");
+        int msgEnd = tmpStr.indexOf("</E_RETURN_MSG>");
+        String msg = tmpStr.substring(msgStart + "<E_RETURN_TYPE>".length(), msgEnd);
+        if (msg.contains("成功")) {
+            int feedingCodeStart = tmpStr.indexOf("<E_MBLNR>");
+            int feedingCodeEnd = tmpStr.indexOf("</E_MBLNR>");
+            feedingCode = tmpStr.substring(feedingCodeStart + "<E_MBLNR>".length(), feedingCodeEnd);
+        }
+        feedingResult.setCode(code);
+        feedingResult.setMsg(msg);
+        feedingResult.setFeedingCode(feedingCode);
+        return feedingResult;
+    }
 }

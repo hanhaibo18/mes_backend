@@ -213,8 +213,8 @@ public class DisqualificationController extends BaseController {
         try {
             QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
             getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
-            //只查询本人创建的不合格品申请单
-            queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
+            //只查询本租户创建的不合格品申请单
+            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<Disqualification> disqualificationList = disqualificationService.list(queryWrapper);
             if (!CollectionUtils.isNotEmpty(disqualificationList)) {
                 return;
@@ -370,7 +370,7 @@ public class DisqualificationController extends BaseController {
         }
     }
 
-    public void getDisqualificationByQueryPartDto(QueryWrapper<DisqualificationFinalResult> objectQueryWrapper, QueryInspectorDto queryInspectorDto) {
+    private void getDisqualificationByQueryPartDto(QueryWrapper<DisqualificationFinalResult> objectQueryWrapper, QueryInspectorDto queryInspectorDto) {
        // 处理单位1
        if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentOne())) {
             objectQueryWrapper.like("unit_treatment_one", queryInspectorDto.getUnitTreatmentOne());
@@ -379,6 +379,7 @@ public class DisqualificationController extends BaseController {
         if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentTwo())) {
             objectQueryWrapper.like("unit_treatment_two", queryInspectorDto.getUnitTreatmentTwo());
         }
+        // 责任单位为当前租户的数据
         objectQueryWrapper.eq("unit_responsibility_within",SecurityUtils.getCurrentUser().getTenantId());
     }
 
