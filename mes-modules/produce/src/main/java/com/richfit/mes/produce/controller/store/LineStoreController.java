@@ -307,6 +307,7 @@ public class LineStoreController extends BaseController {
                                                           @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                           @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
                                                           @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                                          @ApiParam(value = "订单号") @RequestParam(required = false) String productionOrder,
                                                           @ApiParam(value = "入库时间(起)") @RequestParam(required = false) String startTime,
                                                           @ApiParam(value = "入库时间(止)") @RequestParam(required = false) String endTime,
                                                           @ApiParam(value = "毛坯号") @RequestParam(required = false) String workblankNo,
@@ -344,6 +345,9 @@ public class LineStoreController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.like("work_no", workNo);
+        }
+        if (!StringUtils.isNullOrEmpty(productionOrder)) {
+            queryWrapper.like("production_order", productionOrder);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             queryWrapper.ge("in_Time", startTime + " 00:00:00");
