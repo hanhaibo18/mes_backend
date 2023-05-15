@@ -376,6 +376,12 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     @ApiModelProperty(value = "钢水重量 ", dataType = "Date")
     private String weightMolten;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "申请状态 0未配送 1已配送 2已退库 ", dataType = "Date")
+    private Integer applyStatus;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "项目名称 ", dataType = "String")
+    private String projectName;
 
     @ApiModelProperty(value = "是否派工(未派工=0,已派工=1)", dataType = "int")
     private Integer isSchedule;

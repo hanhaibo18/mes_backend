@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Assign;
+import com.richfit.mes.common.model.produce.AssignHot;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
@@ -107,6 +108,13 @@ public interface TrackAssignService extends IService<Assign> {
      * @return: IPage<Assign>
      **/
     IPage<Assign> queryForDispatching(ForDispatchingDto dispatchingDto) throws ParseException;
+
+    /**
+     * 铸钢车间已派工查询
+     * @param dispatchingDto
+     * @return
+     */
+    IPage<AssignHot> queryDispatched(ForDispatchingDto dispatchingDto);
 
     /**
      * 功能描述:未报工查询

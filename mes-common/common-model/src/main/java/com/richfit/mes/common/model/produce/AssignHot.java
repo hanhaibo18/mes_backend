@@ -6,6 +6,8 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+
 @Data
 public class AssignHot {
     /**
@@ -377,6 +379,15 @@ public class AssignHot {
     @ApiModelProperty(value = "结束时间", dataType = "Date")
     private Date planEndTime;
 
+    @ApiModelProperty(value = "工作号", dataType = "String")
+    private String workPlanNo;
+
+    @ApiModelProperty(value = "总数量", dataType = "Integer")
+    private Integer totalQuantity;
+
+    @ApiModelProperty(value = "派工数量", dataType = "Integer")
+    private Integer dispatchingNumber;
+
     /**
      * 下料规格
      */
@@ -390,4 +401,7 @@ public class AssignHot {
     @TableField(exist = false)
     @ApiModelProperty(value = "钢水重量", dataType = "String")
     private String weightMolten;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "派工人", dataType = "List")
+    private List<AssignPerson> assignPersons;
 }
