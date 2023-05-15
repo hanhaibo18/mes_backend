@@ -87,8 +87,12 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
     @Override
     public boolean updateNormalizeDehydroRecord(NormalizeDehydroRecord normalizeDehydroRecord) {
         if (CollectionUtils.isNotEmpty(normalizeDehydroRecord.getExecuteRecord())){
-            //修改或者添加工艺执行记录
-            normalizeDehydroExecuteRecordService.saveOrUpdateBatch(normalizeDehydroRecord.getExecuteRecord());
+            QueryWrapper<NormalizeDehydroExecuteRecord> queryWrapper=new QueryWrapper();
+            queryWrapper.in("record_id",normalizeDehydroRecord.getId());
+            //删除工艺执行记录
+            normalizeDehydroExecuteRecordService.remove(queryWrapper);
+            //添加工艺执行记录
+            normalizeDehydroExecuteRecordService.saveBatch(normalizeDehydroRecord.getExecuteRecord());
         }
         int i = normalizeDehydroRecordMapper.updateById(normalizeDehydroRecord);
         if(i>0){
