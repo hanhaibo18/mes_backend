@@ -666,11 +666,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWorkingTimeVo queryWorkingTimeVo = new QueryWorkingTimeVo();
         Assign assign = trackAssignMapper.queryAssign(assignId);
         //给assignPersion赋值
-        if ("1".equals(classes) || "2".equals(classes)) {
-            jjZpSetAssignPersion(assignId, assign);
-        } else {
-            rgSetAssignPersion(assignId, assign);
-        }
+        setAssignPersion(assignId, assign);
 
         QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("ti_id", tiId);
@@ -764,22 +760,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
 
-    //机加装配查询开工人
-    private void jjZpSetAssignPersion(String assignId, Assign assign) {
-        TrackItem item = trackItemService.getById(assign.getTiId());
-        TenantUserVo startDoingUser = systemServiceClient.queryByUserAccount(item.getStartDoingUser()).getData();
-        List<AssignPerson> assignPeople = new ArrayList<>();
-        AssignPerson assignPerson = new AssignPerson();
-        assignPerson.setAssignId(assignId);
-        assignPerson.setUserId(startDoingUser.getUserAccount());
-        assignPerson.setUserName(startDoingUser.getEmplName());
-        assignPerson.setRatioHours(startDoingUser.getRatioHours());
-        assignPeople.add(assignPerson);
-        assign.setAssignPersons(assignPeople);
-    }
-
-    //热工查询初始报工人员列表
-    private void rgSetAssignPersion(String assignId, Assign assign) {
+    //查询初始报工人员列表
+    private void setAssignPersion(String assignId, Assign assign) {
         //‘/’全部派工人员查询
         if (assign.getUserId().contains("/")) {
             List<String> branchCodes = Arrays.asList(assign.getSiteId().split(","));
