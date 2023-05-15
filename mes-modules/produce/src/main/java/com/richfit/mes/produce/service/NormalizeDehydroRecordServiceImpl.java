@@ -58,11 +58,15 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
         record.setSerialNo(yyyyMMddhhmmss+timeStemp.substring(timeStemp.length()-4));
         //'审核状态 0 未通过  1 通过'
         record.setAuditStatus(0);
+        int insert = normalizeDehydroRecordMapper.insert(record);
         if (CollectionUtils.isNotEmpty(record.getExecuteRecord())){
+            for (NormalizeDehydroExecuteRecord normalizeDehydroExecuteRecord : record.getExecuteRecord()) {
+                normalizeDehydroExecuteRecord.setRecordId(record.getId());
+            }
             //保存工艺执行记录
             normalizeDehydroExecuteRecordService.saveBatch(record.getExecuteRecord());
         }
-        int insert = normalizeDehydroRecordMapper.insert(record);
+
         if(insert>0){
             //修改装炉为已生成记录 record_status 记录状态 1 未生成记录，2已生成记录，3记录已审核
             //同步装炉记录状态

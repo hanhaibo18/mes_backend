@@ -95,7 +95,7 @@ public class NormalizeDehydroRecordController extends BaseController {
     }
 
     @ApiOperation(value = "根据id查询正火去氢工序控制记录", notes = "根据id查询正火去氢工序控制记录")
-    @ApiImplicitParam(name = "furnaceId", value = "ID", required = true, dataType = "String", paramType = "query")
+    @ApiImplicitParam(name = "ID", value = "ID", required = true, dataType = "String", paramType = "query")
     @GetMapping("/getRecordById")
     public CommonResult<NormalizeDehydroRecord> getRecordById(String id) {
         return CommonResult.success(normalizeDehydroRecordService.getById(id));
