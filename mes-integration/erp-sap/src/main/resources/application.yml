@@ -47,7 +47,7 @@ interface:
     # 查询ERP库存
     storage: http://10.30.47.134:8000/ZBZZ/MES/ZC80_MMIF015/service/PS/PS_ZC80_MMIF015
     # 生产投料接口
-    feeding: http://10.30.47.134:8000/ZBZZ/MES/ZC80_PPIF022/service/PS/PS_ZC80_PPIF022
+    feeding: http://10.30.47.134:8001/ZBZZ/MES/ZC80_PPIF022/service/PS/PS_ZC80_PPIF022
 secure:
   ignore:
     urls:
