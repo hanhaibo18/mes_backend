@@ -11,6 +11,7 @@ import com.kld.mes.erp.service.CertWorkHourServiceImpl;
 import com.kld.mes.erp.service.OrderService;
 import com.kld.mes.erp.utils.WsTemplateFactory;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +86,7 @@ public class createOrder {
     }
 
     @Test
-    public  void creat() {
+    public void creat() {
 
         CertWorkHourServiceImpl test = new CertWorkHourServiceImpl();
 
@@ -129,7 +130,7 @@ public class createOrder {
     }
 
     @Test
-    public void creatFeeding(){
+    public void creatFeeding() {
         String url = "http://10.30.47.134:8000/ZBZZ/MES/ZC80_PPIF022/service/PS/PS_ZC80_PPIF022";
         //参数
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd");
@@ -196,6 +197,12 @@ public class createOrder {
         String resultStr = restTemplate.postForObject(url, formEntity, String.class);
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
         String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
-        System.out.println("返回信息:"+tmpStr);
+        int codeStart = tmpStr.indexOf("<E_RETURN_TYPE>");
+        int codeEnd = tmpStr.indexOf("</E_RETURN_TYPE>");
+        String code = tmpStr.substring(codeStart + "<E_RETURN_TYPE>".length(), codeEnd);
+        int msgStart = tmpStr.indexOf("<E_RETURN_MSG>");
+        int msgEnd = tmpStr.indexOf("</E_RETURN_MSG>");
+        String msg = tmpStr.substring(msgStart + "<E_RETURN_TYPE>".length(), msgEnd);
+        System.out.println("返回信息:" + code + "信息" + msg);
     }
 }
