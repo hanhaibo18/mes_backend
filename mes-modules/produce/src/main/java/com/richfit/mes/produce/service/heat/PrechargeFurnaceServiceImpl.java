@@ -48,6 +48,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     @Autowired
     private BaseServiceClient baseServiceClient;
 
+    @Autowired
+    private PrechargeFurnaceMapper prechargeFurnaceMapper;
+
     @Override
     public void furnaceCharging(List<Assign> assignList, String tempWork) {
         if (assignList.isEmpty()) {
@@ -246,4 +249,26 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         }
         return name;
     }
+
+    /**
+     * 更新记录状态
+     * @param id
+     * @param recordStatus
+     * @return
+     */
+    @Override
+    public Boolean updateRecordStatus(Long id, String recordStatus) {
+        PrechargeFurnace prechargeFurnace= new PrechargeFurnace();
+        prechargeFurnace.setId(id);
+        prechargeFurnace.setRecordStatus(recordStatus);
+        int i = prechargeFurnaceMapper.updateById(prechargeFurnace);
+        if(i>0){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+
+
 }

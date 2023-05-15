@@ -5,13 +5,17 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.NormalizeDehydroExecuteRecord;
 import com.richfit.mes.common.model.produce.NormalizeDehydroRecord;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.NormalizeDehydroRecordExecuteMapper;
 import com.richfit.mes.produce.dao.NormalizeDehydroRecordMapper;
+import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.DateUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +41,8 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
     private NormalizeDehydroRecordExecuteMapper normalizeDehydroRecordExecuteMapper;
     @Autowired
     private NormalizeDehydroExecuteRecordService normalizeDehydroExecuteRecordService;
+    @Autowired
+    private PrechargeFurnaceService prechargeFurnaceService;
     /**
      * 添加正火去氢记录
      * @param record
@@ -59,6 +65,12 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
         int insert = normalizeDehydroRecordMapper.insert(record);
         if(insert>0){
             //修改装炉为已生成记录 record_status 记录状态 1 未生成记录，2已生成记录，3记录已审核
+            //同步装炉记录状态
+            if(StringUtils.isNotEmpty(record.getFurnaceId())){
+                prechargeFurnaceService.updateRecordStatus(Long.valueOf(record.getFurnaceId()),"1");
+            }else {
+                throw new GlobalException("缺少预装炉id", ResultCode.FAILED);
+            }
             return true;
         }else {
             return false;

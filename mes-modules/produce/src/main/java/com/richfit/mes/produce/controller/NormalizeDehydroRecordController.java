@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -27,6 +28,7 @@ import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.DateUtils;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +52,8 @@ public class NormalizeDehydroRecordController extends BaseController {
 
     @Autowired
     private NormalizeDehydroRecordService normalizeDehydroRecordService;
+    @Autowired
+    private PrechargeFurnaceService prechargeFurnaceService;
 
 
     @ApiOperation(value = "正火去氢工序控制查询", notes = "正火去氢工序控制查询")
@@ -118,6 +122,16 @@ public class NormalizeDehydroRecordController extends BaseController {
         updateWrapper.set("audit_status",status);
         if(status==1){
             //修改装炉为已审核
+            QueryWrapper<NormalizeDehydroRecord> queryWrapper=new QueryWrapper();
+            queryWrapper.in("id",idList);
+            List<NormalizeDehydroRecord> list = normalizeDehydroRecordService.list();
+            if(CollectionUtils.isNotEmpty(list)){
+                for (NormalizeDehydroRecord normalizeDehydroRecord : list) {
+                    //同步装炉记录状态
+                    prechargeFurnaceService.updateRecordStatus(Long.valueOf(normalizeDehydroRecord.getFurnaceId()),"3");
+                }
+            }
+
         }
         return CommonResult.success(normalizeDehydroRecordService.update(updateWrapper));
     }
