@@ -314,8 +314,8 @@ public class RouterController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "根据idList获得工艺", required = true, dataType = "idList", paramType = "query")
     })
-    @GetMapping("/getByIds")
-    public CommonResult<List<Router>> getByRouterId(List<String> idList) {
+    @PostMapping("/getByIds")
+    public CommonResult<List<Router>> getByRouterId(@RequestBody List<String> idList) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (CollectionUtils.isNotEmpty(idList)) {
             queryWrapper.in("id", idList);
