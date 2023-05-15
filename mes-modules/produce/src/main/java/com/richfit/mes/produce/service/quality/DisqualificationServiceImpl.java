@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -97,33 +98,8 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
         //只查询本人创建的不合格品申请单
         queryWrapper.eq("create_by", SecurityUtils.getCurrentUser().getUsername());
-        List<Disqualification> disqualificationList = disqualificationMapper.selectList(queryWrapper);
-        disqualificationList.forEach(e -> {
-            LambdaQueryWrapper<DisqualificationFinalResult> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(DisqualificationFinalResult::getId, e.getId());
-            wrapper.eq(DisqualificationFinalResult::getUnitResponsibilityWithin, SecurityUtils.getCurrentUser().getTenantId());
-            DisqualificationFinalResult disqualificationFinalResult = finalResultMapper.selectOne(wrapper);
-            if (ObjectUtils.isNotEmpty(disqualificationFinalResult)) {
-                e.setUnitTreatmentOne(disqualificationFinalResult.getUnitTreatmentOne());
-                e.setUnitTreatmentTwo(disqualificationFinalResult.getUnitTreatmentTwo());
-            }
-        });
-        if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentOne())) {
-            disqualificationList = disqualificationList.stream().filter(e -> StringUtils.isNotEmpty(e.getUnitTreatmentOne()) && e.getUnitTreatmentOne().contains(queryInspectorDto.getUnitTreatmentOne())).collect(Collectors.toList());
-        }
-        if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentTwo())) {
-            disqualificationList = disqualificationList.stream().filter(e -> StringUtils.isNotEmpty(e.getUnitTreatmentTwo()) && e.getUnitTreatmentTwo().contains(queryInspectorDto.getUnitTreatmentTwo())).collect(Collectors.toList());
-        }
-        Page<Disqualification> page = new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit(), disqualificationList.size());
-        // 当前页的数据在list位置
-        long start = (page.getCurrent() - 1) * page.getSize();
-        // 当前页在最后一条数据所在list位置
-        long end = (start + page.getSize()) > page.getTotal() ? page.getTotal() : (page.getSize() * page.getCurrent());
-        if (page.getSize()*(page.getCurrent() - 1) <= page.getTotal()) {
-            // 分隔列表, 当前页存在数据时显示
-            page.setRecords(disqualificationList.subList((int)start , (int)end));
-        }
-        return page;
+        OrderUtil.query(queryWrapper, queryInspectorDto.getOrderCol(), queryInspectorDto.getOrder());
+        return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
 
     private void getDisqualificationByQueryInspectorDto(QueryWrapper<Disqualification> queryWrapper, QueryInspectorDto queryInspectorDto) {
@@ -805,7 +781,46 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
         //只查询本租户创建的不合格品申请单
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        return this.page(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
+        // 不合格品信息
+        List<Disqualification> disqualificationList = disqualificationMapper.selectList(queryWrapper);
+        LambdaQueryWrapper<DisqualificationFinalResult> wrapper = Wrappers.lambdaQuery(DisqualificationFinalResult.class)
+                .in(DisqualificationFinalResult::getId, disqualificationList.stream().map(Disqualification::getId).collect(Collectors.toList()));
+        getDisqualificationByQueryPartDto(wrapper, queryInspectorDto);
+        // 不合格品结果信息
+        List<DisqualificationFinalResult> finalResultList = finalResultMapper.selectList(wrapper);
+        Map<String, DisqualificationFinalResult> resultMap = finalResultList.stream().collect(Collectors.toMap(DisqualificationFinalResult::getId, x -> x, (value1, value2) -> value2));
+        for (Disqualification disqualification: disqualificationList) {
+            if (ObjectUtils.isNotEmpty(resultMap.get(disqualification.getId()))) {
+                disqualification.setUnitTreatmentOne(resultMap.get(disqualification.getId()).getUnitTreatmentOne());
+                disqualification.setUnitTreatmentTwo(resultMap.get(disqualification.getId()).getUnitTreatmentTwo());
+            }
+        }
+        // 条件结果后结果集
+        List<Disqualification> disqualifications = disqualificationMapper.selectBatchIds(finalResultList.stream().map(DisqualificationFinalResult::getId).collect(Collectors.toList()));
+        // new Page
+        Page<Disqualification> page = new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit(), disqualifications.size());
+        // 当前页的数据在list位置
+        long start = (page.getCurrent() - 1) * page.getSize();
+        // 当前页在最后一条数据所在list位置
+        long end = (start + page.getSize()) > page.getTotal() ? page.getTotal() : (page.getSize() * page.getCurrent());
+        if (page.getSize()*(page.getCurrent() - 1) <= page.getTotal()) {
+            // 分隔列表, 当前页存在数据时显示
+            page.setRecords(disqualifications.subList((int)start , (int)end));
+        }
+        return page;
+    }
+
+    private void getDisqualificationByQueryPartDto(LambdaQueryWrapper<DisqualificationFinalResult> objectQueryWrapper, QueryInspectorDto queryInspectorDto) {
+        // 处理单位1
+        if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentOne())) {
+            objectQueryWrapper.like(DisqualificationFinalResult::getUnitTreatmentOne, queryInspectorDto.getUnitTreatmentOne());
+        }
+        // 处理单位2
+        if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentTwo())) {
+            objectQueryWrapper.like(DisqualificationFinalResult::getUnitTreatmentTwo, queryInspectorDto.getUnitTreatmentTwo());
+        }
+        // 责任单位为当前租户的数据
+        objectQueryWrapper.eq(DisqualificationFinalResult::getUnitResponsibilityWithin,SecurityUtils.getCurrentUser().getTenantId());
     }
 
     @Override

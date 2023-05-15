@@ -10,18 +10,28 @@ import com.kld.mes.erp.entity.order.creat.*;
 import com.kld.mes.erp.service.CertWorkHourServiceImpl;
 import com.kld.mes.erp.service.OrderService;
 import com.kld.mes.erp.utils.WsTemplateFactory;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -76,7 +86,7 @@ public class createOrder {
     }
 
     @Test
-    public  void creat() {
+    public void creat() {
 
         CertWorkHourServiceImpl test = new CertWorkHourServiceImpl();
 
@@ -117,5 +127,82 @@ public class createOrder {
                 .marshalSendAndReceive("http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_PPIF024/service/PS/PS_ZC80_PPIF024", zc80Ppif024);
 
 
+    }
+
+    @Test
+    public void creatFeeding() {
+        String url = "http://10.30.47.134:8000/ZBZZ/MES/ZC80_PPIF022/service/PS/PS_ZC80_PPIF022";
+        //参数
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd");
+        String date = simpleDateFormat.format(new Date());
+        String WERKS = "X091";
+        String AUFNR = "1000568032";
+        String MATNR = "909153594";
+        String CHARG = "AF700303";
+        String ERFMG = "1";
+        String ERFME = "Z09";
+        String LGORT = "2000";
+        String BUDAT = date;
+        String ZCANCELF = "N";
+        //时间参数
+        String soapRequestData = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\">" +
+                "<soapenv:Header/>" +
+                "<soapenv:Body>" +
+                "<urn:ZC80_PPIF022>" +
+                "<urn:T_ITEM>" +
+                "<urn:item>" +
+                "<urn:WERKS>" +
+                WERKS +
+                "</urn:WERKS>" +
+                "<urn:AUFNR>" +
+                AUFNR +
+                "</urn:AUFNR>" +
+                "<urn:MATNR>" +
+                MATNR +
+                "</urn:MATNR>" +
+                "<urn:CHARG>" +
+                CHARG +
+                "</urn:CHARG>" +
+                "<urn:ERFMG>" +
+                ERFMG +
+                "</urn:ERFMG>" +
+                "<urn:ERFME>" +
+                ERFME +
+                "</urn:ERFME>" +
+                "<urn:LGORT>" +
+                LGORT +
+                "</urn:LGORT>" +
+                "<urn:BUDAT>" +
+                BUDAT +
+                "</urn:BUDAT>" +
+                "<urn:ZCANCELF>" +
+                ZCANCELF +
+                "</urn:ZCANCELF>" +
+                "</urn:item>" +
+                "</urn:T_ITEM>" +
+                "</urn:ZC80_PPIF022>" +
+                "</soapenv:Body>" +
+                "</soapenv:Envelope>";
+        //构造http请求头
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("text/xml;charset=UTF-8");
+        headers.setContentType(type);
+        HttpEntity<String> formEntity = new HttpEntity<>(soapRequestData, headers);
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        //设置链接超时时间
+        builder.setConnectTimeout(Duration.ofMinutes(1));
+        builder.setReadTimeout(Duration.ofMinutes(1));
+        RestTemplate restTemplate = builder.basicAuthentication("OSB_USER", "welcome1").build();
+        //返回结果
+        String resultStr = restTemplate.postForObject(url, formEntity, String.class);
+        //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
+        String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
+        int codeStart = tmpStr.indexOf("<E_RETURN_TYPE>");
+        int codeEnd = tmpStr.indexOf("</E_RETURN_TYPE>");
+        String code = tmpStr.substring(codeStart + "<E_RETURN_TYPE>".length(), codeEnd);
+        int msgStart = tmpStr.indexOf("<E_RETURN_MSG>");
+        int msgEnd = tmpStr.indexOf("</E_RETURN_MSG>");
+        String msg = tmpStr.substring(msgStart + "<E_RETURN_TYPE>".length(), msgEnd);
+        System.out.println("返回信息:" + code + "信息" + msg);
     }
 }
