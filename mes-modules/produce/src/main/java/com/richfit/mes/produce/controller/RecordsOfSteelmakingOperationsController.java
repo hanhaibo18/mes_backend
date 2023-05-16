@@ -63,7 +63,7 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
     }
 
     @ApiOperation(value = "炼钢记录管理", notes = "炼钢记录管理")
-    @GetMapping("/record")
+    @GetMapping("/record_page")
     public CommonResult<IPage<RecordsOfSteelmakingOperations>> record(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit) {
         //获取登录用户权限
         List<String> roles = SecurityUtils.getRoles();

@@ -192,5 +192,7 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     private String typeOfSteel;
     @ApiModelProperty(value = "冶炼设备", dataType = "String")
     private String smeltingEquipment;
+    @ApiModelProperty(value = "锭型", dataType = "String")
+    private String ingotCase;
 }
 

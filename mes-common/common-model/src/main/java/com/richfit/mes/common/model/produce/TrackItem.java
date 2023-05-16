@@ -374,8 +374,10 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "计划完成时间 ", dataType = "Date")
     private Date planEndTime;
     @TableField(exist = false)
-    @ApiModelProperty(value = "钢水重量 ", dataType = "Date")
+    @ApiModelProperty(value = "钢水重量 ", dataType = "String")
     private String weightMolten;
+    @ApiModelProperty(value = "单重KG ", dataType = "String")
+    private String pieceWeight;
     @TableField(exist = false)
     @ApiModelProperty(value = "申请状态 0未配送 1已配送 2已退库 ", dataType = "Date")
     private Integer applyStatus;
@@ -481,13 +483,28 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private Integer pourState;
 
     @ApiModelProperty(value = "浇注温度")
-    private Double pourTemperature;
+    private String pourTemperature;
+
+    @ApiModelProperty(value = "工艺浇注温度")
+    @TableField(exist = false)
+    private Double pourTemperatureRouter;
 
     @ApiModelProperty(value = "浇注时间 单位秒")
     private String pourTime;
 
+    @ApiModelProperty(value = "工艺浇注时间 单位秒")
+    @TableField(exist = false)
+    private String pourTimeRouter;
+
     @ApiModelProperty(value = "热风机关闭时间")
     private Date fanClosedTime;
 
+    @ApiModelProperty(value = "试棒跟单编号")
+    @TableField(exist = false)
+    private String testBarTrackNo;
+
+    @ApiModelProperty(value = "试棒跟单编号")
+    @TableField(exist = false)
+    private String testBarType;
 
 }

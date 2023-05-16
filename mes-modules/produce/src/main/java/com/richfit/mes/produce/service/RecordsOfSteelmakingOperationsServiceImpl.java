@@ -107,6 +107,7 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         for (RecordsOfSteelmakingOperations recordsOfSteelmakingOperation : recordsOfSteelmakingOperations) {
             recordsOfSteelmakingOperation.setAssessor(username);
             recordsOfSteelmakingOperation.setAssessorTime(date);
+            recordsOfSteelmakingOperation.setStatus(state);
         }
         return this.updateBatchById(recordsOfSteelmakingOperations);
     }

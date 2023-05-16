@@ -116,6 +116,10 @@ public class Router extends BaseEntity<Router> {
      */
     private String pourSpeed;
     /**
+     * 浇筑时间
+     */
+    private String pourTime;
+    /**
      * 毛坯调质
      */
     private String blankControl;
