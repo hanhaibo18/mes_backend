@@ -221,7 +221,7 @@ public class DisqualificationController extends BaseController {
             //只查询本租户创建的不合格品申请单
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<Disqualification> disqualificationList = disqualificationService.list(queryWrapper);
-            if (!CollectionUtils.isNotEmpty(disqualificationList)) {
+            if (CollectionUtils.isEmpty(disqualificationList)) {
                 return;
             }
             List<String> idList = disqualificationList.stream().map(e -> e.getId()).collect(Collectors.toList());
@@ -229,6 +229,9 @@ public class DisqualificationController extends BaseController {
             objectQueryWrapper.in("id", idList);
             getDisqualificationByQueryPartDto(objectQueryWrapper, queryInspectorDto);
             List<DisqualificationFinalResult> list = finalResultService.list(objectQueryWrapper);
+            if (CollectionUtils.isEmpty(list)) {
+                return;
+            }
             List<Disqualification> disqualifications = disqualificationService.listByIds(list.stream().map(e -> e.getId()).collect(Collectors.toList()));
             Map<String, DisqualificationFinalResult> resultMap = list.stream().collect(Collectors.toMap(DisqualificationFinalResult::getId, x -> x, (value1, value2) -> value2));
             // 责任单位内
