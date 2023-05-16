@@ -123,6 +123,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
                 }
             }
+            //查重
+            hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             this.save(hotDemand);
             //demandList.add(hotDemand);
         }
@@ -174,6 +176,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setPlanNum(hotDemand.getNum());
             //0锻件,1铸件,2钢锭
             hotDemand.setWorkblankType("2");//冶炼
+            //查重
+            hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             demandList.add(hotDemand);
         }
         this.saveBatch(demandList);
@@ -602,8 +606,35 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     }
 
 
+    /**
+     * 根据  图号 工作号  版本号  查重
+     * @param workNo
+     * @param drawNo
+     * @param versionNum
+     * @return
+     */
+    @Override
+    public void checkDemand(String workNo, String drawNo,String versionNum) {
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
 
+        if (StringUtils.isEmpty(workNo)) {
+            throw new GlobalException("工作号不能为空",ResultCode.FAILED);
+        }
+        if (StringUtils.isEmpty(drawNo)) {
+            throw new GlobalException("图号不能为空",ResultCode.FAILED);
+        }
+        if (StringUtils.isEmpty(versionNum)) {
+            throw new GlobalException("版本号不能为空",ResultCode.FAILED);
+        }
+        queryWrapper.eq("work_no",workNo);
+        queryWrapper.eq("draw_no",drawNo);
+        queryWrapper.eq("version_num",versionNum);
+        List<HotDemand> list = hotDemandService.list(queryWrapper);
+        if(CollectionUtils.isNotEmpty(list)){
+            throw new GlobalException("请合并相同项目产品",ResultCode.FAILED);
+        }
 
+    }
 
 
 }

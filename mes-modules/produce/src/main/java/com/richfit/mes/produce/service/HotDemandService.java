@@ -28,4 +28,7 @@ public interface HotDemandService extends IService<HotDemand> {
     CommonResult<?> initPlanNode(List<String> idList, String branchCode);
 
     String getSubmitOrderOrg(String branchCode, TenantUserDetails currentUser);
+
+    //请合并相同项目产品
+    void checkDemand(String workNo, String drawNo, String versionNum);
 }
