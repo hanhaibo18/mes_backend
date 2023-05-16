@@ -67,7 +67,7 @@ public class HotDemandController extends BaseController {
         hotDemand.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         hotDemand.setSubmitOrderTime(new Date());
         hotDemand.setSubmitById(currentUser.getUserId());
-        hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+        hotDemand.setSubmitOrderOrg(hotDemandService.getSubmitOrderOrg(hotDemand.getBranchCode(),currentUser));
         hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
         hotDemand.setPlanNum(hotDemand.getNum());
         boolean save = hotDemandService.save(hotDemand);

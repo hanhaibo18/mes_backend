@@ -9,17 +9,20 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.PlanExtend;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.HotDemandMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.entity.DemandExcel;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -33,7 +36,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,6 +58,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
 
     @Autowired
     private HotPlanNodeService planNodeService;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
     /**
      * 导入需求提报数据
      * @param file
@@ -66,7 +71,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     @Override
     public CommonResult importDemand(MultipartFile file, String branchCode) {
         CommonResult result = null;
-
+        String submitOrderOrg = hotDemandService.getSubmitOrderOrg(branchCode, SecurityUtils.getCurrentUser());
         java.lang.reflect.Field[] fields = DemandExcel.class.getDeclaredFields();
 
         String[] fieldNames = new String[fields.length];
@@ -103,7 +108,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setBranchCode(branchCode);
             hotDemand.setCreateTime(new Date());
             hotDemand.setSubmitState(0);
-            hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+            hotDemand.setSubmitOrderOrg(submitOrderOrg);
             hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
             hotDemand.setPlanNum(hotDemand.getNum());
             //0锻件,1铸件,2钢锭
@@ -135,7 +140,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult importDemandYL(MultipartFile file, String branchCode) {
-
+        String submitOrderOrg = hotDemandService.getSubmitOrderOrg(branchCode, SecurityUtils.getCurrentUser());
         //sheet计划列表
         String[] fieldNames = {"materialName","erpProductCode","texture","num","ingotCase","planEndTime","inchargeOrg","demandTime","projectName","workNo","drawNo","demandName","priority","versionNum","remark"};
         File excelFile = null;
@@ -164,7 +169,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setBranchCode(branchCode);
             hotDemand.setCreateTime(new Date());
             hotDemand.setSubmitState(0);
-            hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+            hotDemand.setSubmitOrderOrg(submitOrderOrg);
             hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
             hotDemand.setPlanNum(hotDemand.getNum());
             //0锻件,1铸件,2钢锭
@@ -579,5 +584,26 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         updateWrapper.in("id", demandIdList);
         hotDemandService.update(updateWrapper);
     }
+
+    /**
+     * 设置提单单位名称
+     * @param branchCode
+     * @param currentUser
+     */
+    @Override
+    public String getSubmitOrderOrg(String branchCode, TenantUserDetails currentUser) {
+        Branch branchInfo = baseServiceClient.getBranchInfoByBranchCode(branchCode);
+        Tenant tenant = systemServiceClient.getTenantById(currentUser.getTenantId()).getData();
+        if(ObjectUtils.isNotEmpty(branchInfo)&&ObjectUtils.isNotEmpty(tenant)){
+           return tenant.getTenantName()+"-"+branchInfo.getBranchName();
+        }else {
+            return null;
+        }
+    }
+
+
+
+
+
 
 }
