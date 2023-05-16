@@ -1156,8 +1156,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 }
             }
         } else {
-            //过滤掉已报工的数据
-            result = result.stream().filter(item -> item.getIsOperationComplete() == 0).collect(Collectors.toList());
+            //过滤掉已报工的数据&&过滤不在传入产品编号的数据
+            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
         }
         boolean bool = true;
         for (TrackItem trackItem : result) {
