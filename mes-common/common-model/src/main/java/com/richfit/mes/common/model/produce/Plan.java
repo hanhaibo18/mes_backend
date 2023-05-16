@@ -145,11 +145,12 @@ public class Plan extends BaseEntity<Plan> {
 
     @ApiModelProperty(value = "计划月份")
     private Date planMonth;
-//    @ApiModelProperty(value = "批准人")
-//    private String approvalBy;
-//
-//    @ApiModelProperty(value = "批准时间")
-//    private Date approvalTime;
+
+    @ApiModelProperty(value = "批准人")
+    private String approvalBy;
+
+    @ApiModelProperty(value = "批准时间")
+    private Date approvalTime;
 
     @ApiModelProperty(value = "审核人")
     private String auditBy;
