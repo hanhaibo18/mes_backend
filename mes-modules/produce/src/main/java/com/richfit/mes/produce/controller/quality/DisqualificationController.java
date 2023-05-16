@@ -74,7 +74,7 @@ public class DisqualificationController extends BaseController {
     // 不合格常用工序
     public static final String PROCESS_CODE = "qualityUnqualityOpt";
     // 不合格类型
-    public static final String UNQUALIFIED_TYPE= "qualityUnquality";
+    public static final String UNQUALIFIED_TYPE= "qualityUnqualityType";
 
 
     @ApiOperation(value = "待处理申请单", notes = "根据查询条件查询待处理申请单")
@@ -311,7 +311,7 @@ public class DisqualificationController extends BaseController {
                 writer.writeCellValue(12, currentRow, disqualification.getPartDrawingNo());
                 writer.writeCellValue(13, currentRow, disqualification.getProductNo());
                 if (StringUtils.isNotEmpty(disqualification.getTrackHeadType())) {
-                    writer.writeCellValue(14, currentRow, TrackTypeEnum.getMessage(Integer.parseInt(disqualification.getTrackHeadType())));
+                    writer.writeCellValue(14, currentRow, TrackTypeEnum.getMessage(disqualification.getTrackHeadType()));
                 } else {
                     writer.writeCellValue(14, currentRow, null);
                 }
