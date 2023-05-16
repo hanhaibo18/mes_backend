@@ -62,4 +62,6 @@ public class PlanExtend {
 
     @ApiModelProperty(value = "锭型")
     private String ingotCase;
+    @ApiModelProperty(value = "毛坯类型 0锻件,1铸件,2钢锭")
+    private String workblankType;
 }
