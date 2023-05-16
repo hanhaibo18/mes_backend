@@ -80,7 +80,7 @@ public interface TrackCheckService extends IService<TrackCheck> {
      * @Date: 2023/4/19 18:15
      * @return: IPage<TrackItem>
      **/
-    CommonResult<IPage<TrackItem>> queryQualityPage(int page, int limit, String isExistQualityCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol);
+    CommonResult<IPage<TrackItem>> queryQualityPage(int page, int limit, String branchCode, String isExistQualityCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol);
 
 
     /**

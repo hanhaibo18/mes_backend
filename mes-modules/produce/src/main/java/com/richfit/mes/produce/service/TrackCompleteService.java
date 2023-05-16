@@ -61,9 +61,9 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @Date: 2022/7/13 13:51
      * @return: CommonResult<QueryWorkingTimeVo>
      **/
-    CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state,String classes);
+    CommonResult<QueryWorkingTimeVo> queryDetails(String assignId, String tiId, Integer state, String classes);
 
-    CommonResult<QueryWorkingTimeVo> queryDetailsHot(Integer state, String furnaceId,String classes);
+    CommonResult<QueryWorkingTimeVo> queryDetailsHot(Integer state, String furnaceId, String classes);
 
     /**
      * 功能描述: 修改
@@ -103,6 +103,16 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @return: CommonResult<Boolean>
      **/
     CommonResult<Boolean> saveOutsource(OutsourceCompleteDto outsource);
+
+    /**
+     * 功能描述: 新外协报工
+     *
+     * @param outsource
+     * @Author: xinYu.hou
+     * @Date: 2023/5/15 16:15
+     * @return: CommonResult<Boolean>
+     **/
+    CommonResult<Boolean> saveOutsourceNew(OutsourceCompleteDto outsource);
 
     /**
      * 功能描述: 根据订单id统计工时

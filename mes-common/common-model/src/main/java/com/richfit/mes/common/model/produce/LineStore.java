@@ -129,6 +129,15 @@ public class LineStore extends BaseEntity<LineStore> {
     @ApiModelProperty(value = "是否投料ERP")
     private String isFeedErp;
 
+    @ApiModelProperty(value = "投料ERP状态")
+    private String feedErpStatus;
+
+    @ApiModelProperty(value = "投料ERP消息")
+    private String feedErpMessage;
+
+    @ApiModelProperty(value = "投料ERP号码")
+    private String feedErpNumber;
+
     @ApiModelProperty(value = "料单类型  0 常规  1 自动")
     private String stockType;
 
@@ -164,6 +173,9 @@ public class LineStore extends BaseEntity<LineStore> {
 
     @ApiModelProperty(value = "录入类型 0 手动录入 1 合格证来料接收  2 系统自动生成  3 配送接收")
     private String inputType;
+
+    @ApiModelProperty(value = "单位")
+    private String unit;
 
 //    @ApiModelProperty(value = "代用材料号")
 //    private String substituteMaterialNo;

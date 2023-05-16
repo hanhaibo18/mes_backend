@@ -227,4 +227,7 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
 
     @Select("SELECT id,project_bom_id FROM produce_track_head WHERE id IN(SELECT DISTINCT(pth.id) FROM produce_track_assembly pta join produce_track_head pth ON pta.tenant_id = pth.tenant_id AND pta.branch_code = pth.branch_code AND pta.track_head_id = pth.id AND pta.project_bom_id IS NULL AND pth.project_bom_id IS NOT NULL)")
     List<TrackHead> selectNoBomIdTrack();
+
+    @Select("SELECT * from produce_track_head h WHERE h.create_time > '2023-05-08 15:06:50' AND h.classes = 2 AND `status` > 0 AND h.id NOT IN (SELECT track_head_id FROM produce_request_note) AND h.production_order <> ' '")
+    List<TrackHead> selectFinalTrackHeads();
 }

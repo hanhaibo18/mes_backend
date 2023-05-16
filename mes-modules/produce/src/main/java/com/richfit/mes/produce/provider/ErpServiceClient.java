@@ -2,6 +2,7 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.constant.SecurityConstants;
@@ -59,5 +60,9 @@ public interface ErpServiceClient {
     @GetMapping("/api/integration/erp/storage/getStorage")
     public CommonResult<List<Product>> getStorage(@ApiParam(value = "物料号") @RequestParam String materialNos,
                                                   @ApiParam(value = "erp代号") @RequestParam String erpCode);
+
+
+    @PostMapping("/api/integration/erp/feeding/store/send")
+    public CommonResult<LineStore> storeSendFeeding(@ApiParam(value = "erp代号") @RequestBody LineStore lineStore);
 
 }

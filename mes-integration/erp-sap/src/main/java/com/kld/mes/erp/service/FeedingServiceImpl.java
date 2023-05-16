@@ -1,5 +1,6 @@
 package com.kld.mes.erp.service;
 
+import cn.hutool.core.date.DateUtil;
 import com.kld.mes.erp.entity.feeding.FeedingResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
+import java.util.Date;
 
 /**
  * 生产订单投料
@@ -25,11 +27,36 @@ import java.time.Duration;
 public class FeedingServiceImpl implements FeedingService {
 
     @Value("${interface.erp.feeding}")
-    private String url;
+    private String URL;
+    @Value("${interface.erp.username}")
+    private String USERNAME;
+    @Value("${interface.erp.password}")
+    private String PASSWORD;
 
     @Override
     public FeedingResult sendFeeding(String erpCode, String orderCode, String materialNo, String drawingNo,
-                                     String prodQty, String unit, String lgort, String date) {
+                                     String prodQty, String unit, String lgort, Date date) throws Exception {
+        FeedingResult feedingResult = new FeedingResult();
+        switch (lgort) {
+            case "BOMCO_BF_JM":
+                lgort = "2001";
+                break;
+            case "BOMCO_BF_JG":
+                lgort = "2000";
+                break;
+            case "BOMCO_ZS_JJCJ":
+                lgort = "3000";
+                break;
+            case "BOMCO_ZC_JJ":
+                lgort = "1006";
+                break;
+            case "BOMCO_HY_JJ":
+                lgort = "2001";
+                break;
+            default:
+                lgort = "";
+                break;
+        }
         //时间参数
         String soapRequestData = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\">" +
                 "<soapenv:Header/>" +
@@ -59,7 +86,7 @@ public class FeedingServiceImpl implements FeedingService {
                 lgort +
                 "</urn:LGORT>" +
                 "<urn:BUDAT>" +
-                date +
+                DateUtil.format(date, "yyyy-MM-dd") +
                 "</urn:BUDAT>" +
                 "<urn:ZCANCELF>" +
                 "N" +
@@ -78,13 +105,13 @@ public class FeedingServiceImpl implements FeedingService {
         //设置链接超时时间
         builder.setConnectTimeout(Duration.ofMinutes(1));
         builder.setReadTimeout(Duration.ofMinutes(1));
-        RestTemplate restTemplate = builder.basicAuthentication("OSB_USER", "welcome1").build();
+        RestTemplate restTemplate = builder.basicAuthentication(USERNAME, PASSWORD).build();
         //返回结果
-        String resultStr = restTemplate.postForObject(url, formEntity, String.class);
+        String resultStr = restTemplate.postForObject(URL, formEntity, String.class);
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移
         String tmpStr = StringEscapeUtils.unescapeXml(resultStr);
         //结果集封装
-        FeedingResult feedingResult = this.convertReturn(tmpStr);
+        feedingResult = this.convertReturn(tmpStr);
         return feedingResult;
     }
 
