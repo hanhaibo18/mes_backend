@@ -226,7 +226,8 @@ public class TrackItemController extends BaseController {
         int max = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).max().getAsInt();
         //最小值
         int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
-        if (max != min || count > size) {
+        //过滤出所有最小的工序||产品数量大于1 并且 产品总数 大于未完成数量
+        if (max != min || (count > 1 && count > size)) {
             //过滤出所有最小的工序
             trackItemList.addAll(trackItems.stream().filter(item -> item.getOriginalOptSequence() == min).collect(Collectors.toList()));
         } else {

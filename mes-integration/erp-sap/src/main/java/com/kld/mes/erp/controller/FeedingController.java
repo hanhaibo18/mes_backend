@@ -1,5 +1,6 @@
 package com.kld.mes.erp.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.kld.mes.erp.entity.feeding.FeedingResult;
 import com.kld.mes.erp.service.FeedingService;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -48,9 +49,17 @@ public class FeedingController {
     @PostMapping("/store/send")
     public CommonResult<LineStore> storeSend(@ApiParam(value = "erp代号") @RequestBody LineStore lineStore) throws Exception {
         try {
+            lineStore.setIsFeedErp("1");
+            if (StrUtil.isBlank(lineStore.getProductionOrder())) {
+                return CommonResult.success(lineStore);
+            }
+            if (StrUtil.isBlank(lineStore.getUnit())) {
+                lineStore.setFeedErpStatus("2");
+                lineStore.setFeedErpMessage("物料单位不能为空");
+                return CommonResult.success(lineStore);
+            }
             FeedingResult feedingResult = feedingService.sendFeeding(SecurityUtils.getCurrentUser().getTenantErpCode(), lineStore.getProductionOrder(), lineStore.getMaterialNo(), lineStore.getWorkblankNo(),
                     lineStore.getNumber() + "", lineStore.getUnit(), lineStore.getBranchCode(), lineStore.getCreateTime());
-            lineStore.setIsFeedErp("1");
             lineStore.setFeedErpMessage(feedingResult.getMsg());
             if ("S".equals(feedingResult.getCode())) {
                 lineStore.setFeedErpStatus("1");

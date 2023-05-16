@@ -181,6 +181,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 TenantUserVo tenantUserVo = stringTenantUserVoMap.get(id);
                 //统计每个员工
                 if (!CollectionUtils.isEmpty(trackCompletes) && tenantUserVo != null) {
+                    //总工报工数量
+                    BigDecimal sumNumber = new BigDecimal(0);
                     //总工时累计额值
                     BigDecimal sumTotalHours = new BigDecimal(0);
                     //准结工时累计值
@@ -248,6 +250,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //实际准结工时
                         BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours() / track.getCompletePersonQty());
+
+                        sumNumber = sumNumber.add(number);
                         //累计准结工时
                         sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                         //累计额定工时
@@ -311,6 +315,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         details.add(track);
                     }
                     track0.setId(id);
+                    //总报工数量
+                    track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际准备工时
                     track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际报工工时
@@ -1319,6 +1325,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 if (!CollectionUtils.isEmpty(completes)) {
                     //用来展示数据列表
                     List<TrackComplete> trackCompleteShowList = new ArrayList<>();
+                    //总工报工数量
+                    BigDecimal sumNumber = new BigDecimal(0);
                     //总工时累计额值
                     BigDecimal sumTotalHours = new BigDecimal(0);
                     //准结工时累计值
@@ -1386,6 +1394,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //实际准结工时
                         BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours() / track.getCompletePersonQty());
+
+                        sumNumber = sumNumber.add(number);
                         //累计准结工时
                         sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                         //累计额定工时
@@ -1447,6 +1457,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     }
                     track0.setProductionOrder(orderno);
                     track0.setId(orderno);
+                    //总报工数量
+                    track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际准备工时
                     track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际额定工时
@@ -1525,6 +1537,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 if (!CollectionUtils.isEmpty(completes)) {
                     //用来展示数据列表
                     List<TrackComplete> trackCompleteShowList = new ArrayList<>();
+                    //总工报工数量
+                    BigDecimal sumNumber = new BigDecimal(0);
                     //总工时累计额值
                     BigDecimal sumTotalHours = new BigDecimal(0);
                     //准结工时累计值
@@ -1592,6 +1606,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //实际准结工时
                         BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours() / track.getCompletePersonQty());
+
+                        sumNumber = sumNumber.add(number);
                         //累计准结工时
                         sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                         //累计额定工时
@@ -1655,6 +1671,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     }
                     track0.setWorkNo(workno);
                     track0.setId(workno);
+                    //总报工数量
+                    track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际准备工时
                     track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际额定工时
@@ -1726,6 +1744,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 Branch branchInfo = baseServiceClient.getBranchInfoByBranchCode(belongOrgId);
                 List<TenantUserVo> userInfoList = belongOrgIdMap.get(belongOrgId);
                 List<String> userIdList = userInfoList.stream().map(TenantUserVo::getUserAccount).collect(Collectors.toList());
+                //总工报工数量
+                BigDecimal sumNumber = new BigDecimal(0);
                 //总工时累计额值
                 BigDecimal sumTotalHours = new BigDecimal(0);
                 //准结工时累计值
@@ -1801,6 +1821,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             }
                             //实际准结工时
                             BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours() / track.getCompletePersonQty());
+
+                            sumNumber = sumNumber.add(number);
                             //累计准结工时
                             sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                             //累计额定工时
@@ -1847,7 +1869,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             track.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             sumTotalHours = sumTotalHours.add(totalHours);
                             track.setUserName(tenantUserVo.getEmplName());
-//                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
+                            // track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                             track.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
@@ -1863,6 +1885,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     }
                 }
                 track0.setId(belongOrgId);
+                //总报工数量
+                track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                 //实际准备工时
                 track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                 //实际报工工时
@@ -1884,8 +1908,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         Map<String, Object> stringObjectHashMap = new HashMap<>();
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
-        System.out.println("-------------------------------");
-        System.out.println(completes.size());
         return stringObjectHashMap;
     }
 
