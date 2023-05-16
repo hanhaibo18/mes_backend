@@ -283,12 +283,14 @@ public class TrackHeadPublicVo {
     /**
      * 锻造开始
      **/
-
+    /**
+     * 下料重量
+     */
+    private String blankWeight;
     /**
      * 下料规格
      */
-    @ApiModelProperty(value = "下料规格")
-    private String blankingSpecification;
+    private String blankSpecifi;
 
     /**
      * 代用材质
@@ -301,6 +303,9 @@ public class TrackHeadPublicVo {
      */
     @ApiModelProperty(value = "单号")
     private String forgeNumber;
+
+    @ApiModelProperty(value = "附件id")
+    private String attachmentId;
     /**
      * 锻造结束
      **/
