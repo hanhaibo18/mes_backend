@@ -13,7 +13,7 @@ import lombok.Data;
 public class ResultsOfSteelmaking extends BaseEntity<ResultsOfSteelmaking> {
 
     //炼钢记录id
-    private Integer steelmakingId;
+    private String steelmakingId;
 
     private Double c;
     

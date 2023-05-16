@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -20,6 +21,10 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
      * 预装炉id
      */
     private Long prechargeFurnaceId;
+    /**
+     * 作业记录编号
+     */
+    private String recordNo;
     //租户ID
     private String tenantId;
     //炉号
@@ -163,5 +168,29 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     //结果分析数据
     @TableField(exist = false)
     List<ResultsOfSteelmaking> resultsOfSteelmaking;
+    /**
+     * 操作者
+     */
+    private String operator;
+    /**
+     * 操作时间
+     */
+    private Date operatorTime;
+    /**
+     * 审核员
+     */
+    private String assessor;
+    /**
+     * 审核时间
+     */
+    private Date assessorTime;
+    /**
+     * 班长
+     */
+    private String leader;
+    @ApiModelProperty(value = "钢种", dataType = "String")
+    private String typeOfSteel;
+    @ApiModelProperty(value = "冶炼设备", dataType = "String")
+    private String smeltingEquipment;
 }
 

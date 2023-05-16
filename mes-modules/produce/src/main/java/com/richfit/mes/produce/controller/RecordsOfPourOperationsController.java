@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.RecordsOfPourOperations;
 import com.richfit.mes.produce.service.RecordsOfPourOperationsService;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ public class RecordsOfPourOperationsController extends ApiController {
     @Autowired
     private RecordsOfPourOperationsService recordsOfPourOperationsService;
 
+    @ApiOperation(value = "通过预装炉id查询浇注记录信息", notes = "通过预装炉id查询浇注记录信息")
     @GetMapping("/{prechargeFurnaceId}")
     public CommonResult<RecordsOfPourOperations> getByPrechargeFurnaceId(@PathVariable Long prechargeFurnaceId) {
         return CommonResult.success(recordsOfPourOperationsService.getByPrechargeFurnaceId(prechargeFurnaceId));

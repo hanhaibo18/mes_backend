@@ -586,4 +586,14 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         return tenantUserVos;
     }
 
+    @Override
+    public List<TenantUser> queryClass(String userAccount) {
+        QueryWrapper<TenantUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_account",userAccount);
+        TenantUser tenantUser = this.getOne(queryWrapper);
+        QueryWrapper<TenantUser> tenantUserQueryWrapper = new QueryWrapper<>();
+        tenantUserQueryWrapper.eq("belong_org_id",tenantUser.getBelongOrgId());
+        return this.list(tenantUserQueryWrapper);
+    }
+
 }

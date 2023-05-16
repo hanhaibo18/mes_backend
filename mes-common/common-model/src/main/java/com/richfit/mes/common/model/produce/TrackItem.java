@@ -484,7 +484,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private Double pourTemperature;
 
     @ApiModelProperty(value = "浇注时间 单位秒")
-    private Integer pourTime;
+    private String pourTime;
 
     @ApiModelProperty(value = "热风机关闭时间")
     private Date fanClosedTime;
