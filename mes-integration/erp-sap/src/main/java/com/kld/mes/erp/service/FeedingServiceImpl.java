@@ -96,8 +96,6 @@ public class FeedingServiceImpl implements FeedingService {
                 "</urn:ZC80_PPIF022>" +
                 "</soapenv:Body>" +
                 "</soapenv:Envelope>";
-        System.out.println("---------------------");
-        System.out.println(soapRequestData);
         //构造http请求头
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("text/xml;charset=UTF-8");
@@ -108,7 +106,6 @@ public class FeedingServiceImpl implements FeedingService {
         builder.setConnectTimeout(Duration.ofMinutes(1));
         builder.setReadTimeout(Duration.ofMinutes(1));
         RestTemplate restTemplate = builder.basicAuthentication(USERNAME, PASSWORD).build();
-        System.out.println(URL);
         //返回结果
         String resultStr = restTemplate.postForObject(URL, formEntity, String.class);
         //转换返回结果中的特殊字符，返回的结果中会将xml转义，此处需要反转移

@@ -47,9 +47,9 @@ public class FeedingController {
     @ApiOperation(value = "毛胚入库生产投料", notes = "毛胚入库生产投料")
     @PostMapping("/store/send")
     public CommonResult<LineStore> storeSend(@ApiParam(value = "erp代号") @RequestBody LineStore lineStore) throws Exception {
-        FeedingResult feedingResult = feedingService.sendFeeding(SecurityUtils.getCurrentUser().getTenantErpCode(), lineStore.getProductionOrder(), lineStore.getMaterialNo(), lineStore.getWorkblankNo(),
-                lineStore.getNumber() + "", lineStore.getUnit(), lineStore.getBranchCode(), lineStore.getCreateTime());
         try {
+            FeedingResult feedingResult = feedingService.sendFeeding(SecurityUtils.getCurrentUser().getTenantErpCode(), lineStore.getProductionOrder(), lineStore.getMaterialNo(), lineStore.getWorkblankNo(),
+                    lineStore.getNumber() + "", lineStore.getUnit(), lineStore.getBranchCode(), lineStore.getCreateTime());
             lineStore.setIsFeedErp("1");
             lineStore.setFeedErpMessage(feedingResult.getMsg());
             if ("S".equals(feedingResult.getCode())) {
