@@ -631,7 +631,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         queryWrapper.eq("version_num",versionNum);
         List<HotDemand> list = hotDemandService.list(queryWrapper);
         if(CollectionUtils.isNotEmpty(list)){
-            throw new GlobalException("请合并相同项目产品",ResultCode.FAILED);
+            throw new GlobalException("存在重复数据 "+list.get(0).getDemandName()+" 请合并相同项目产品",ResultCode.FAILED);
         }
 
     }
