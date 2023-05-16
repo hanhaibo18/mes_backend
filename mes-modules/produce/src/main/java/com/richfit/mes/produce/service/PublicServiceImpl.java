@@ -423,24 +423,36 @@ public class PublicServiceImpl implements PublicService {
      **/
     @Transactional(rollbackFor = Exception.class)
     public boolean activation(TrackItem trackItem) {
-        //激活下工序
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("flow_id", trackItem.getFlowId());
-        queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
-        List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
-        boolean update = false;
-        for (TrackItem trackItemEntity : trackItemList) {
-            trackItemEntity.setIsCurrent(1);
-            trackItemEntity.setModifyTime(new Date());
-            update = trackItemService.updateById(trackItemEntity);
-            if (trackItemEntity.getIsAutoSchedule() != null && 1 == trackItemEntity.getIsAutoSchedule()) {
-                Map<String, String> map = new HashMap<>(2);
-                map.put("trackItemId", trackItemEntity.getId());
-                map.put("trackHeadId", trackItemEntity.getTrackHeadId());
-                automaticProcess(map);
+        //激活前校验当前跟单多产品是否全部完成 全部完成 获取所有循环执行下工序激活
+        QueryWrapper<TrackItem> queryWrapperItemList = new QueryWrapper();
+        queryWrapperItemList.eq("track_head_id", trackItem.getTrackHeadId());
+        queryWrapperItemList.eq("opt_sequence", trackItem.getOptSequence());
+        List<TrackItem> itemList = trackItemService.list(queryWrapperItemList);
+        //不查询传入工序,查询相同optSequence的其他工序 并且没最终完成的
+        List<TrackItem> NotIsFinalCompleteList = itemList.stream().filter(item -> item.getOptSequence().equals(trackItem.getOptSequence()) && !item.getId().equals(trackItem.getId()) && item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
+        //有其他工序没有最终完成 终止流程
+        if (!CollectionUtils.isEmpty(NotIsFinalCompleteList)) {
+            return true;
+        }
+        for (TrackItem item : itemList) {
+            //激活下工序
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("flow_id", item.getFlowId());
+            queryWrapper.eq("original_opt_sequence", item.getNextOptSequence());
+            List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
+            for (TrackItem trackItemEntity : trackItemList) {
+                trackItemEntity.setIsCurrent(1);
+                trackItemEntity.setModifyTime(new Date());
+                trackItemService.updateById(trackItemEntity);
+                if (trackItemEntity.getIsAutoSchedule() != null && 1 == trackItemEntity.getIsAutoSchedule()) {
+                    Map<String, String> map = new HashMap<>(2);
+                    map.put("trackItemId", trackItemEntity.getId());
+                    map.put("trackHeadId", trackItemEntity.getTrackHeadId());
+                    automaticProcess(map);
+                }
             }
         }
-        return update;
+        return true;
     }
 
     /**

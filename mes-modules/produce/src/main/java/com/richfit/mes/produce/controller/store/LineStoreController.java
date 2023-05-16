@@ -26,6 +26,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.ErpServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
@@ -87,8 +88,26 @@ public class LineStoreController extends BaseController {
 
     @Autowired
     private ActionService actionService;
+
     @Autowired
     private StoreAttachRelService storeAttachRelService;
+
+    @Autowired
+    private ErpServiceClient erpServiceClient;
+
+    @ApiOperation(value = "投料入库信息", notes = "投料入库信息")
+    @PostMapping("/feeding")
+    public CommonResult feedingLineStore(@ApiParam(value = "料单Id数组") @RequestBody List<LineStore> lineStoreList) {
+        //增加check逻辑  状态不是原始入库的，不能删除
+        for (LineStore lineStore : lineStoreList) {
+            //只有毛胚的物料才可以进行投料
+            if ("0".equals(lineStore.getMaterialType())) {
+                lineStore = erpServiceClient.storeSendFeeding(lineStore).getData();
+                lineStoreService.updateById(lineStore);
+            }
+        }
+        return CommonResult.success(true, SUCCESS_MESSAGE);
+    }
 
     @ApiOperation(value = "获取订单数量和剩余数量", notes = "获取订单数量和剩余数量")
     @PostMapping("/get_order_surplusNum")
