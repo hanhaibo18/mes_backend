@@ -935,8 +935,8 @@ public class TrackCheckController extends BaseController {
 
     @ApiOperation(value = "质检待审核查询(新)", notes = "质检待审核查询(新)")
     @GetMapping("/query_quality_page")
-    public CommonResult<IPage<TrackItem>> queryQualityPage(int page, int limit, String isExistQualityCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol) {
-        return trackCheckService.queryQualityPage(page, limit, isExistQualityCheck, isScheduleComplete, startTime, endTime, trackNo, productNo, tenantId, isRecheck, drawingNo, order, orderCol);
+    public CommonResult<IPage<TrackItem>> queryQualityPage(int page, int limit, String isExistQualityCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol, String branchCode) {
+        return trackCheckService.queryQualityPage(page, limit, branchCode, isExistQualityCheck, isScheduleComplete, startTime, endTime, trackNo, productNo, tenantId, isRecheck, drawingNo, order, orderCol);
     }
 
 
