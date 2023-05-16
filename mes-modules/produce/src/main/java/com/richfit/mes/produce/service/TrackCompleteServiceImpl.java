@@ -52,6 +52,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -122,6 +123,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private ModelingCoreCacheService modelingCoreCacheService;
     @Autowired
     private KnockoutCacheService knockoutCacheService;
+
+    @Resource
+    private TrackAssemblyService assemblyService;
 
     public static final String END_START_WORK = "2";
 
@@ -469,6 +473,26 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     //派工状态设置为完成
                     assign.setState(2);
                     trackAssignService.updateById(assign);
+                }
+                //外协报工最后一道工序校验所有关键件全部绑定完成
+                if ("2".equals(trackHead.getClasses()) && trackItem.getNextOptSequence() == 0) {
+                    //获取当前跟单下所有工序,并且根据opt_sequence倒序排序
+                    QueryWrapper<TrackItem> queryWrapperItemList = new QueryWrapper<>();
+                    queryWrapperItemList.eq("track_head_id", trackHead.getId());
+                    queryWrapperItemList.orderByDesc("opt_sequence");
+                    List<TrackItem> list = trackItemService.list(queryWrapperItemList);
+                    //判断是不是最后一道工序
+                    if (list.get(0).getOptSequence().equals(trackItem.getOptSequence())) {
+                        //查询关键件 && 安装数量!=需要安装数量的
+                        QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
+                        assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
+                        assemblyQueryWrapper.apply("number <> number_install");
+                        assemblyQueryWrapper.eq("is_key_part", 1);
+                        int count = assemblyService.count(assemblyQueryWrapper);
+                        if (count > 0) {
+                            throw new GlobalException("关键件为全部绑定,不允许最终完成", ResultCode.FAILED);
+                        }
+                    }
                 }
             } else {
                 //跟新工序完成数量
