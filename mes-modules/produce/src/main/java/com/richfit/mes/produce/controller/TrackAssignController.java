@@ -22,6 +22,7 @@ import com.richfit.mes.common.model.wms.ApplyListUpload;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
@@ -50,6 +51,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -99,6 +101,8 @@ public class TrackAssignController extends BaseController {
     private ApplicationNumberService numberService;
     @Value("${switch}")
     private String off;
+    @Resource
+    private TrackHeadMapper trackHeadMapper;
 
     /**
      * ***
@@ -413,10 +417,9 @@ public class TrackAssignController extends BaseController {
     }
 
     /**
-     *
-     * @param trackItem 跟单工序
-     * @param trackHead 跟单表（主表）
-     * @param branchCode  车间
+     * @param trackItem  跟单工序
+     * @param trackHead  跟单表（主表）
+     * @param branchCode 车间
      * @return
      */
     private ApplyListUpload collect(TrackItem trackItem, TrackHead trackHead, String branchCode) {
@@ -560,15 +563,25 @@ public class TrackAssignController extends BaseController {
         return ingredient;
     }
 
-    private boolean demo() {
-        List<String> itemIdList = Arrays.asList("1556486", "1556487", "1556489", "1556496", "1556500");
-        for (String itemId : itemIdList) {
-            TrackItem trackItem = trackItemService.getById(itemId);
-            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+    @Transactional(rollbackFor = Exception.class)
+    public boolean demo() {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.gt("create_time", "2023-05-08 15:06:50");
+//        queryWrapper.eq("classes", 2);
+//        queryWrapper.gt("status", 0);
+//        List<TrackHead> list = trackHeadService.list(queryWrapper);
+        List<TrackHead> list = trackHeadMapper.selectFinalTrackHeads();
+        list = list.stream().filter(item -> StrUtil.isNotBlank(item.getProductionOrder())).collect(Collectors.toList());
+        for (TrackHead trackHead : list) {
+            //查询第一道工序
+            QueryWrapper<TrackItem> queryWrapperitem = new QueryWrapper<>();
+            queryWrapperitem.eq("track_head_id", trackHead.getId());
+            queryWrapperitem.eq("opt_sequence", 1);
+            TrackItem trackItem = trackItemService.getOne(queryWrapperitem);
             if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                 throw new GlobalException("无生产订单编号", ResultCode.FAILED);
             }
-            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, "BOMCO_BF_BY");
+            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
             requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
             ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
             //请勿重复上传！
@@ -678,7 +691,6 @@ public class TrackAssignController extends BaseController {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
-
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "') or a.modify_time is null )");
             Calendar calendar = new GregorianCalendar();

@@ -2,6 +2,7 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.provider.ErpServiceClient;
@@ -37,4 +38,10 @@ public class ErpServiceClientFallbackImpl implements ErpServiceClient {
     public CommonResult<List<Product>> getStorage(String materialNos, String erpCode) {
         return CommonResult.success(null);
     }
+
+    @Override
+    public CommonResult<LineStore> storeSendFeeding(LineStore lineStore) {
+        return CommonResult.success(null);
+    }
+
 }
