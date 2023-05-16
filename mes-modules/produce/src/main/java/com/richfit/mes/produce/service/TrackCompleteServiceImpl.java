@@ -336,6 +336,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        stringObjectHashMap.put("details", details);
+        stringObjectHashMap.put("summary", summary);
+        System.out.println("-------------------------------");
+        System.out.println(completes.size());
         return stringObjectHashMap;
     }
 
@@ -1158,8 +1162,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 }
             }
         } else {
-            //过滤掉已报工的数据&&过滤不在传入产品编号的数据
-            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+            //过滤掉已报工的数据
+            result = result.stream().filter(item -> item.getIsOperationComplete() == 0).collect(Collectors.toList());
         }
         boolean bool = true;
         for (TrackItem trackItem : result) {
@@ -1865,7 +1869,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             track.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             sumTotalHours = sumTotalHours.add(totalHours);
                             track.setUserName(tenantUserVo.getEmplName());
-//                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
+                            // track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                             track.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
@@ -1904,8 +1908,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         Map<String, Object> stringObjectHashMap = new HashMap<>();
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
-        System.out.println("-------------------------------");
-        System.out.println(completes.size());
         return stringObjectHashMap;
     }
 
