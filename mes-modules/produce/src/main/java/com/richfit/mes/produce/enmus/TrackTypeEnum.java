@@ -1,4 +1,4 @@
-package com.richfit.mes.base.enmus;
+package com.richfit.mes.produce.enmus;
 
 /**
  * @Author:
