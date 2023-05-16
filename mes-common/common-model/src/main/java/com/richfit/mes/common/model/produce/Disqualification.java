@@ -270,4 +270,20 @@ public class Disqualification extends BaseEntity<Disqualification> {
     @TableField(exist = false)
     @ApiModelProperty(value = "技术裁决姓名")
     private String technologyName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "质控工程师评审意见")
+    private String qualityControlOpinion;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理单位1的意见")
+    private String unitTreatmentOneOpinion;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理单位2的意见")
+    private String unitTreatmentTwoOpinion;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "裁决意见")
+    private String responsibilityOpinion;
 }

@@ -996,7 +996,7 @@ public class TrackCompleteController extends BaseController {
     @ApiOperation(value = "外协报工(新)", notes = "外协报工(新)")
     @PostMapping("/save_outsource")
     public CommonResult<Boolean> saveOutsource(@RequestBody OutsourceCompleteDto outsource) {
-        return trackCompleteService.saveOutsource(outsource);
+        return trackCompleteService.saveOutsourceNew(outsource);
     }
 
     @ApiOperation(value = "下料信息记录", notes = "下料信息记录")
@@ -1078,8 +1078,8 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "扣箱工序标签")
     @GetMapping("/knockoutLabel")
-    public void knockoutLabel(HttpServletResponse response,@ApiParam("工序id") @RequestParam String tiId){
-        trackCompleteService.knockoutLabel(response,tiId);
+    public void knockoutLabel(HttpServletResponse response, @ApiParam("工序id") @RequestParam String tiId) {
+        trackCompleteService.knockoutLabel(response, tiId);
     }
 
 }
