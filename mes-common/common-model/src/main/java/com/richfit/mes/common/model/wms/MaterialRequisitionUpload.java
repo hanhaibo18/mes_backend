@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,7 +30,7 @@ public class MaterialRequisitionUpload implements Serializable {
     /**
      * 单据类型 正常/自动出库
      */
-    private Integer transType;
+    private String transType;
 
     /**
      * 车间  车间跟库存地点对应
@@ -72,7 +71,7 @@ public class MaterialRequisitionUpload implements Serializable {
     /**
      * 创建日期
      */
-    private Date createTime;
+    private String createTime;
 
     /**
      * 明细列表
