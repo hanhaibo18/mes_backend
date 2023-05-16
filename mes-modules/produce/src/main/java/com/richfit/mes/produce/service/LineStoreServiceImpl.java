@@ -29,6 +29,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackHeadRelationMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.ErpServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.FilesUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -89,6 +90,10 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
 
     @Resource
     private TrackHeadRelationService trackHeadRelationService;
+
+    @Resource
+    private ErpServiceClient erpServiceClient;
+
 
     @Override
 
@@ -341,7 +346,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     @Override
     public boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
                             Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) {
-
         lineStore.setUseNum(0);
         lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
         lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
@@ -349,13 +353,10 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         lineStore.setBranchCode(branchCode);
         lineStore.setCreateTime(new Date());
         lineStore.setInTime(new Date());
-
         boolean bool;
-
         if (startNo != null && startNo > 0) {
             List<LineStore> list = new ArrayList<>();
             String oldWorkblankNo = lineStore.getWorkblankNo();
-
             //计算入库料单数量
             int num = 0;
             if (startNo.intValue() == 0) {
@@ -363,7 +364,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             } else {
                 num = endNo - startNo + 1;
             }
-
             for (int i = startNo; i <= endNo; i++) {
                 LineStore entity = new LineStore();
                 //改为浅拷贝
@@ -399,9 +399,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 entity.setProdNo(entity.getDrawingNo() + " " + entity.getWorkblankNo());
                 list.add(entity);
             }
-
             bool = this.saveBatch(list);
-
             //保存料单-附件关系
             for (LineStore s : list) {
                 storeAttachRelService.batchSaveStoreFile(s.getId(), branchCode, lineStore.getFileIds());
@@ -411,7 +409,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (isAutoMatchProd) {
                 lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
             }
-
             bool = this.save(lineStore);
             //保存料单-附件关系
             storeAttachRelService.batchSaveStoreFile(lineStore.getId(), branchCode, lineStore.getFileIds());
@@ -497,9 +494,14 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 if (CollectionUtils.isNotEmpty(lineStore.getFileList())) {
                     storeAttachRelService.batchSaveStoreFileNew(s.getId(), branchCode, lineStore.getFileList());
                 }
-
             }
-
+            //erp生产投料
+            if (bool) {
+                for (LineStore l : list) {
+                    l = erpServiceClient.storeSendFeeding(l).getData();
+                    this.updateById(l);
+                }
+            }
         } else {
             if (isAutoMatchProd.equals("1")) {
                 lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
@@ -510,10 +512,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (CollectionUtils.isNotEmpty(lineStore.getFileList())) {
                 storeAttachRelService.batchSaveStoreFileNew(lineStore.getId(), branchCode, lineStore.getFileList());
             }
-
+            //erp生产投料
+            if (bool) {
+                lineStore = erpServiceClient.storeSendFeeding(lineStore).getData();
+                this.updateById(lineStore);
+            }
         }
-
-
         return bool;
     }
 
