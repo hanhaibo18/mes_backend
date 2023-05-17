@@ -71,6 +71,11 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     @Override
+    public List<TrackHead> selectItemTrack(TrackHead trackHead) {
+        return certificateMapper.selectItemTrack(trackHead);
+    }
+
+    @Override
     public boolean autoCertificate(TrackHead trackHead) throws Exception {
         //装配车间
         if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
@@ -143,11 +148,11 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         if (bool) {
             //3 更新跟单或工序对应的合格证编号
             certificate.getTrackCertificates().stream().forEach(track -> {
-                //工序合格证
                 if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
+                    //工序合格证
                     trackItemService.linkToCertNew(track.getThId(), certificate);
-                    //完工合格证
                 } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
+                    //完工合格证
                     trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
                     //更新跟单状态到 9 "已交"
                     trackHeadService.trackHeadDelivery(track.getThId());

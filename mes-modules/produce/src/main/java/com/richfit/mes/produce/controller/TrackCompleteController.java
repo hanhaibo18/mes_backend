@@ -996,7 +996,7 @@ public class TrackCompleteController extends BaseController {
     @ApiOperation(value = "外协报工(新)", notes = "外协报工(新)")
     @PostMapping("/save_outsource")
     public CommonResult<Boolean> saveOutsource(@RequestBody OutsourceCompleteDto outsource) {
-        return trackCompleteService.saveOutsourceNew(outsource);
+        return trackCompleteService.saveOutsource(outsource);
     }
 
     @ApiOperation(value = "下料信息记录", notes = "下料信息记录")

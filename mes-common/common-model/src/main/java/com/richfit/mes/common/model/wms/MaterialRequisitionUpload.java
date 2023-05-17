@@ -38,9 +38,14 @@ public class MaterialRequisitionUpload implements Serializable {
     private String workshop;
 
     /**
+     * 库存地点
+     */
+    private String invCode;
+
+    /**
      * 生产订单
      */
-    private String prodNum;
+    private String prodNo;
 
     /**
      * 工作号
@@ -50,7 +55,17 @@ public class MaterialRequisitionUpload implements Serializable {
     /**
      * 跟单号
      */
-    private String trackNo;
+    private String documentNo;
+
+    /**
+     * 计划号
+     */
+    private String prodNum;
+
+    /**
+     * 计划ID
+     */
+    private String prodId;
 
     /**
      * 工位名称  第2次推送，下出库指令
@@ -62,6 +77,21 @@ public class MaterialRequisitionUpload implements Serializable {
        格式：yyyyMMddHHmmSS
      */
     private String deliveryDate;
+
+    /**
+     * 产品名称
+     */
+    private String prodName;
+
+    /**
+     * 产品图号
+     */
+    private String mainDrawingNo;
+
+    /**
+     * 项目名称
+     */
+    private String projectName;
 
     /**
      * 创建人

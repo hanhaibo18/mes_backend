@@ -11,8 +11,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -52,6 +50,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -122,6 +121,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private ModelingCoreCacheService modelingCoreCacheService;
     @Autowired
     private KnockoutCacheService knockoutCacheService;
+
+    @Resource
+    private TrackAssemblyService assemblyService;
 
     public static final String END_START_WORK = "2";
 
@@ -473,6 +475,26 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     //派工状态设置为完成
                     assign.setState(2);
                     trackAssignService.updateById(assign);
+                }
+                //外协报工最后一道工序校验所有关键件全部绑定完成
+                if ("2".equals(trackHead.getClasses()) && trackItem.getNextOptSequence() == 0) {
+                    //获取当前跟单下所有工序,并且根据opt_sequence倒序排序
+                    QueryWrapper<TrackItem> queryWrapperItemList = new QueryWrapper<>();
+                    queryWrapperItemList.eq("track_head_id", trackHead.getId());
+                    queryWrapperItemList.orderByDesc("opt_sequence");
+                    List<TrackItem> list = trackItemService.list(queryWrapperItemList);
+                    //判断是不是最后一道工序
+                    if (list.get(0).getOptSequence().equals(trackItem.getOptSequence())) {
+                        //查询关键件 && 安装数量!=需要安装数量的
+                        QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
+                        assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
+                        assemblyQueryWrapper.apply("number <> number_install");
+                        assemblyQueryWrapper.eq("is_key_part", 1);
+                        int count = assemblyService.count(assemblyQueryWrapper);
+                        if (count > 0) {
+                            throw new GlobalException("关键件为全部绑定,不允许最终完成", ResultCode.FAILED);
+                        }
+                    }
                 }
             } else {
                 //跟新工序完成数量
@@ -1020,6 +1042,18 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             ).collect(Collectors.toList());
             result.addAll(collect);
         }
+        //获取对应的flow
+        List<String> collect = result.stream().map(TrackItem::getFlowId).distinct().collect(Collectors.toList());
+        //修改flow状态
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.in("id", collect);
+        update.set("status", "1");
+        trackFlowService.update(update);
+        //修改跟单状态
+        UpdateWrapper<TrackHead> headUpdateWrapper = new UpdateWrapper<>();
+        headUpdateWrapper.eq("id", list.get(0).getTrackHeadId());
+        headUpdateWrapper.set("status", "1");
+        trackHeadService.update(headUpdateWrapper);
         //检查是否跳工序报工
         this.checkOP(list, result);
         boolean bool = true;
@@ -1162,8 +1196,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 }
             }
         } else {
-            //过滤掉已报工的数据
-            result = result.stream().filter(item -> item.getIsOperationComplete() == 0).collect(Collectors.toList());
+            //过滤掉已报工的数据&&过滤不在传入产品编号的数据
+            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
         }
         boolean bool = true;
         for (TrackItem trackItem : result) {
@@ -1976,13 +2010,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-        PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-        PageInfo<TrackComplete> page = new PageInfo(completes);
-        for (int i = 2; i <= page.getPages(); i++) {
-            PageHelper.startPage(i, 1000);
-            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
-        }
         return completes;
     }
 
