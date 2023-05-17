@@ -26,29 +26,30 @@ security:
       token-info-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/check_token
 interface:
   erp:
-    #正式地址http://10.30.47.134:8001
-    #测试地址http://10.30.47.134:8001
+    #正式地址http://emaip.erp.cnpc:80
     #测试地址http://10.30.47.134:8000
+    #测试地址http://10.30.47.134:8001
+
     #用户名
     username: zbzz_esb
     #password
     password: ZBZZOSBinterface1
     #工时推送
-    work-hour-sync: http://10.30.47.134:8001/ZBZZ/MES/ZC80_PPIF024/service/PS/PS_ZC80_PPIF024
+    work-hour-sync: http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_PPIF024/service/PS/PS_ZC80_PPIF024
     #查询采购订单（新）
-    order-purchase: http://10.30.47.134:8001/ZBZZ/HTXT/GetPurchaseInfoByTime2/service/PS/GetPurchaseInfoByTime2
-    #创建生产订单
-    order-search: http://10.30.47.134:8001/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
+    order-purchase: http://emaip.erp.cnpc:80/ZBZZ/HTXT/GetPurchaseInfoByTime2/service/PS/GetPurchaseInfoByTime2
     #查询生产订单
-    order-creat: http://10.30.47.134:8001/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
+    order-search: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
+    #创建生产订单
+    order-creat: http://10.30.47.134:8001/ZBZZ/HTXT/XS/ZC80_PPIF032/service/PS/PS_ZC80_PPIF032
     # 查询物料
-    material: http://10.30.47.134:8001/ZBZZ/ERPPP/IS_MES_SAPMaterialBase/MES_SAPMaterialBase
+    material: http://emaip.erp.cnpc:80/ZBZZ/ERPPP/IS_MES_SAPMaterialBase/MES_SAPMaterialBase
     # 向ERP推送工艺
-    router: http://10.30.47.134:8001/ZBZZ/MES/ZC80_PPIF026/service/PS/PS_ZC80_PPIF026
+    router: http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_PPIF026/service/PS/PS_ZC80_PPIF026
     # 查询ERP库存
-    storage: http://10.30.47.134:8001/ZBZZ/MES/ZC80_MMIF015/service/PS/PS_ZC80_MMIF015
+    storage: http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_MMIF015/service/PS/PS_ZC80_MMIF015
     # 生产投料接口
-    feeding: http://10.30.47.134:8001/ZBZZ/MES/ZC80_PPIF022/service/PS/PS_ZC80_PPIF022
+    feeding: http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_PPIF022/service/PS/PS_ZC80_PPIF022
 secure:
   ignore:
     urls:
