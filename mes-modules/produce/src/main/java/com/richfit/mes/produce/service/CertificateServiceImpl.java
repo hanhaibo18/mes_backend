@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.code.CertTypeEnum;
@@ -13,6 +14,7 @@ import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.CertificateMapper;
@@ -71,6 +73,11 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     @Override
+    public List<TrackHead> selectItemTrack(TrackHead trackHead) {
+        return certificateMapper.selectItemTrack(trackHead);
+    }
+
+    @Override
     public boolean autoCertificate(TrackHead trackHead) throws Exception {
         //装配车间
         if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
@@ -81,13 +88,14 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setBranchCode(trackHead.getBranchCode());
         certificate.setCertOrigin("0");
         certificate.setCertificateNo(Code.valueOnUpdate("hege_no", trackHead.getTenantId(), trackHead.getBranchCode(), codeRuleService));
-        certificate.setCheckName(user.getUserId());
+        CommonResult<TenantUserVo> commonResult = systemServiceClient.queryByUserId(user.getUserId());
+        certificate.setCheckName(commonResult.getData().getEmplName());
         certificate.setCheckTime(new Date());
         certificate.setDrawingNo(trackHead.getDrawingNo());
         certificate.setMaterialNo(trackHead.getMaterialNo());
         certificate.setNextOpt("/");
         //裝配开具并生产入库
-        if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
+        if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
             certificate.setNextOptWork("BOMCO_SC");
         }
         certificate.setNumber(trackHead.getNumber());
@@ -143,11 +151,11 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         if (bool) {
             //3 更新跟单或工序对应的合格证编号
             certificate.getTrackCertificates().stream().forEach(track -> {
-                //工序合格证
                 if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
+                    //工序合格证
                     trackItemService.linkToCertNew(track.getThId(), certificate);
-                    //完工合格证
                 } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
+                    //完工合格证
                     trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
                     //更新跟单状态到 9 "已交"
                     trackHeadService.trackHeadDelivery(track.getThId());

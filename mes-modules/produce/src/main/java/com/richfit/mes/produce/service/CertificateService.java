@@ -14,6 +14,8 @@ public interface CertificateService extends IService<Certificate> {
 
     IPage<Certificate> selectCertificate(Page<Certificate> page, QueryWrapper<Certificate> query);
 
+    List<TrackHead> selectItemTrack(TrackHead trackHead);
+
     public boolean autoCertificate(TrackHead trackHead) throws Exception;
 
     public boolean saveCertificate(Certificate certificate) throws Exception;

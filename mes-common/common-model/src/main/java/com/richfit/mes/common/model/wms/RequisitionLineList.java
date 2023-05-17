@@ -33,6 +33,11 @@ public class RequisitionLineList implements Serializable {
     private String productName;
 
     /**
+     *  库存地点
+     */
+    private String invCode;
+
+    /**
      * 是否实物配送  是/否
      */
     private String deliveryFlag;
@@ -58,14 +63,14 @@ public class RequisitionLineList implements Serializable {
     private Double quantity;
 
     /**
-     * 是否锁库 锁库/否
+     * 是否锁库库存 锁库/否 自动出库类型时只能为否
      */
-    private Integer frozenFlag;
+    private String frozenFlag;
 
     /**
-     * 实物配送标识  1：是，0：否
+     * 关键件
      */
-    private String swFlag;
+    private String crucialFlag;
 
     @TableField(exist = false)
     private List<RequisitionLineInfoList> lineList;

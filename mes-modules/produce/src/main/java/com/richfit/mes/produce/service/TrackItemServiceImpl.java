@@ -19,7 +19,6 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
-import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -244,6 +243,8 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
         // resetType 1:重置派工,2:重置报工,3:重置质检,4:重置调度审核,5:重置当前工序的所有记录
         if (resetType != null && item != null) {
+            //不管重置什么状态都需要去除当前工序最终完成状态
+            item.setIsFinalComplete("0");
             if (resetType == 5) {
                 item.setIsTrackSequenceComplete(0);
             }
