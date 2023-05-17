@@ -45,15 +45,15 @@ public class WmsThreeController {
 
     @ApiOperation(value = "MES申请单上传WMS（已上线）", notes = "将MES系统满足条件申请单上传WMS。提供上传WMS按钮，用户点击按钮可手动将申请单上传WMS系统")
     @PostMapping("/apply_list_upload")
-    public CommonResult<ApplicationResult> applyListUpload(@RequestBody List<ApplyListUpload> applyListUpload) {
-        return new CommonResult(productToWmsThreeService.applyListUploadInterface(applyListUpload));
+    public CommonResult<ApplicationResult> applyListUpload(@RequestBody List<ApplyListUpload> applyListUploads) {
+        return new CommonResult(productToWmsThreeService.applyListUploadInterface(applyListUploads));
     }
 
 
     @ApiOperation(value = "MES领料单上传WMS", notes = "将MES系统领料单上传WMS，若单据类型为自动出库时，WMS系统要检查各行项目物料的在该工厂下的库存数量能否满足领料数量，需全部行项目物料库存都满足时，WMS系统自动生成出库单，物资库存减少，调用WMS领料单出库信息上传MES接口")
     @PostMapping("/material_requisition_upload")
-    public CommonResult<ApplicationResult> materialRequisitionUpload(@RequestBody MaterialRequisitionUpload materialRequisitionUpload) {
-        return new CommonResult(productToWmsThreeService.materialRequisitionUploadInterface(materialRequisitionUpload));
+    public CommonResult<ApplicationResult> materialRequisitionUpload(@RequestBody List<MaterialRequisitionUpload> materialRequisitionUploads) {
+        return new CommonResult(productToWmsThreeService.materialRequisitionUploadInterface(materialRequisitionUploads));
     }
 
 
