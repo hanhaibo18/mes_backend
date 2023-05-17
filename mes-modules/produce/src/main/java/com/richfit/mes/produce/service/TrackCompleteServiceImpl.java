@@ -1976,13 +1976,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-        PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-        PageInfo<TrackComplete> page = new PageInfo(completes);
-        for (int i = 2; i <= page.getPages(); i++) {
-            PageHelper.startPage(i, 1000);
-            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
-        }
+//        PageHelper.startPage(1, 1000);
+//        List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
+//        PageInfo<TrackComplete> page = new PageInfo(completes);
+//        for (int i = 2; i <= page.getPages(); i++) {
+//            PageHelper.startPage(i, 1000);
+//            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
+//        }
         return completes;
     }
 
