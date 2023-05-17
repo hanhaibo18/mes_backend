@@ -4,20 +4,69 @@
     <select id="selectCertificate" resultType="com.richfit.mes.common.model.produce.Certificate">
         SELECT pc.*, track.*
         FROM produce_certificate pc
-                 left join (
-            select tc.certificate_id,
-                   ti.product_no             item_product_no,
-                   ti.number                 item_number,
-                   ti.opt_id,
-                   ti.opt_ver,
-                   any_value(th.replace_material),
-                   max(ti.sequence_order_by) sequence_order_by
-            from produce_track_certificate tc
-                     left join produce_track_head th on tc.th_id = th.id
-                     left join produce_track_item ti on tc.ti_id = ti.id
-            group by tc.certificate_id, th.drawing_no, th.material_no, ti.product_no, ti.number, ti.opt_id, ti.opt_name,
-                     ti.opt_ver) as track
-                           on pc.id = track.certificate_id
-            ${ew.customSqlSegment}
+        left join (
+        select tc.certificate_id,
+        ti.product_no item_product_no,
+        ti.number item_number,
+        ti.opt_id,
+        ti.opt_ver,
+        any_value(th.replace_material),
+        max(ti.sequence_order_by) sequence_order_by
+        from produce_track_certificate tc
+        left join produce_track_head th on tc.th_id = th.id
+        left join produce_track_item ti on tc.ti_id = ti.id
+        group by tc.certificate_id, th.drawing_no, th.material_no, ti.product_no, ti.number, ti.opt_id, ti.opt_name,
+        ti.opt_ver) as track
+        on pc.id = track.certificate_id
+        ${ew.customSqlSegment}
+    </select>
+    <select id="selectItemTrack" resultType="com.richfit.mes.common.model.produce.TrackHead">
+        SELECT
+        *
+        FROM
+        (
+        SELECT DISTINCT
+        ROW_NUMBER() OVER ( PARTITION BY ti.flow_id ORDER BY ti.opt_sequence DESC ) AA,
+        th.*,
+        ti.opt_no,
+        ti.opt_name,
+        ti.opt_sequence
+        FROM
+        produce_track_head th
+        LEFT JOIN produce_track_head_flow tf ON tf.track_head_id = th.id
+        AND tf.`status` = 1
+        LEFT JOIN produce_track_item ti ON th.id = ti.track_head_id
+        AND ti.flow_id = tf.id
+        AND ti.is_final_complete = 1
+        WHERE
+        th.STATUS = 1
+        <trim suffixOverrides=",">
+            <if test="trackHead.branchCode != null and trackHead.branchCode != ''">
+                and th.branch_code = #{trackHead.branchCode}
+            </if>
+            <if test="trackHead.trackNo != null and trackHead.trackNo != ''">
+                and th.track_no = #{trackHead.trackNo}
+            </if>
+            <if test="trackHead.drawingNo != null and trackHead.drawingNo != ''">
+                and th.drawing_no = #{trackHead.drawingNo}
+            </if>
+            <if test="trackHead.batchNo != null and trackHead.batchNo != ''">
+                and th.batch_no = #{trackHead.batchNo}
+            </if>
+            <if test="trackHead.workNo != null and trackHead.workNo != ''">
+                and th.work_no = #{trackHead.workNo}
+            </if>
+            <if test="trackHead.productionOrder != null and trackHead.productionOrder != ''">
+                and th.production_order = #{trackHead.productionOrder}
+            </if>
+            <if test="trackHead.productNo != null and trackHead.productNo != ''">
+                and th.product_no = #{trackHead.productNo}
+            </if>
+        </trim>
+        ) a
+        WHERE
+        a.AA = 1
+        ORDER BY
+        a.track_no DESC
     </select>
 </mapper>
