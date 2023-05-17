@@ -26,9 +26,10 @@ security:
       token-info-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/check_token
 interface:
   erp:
-    #正式地址http://10.30.47.134:8001
-    #测试地址http://10.30.47.134:8001
+    #正式地址http://emaip.erp.cnpc:80
     #测试地址http://10.30.47.134:8000
+    #测试地址http://10.30.47.134:8001
+
     #用户名
     username: zbzz_esb
     #password
@@ -37,10 +38,10 @@ interface:
     work-hour-sync: http://10.30.47.134:8001/ZBZZ/MES/ZC80_PPIF024/service/PS/PS_ZC80_PPIF024
     #查询采购订单（新）
     order-purchase: http://10.30.47.134:8001/ZBZZ/HTXT/GetPurchaseInfoByTime2/service/PS/GetPurchaseInfoByTime2
-    #创建生产订单
-    order-search: http://10.30.47.134:8001/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
     #查询生产订单
-    order-creat: http://10.30.47.134:8001/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
+    order-search: http://10.30.47.134:8001/ZBZZ/ERPPP/IS_MES_SAPProductOrderBaseJNC/MES_SAPProductOrderBaseJNC
+    #创建生产订单
+    order-creat: http://10.30.47.134:8001/ZBZZ/HTXT/XS/ZC80_PPIF032/service/PS/PS_ZC80_PPIF032
     # 查询物料
     material: http://10.30.47.134:8001/ZBZZ/ERPPP/IS_MES_SAPMaterialBase/MES_SAPMaterialBase
     # 向ERP推送工艺
