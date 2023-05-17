@@ -94,6 +94,9 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getProjectName())) {//项目名称
             queryWrapper.eq("project_name", hotDemandParam.getProjectName());
         }
+        if (StringUtils.isNotEmpty(hotDemandParam.getDemandName())) {//名称
+            queryWrapper.eq("demand_name", hotDemandParam.getDemandName());
+        }
         if (StringUtils.isNotEmpty(hotDemandParam.getWorkNo())) {//工作号
             queryWrapper.eq("work_no", hotDemandParam.getWorkNo());
         }
@@ -126,8 +129,8 @@ public class HotDemandController extends BaseController {
         if (hotDemandParam.getTexture()!=null) {//材质
             queryWrapper.eq("texture", hotDemandParam.getTexture());
         }
-        if (StringUtils.isNotEmpty(hotDemandParam.getEvidenceNo())) {//工作号
-            queryWrapper.eq("evidence_no", hotDemandParam.getEvidenceNo());
+        if (StringUtils.isNotEmpty(hotDemandParam.getVoucherNo())) {//凭证号
+            queryWrapper.eq("voucher_no", hotDemandParam.getVoucherNo());
         }
         //0 :未提报  1 :已提报'
         if (hotDemandParam.getSubmitState() != null) {
@@ -221,7 +224,7 @@ public class HotDemandController extends BaseController {
     public CommonResult submitDemand(@RequestBody List<String> idList, Integer submitState) {
         //生成凭证号
         String timeStemp = String.valueOf(System.currentTimeMillis());
-        String evidenceNo = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss")+timeStemp.substring(timeStemp.length()-4);
+        String voucherNo = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss")+timeStemp.substring(timeStemp.length()-4);
         //需求撤回需要校验是否被热工确认,已经确认的不能撤回
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
@@ -231,7 +234,7 @@ public class HotDemandController extends BaseController {
                 return CommonResult.failed(demand.getDemandName() + " 已经批准生产,不可撤回");
             }
             //设置凭证号
-            demand.setEvidenceNo(evidenceNo);
+            demand.setVoucherNo(voucherNo);
         }
 
         UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
@@ -318,7 +321,7 @@ public class HotDemandController extends BaseController {
         //模型map<图号@版本号,模型数据>
         Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo()+"@"+x.getVersion(), x -> x));
 
-        List<String> ids = new ArrayList<>();
+        //List<String> ids = new ArrayList<>();
         //遍历毛坯需求数据,根据图号在模型map中获取,不为空则有模型
         for (HotDemand hotDemand : hotDemands) {
             //根据图号+@+版本号去获取模型
@@ -326,21 +329,28 @@ public class HotDemandController extends BaseController {
             //模型不为空且模型数量大于0判断为有模型
             if (ObjectUtils.isNotEmpty(hotModelStore) && hotModelStore.getNormalNum()>0) {
                 //收集有模型的毛坯需求id
-                ids.add(hotDemand.getId());
+                //ids.add(hotDemand.getId());
+                //有模型是设置为有模型并把模型材质赋值
+                UpdateWrapper updateWrapper = new UpdateWrapper();
+                updateWrapper.set("is_exist_model", 1);//设置为有模型
+                updateWrapper.set("model_texture",hotModelStore.getModelTexture());//设置模型材质
+                updateWrapper.eq("id", hotDemand.getId());
+                boolean update = hotDemandService.update(updateWrapper);
             }
         }
-        if (CollectionUtils.isNotEmpty(ids)) {
-            UpdateWrapper updateWrapper = new UpdateWrapper();
-            updateWrapper.set("is_exist_model", 1);//设置为有模型
-            updateWrapper.in("id", ids);
-            boolean update = hotDemandService.update(updateWrapper);
-            if (update) {
-                return CommonResult.success(ResultCode.SUCCESS);
-            }
-            return CommonResult.failed();
-        } else {
-            return CommonResult.success("操作成功");
-        }
+        return CommonResult.success("操作成功");
+//        if (CollectionUtils.isNotEmpty(ids)) {
+//            UpdateWrapper updateWrapper = new UpdateWrapper();
+//            updateWrapper.set("is_exist_model", 1);//设置为有模型
+//            updateWrapper.in("id", ids);
+//            boolean update = hotDemandService.update(updateWrapper);
+//            if (update) {
+//                return CommonResult.success(ResultCode.SUCCESS);
+//            }
+//            return CommonResult.failed();
+//        } else {
+//            return CommonResult.success("操作成功");
+//        }
     }
 
     @ApiOperation(value = "检查外协件", notes = "检查外协件")
