@@ -376,6 +376,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     @ApiModelProperty(value = "钢水重量 ", dataType = "String")
     private String weightMolten;
+    @TableField(exist = false)
     @ApiModelProperty(value = "单重KG ", dataType = "String")
     private String pieceWeight;
     @TableField(exist = false)
