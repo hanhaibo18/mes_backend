@@ -11,8 +11,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -1044,6 +1042,18 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             ).collect(Collectors.toList());
             result.addAll(collect);
         }
+        //获取对应的flow
+        List<String> collect = result.stream().map(TrackItem::getFlowId).distinct().collect(Collectors.toList());
+        //修改flow状态
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.in("id", collect);
+        update.set("status", "1");
+        trackFlowService.update(update);
+        //修改跟单状态
+        UpdateWrapper<TrackHead> headUpdateWrapper = new UpdateWrapper<>();
+        headUpdateWrapper.eq("id", list.get(0).getTrackHeadId());
+        headUpdateWrapper.set("status", "1");
+        trackHeadService.update(headUpdateWrapper);
         //检查是否跳工序报工
         this.checkOP(list, result);
         boolean bool = true;
@@ -2001,13 +2011,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
         List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-//        PageHelper.startPage(1, 1000);
-//        List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-//        PageInfo<TrackComplete> page = new PageInfo(completes);
-//        for (int i = 2; i <= page.getPages(); i++) {
-//            PageHelper.startPage(i, 1000);
-//            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
-//        }
         return completes;
     }
 

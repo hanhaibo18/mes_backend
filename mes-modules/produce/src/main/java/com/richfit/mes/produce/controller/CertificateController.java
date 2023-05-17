@@ -304,4 +304,13 @@ public class CertificateController {
         return CommonResult.success(certificateService.list(queryWrapper), SUCCESS_MESSAGE);
 
     }
+
+    @ApiOperation(value = "查询工序合格证跟单信息", notes = "查询工序合格证跟单信息")
+    @PostMapping("/select/item/track")
+    public CommonResult<PageInfo<TrackHead>> selectItemTrack(@ApiParam(value = "跟单查询条件", required = true) @RequestBody TrackHead trackHead, int page, int limit) {
+        PageHelper.startPage(page, limit);
+        List<TrackHead> trackHeadList = certificateService.selectItemTrack(trackHead);
+        PageInfo<TrackHead> trackHeadPageInfo = new PageInfo(trackHeadList);
+        return CommonResult.success(trackHeadPageInfo, SUCCESS_MESSAGE);
+    }
 }
