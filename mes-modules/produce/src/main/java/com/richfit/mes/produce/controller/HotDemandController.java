@@ -27,6 +27,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Api(value = "热工需求管理", tags = {"热工需求管理"})
+@Transactional(rollbackFor = Exception.class)
 @RestController
 @RequestMapping("/api/produce/demand")
 public class HotDemandController extends BaseController {
@@ -123,6 +125,9 @@ public class HotDemandController extends BaseController {
         }
         if (hotDemandParam.getTexture()!=null) {//材质
             queryWrapper.eq("texture", hotDemandParam.getTexture());
+        }
+        if (StringUtils.isNotEmpty(hotDemandParam.getEvidenceNo())) {//工作号
+            queryWrapper.eq("evidence_no", hotDemandParam.getEvidenceNo());
         }
         //0 :未提报  1 :已提报'
         if (hotDemandParam.getSubmitState() != null) {
@@ -214,6 +219,9 @@ public class HotDemandController extends BaseController {
     })
     @PostMapping("/submit_or_revocation")
     public CommonResult submitDemand(@RequestBody List<String> idList, Integer submitState) {
+        //生成凭证号
+        String timeStemp = String.valueOf(System.currentTimeMillis());
+        String evidenceNo = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss")+timeStemp.substring(timeStemp.length()-4);
         //需求撤回需要校验是否被热工确认,已经确认的不能撤回
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
@@ -222,6 +230,8 @@ public class HotDemandController extends BaseController {
             if (demand.getProduceRatifyState()!=null && demand.getProduceRatifyState() == 1) {
                 return CommonResult.failed(demand.getDemandName() + " 已经批准生产,不可撤回");
             }
+            //设置凭证号
+            demand.setEvidenceNo(evidenceNo);
         }
 
         UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();

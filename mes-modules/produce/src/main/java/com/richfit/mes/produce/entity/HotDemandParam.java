@@ -233,6 +233,8 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
     @ApiModelProperty(value = "租户id", dataType = "String")
     private String tenantId;
 
+    @ApiModelProperty(value = "凭证号")
+    private String evidenceNo;
     @ApiModelProperty(value = "页码 ", dataType = "int")
     private int page;
     @ApiModelProperty(value = "条数 ", dataType = "int")
