@@ -31,4 +31,12 @@ public class OrderDto extends BasePageDto<OrderDto> {
     private String orderCol;
 
     private String order;
+
+    private String materialType;
+
+    private String drawingNo;
+
+    private int page;
+
+    private int limit;
 }

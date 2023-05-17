@@ -16,9 +16,13 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.wms.ApplyLineList;
+import com.richfit.mes.common.model.wms.ApplyLineProductList;
+import com.richfit.mes.common.model.wms.ApplyListUpload;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.enmus.IdEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
@@ -47,6 +51,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 马峰
@@ -96,6 +101,8 @@ public class TrackAssignController extends BaseController {
     private ApplicationNumberService numberService;
     @Value("${switch}")
     private String off;
+    @Resource
+    private TrackHeadMapper trackHeadMapper;
 
     /**
      * ***
@@ -376,6 +383,11 @@ public class TrackAssignController extends BaseController {
                         IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
                         requestNoteService.saveRequestNoteNew(ingredient, trackHead, trackHead.getBranchCode());
                         ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+//                        ApplyListUpload ingredient = collect(trackItem, trackHead, trackHead.getBranchCode());
+//                        requestNoteService.saveRequestNoteInfo(ingredient, trackHead, trackItem, trackHead.getBranchCode());
+//                        List<ApplyListUpload> list = new ArrayList<>();
+//                        list.add(ingredient);
+//                        ApplicationResult application = wmsServiceClient.applyListUpload(list).getData();
                         //请勿重复上传！
                         boolean upload = !application.getRetMsg().contains("请勿重复上传");
                         if ("N".equals(application.getRetCode()) && upload) {
@@ -402,6 +414,88 @@ public class TrackAssignController extends BaseController {
         } catch (Exception e) {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
+    }
+
+    /**
+     * @param trackItem  跟单工序
+     * @param trackHead  跟单表（主表）
+     * @param branchCode 车间
+     * @return
+     */
+    private ApplyListUpload collect(TrackItem trackItem, TrackHead trackHead, String branchCode) {
+        // 跟单配送
+        QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
+        assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
+        List<TrackAssembly> assemblyList = trackAssemblyService.list(assemblyQueryWrapper);
+        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("ti_id", trackItem.getId());
+        //组装申请单信息
+        ApplyListUpload applyListUpload = new ApplyListUpload();
+        //id
+        applyListUpload.setId(UUID.randomUUID().toString().replace("-", ""));
+        //申请单号
+        int applicationNumber = numberService.acquireApplicationNumber(trackItem.getId(), branchCode);
+        applyListUpload.setApplyNum(applicationNumber + "@0");
+        // 单据类型
+        applyListUpload.setTransType(null);
+        //工厂编码
+        applyListUpload.setWorkCode(SecurityUtils.getCurrentUser().getTenantErpCode());
+        //车间
+        applyListUpload.setWorkshop(branchCode);
+        //库存地点
+        applyListUpload.setInvCode(null);
+        //工作号
+        applyListUpload.setJobNo(trackItem.getWorkNo());
+        //生产订单
+        applyListUpload.setProdNum(trackHead.getProductionOrder());
+        //合格证 结构化
+        applyListUpload.setCertificate(null);
+        //创建人
+        applyListUpload.setCreateBy(trackHead.getCreateBy());
+        //创建日期
+        applyListUpload.setCreateTime(new Date());
+        //行数据
+        List<ApplyLineList> lineList = new ArrayList<>();
+        int num = 0;
+        for (TrackAssembly trackAssembly : assemblyList) {
+            ApplyLineList applyLine = new ApplyLineList();
+            //MES申请单ID
+            applyLine.setApplyId(applyListUpload.getId());
+            //MES申请单行id
+            applyLine.setId(UUID.randomUUID().toString().replace("-", ""));
+            //MES申请单行项目
+            applyLine.setLineNum(num + 1);
+            //物料编码
+            applyLine.setMaterialNum(trackAssembly.getMaterialNo());
+            //物料名称
+            applyLine.setMaterialDesc(trackAssembly.getName());
+            //计量单位
+            applyLine.setUnit(trackAssembly.getUnit());
+            //申请单数量
+            applyLine.setQuantity(0);
+            //物料类型
+            applyLine.setMaterialType(trackAssembly.getSourceType());
+            //关键件
+            applyLine.setCrucialFlag(trackAssembly.getIsKeyPart());
+            //跟踪方式
+            applyLine.setTrackingMode(trackAssembly.getTrackType());
+            //产品编号明细列表
+            List<ApplyLineProductList> lineProductList = new ArrayList<>();
+            ApplyLineProductList product = new ApplyLineProductList();
+            //MES申请单行id
+            product.setApplyLineId(applyLine.getId());
+            //产品编号
+            product.setProductNum(trackAssembly.getProductNo());
+            //数量
+            product.setQuantity(trackAssembly.getNumber());
+
+            lineProductList.add(product);
+            applyLine.setLineList(lineProductList);
+
+            lineList.add(applyLine);
+        }
+        applyListUpload.setLineList(lineList);
+        return applyListUpload;
     }
 
 
@@ -469,15 +563,25 @@ public class TrackAssignController extends BaseController {
         return ingredient;
     }
 
-    private boolean demo() {
-        List<String> itemIdList = Arrays.asList("1556486", "1556487", "1556489", "1556496", "1556500");
-        for (String itemId : itemIdList) {
-            TrackItem trackItem = trackItemService.getById(itemId);
-            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+    @Transactional(rollbackFor = Exception.class)
+    public boolean demo() {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.gt("create_time", "2023-05-08 15:06:50");
+//        queryWrapper.eq("classes", 2);
+//        queryWrapper.gt("status", 0);
+//        List<TrackHead> list = trackHeadService.list(queryWrapper);
+        List<TrackHead> list = trackHeadMapper.selectFinalTrackHeads();
+        list = list.stream().filter(item -> StrUtil.isNotBlank(item.getProductionOrder())).collect(Collectors.toList());
+        for (TrackHead trackHead : list) {
+            //查询第一道工序
+            QueryWrapper<TrackItem> queryWrapperitem = new QueryWrapper<>();
+            queryWrapperitem.eq("track_head_id", trackHead.getId());
+            queryWrapperitem.eq("opt_sequence", 1);
+            TrackItem trackItem = trackItemService.getOne(queryWrapperitem);
             if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                 throw new GlobalException("无生产订单编号", ResultCode.FAILED);
             }
-            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, "BOMCO_BF_BY");
+            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
             requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
             ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
             //请勿重复上传！
@@ -587,7 +691,6 @@ public class TrackAssignController extends BaseController {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
-
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.apply("(UNIX_TIMESTAMP(a.modify_time) >= UNIX_TIMESTAMP('" + startTime + "') or a.modify_time is null )");
             Calendar calendar = new GregorianCalendar();

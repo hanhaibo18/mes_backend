@@ -27,4 +27,8 @@ public class QueryInspectorDto extends QueryPageDto {
     private Integer isIssue;
     @ApiModelProperty(value = "状态", dataType = "String")
     private String type;
+    @ApiModelProperty(value = "处理单位1", dataType = "String")
+    private String unitTreatmentOne;
+    @ApiModelProperty(value = "处理单位2", dataType = "String")
+    private String unitTreatmentTwo;
 }

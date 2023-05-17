@@ -62,7 +62,7 @@ public class Certificate extends BaseEntity<Certificate> {
     private Integer number;
 
     @ApiModelProperty(value = "工序顺序")
-    private String optSequence;
+    private Integer optSequence;
 
     @ApiModelProperty(value = "工序号")
     private String optNo;

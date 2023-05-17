@@ -73,7 +73,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     @Override
     public boolean autoCertificate(TrackHead trackHead) throws Exception {
         //装配车间
-        if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
+        if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
             return true;
         }
         TenantUserDetails user = SecurityUtils.getCurrentUser();
@@ -87,9 +87,10 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setMaterialNo(trackHead.getMaterialNo());
         certificate.setNextOpt("/");
         //裝配开具并生产入库
-        certificate.setNextOptWork("BOMCO_SC");
+        if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
+            certificate.setNextOptWork("BOMCO_SC");
+        }
         certificate.setNumber(trackHead.getNumber());
-
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         queryWrapper.eq("track_head_id", trackHead.getId());
         queryWrapper.orderByDesc("opt_sequence");
@@ -104,7 +105,9 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             }
         });
         TrackItem trackItem = collect.get(collect.size() - 1);
-        certificate.setOptName(trackItem.getOptNo() + " " + trackItem.getOptName());
+        certificate.setOptSequence(trackItem.getOptSequence());
+        certificate.setOptNo(trackItem.getOptNo());
+        certificate.setOptName(trackItem.getOptName());
         certificate.setProductName(trackHead.getProductName());
         certificate.setProductNo(trackHead.getProductNo());
         certificate.setProductNoContinuous(trackHead.getProductNoContinuous());
@@ -115,6 +118,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setTestBarNumber(trackHead.getTestBarNumber());
         certificate.setTestBarType(trackHead.getTestBarType());
         certificate.setTexture(trackHead.getTexture());
+        certificate.setBatchNo(trackHead.getBatchNo());
         List<TrackCertificate> trackCertificates = new ArrayList<>();
         TrackCertificate trackCertificate = new TrackCertificate();
         trackCertificate.setThId(trackHead.getId());
@@ -134,11 +138,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setIsPush("0");
         //1 保存合格证
         boolean bool = this.save(certificate);
-        // 更新最大合格证编号
-//        codeRuleService.updateCode("hege_no", "合格证编号", certificate.getCertificateNo(),
-//                Calendar.getInstance().get(Calendar.YEAR) + "", SecurityUtils.getCurrentUser().getTenantId(),
-//                certificate.getBranchCode());
-
         //2 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
         additionalBsns(certificate);
         if (bool) {

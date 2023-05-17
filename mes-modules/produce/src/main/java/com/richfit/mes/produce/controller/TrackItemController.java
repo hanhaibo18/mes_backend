@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.produce.aop.OperationLog;
@@ -12,14 +13,17 @@ import com.richfit.mes.produce.entity.ItemMessageDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.ActionService;
+import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,6 +46,8 @@ public class TrackItemController extends BaseController {
     public TrackHeadService trackHeadService;
     @Autowired
     private ActionService actionService;
+    @Resource
+    private TrackHeadFlowService trackFlowService;
 
     public static String TRACK_HEAD_ID_NULL_MESSAGE = "跟单ID不能为空！";
     public static String TRACK_ITEM_ID_NULL_MESSAGE = "跟单工序ID不能为空！";
@@ -194,24 +200,64 @@ public class TrackItemController extends BaseController {
     @ApiOperation(value = "查询跟单工序(当前外协工序)", notes = "根据跟单ID查询跟单工序(当前外协工序)")
     @PostMapping("/track_item/wxItems")
     public CommonResult<List<TrackItem>> selectTrackItemByIds(@RequestBody List<String> headIds) {
+        if (CollectionUtils.isEmpty(headIds)) {
+            return CommonResult.success(null);
+        }
         List<TrackItem> trackItems = new ArrayList<>();
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-        if (headIds.size() > 0) {
+        if (!headIds.isEmpty()) {
             queryWrapper.in("track_head_id", headIds)
                     .eq("opt_type", "3")
                     .eq("is_operation_complete", 0)
                     .eq("is_current", 1)
-                    .orderByAsc("product_no");
+                    .orderByDesc("next_opt_sequence");
             trackItems = trackItemService.list(queryWrapper);
         }
-        //
-//        trackItems
-        if (trackItems.size() > 0) {
-            for (TrackItem trackItem : trackItems) {
+        //查询当前跟单产品数量
+        QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
+        flowQueryWrapper.in("track_head_id", headIds);
+        int count = trackFlowService.count(flowQueryWrapper);
+        //过滤未完成数量
+        int size = (int) trackItems.stream().filter(item -> item.getIsFinalComplete().equals("0")).count();
+        //重新创建List每组数据组装完 向当前List填充
+        List<TrackItem> trackItemList = new ArrayList<>();
+        //获取List中最大当前工序值和最小工序值
+        //最大值
+        int max = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).max().getAsInt();
+        //最小值
+        int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
+        //过滤出所有最小的工序||产品数量大于1 并且 产品总数 大于未完成数量
+        if (max != min || (count > 1 && count > size)) {
+            //过滤出所有最小的工序
+            trackItemList.addAll(trackItems.stream().filter(item -> item.getOriginalOptSequence() == min).collect(Collectors.toList()));
+        } else {
+            //根据FlowID分组
+            Map<String, List<TrackItem>> map = trackItems.stream().collect(Collectors.groupingBy(TrackItem::getFlowId));
+            //拿到后续工序
+            for (List<TrackItem> trackItem : map.values()) {
+                trackItemList.addAll(trackItem);
+                nextOpt(trackItem, trackItemList);
+            }
+        }
+        if (!trackItemList.isEmpty()) {
+            for (TrackItem trackItem : trackItemList) {
                 trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
             }
         }
-        return CommonResult.success(trackItems, SUCCESS_MESSAGE);
+        return CommonResult.success(trackItemList, SUCCESS_MESSAGE);
+    }
+
+    private void nextOpt(List<TrackItem> trackItemList, List<TrackItem> newTrackItemList) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("original_opt_sequence", trackItemList.get(0).getNextOptSequence());
+        queryWrapper.eq("flow_id", trackItemList.get(0).getFlowId());
+        queryWrapper.eq("opt_type", "3");
+        queryWrapper.orderByDesc("original_opt_sequence");
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        if (!CollectionUtils.isEmpty(list)) {
+            newTrackItemList.addAll(list);
+            nextOpt(list, newTrackItemList);
+        }
     }
 
     @ApiOperation(value = "查询跟单分流工序", notes = "根据跟单ID查询跟单分流工序")

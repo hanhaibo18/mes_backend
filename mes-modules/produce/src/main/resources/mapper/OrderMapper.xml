@@ -3,16 +3,8 @@
 <mapper namespace="com.richfit.mes.produce.dao.OrderMapper">
 
     <select id="queryOrderList" resultType="com.richfit.mes.common.model.produce.Order">
-        select o.*,(select sum(p.proj_num)
-        from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id
-        ) as proj_num
-        -- (select sum(ptv.store_num) from plan_track_view ptv where ptv.proj_code in
-        -- (select proj_code from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id)
-        -- and ptv.tenant_id = o.tenant_id)
-        -- as store_num
+        select o.*
         from produce_order o
-        -- select o.*
-        -- from v_order_plan o
         WHERE 1=1
         <trim suffixOverrides=",">
             <if test="param.orderSn != null and param.orderSn != ''">
@@ -20,6 +12,9 @@
             </if>
             <if test="param.materialCode != null and param.materialCode != ''">
                 and o.material_code like '%${param.materialCode}%'
+            </if>
+            <if test="param.drawingNo != null and param.drawingNo != ''">
+                and o.drawing_no like '%${param.drawingNo}%'
             </if>
             <if test="param.branchCode != null and param.branchCode != ''">
                 and o.branch_code = '${param.branchCode}'
@@ -37,7 +32,7 @@
                 and o.status = '${param.status}'
             </if>
             <if test="param.tenantId != null and param.tenantId != ''">
-                and o.tenant_id like '${param.tenantId}'
+                and o.tenant_id = '${param.tenantId}'
             </if>
             <if test="param.notEnd != null and param.notEnd != ''">
                 and o.status != '2'
@@ -49,32 +44,13 @@
     </select>
 
     <select id="queryOrder" resultType="com.richfit.mes.common.model.produce.Order">
-        select o.*,
-               (select sum(p.proj_num)
-                from produce_plan p
-                where o.order_sn = p.order_no
-                  and o.tenant_id = p.tenant_id
-               ) as proj_num,
-               (select sum(ptv.store_num)
-                from plan_track_view ptv
-                where ptv.proj_code in
-                      (select proj_code from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id)
-                  and ptv.tenant_id = o.tenant_id)
-                 as store_num
+        select o.*
         from produce_order o
         WHERE o.id = '${id}'
     </select>
     <select id="queryOrderListEqMaterialCode" resultType="com.richfit.mes.common.model.produce.Order">
-        select o.*,(select sum(p.proj_num)
-        from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id
-        ) as proj_num,
-        (select sum(ptv.store_num) from plan_track_view ptv where ptv.proj_code in
-        (select proj_code from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id)
-        and ptv.tenant_id = o.tenant_id)
-        as store_num
+        select o.*
         from produce_order o
-        -- select o.*
-        -- from v_order_plan o
         WHERE 1=1
         <trim suffixOverrides=",">
             <if test="param.orderSn != null and param.orderSn != ''">
@@ -82,6 +58,9 @@
             </if>
             <if test="param.materialCode != null">
                 and o.material_code = '${param.materialCode}'
+            </if>
+            <if test="param.drawingNo != null and param.drawingNo != ''">
+                and o.drawing_no like '%${param.drawingNo}%'
             </if>
             <if test="param.branchCode != null and param.branchCode != ''">
                 and o.branch_code = '${param.branchCode}'
@@ -99,7 +78,7 @@
                 and o.status = '${param.status}'
             </if>
             <if test="param.tenantId != null and param.tenantId != ''">
-                and o.tenant_id like '${param.tenantId}'
+                and o.tenant_id = '${param.tenantId}'
             </if>
             <if test="param.notEnd != null and param.notEnd != ''">
                 and o.status != '2'
@@ -113,16 +92,8 @@
         </if>
     </select>
     <select id="queryOrderListNoPage" resultType="com.richfit.mes.common.model.produce.Order">
-        select o.*,(select sum(p.proj_num)
-        from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id
-        ) as proj_num,
-        (select sum(ptv.store_num) from plan_track_view ptv where ptv.proj_code in
-        (select proj_code from produce_plan p where o.order_sn = p.order_no and o.tenant_id = p.tenant_id)
-        and ptv.tenant_id = o.tenant_id)
-        as store_num
+        select o.*
         from produce_order o
-        -- select o.*
-        -- from v_order_plan o
         WHERE 1=1
         <trim suffixOverrides=",">
             <if test="param.orderSn != null and param.orderSn != ''">
@@ -130,6 +101,9 @@
             </if>
             <if test="param.materialCode != null and param.materialCode != ''">
                 and o.material_code like '%${param.materialCode}%'
+            </if>
+            <if test="param.drawingNo != null and param.drawingNo != ''">
+                and o.drawing_no like '%${param.drawingNo}%'
             </if>
             <if test="param.branchCode != null and param.branchCode != ''">
                 and o.branch_code = '${param.branchCode}'
@@ -147,7 +121,7 @@
                 and o.status = '${param.status}'
             </if>
             <if test="param.tenantId != null and param.tenantId != ''">
-                and o.tenant_id like '${param.tenantId}'
+                and o.tenant_id = '${param.tenantId}'
             </if>
             <if test="param.notEnd != null and param.notEnd != ''">
                 and o.status != '2'

@@ -55,6 +55,9 @@ public class PlanController extends BaseController {
     private PlanService planService;
 
     @Autowired
+    private OrderService orderService;
+
+    @Autowired
     private PlanOptWarningService planOptWarningService;
 
     @Autowired
@@ -163,9 +166,9 @@ public class PlanController extends BaseController {
         if (!StringUtils.isNullOrEmpty(planDto.getProjType())) {
             queryWrapper.like("proj_type", planDto.getProjType());//计划类型 1新制  2 返修'
         }
-//        if (!StringUtils.isNullOrEmpty(planDto.getSource())) {
-//            queryWrapper.like("source", planDto.getSource());//来源  1 分公司计划  2车间计划
-//        }
+        if (!StringUtils.isNullOrEmpty(planDto.getSource())) {
+            queryWrapper.eq("source", planDto.getSource());//来源  1 分公司计划  2车间计划
+        }
         if (!StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
             queryWrapper.eq("branch_code", planDto.getBranchCode());
         }
@@ -235,7 +238,9 @@ public class PlanController extends BaseController {
         plan.setTrackHeadFinishNumber(0);
         plan.setOptNumber(0);
         plan.setOptFinishNumber(0);
-        return planService.addPlan(plan);
+        planService.addPlan(plan);
+        orderService.orderDataUsed(plan.getBranchCode(), plan.getOrderNo());
+        return CommonResult.success(plan);
     }
 
     /**
@@ -259,7 +264,9 @@ public class PlanController extends BaseController {
     public CommonResult<Object> updatePlan(@RequestBody Plan plan) throws GlobalException {
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         plan.setTenantId(user.getTenantId());
-        return planService.updatePlan(plan);
+        planService.updatePlan(plan);
+        orderService.orderDataUsed(plan.getBranchCode(), plan.getOrderNo());
+        return CommonResult.success(plan);
     }
 
     /**
@@ -286,7 +293,7 @@ public class PlanController extends BaseController {
     public CommonResult<Boolean> delPlanById(@PathVariable String id) throws GlobalException {
         //计划状态为‘0’ 未开始时，才能删除
         Plan plan = planService.getById(id);
-        if (0 != plan.getStatus()) {
+        if (!(0 == plan.getStatus() || 4 == plan.getStatus())) {
             return CommonResult.failed("计划已开始，不能删除!");
         }
         //删除扩展字段
@@ -296,7 +303,9 @@ public class PlanController extends BaseController {
         //保存操作日志
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         actionService.saveAction(ActionUtil.buildAction(plan.getBranchCode(), "2", "1", "计划号：" + plan.getProjNum() + "，图号：" + plan.getDrawNo(), OperationLogAspect.getIpAddress(request)));
-        return CommonResult.success(planService.delPlan(plan));
+        planService.delPlan(plan);
+        orderService.orderDataUsed(plan.getBranchCode(), plan.getOrderNo());
+        return CommonResult.success(true);
     }
 
     /**
