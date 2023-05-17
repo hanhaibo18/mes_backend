@@ -71,6 +71,11 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     @Override
+    public List<TrackHead> selectItemTrack(TrackHead trackHead) {
+        return certificateMapper.selectItemTrack(trackHead);
+    }
+
+    @Override
     public boolean autoCertificate(TrackHead trackHead) throws Exception {
         //装配车间
         if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
