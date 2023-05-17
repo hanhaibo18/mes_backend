@@ -176,18 +176,78 @@ public class Router extends BaseEntity<Router> {
      */
     private String texture;
     /**
-     * 试棒
+     * 试棒型号
      */
     private String testBar;
+
     /**
      * 单重
      */
-    private String pieceWeight;
+    private float weight;
 
     /**
      * erp同步时间
      */
     private Date erpSyncTime;
+
+    /**
+     * 保温时间(热处理)
+     */
+    private String holdTime;
+
+
+    /**
+     * 温度上线(热处理)
+     */
+    private String tempUp;
+
+
+    /**
+     * 温度上线(热处理)
+     */
+    private String tempDown;
+
+
+    /**
+     * 冷却方式(热处理)
+     */
+    private String coolType;
+
+    /**
+     * 设备名称(热处理)
+     */
+    private String typeName;
+
+    /**
+     * 设备名称(热处理)
+     */
+    private String partQuantity;
+    /**
+     * 切件数量（锻造）
+     */
+    private String forgRatio;
+    /**
+     * 锻件火次
+     * （锻造）
+     */
+    private String forgHeatNum;
+    /**
+     * 加热设备（锻造）
+     */
+    private String heatEquipment;
+    /**
+     * 锻造设备
+     * （锻造）
+     */
+    private String forgEquipment;
+    /**
+     * 冷却方式（锻造）
+     */
+    private String coolingType;
+
+
+
+
 
 
     @ApiModelProperty(value = "该工艺历史版本")

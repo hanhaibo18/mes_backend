@@ -290,6 +290,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
     @ApiModelProperty(value = "跟单附件id，多个用，隔开", dataType = "String")
     private String filesId;
 
+
+    @ApiModelProperty(value = "试棒编号", dataType = "String")
+    private String testBarNo;
     /**
      * 跟单分流表开始
      */

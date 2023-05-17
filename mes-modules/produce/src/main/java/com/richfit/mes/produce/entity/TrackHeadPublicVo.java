@@ -306,6 +306,11 @@ public class TrackHeadPublicVo {
 
     @ApiModelProperty(value = "附件id")
     private String attachmentId;
+
+    /**
+     * 试棒型号
+     */
+    private String testBar;
     /**
      * 锻造结束
      **/
@@ -318,21 +323,27 @@ public class TrackHeadPublicVo {
      * 钢水重量
      */
     private BigDecimal moltenSteel;
-
     /**
      * 工艺保温时间
      */
-    private Double processHoldingTime;
-
+    private String processHoldTime;
     /**
-     * 工艺浇铸温度
+     * 浇筑温度
      */
-    private String pouringTemperature;
+    private String pourTemp;
 
     /**
      * 工艺浇铸速度
      */
     private String pouringRate;
+    /**
+     * 钢水重量
+     */
+    private String weightMolten;
+    /**
+     * 浇筑时间
+     */
+    private String pourTime;
     /**
      * 铸造结束
      **/
