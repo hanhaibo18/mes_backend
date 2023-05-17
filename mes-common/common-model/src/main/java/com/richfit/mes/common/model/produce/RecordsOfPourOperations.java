@@ -77,6 +77,8 @@ public class RecordsOfPourOperations extends BaseEntity<RecordsOfPourOperations>
     private Date assessorTime;
     @ApiModelProperty(value = "钢种", dataType = "String")
     private String typeOfSteel;
+    @ApiModelProperty(value = "锭型", dataType = "String")
+    private String ingotCase;
 
 
 }

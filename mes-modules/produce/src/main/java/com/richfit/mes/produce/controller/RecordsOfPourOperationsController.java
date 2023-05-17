@@ -59,22 +59,22 @@ public class RecordsOfPourOperationsController extends ApiController {
         return CommonResult.success(recordsOfPourOperationsService.check(ids, state));
     }
 
-//    @ApiOperation(value = "浇注记录管理列表", notes = "浇注记录管理列表")
-//    @GetMapping("/record_page")
-//    public CommonResult<IPage<RecordsOfSteelmakingOperations>> record(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit) {
-//        //获取登录用户权限
-//        List<String> roles = SecurityUtils.getRoles();
-//        String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
-//        companyCode = companyCode + "_JMAQ_BZZZ";
-//        //班组长查询
-//        if (roles.contains(companyCode)) {
-//            return CommonResult.success(recordsOfPourOperationsService.bzzcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit));
-//        }
-//        //普通操作工查询
-//        else {
-//            return CommonResult.success(recordsOfPourOperationsService.czgcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit));
-//        }
-//    }
+    @ApiOperation(value = "浇注记录管理列表", notes = "浇注记录管理列表")
+    @GetMapping("/record_page")
+    public CommonResult<IPage<RecordsOfPourOperations>> record(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit) {
+        //获取登录用户权限
+        List<String> roles = SecurityUtils.getRoles();
+        String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
+        companyCode = companyCode + "_JMAQ_BZZZ";
+        //班组长查询
+        if (roles.contains(companyCode)) {
+            return CommonResult.success(recordsOfPourOperationsService.bzzcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, ingotCase, startTime, endTime, status, page, limit));
+        }
+        //普通操作工查询
+        else {
+            return CommonResult.success(recordsOfPourOperationsService.czgcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, ingotCase, startTime, endTime, status, page, limit));
+        }
+    }
 
 }
 

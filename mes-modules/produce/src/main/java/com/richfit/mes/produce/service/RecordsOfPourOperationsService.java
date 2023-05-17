@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.RecordsOfPourOperations;
 
@@ -20,5 +21,9 @@ public interface RecordsOfPourOperationsService extends IService<RecordsOfPourOp
     Boolean update(RecordsOfPourOperations recordsOfPourOperations);
 
     Boolean check(List<String> ids, int state);
+
+    IPage<RecordsOfPourOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit);
+
+    IPage<RecordsOfPourOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit);
 }
 

@@ -1,14 +1,19 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.RecordsOfPourOperationsMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +22,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * (RecordsOfPourOperations)表服务实现类
@@ -39,6 +46,10 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     private PrechargeFurnaceService prechargeFurnaceService;
     @Autowired
     private RecordsOfSteelmakingOperationsService recordsOfSteelmakingOperationsService;
+    @Autowired
+    private SystemServiceClient systemServiceClient;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
     @Override
     public RecordsOfPourOperations getByPrechargeFurnaceId(Long prechargeFurnaceId) {
@@ -90,6 +101,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         }
         recordsOfPourOperations.setTypeOfSteel(prechargeFurnace.getTypeOfSteel());
         recordsOfPourOperations.setFurnaceNo(steelmakingOperations.getFurnaceNo());
+        recordsOfPourOperations.setIngotCase(prechargeFurnace.getIngotCase());
         return this.save(recordsOfPourOperations);
     }
 
@@ -115,6 +127,91 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             recordsOfPourOperation.setStatus(state);
         }
         return this.updateBatchById(recordsOfPourOperations);
+    }
+
+    @Override
+    public IPage<RecordsOfPourOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit) {
+        //班组长查询同班员工号
+        List<TenantUser> tenantUserList = systemServiceClient.queryClass(SecurityUtils.getCurrentUser().getUsername());
+        List<String> userIdList = tenantUserList.stream().map(TenantUser::getUserAccount).collect(Collectors.toList());
+        //根据员工号查询派炉信息
+        QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+        prechargeFurnaceAssignQueryWrapper.in("user_id", userIdList);
+        List<PrechargeFurnaceAssign> prechargeFurnaceAssignList = prechargeFurnaceAssignService.list(prechargeFurnaceAssignQueryWrapper);
+        if (CollectionUtils.isEmpty(prechargeFurnaceAssignList)) {
+            return null;
+        }
+        //获取派送预装炉id
+        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignList.stream().map(PrechargeFurnaceAssign::getPrechargeFurnaceId).collect(Collectors.toSet());
+        //根据预装炉id获取浇注信息
+        QueryWrapper<RecordsOfPourOperations> recordsOfPourOperationsQueryWrapper = new QueryWrapper<>();
+        recordsOfPourOperationsQueryWrapper.in("precharge_furnace_id", prechargeFurnaceIdSet);
+        if (!StringUtils.isNullOrEmpty(recordNo)) {
+            recordsOfPourOperationsQueryWrapper.like("record_no", recordNo);
+        }
+        if (prechargeFurnaceId != null) {
+            recordsOfPourOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+        }
+        if (!StringUtils.isNullOrEmpty(furnaceNo)) {
+            recordsOfPourOperationsQueryWrapper.like("furnace_no", furnaceNo);
+        }
+        if (!StringUtils.isNullOrEmpty(typeOfSteel)) {
+            recordsOfPourOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
+        }
+        if (!StringUtils.isNullOrEmpty(ingotCase)) {
+            recordsOfPourOperationsQueryWrapper.eq("smelting_equipment", ingotCase);
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            recordsOfPourOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            recordsOfPourOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+        }
+        if (status != null) {
+            recordsOfPourOperationsQueryWrapper.eq("status", status);
+        }
+        return this.page(new Page<>(page, limit), recordsOfPourOperationsQueryWrapper);
+    }
+
+    @Override
+    public IPage<RecordsOfPourOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit) {
+        //根据员工号查询派炉信息
+        QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+        prechargeFurnaceAssignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+        List<PrechargeFurnaceAssign> prechargeFurnaceAssignList = prechargeFurnaceAssignService.list(prechargeFurnaceAssignQueryWrapper);
+        if (CollectionUtils.isEmpty(prechargeFurnaceAssignList)) {
+            return null;
+        }
+        //获取派送预装炉id
+        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignList.stream().map(PrechargeFurnaceAssign::getPrechargeFurnaceId).collect(Collectors.toSet());
+        //根据预装炉id获取浇注信息
+        QueryWrapper<RecordsOfPourOperations> recordsOfPourOperationsQueryWrapper = new QueryWrapper<>();
+        recordsOfPourOperationsQueryWrapper.in("precharge_furnace_id", prechargeFurnaceIdSet);
+        if (!StringUtils.isNullOrEmpty(recordNo)) {
+            recordsOfPourOperationsQueryWrapper.like("record_no", recordNo);
+        }
+        if (prechargeFurnaceId != null) {
+            recordsOfPourOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+        }
+        if (!StringUtils.isNullOrEmpty(furnaceNo)) {
+            recordsOfPourOperationsQueryWrapper.like("furnace_no", furnaceNo);
+        }
+        if (!StringUtils.isNullOrEmpty(typeOfSteel)) {
+            recordsOfPourOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
+        }
+        if (!StringUtils.isNullOrEmpty(ingotCase)) {
+            recordsOfPourOperationsQueryWrapper.eq("smelting_equipment", ingotCase);
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            recordsOfPourOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            recordsOfPourOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+        }
+        if (status != null) {
+            recordsOfPourOperationsQueryWrapper.eq("status", status);
+        }
+        return this.page(new Page<>(page, limit), recordsOfPourOperationsQueryWrapper);
     }
 }
 
