@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * @author wcy
  * @date 2023/3/31 13:55
  */
-@SpringBootApplication(scanBasePackages = "com.kld.mes,com.richfit.mes", exclude = {DataSourceAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages = "com.kld.mes.dnc", exclude = {DataSourceAutoConfiguration.class})
 @EnableDiscoveryClient
 @EnableFeignClients
 @EnableScheduling
