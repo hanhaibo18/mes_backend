@@ -167,4 +167,16 @@ public class PrechargeFurnaceController extends BaseController {
     public CommonResult deleteTrackItem(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
         return CommonResult.success(prechargeFurnaceService.deleteTrackItem(assignList), "删除成功");
     }
+
+    @ApiOperation(value = "冶炼配炉 根据材质分类合计钢水重量列表")
+    @GetMapping("/total_weight_molten")
+    public CommonResult<List> totalWeightMolten(String branchCode) {
+        return CommonResult.success(prechargeFurnaceService.totalWeightMolten(branchCode));
+    }
+
+    @ApiOperation(value = "冶炼配炉 根据材质查询派工列表")
+    @GetMapping("/query_assign_by_texture")
+    public CommonResult<List> queryAssignByTexture(String texture,String branchCode) {
+        return CommonResult.success(prechargeFurnaceService.queryAssignByTexture(texture,branchCode));
+    }
 }

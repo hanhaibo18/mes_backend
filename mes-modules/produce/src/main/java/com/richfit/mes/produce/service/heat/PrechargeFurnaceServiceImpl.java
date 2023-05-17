@@ -23,10 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -71,10 +68,44 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     }
 
     /**
+     * 冶炼配炉 根据材质分类合计钢水重量列表
+     * @return
+     */
+    @Override
+    public List totalWeightMolten(String branchCode){
+        List<Map> returnMap = new ArrayList<>();
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("branch_code",branchCode);
+        trackItemQueryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
+        List<TrackItem> pageAssignsHot = trackAssignMapper.getPageAssignsHot(new QueryWrapper<>());
+        Map<String, List<TrackItem>> map = pageAssignsHot.stream().collect(Collectors.groupingBy(item -> item.getTexture()));
+        for (String s : map.keySet()) {
+            Double weightMolten = map.get(s).stream().collect(Collectors.summingDouble(item -> Double.parseDouble(item.getWeightMolten())));
+            Map<String, Object> addMap = new HashMap<>();
+            addMap.put("weightMolten",weightMolten);
+            addMap.put("texture",s);
+            returnMap.add(addMap);
+        }
+        return returnMap;
+    }
+
+    /**
+     * 冶炼配炉 根据材质查询派工列表
+     * @return
+     */
+    @Override
+    public List queryAssignByTexture(String texture,String branchCode){
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("texture",texture);
+        trackItemQueryWrapper.eq("branch_code",branchCode);
+        trackItemQueryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
+        return trackAssignMapper.getPageAssignsHot(trackItemQueryWrapper);
+    }
+
+    /**
      *
      * @param assignList
      * @param texture   材质
-
      */
     @Override
     public void furnaceChargingHot(List<Assign> assignList,String texture) {
