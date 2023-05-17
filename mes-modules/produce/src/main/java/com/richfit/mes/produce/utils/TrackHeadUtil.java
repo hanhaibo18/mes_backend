@@ -1,7 +1,10 @@
 package com.richfit.mes.produce.utils;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.TrackHeadPublicDto;
@@ -100,5 +103,31 @@ public class TrackHeadUtil {
     public static void trackNo(TrackHeadPublicDto trackHeadPublicDto, CodeRuleService codeRuleService) throws Exception {
         String code = Code.valueOnUpdate("track_no", SecurityUtils.getCurrentUser().getTenantId(), trackHeadPublicDto.getBranchCode(), codeRuleService);
         trackHeadPublicDto.setTrackNo(code);
+    }
+
+    /**
+     * 根据第一个产品号，批量生成产品号
+     */
+    public static void productNoAutogeneration(TrackHeadPublicDto trackHead){
+        List<Map> returnStoreList = new ArrayList<>();
+        List<Map> storeList = trackHead.getStoreList();
+        Integer number = trackHead.getNumber();
+        if(CollectionUtil.isEmpty(storeList)){
+            throw new GlobalException("产品号不能为空！！", ResultCode.FAILED);
+        }
+        if(number<1){
+            return;
+        }
+        String beginStr = (String) storeList.get(0).get("beginStr");
+        int serialNumber = (int) storeList.get(0).get("serialNumber");
+        String endStr = (String) storeList.get(0).get("endStr");
+        for (int i= 0;i<=number;i++) {
+            String newWorkblankNo = beginStr+String.valueOf(serialNumber+i)+endStr;
+            Map<String, String> store = storeList.get(0);
+            store.put("workblankNo",newWorkblankNo);
+            store.put("serialNumber",String.valueOf(serialNumber+1));
+            returnStoreList.add(store);
+        }
+        trackHead.setStoreList(returnStoreList);
     }
 }
