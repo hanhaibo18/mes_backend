@@ -246,14 +246,21 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         for (Order order : orderList) {
             order.setBlankNum(blankNum);
             order.setPlanNum(planNum);
+            //默认设置状态为部分使用
+            order.setStatus(1);
+            //使用数量
             int useNum = blankNum + planNum;
+            //超出订单数量异常提示
             if (useNum > order.getOrderNum()) {
                 throw new GlobalException("毛胚使用：" + blankNum + "、计划使用：" + planNum + "，已超过订单的数量：" + order.getOrderNum(), ResultCode.FAILED);
             }
+            //使用数量为0切换状态为未使用
             if (useNum == 0) {
                 order.setStatus(0);
-            } else {
-                order.setStatus(1);
+            }
+            //使用数量等于订单数量未全部使用
+            if (useNum == order.getOrderNum()) {
+                order.setStatus(2);
             }
             orderMapper.updateById(order);
         }
