@@ -10,6 +10,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.MaterialReceive;
+import com.richfit.mes.common.model.produce.MaterialReceiveDetail;
 import com.richfit.mes.common.model.produce.RequestNote;
 import com.richfit.mes.common.model.produce.RequestNoteDetail;
 import com.richfit.mes.common.model.produce.dto.MaterialReceiveDto;
@@ -114,10 +115,18 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
                 materialReceive.setBranchCode(collect.get(materialReceive.getErpCode()).getTenantCode());
             });
             this.saveMaterialReceiveList(material.getReceived());
+            //获取所有申请单号
+            List<String> aplyNumList = material.getDetailList().stream().map(MaterialReceiveDetail::getAplyNum).collect(Collectors.toList());
+            //获取物料号
+            List<String> materialNumList = material.getDetailList().stream().map(MaterialReceiveDetail::getMaterialNum).collect(Collectors.toList());
+            List<RequestNoteDetail> noteDetailList = requestService.queryDetailList(materialNumList, aplyNumList);
+            //根据申请单号分组
+            Map<String, List<RequestNoteDetail>> map = noteDetailList.stream().collect(Collectors.groupingBy(RequestNoteDetail::getRequestNoteNumber));
             material.getDetailList().forEach(detail -> {
-                List<RequestNoteDetail> noteDetailList = requestService.queryRequestNoteDetailDetails(detail.getMaterialNum(), detail.getAplyNum());
-                if (!CollectionUtils.isEmpty(noteDetailList) && StrUtil.isNotEmpty(noteDetailList.get(0).getDrawingNo())) {
-                    detail.setDrawingNo(noteDetailList.get(0).getDrawingNo());
+                for (RequestNoteDetail requestNoteDetail : map.get(detail.getAplyNum())) {
+                    if (StrUtil.isNotEmpty(requestNoteDetail.getDrawingNo())) {
+                        detail.setDrawingNo(requestNoteDetail.getDrawingNo());
+                    }
                 }
             });
             materialReceiveDetailService.saveDetailList(material.getDetailList());

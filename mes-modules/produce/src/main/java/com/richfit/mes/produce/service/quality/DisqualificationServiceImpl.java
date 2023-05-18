@@ -33,7 +33,6 @@ import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.utils.Code;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -783,31 +782,36 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         // 不合格品信息
         List<Disqualification> disqualificationList = disqualificationMapper.selectList(queryWrapper);
-        LambdaQueryWrapper<DisqualificationFinalResult> wrapper = Wrappers.lambdaQuery(DisqualificationFinalResult.class)
-                .in(DisqualificationFinalResult::getId, disqualificationList.stream().map(Disqualification::getId).collect(Collectors.toList()));
-        getDisqualificationByQueryPartDto(wrapper, queryInspectorDto);
-        // 不合格品结果信息
-        List<DisqualificationFinalResult> finalResultList = finalResultMapper.selectList(wrapper);
-        Map<String, DisqualificationFinalResult> resultMap = finalResultList.stream().collect(Collectors.toMap(DisqualificationFinalResult::getId, x -> x, (value1, value2) -> value2));
-        for (Disqualification disqualification: disqualificationList) {
-            if (ObjectUtils.isNotEmpty(resultMap.get(disqualification.getId()))) {
-                disqualification.setUnitTreatmentOne(resultMap.get(disqualification.getId()).getUnitTreatmentOne());
-                disqualification.setUnitTreatmentTwo(resultMap.get(disqualification.getId()).getUnitTreatmentTwo());
+        if (CollectionUtils.isNotEmpty(disqualificationList)) {
+            LambdaQueryWrapper<DisqualificationFinalResult> wrapper = Wrappers.lambdaQuery(DisqualificationFinalResult.class)
+                    .in(DisqualificationFinalResult::getId, disqualificationList.stream().map(Disqualification::getId).collect(Collectors.toList()));
+            getDisqualificationByQueryPartDto(wrapper, queryInspectorDto);
+            // 不合格品结果信息
+            List<DisqualificationFinalResult> finalResultList = finalResultMapper.selectList(wrapper);
+            if (CollectionUtils.isNotEmpty(finalResultList)) {
+                // 查询条件后结果集
+                List<Disqualification> disqualifications = new ArrayList<>();
+                for (DisqualificationFinalResult finalResult: finalResultList) {
+                    for (Disqualification disqualification: disqualificationList) {
+                        if (finalResult.getId().equals(disqualification.getId())) {
+                            disqualifications.add(disqualification);
+                        }
+                    }
+                }
+                // new Page
+                Page<Disqualification> page = new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit(), disqualifications.size());
+                // 当前页的数据在list位置
+                long start = (page.getCurrent() - 1) * page.getSize();
+                // 当前页在最后一条数据所在list位置
+                long end = (start + page.getSize()) > page.getTotal() ? page.getTotal() : (page.getSize() * page.getCurrent());
+                if (page.getSize()*(page.getCurrent() - 1) <= page.getTotal()) {
+                    // 分隔列表, 当前页存在数据时显示
+                    page.setRecords(disqualifications.subList((int)start , (int)end));
+                }
+                return page;
             }
         }
-        // 条件结果后结果集
-        List<Disqualification> disqualifications = disqualificationMapper.selectBatchIds(finalResultList.stream().map(DisqualificationFinalResult::getId).collect(Collectors.toList()));
-        // new Page
-        Page<Disqualification> page = new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit(), disqualifications.size());
-        // 当前页的数据在list位置
-        long start = (page.getCurrent() - 1) * page.getSize();
-        // 当前页在最后一条数据所在list位置
-        long end = (start + page.getSize()) > page.getTotal() ? page.getTotal() : (page.getSize() * page.getCurrent());
-        if (page.getSize()*(page.getCurrent() - 1) <= page.getTotal()) {
-            // 分隔列表, 当前页存在数据时显示
-            page.setRecords(disqualifications.subList((int)start , (int)end));
-        }
-        return page;
+        return null;
     }
 
     private void getDisqualificationByQueryPartDto(LambdaQueryWrapper<DisqualificationFinalResult> objectQueryWrapper, QueryInspectorDto queryInspectorDto) {

@@ -11,8 +11,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -21,7 +19,6 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.common.model.produce.RawMaterialRecord;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.Tenant;
@@ -46,7 +43,6 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.ConcurrentUtil;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -54,12 +50,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -124,6 +120,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private ModelingCoreCacheService modelingCoreCacheService;
     @Autowired
     private KnockoutCacheService knockoutCacheService;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
+
+    @Resource
+    private TrackAssemblyService assemblyService;
 
     public static final String END_START_WORK = "2";
 
@@ -157,16 +158,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             Set<String> tiIdList = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
             Future<List<TrackItem>> trackItemListFuture = ConcurrentUtil.doJob(executorService, () -> trackItemService.listByIds(new ArrayList<>(tiIdList)));
             //根据工序Id查询质检记录 2023/3/7 移至到完工查询，减少查询次数
-            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
-            queryWrapperCheck.in("ti_id", new ArrayList<>(tiIdList));
-            queryWrapperCheck.orderByDesc("modify_time");
-            Future<List<TrackCheck>> trackCheckListFuture = ConcurrentUtil.doJob(executorService, () -> trackCheckService.list(queryWrapperCheck));
+//            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
+//            queryWrapperCheck.in("ti_id", new ArrayList<>(tiIdList));
+//            queryWrapperCheck.orderByDesc("modify_time");
+//            Future<List<TrackCheck>> trackCheckListFuture = ConcurrentUtil.doJob(executorService, () -> trackCheckService.list(queryWrapperCheck));
             //并行执行
             List<QualityInspectionRules> rulesList = ConcurrentUtil.futureGet(qualityInspectionRulesFuture);
             Map<String, TenantUserVo> stringTenantUserVoMap = ConcurrentUtil.futureGet(userMapFuture);
             List<TrackHead> trackHeads = ConcurrentUtil.futureGet(trackHeadListFuture);
             List<TrackItem> trackItems = ConcurrentUtil.futureGet(trackItemListFuture);
-            List<TrackCheck> trackCheckList = ConcurrentUtil.futureGet(trackCheckListFuture);
+//            List<TrackCheck> trackCheckList = ConcurrentUtil.futureGet(trackCheckListFuture);
             Map<String, QualityInspectionRules> rulesMap = rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
             Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
             //过滤跟单工序只计算最终完成工序
@@ -175,7 +176,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
             List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
             Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k));
-            Map<String, List<TrackCheck>> trackChecksMap = trackCheckList.stream().filter(complete -> StrUtil.isNotBlank(complete.getTiId())).collect(Collectors.groupingBy(TrackCheck::getTiId));
+//            Map<String, List<TrackCheck>> trackChecksMap = trackCheckList.stream().filter(complete -> StrUtil.isNotBlank(complete.getTiId())).collect(Collectors.groupingBy(TrackCheck::getTiId));
             for (String id : userIdList) {
                 List<TrackComplete> trackCompletes = completesMap.get(id);
                 //用来展示数据列表
@@ -183,6 +184,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 TenantUserVo tenantUserVo = stringTenantUserVoMap.get(id);
                 //统计每个员工
                 if (!CollectionUtils.isEmpty(trackCompletes) && tenantUserVo != null) {
+                    //总工报工数量
+                    BigDecimal sumNumber = new BigDecimal(0);
                     //总工时累计额值
                     BigDecimal sumTotalHours = new BigDecimal(0);
                     //准结工时累计值
@@ -250,6 +253,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //实际准结工时
                         BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours() / track.getCompletePersonQty());
+
+                        sumNumber = sumNumber.add(number);
                         //累计准结工时
                         sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                         //累计额定工时
@@ -258,9 +263,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
-                            List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
-                            if (trackChecks != null && trackChecks.size() > 0) {
-                                QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
+//                            List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
+                            if (StrUtil.isNotBlank(trackItem.getRuleId())) {
+                                QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
                                 if (rules != null) {
                                     if (rules.getIsGiveTime() == 1) {
                                         //累计实际额定工时
@@ -313,6 +318,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         details.add(track);
                     }
                     track0.setId(id);
+                    //总报工数量
+                    track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际准备工时
                     track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际报工工时
@@ -351,9 +358,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
-                    if (order.equals("desc")) {
+                    if ("desc".equals(order)) {
                         queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                    } else if (order.equals("asc")) {
+                    } else if ("asc".equals(order)) {
                         queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                     }
                 } else {
@@ -469,6 +476,26 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     //派工状态设置为完成
                     assign.setState(2);
                     trackAssignService.updateById(assign);
+                }
+                //外协报工最后一道工序校验所有关键件全部绑定完成
+                if ("2".equals(trackHead.getClasses()) && trackItem.getNextOptSequence() == 0) {
+                    //获取当前跟单下所有工序,并且根据opt_sequence倒序排序
+                    QueryWrapper<TrackItem> queryWrapperItemList = new QueryWrapper<>();
+                    queryWrapperItemList.eq("track_head_id", trackHead.getId());
+                    queryWrapperItemList.orderByDesc("opt_sequence");
+                    List<TrackItem> list = trackItemService.list(queryWrapperItemList);
+                    //判断是不是最后一道工序
+                    if (list.get(0).getOptSequence().equals(trackItem.getOptSequence())) {
+                        //查询关键件 && 安装数量!=需要安装数量的
+                        QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
+                        assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
+                        assemblyQueryWrapper.apply("number <> number_install");
+                        assemblyQueryWrapper.eq("is_key_part", 1);
+                        int count = assemblyService.count(assemblyQueryWrapper);
+                        if (count > 0) {
+                            throw new GlobalException("关键件为全部绑定,不允许最终完成", ResultCode.FAILED);
+                        }
+                    }
                 }
             } else {
                 //跟新工序完成数量
@@ -747,15 +774,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     private List<ForgControlRecord> buildForgControlRecords(QueryWorkingTimeVo queryWorkingTimeVo, List<ForgControlRecord> forgControlRecordList) {
-        List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("2")).collect(Collectors.toList());
+        List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> "2".equals(x.getType())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(barForgeInfo)) {
             queryWorkingTimeVo.setBarForge(barForgeInfo.get(0).getBarForge());
         }
-        List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("3")).collect(Collectors.toList());
+        List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> "3".equals(x.getType())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(remarkInfo)) {
             queryWorkingTimeVo.setForgeRemark(remarkInfo.get(0).getRemark());
         }
-        forgControlRecordList = forgControlRecordList.stream().filter(x -> x.getType().equals("1")).collect(Collectors.toList());
+        forgControlRecordList = forgControlRecordList.stream().filter(x -> "1".equals(x.getType())).collect(Collectors.toList());
         return forgControlRecordList;
     }
 
@@ -933,7 +960,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 }
             }
             //将当前工序设置为激活
-            if (msg.equals("")) {
+            if ("".equals(msg)) {
                 UpdateWrapper<TrackItem> itemUpdateWrapper = new UpdateWrapper<>();
                 itemUpdateWrapper.eq("id", trackItem.getId())
                         .set("is_doing", 0)
@@ -956,7 +983,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
 
 
-        if (msg.equals("")) {
+        if ("".equals(msg)) {
             return CommonResult.success(null, "删除成功！");
         } else {
             return CommonResult.failed("操作失败，请重试！" + msg);
@@ -1016,6 +1043,18 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             ).collect(Collectors.toList());
             result.addAll(collect);
         }
+        //获取对应的flow
+        List<String> collect = result.stream().map(TrackItem::getFlowId).distinct().collect(Collectors.toList());
+        //修改flow状态
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.in("id", collect);
+        update.set("status", "1");
+        trackFlowService.update(update);
+        //修改跟单状态
+        UpdateWrapper<TrackHead> headUpdateWrapper = new UpdateWrapper<>();
+        headUpdateWrapper.eq("id", list.get(0).getTrackHeadId());
+        headUpdateWrapper.set("status", "1");
+        trackHeadService.update(headUpdateWrapper);
         //检查是否跳工序报工
         this.checkOP(list, result);
         boolean bool = true;
@@ -1025,6 +1064,149 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (StringUtils.isNullOrEmpty(trackItem.getStartDoingUser())) {
                 trackItem.setStartDoingTime(new Date());
                 trackItem.setStartDoingUser(outsource.getTrackComplete().getUserId());
+            }
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+            trackItem.setCompleteQty(Double.valueOf(trackItem.getNumber()));
+            trackItem.setAssignableQty(0);
+            trackComplete.setTiId(trackItem.getId());
+            trackComplete.setTrackId(trackItem.getTrackHeadId());
+            trackComplete.setProdNo(trackItem.getProductNo());
+            trackComplete.setAssignId("");
+            trackComplete.setModifyTime(new Date());
+            trackComplete.setCreateTime(new Date());
+            trackComplete.setCompleteBy(outsource.getTrackComplete().getUserId());
+            trackComplete.setCompleteTime(new Date());
+            trackComplete.setUserId(SecurityUtils.getCurrentUser().getUsername());
+            CommonResult<TenantUserVo> userVoCommonResult = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId());
+            trackComplete.setUserName(userVoCommonResult.getData().getEmplName());
+            trackComplete.setBranchCode(outsource.getBranchCode());
+            trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+            trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+            trackComplete.setCompletedQty(Double.valueOf(trackItem.getNumber()));
+            trackComplete.setTrackNo(trackHead.getId());
+
+            trackItem.setOperationCompleteTime(new Date());
+            trackItem.setIsOperationComplete(1);
+            trackItem.setIsDoing(2);
+            trackItem.setQualityCheckBy(trackComplete.getQualityCheckBy());
+            trackItem.setQualityCheckBranch(trackComplete.getQualityCheckBranch());
+            bool = trackCompleteService.save(trackComplete);
+            //判断是否需要质检和调度审核 再激活下工序
+            boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
+            if (next) {
+                trackItem.setIsFinalComplete("1");
+                trackItem.setFinalCompleteTime(new Date());
+            }
+            trackItemService.updateById(trackItem);
+            if (next) {
+                Map<String, String> map = new HashMap<String, String>(1);
+                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                publicService.activationProcess(map);
+            }
+        }
+        if (bool) {
+            return CommonResult.success(bool, "操作成功！");
+        } else {
+            return CommonResult.failed("操作失败，请重试！");
+        }
+    }
+
+    @Override
+    public CommonResult<Boolean> saveOutsourceNew(OutsourceCompleteDto outsource) {
+        //获取所有跟单工序
+        QueryWrapper<TrackItem> queryWrapperAll = new QueryWrapper<>();
+        queryWrapperAll.in("track_head_id", outsource.getTrackHeadId());
+        queryWrapperAll.eq("branch_code", outsource.getBranchCode());
+        //产品对应的全部工序
+        List<TrackItem> list = trackItemService.list(queryWrapperAll);
+        List<TrackItem> result = new ArrayList<>();
+        //获取正确的工序
+        //此次报工对应的产品工序
+        for (OutsourceDto outsourceDto : outsource.getOutsourceDtoList()) {
+            List<TrackItem> trackItemList = list.stream().filter(trackItem ->
+                    StrUtil.isNotBlank(trackItem.getOptNo()) && StrUtil.isNotBlank(trackItem.getOptName()) && trackItem.getOptNo().equals(outsourceDto.getOptNo()) && OptNameUtil.optName(trackItem.getOptName()).equals(OptNameUtil.optName(outsourceDto.getOptName()))
+            ).collect(Collectors.toList());
+            result.addAll(trackItemList);
+        }
+        //先判断是不是最小工序报工
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        queryWrapper.in("track_head_id", outsource.getTrackHeadId())
+                .eq("opt_type", "3")
+                .eq("is_operation_complete", 0)
+                .eq("is_current", 1)
+                .orderByDesc("next_opt_sequence");
+        List<TrackItem> trackItems = trackItemService.list(queryWrapper);
+        //最小值
+        int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
+        //获取有没有不等于最小值的
+        List<TrackItem> collect = result.stream().filter(item -> item.getOriginalOptSequence() != min).collect(Collectors.toList());
+        //有大于最小值的不是最小工序报工,需要进行连续工序判断,和所有产品同时报工判断
+        if (!collect.isEmpty()) {
+            //先判断报工的是所有产品吗
+            QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
+            flowQueryWrapper.in("track_head_id", outsource.getTrackHeadId());
+            //获取产品数量
+            int count = trackFlowService.count(flowQueryWrapper);
+            //总产品数大于报工产品数,不是只能报工所在产品的当前工序
+            if (count > outsource.getProdNoList().size()) {
+                //过滤出 传入产品的当前工序
+                result = result.stream().filter(item -> item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+            } else {
+                //分组并排序
+                Map<String, List<TrackItem>> map = result.stream().sorted(Comparator.comparing(TrackItem::getOptSequence)).collect(Collectors.groupingBy(TrackItem::getFlowId));
+                //校验是否连续工序
+                boolean optNext = false;
+                for (List<TrackItem> trackItem : map.values()) {
+                    //默认赋值第一道工序参数,从第二道工序进行判断
+                    int optSequence = trackItem.get(0).getOptSequence();
+                    int next = trackItem.get(0).getNextOptSequence();
+                    Integer isParallel = trackItem.get(0).getOptParallelType();
+                    for (TrackItem item : trackItem) {
+                        //不判断第一道工序
+                        if (!trackItem.get(0).getId().equals(item.getId())) {
+                            boolean isParallelSequence = optSequence == item.getOptSequence() - 1;
+                            //上一道工序 和 当前工序并行,并且上到工序optSequence = 当前工序optSequence-1
+                            if (isParallel == 1 && item.getOptParallelType() == 1 && isParallelSequence) {
+                                //赋值当前工序参数 下次循环在进行判断
+                                next = item.getNextOptSequence();
+                                isParallel = item.getOptParallelType();
+                                optSequence = item.getOptSequence();
+                                //赋值连续工序
+                                optNext = true;
+                                continue;
+                            }
+                            //不是连续并行工序
+                            if (item.getOriginalOptSequence() == next && isParallelSequence) {
+                                //赋值当前工序参数 下次循环在进行判断
+                                next = item.getNextOptSequence();
+                                isParallel = item.getOptParallelType();
+                                optSequence = item.getOptSequence();
+                                //赋值连续工序
+                                optNext = true;
+                            }
+                        }
+                    }
+                }
+                //连续工序判断
+                if (optNext) {
+                    //result通过工序排序
+                    result = result.stream().sorted(Comparator.comparing(TrackItem::getOptSequence)).collect(Collectors.toList());
+                } else {
+                    //获取当前工序
+                    result = result.stream().filter(item -> item.getIsCurrent() == 1).collect(Collectors.toList());
+                }
+            }
+        } else {
+            //过滤掉已报工的数据&&过滤不在传入产品编号的数据
+            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+        }
+        boolean bool = true;
+        for (TrackItem trackItem : result) {
+            TrackComplete trackComplete = new TrackComplete();
+            BeanUtils.copyProperties(outsource.getTrackComplete(), trackComplete);
+            if (StringUtils.isNullOrEmpty(trackItem.getStartDoingUser())) {
+                trackItem.setStartDoingTime(new Date());
+                trackItem.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
             }
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             trackItem.setCompleteQty(Double.valueOf(trackItem.getNumber()));
@@ -1151,17 +1333,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //根据跟单工序id获取跟单工序
             Set<String> tiIdList = allCompletes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
             Future<List<TrackItem>> trackItemListFuture = ConcurrentUtil.doJob(executorService, () -> trackItemService.listByIds(new ArrayList<>(tiIdList)));
-            //根据工序Id查询质检记录 2023/3/7 移至到完工查询，减少查询次数
-            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
-            queryWrapperCheck.in("ti_id", new ArrayList<>(tiIdList));
-            queryWrapperCheck.orderByDesc("modify_time");
-            Future<List<TrackCheck>> trackCheckListFuture = ConcurrentUtil.doJob(executorService, () -> trackCheckService.list(queryWrapperCheck));
             //并行执行
             List<QualityInspectionRules> rulesList = ConcurrentUtil.futureGet(qualityInspectionRulesFuture);
             Map<String, TenantUserVo> stringTenantUserVoMap = ConcurrentUtil.futureGet(userMapFuture);
             List<TrackHead> trackHeads = ConcurrentUtil.futureGet(trackHeadListFuture);
             List<TrackItem> trackItems = ConcurrentUtil.futureGet(trackItemListFuture);
-            List<TrackCheck> trackCheckList = ConcurrentUtil.futureGet(trackCheckListFuture);
             Map<String, QualityInspectionRules> rulesMap = rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
             Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
             Map<String, TrackItem> trackMap = trackItems.stream().filter(item -> item.getIsOperationComplete() == 1).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k));
@@ -1169,7 +1345,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
             List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
             Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k));
-            Map<String, List<TrackCheck>> trackChecksMap = trackCheckList.stream().filter(complete -> StrUtil.isNotBlank(complete.getTiId())).collect(Collectors.groupingBy(TrackCheck::getTiId));
             //根据报工表获取订单id对应的trackHeadList
             Set<String> trackIds = allCompletes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
             List<TrackHead> trackHeadList = trackHeadService.listByIds(new ArrayList<>(trackIds));
@@ -1185,6 +1360,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 if (!CollectionUtils.isEmpty(completes)) {
                     //用来展示数据列表
                     List<TrackComplete> trackCompleteShowList = new ArrayList<>();
+                    //总工报工数量
+                    BigDecimal sumNumber = new BigDecimal(0);
                     //总工时累计额值
                     BigDecimal sumTotalHours = new BigDecimal(0);
                     //准结工时累计值
@@ -1252,15 +1429,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //实际准结工时
                         BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours() / track.getCompletePersonQty());
+
+                        sumNumber = sumNumber.add(number);
                         //累计准结工时
                         sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                         //累计额定工时
                         sumReportHours = sumReportHours.add(reportHours);
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
-                            List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
-                            if (trackChecks != null && trackChecks.size() > 0) {
-                                QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
+                            if (StrUtil.isNotBlank(trackItem.getRuleId())) {
+                                QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
                                 if (rules != null) {
                                     if (rules.getIsGiveTime() == 1) {
                                         //累计实际额定工时
@@ -1314,6 +1492,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     }
                     track0.setProductionOrder(orderno);
                     track0.setId(orderno);
+                    //总报工数量
+                    track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际准备工时
                     track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际额定工时
@@ -1365,17 +1545,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //根据跟单工序id获取跟单工序
             Set<String> tiIdList = allCompletes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
             Future<List<TrackItem>> trackItemListFuture = ConcurrentUtil.doJob(executorService, () -> trackItemService.listByIds(new ArrayList<>(tiIdList)));
-            //根据工序Id查询质检记录 2023/3/7 移至到完工查询，减少查询次数
-            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
-            queryWrapperCheck.in("ti_id", new ArrayList<>(tiIdList));
-            queryWrapperCheck.orderByDesc("modify_time");
-            Future<List<TrackCheck>> trackCheckListFuture = ConcurrentUtil.doJob(executorService, () -> trackCheckService.list(queryWrapperCheck));
             //并行执行
             List<QualityInspectionRules> rulesList = ConcurrentUtil.futureGet(qualityInspectionRulesFuture);
             Map<String, TenantUserVo> stringTenantUserVoMap = ConcurrentUtil.futureGet(userMapFuture);
             List<TrackHead> trackHeads = ConcurrentUtil.futureGet(trackHeadListFuture);
             List<TrackItem> trackItems = ConcurrentUtil.futureGet(trackItemListFuture);
-            List<TrackCheck> trackCheckList = ConcurrentUtil.futureGet(trackCheckListFuture);
             Map<String, QualityInspectionRules> rulesMap = rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
             Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
             Map<String, TrackItem> trackMap = trackItems.stream().filter(item -> item.getIsOperationComplete() == 1).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k));
@@ -1383,7 +1557,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
             List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
             Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k));
-            Map<String, List<TrackCheck>> trackChecksMap = trackCheckList.stream().filter(complete -> StrUtil.isNotBlank(complete.getTiId())).collect(Collectors.groupingBy(TrackCheck::getTiId));
             //根据报工表获取订单id对应的trackHeadList
             Set<String> trackIds = allCompletes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
             List<TrackHead> trackHeadList = trackHeadService.listByIds(new ArrayList<>(trackIds));
@@ -1399,6 +1572,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 if (!CollectionUtils.isEmpty(completes)) {
                     //用来展示数据列表
                     List<TrackComplete> trackCompleteShowList = new ArrayList<>();
+                    //总工报工数量
+                    BigDecimal sumNumber = new BigDecimal(0);
                     //总工时累计额值
                     BigDecimal sumTotalHours = new BigDecimal(0);
                     //准结工时累计值
@@ -1466,6 +1641,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         }
                         //实际准结工时
                         BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours() / track.getCompletePersonQty());
+
+                        sumNumber = sumNumber.add(number);
                         //累计准结工时
                         sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                         //累计额定工时
@@ -1473,9 +1650,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
                         if (trackItem.getIsQualityComplete() == 1) {
-                            List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
-                            if (trackChecks != null && trackChecks.size() > 0) {
-                                QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
+                            if (StrUtil.isNotBlank(trackItem.getRuleId())) {
+                                QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
                                 if (rules != null) {
                                     if (rules.getIsGiveTime() == 1) {
                                         //累计实际额定工时
@@ -1530,6 +1706,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     }
                     track0.setWorkNo(workno);
                     track0.setId(workno);
+                    //总报工数量
+                    track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际准备工时
                     track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                     //实际额定工时
@@ -1578,11 +1756,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //根据跟单工序id获取跟单工序
             Set<String> tiIdList = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
             Future<List<TrackItem>> trackItemListFuture = ConcurrentUtil.doJob(executorService, () -> trackItemService.listByIds(new ArrayList<>(tiIdList)));
-            //根据工序Id查询质检记录 2023/3/7 移至到完工查询，减少查询次数
-            QueryWrapper<TrackCheck> queryWrapperCheck = new QueryWrapper<>();
-            queryWrapperCheck.in("ti_id", new ArrayList<>(tiIdList));
-            queryWrapperCheck.orderByDesc("modify_time");
-            Future<List<TrackCheck>> trackCheckListFuture = ConcurrentUtil.doJob(executorService, () -> trackCheckService.list(queryWrapperCheck));
             //并行执行
             List<QualityInspectionRules> rulesList = ConcurrentUtil.futureGet(qualityInspectionRulesFuture);
             Map<String, TenantUserVo> stringTenantUserVoMap = ConcurrentUtil.futureGet(userMapFuture);
@@ -1594,7 +1767,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             List<String> belongOrgIdList = new ArrayList<>(belongOrgIdMap.keySet());
             List<TrackHead> trackHeads = ConcurrentUtil.futureGet(trackHeadListFuture);
             List<TrackItem> trackItems = ConcurrentUtil.futureGet(trackItemListFuture);
-            List<TrackCheck> trackCheckList = ConcurrentUtil.futureGet(trackCheckListFuture);
             Map<String, QualityInspectionRules> rulesMap = rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
             Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
             //过滤跟单工序只计算最终完成工序
@@ -1603,11 +1775,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
             List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
             Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k));
-            Map<String, List<TrackCheck>> trackChecksMap = trackCheckList.stream().filter(complete -> StrUtil.isNotBlank(complete.getTiId())).collect(Collectors.groupingBy(TrackCheck::getTiId));
             for (String belongOrgId : belongOrgIdList) {
                 Branch branchInfo = baseServiceClient.getBranchInfoByBranchCode(belongOrgId);
                 List<TenantUserVo> userInfoList = belongOrgIdMap.get(belongOrgId);
                 List<String> userIdList = userInfoList.stream().map(TenantUserVo::getUserAccount).collect(Collectors.toList());
+                //总工报工数量
+                BigDecimal sumNumber = new BigDecimal(0);
                 //总工时累计额值
                 BigDecimal sumTotalHours = new BigDecimal(0);
                 //准结工时累计值
@@ -1683,15 +1856,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             }
                             //实际准结工时
                             BigDecimal realityPrepareEndHours = new BigDecimal(track.getPrepareEndHours() / track.getCompletePersonQty());
+
+                            sumNumber = sumNumber.add(number);
                             //累计准结工时
                             sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
                             //累计额定工时
                             sumReportHours = sumReportHours.add(reportHours);
                             //已质检 校验不合格是否给工时(单件工时/额定工时)
                             if (trackItem.getIsQualityComplete() == 1) {
-                                List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
-                                if (trackChecks != null && trackChecks.size() > 0) {
-                                    QualityInspectionRules rules = rulesMap.get(trackChecks.get(0).getResult());
+                                if (StrUtil.isNotBlank(trackItem.getRuleId())) {
+                                    QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
                                     if (rules != null) {
                                         if (rules.getIsGiveTime() == 1) {
                                             //累计实际额定工时
@@ -1730,7 +1904,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             track.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             sumTotalHours = sumTotalHours.add(totalHours);
                             track.setUserName(tenantUserVo.getEmplName());
-//                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
+                            // track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
                             track.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
@@ -1746,6 +1920,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     }
                 }
                 track0.setId(belongOrgId);
+                //总报工数量
+                track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                 //实际准备工时
                 track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                 //实际报工工时
@@ -1767,8 +1943,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         Map<String, Object> stringObjectHashMap = new HashMap<>();
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
-        System.out.println("-------------------------------");
-        System.out.println(completes.size());
         return stringObjectHashMap;
     }
 
@@ -1784,7 +1958,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             throw new GlobalException("没有找到跟单信息！", ResultCode.FAILED);
         }
         //通过模板读入文件流
-        ClassPathResource classPathResource = new ClassPathResource("excel/" + "heatTreatLabel.xlsx");
+        ClassPathResource classPathResource = new ClassPathResource("excel/" + "knockoutLabel.xlsx");
         ExcelWriter writer;
         try {
             writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
@@ -1795,14 +1969,47 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
             ServletOutputStream outputStream = response.getOutputStream();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-            String time = "knockoutLabel" + LocalDateTime.now();
-            response.setHeader("Content-disposition", "attachment; filename=" + new String(time.getBytes("utf-8"),
+            String fileName = trackHead.getTrackNo() + "Label";
+            response.setHeader("Content-disposition", "attachment; filename=" + new String(fileName.getBytes("utf-8"),
                     "ISO-8859-1") + ".xlsx");
             writer.flush(outputStream, true);
             IoUtil.close(outputStream);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    @Override
+    public IPage<PrechargeFurnace> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit) {
+        //获取当前用户分派的预装炉信息
+        QueryWrapper<PrechargeFurnaceAssign> assignQueryWrapper = new QueryWrapper<>();
+        assignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+        List<PrechargeFurnaceAssign> assignList = prechargeFurnaceAssignService.list(assignQueryWrapper);
+        if (CollectionUtils.isEmpty(assignList)) {
+            throw new GlobalException("该用户暂无派工信息！", ResultCode.FAILED);
+        }
+        Set<Long> prechargeFurnaceIdList = assignList.stream().map(PrechargeFurnaceAssign::getPrechargeFurnaceId).collect(Collectors.toSet());
+        QueryWrapper<PrechargeFurnace> furnaceQueryWrapper = new QueryWrapper<>();
+        furnaceQueryWrapper.in("id", prechargeFurnaceIdList);
+        furnaceQueryWrapper.eq("workblank_type", workblankType);
+        if (prechargeFurnaceId != null) {
+            furnaceQueryWrapper.eq("id", prechargeFurnaceId);
+        }
+        if (!StringUtils.isNullOrEmpty(texture)) {
+            furnaceQueryWrapper.eq("texture", texture);
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            furnaceQueryWrapper.apply("UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            furnaceQueryWrapper.apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+        }
+        if (status.equals("2")) {
+            furnaceQueryWrapper.eq("status", 2);
+        } else {
+            furnaceQueryWrapper.ne("status", 2);
+        }
+        return prechargeFurnaceService.page(new Page<PrechargeFurnace>(page, limit), furnaceQueryWrapper);
     }
 
     private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
@@ -1837,13 +2044,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-        PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-        PageInfo<TrackComplete> page = new PageInfo(completes);
-        for (int i = 2; i <= page.getPages(); i++) {
-            PageHelper.startPage(i, 1000);
-            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
-        }
         return completes;
     }
 

@@ -5,6 +5,8 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 正火去氢工序执行记录(NormalizeDehydroExecuteRecord)表实体类
  *
@@ -22,5 +24,7 @@ public class NormalizeDehydroExecuteRecord extends BaseEntity<NormalizeDehydroEx
     private String workTime;
     @ApiModelProperty(value = "转运记录", dataType = "String")
     private String transferRecord;
+    @ApiModelProperty(value = "时间", dataType = "Date")
+    private Date date;
 }
 

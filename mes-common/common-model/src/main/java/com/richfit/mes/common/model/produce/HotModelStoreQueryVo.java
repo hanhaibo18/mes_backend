@@ -67,7 +67,8 @@ public class HotModelStoreQueryVo extends BaseEntity<HotModelStoreQueryVo> {
     private String order;
     @ApiModelProperty(value = "排序列 ", dataType = "String")
     private String orderCol;
-
+    @ApiModelProperty(value = "模型材质 :木制、气化模", dataType = "String")
+    private String modelTexture;
 
 }
 

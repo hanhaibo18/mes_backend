@@ -9,17 +9,20 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.Operatipon;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.PlanExtend;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.HotDemandMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.entity.DemandExcel;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -33,7 +36,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,6 +58,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
 
     @Autowired
     private HotPlanNodeService planNodeService;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
     /**
      * 导入需求提报数据
      * @param file
@@ -66,7 +71,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     @Override
     public CommonResult importDemand(MultipartFile file, String branchCode) {
         CommonResult result = null;
-
+        String submitOrderOrg = hotDemandService.getSubmitOrderOrg(branchCode, SecurityUtils.getCurrentUser());
         java.lang.reflect.Field[] fields = DemandExcel.class.getDeclaredFields();
 
         String[] fieldNames = new String[fields.length];
@@ -103,8 +108,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setBranchCode(branchCode);
             hotDemand.setCreateTime(new Date());
             hotDemand.setSubmitState(0);
-            hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+            hotDemand.setSubmitOrderOrg(submitOrderOrg);
             hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
+            hotDemand.setPlanNum(hotDemand.getNum());
             //0锻件,1铸件,2钢锭
             if(StringUtils.isNotEmpty(hotDemand.getWorkblankType())){
                 switch (hotDemand.getWorkblankType()){
@@ -117,6 +123,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
                 }
             }
+            //查重
+            hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             this.save(hotDemand);
             //demandList.add(hotDemand);
         }
@@ -134,7 +142,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult importDemandYL(MultipartFile file, String branchCode) {
-
+        String submitOrderOrg = hotDemandService.getSubmitOrderOrg(branchCode, SecurityUtils.getCurrentUser());
         //sheet计划列表
         String[] fieldNames = {"materialName","erpProductCode","texture","num","ingotCase","planEndTime","inchargeOrg","demandTime","projectName","workNo","drawNo","demandName","priority","versionNum","remark"};
         File excelFile = null;
@@ -163,10 +171,13 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setBranchCode(branchCode);
             hotDemand.setCreateTime(new Date());
             hotDemand.setSubmitState(0);
-            hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+            hotDemand.setSubmitOrderOrg(submitOrderOrg);
             hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
+            hotDemand.setPlanNum(hotDemand.getNum());
             //0锻件,1铸件,2钢锭
             hotDemand.setWorkblankType("2");//冶炼
+            //查重
+            hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             demandList.add(hotDemand);
         }
         this.saveBatch(demandList);
@@ -191,7 +202,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(drawNos))  return new ArrayList<>();
+        if (CollectionUtils.isEmpty(drawNos)) {
+            return new ArrayList<>();
+        }
         //根据需求数据中的图号查询模型库
         QueryWrapper<HotModelStore> modelWrapper=new QueryWrapper();
         modelWrapper.eq("tenant_id",currentUser.getTenantId());
@@ -222,12 +235,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     @Override
     public CommonResult<?> ratify(List<String> idList, Integer ratifyState, String branchCode) {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        //检查无模型数据
-        List<String> ids = hotDemandService.checkModel(idList, branchCode);
-        if (CollectionUtils.isNotEmpty(ids)) {
-            return CommonResult.failed("存在无模型需求");
-        }
-        //通过模型检查后查出所有需求信息
+        //查出所有需求信息
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
         queryWrapper.apply("(produce_ratify_state=0 or produce_ratify_state is null)");
@@ -238,7 +246,25 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         } else {
             for (HotDemand hotDemand : hotDemands) {
                 if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
-                    return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量为大于0的数字");
+                    return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量不能为0");
+                }
+            }
+        }
+        //检查无模型数据
+//        List<String> ids = hotDemandService.checkModel(idList, branchCode);
+//        if (CollectionUtils.isNotEmpty(ids)) {
+//            return CommonResult.failed("存在无模型需求");
+//        }
+        for (HotDemand hotDemand : hotDemands) {
+            //无工艺不可批准生产
+            if(hotDemand.getIsExistProcess()==null||hotDemand.getIsExistProcess()==0){
+                throw new GlobalException(hotDemand.getDemandName()+" 无工艺",ResultCode.FAILED);
+           }
+            //毛坯类型 0锻件,1铸件,2钢锭
+            //为铸件产品时需要有模型才能批准生产
+            if(hotDemand.getWorkblankType()=="1"){
+                if(hotDemand.getIsExistModel()==null||hotDemand.getIsExistModel()==0){
+                    throw new GlobalException(hotDemand.getDemandName()+" 无模型",ResultCode.FAILED);
                 }
             }
         }
@@ -250,7 +276,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             updateWrapper.set("produce_ratify_state", ratifyState);//设置批准状态
             updateWrapper.set("issue_time", new Date());//设置下发时间
             updateWrapper.set("plan_id", map.get(hotDemand.getId()));//设置计划id
-            updateWrapper.set("modify_by",currentUser.getUsername());
+            updateWrapper.set("ratify_by", currentUser.getUsername());//批准人
+            updateWrapper.set("ratify_time",  new Date());//批准时间
             updateWrapper.eq("id", hotDemand.getId());
             boolean update = hotDemandService.update(updateWrapper);
         }
@@ -291,6 +318,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             updateWrapper.set("issue_time", new Date());//设置下发时间
             updateWrapper.set("plan_id", map.get(hotDemand.getId()));//设置计划id
             updateWrapper.set("modify_by",currentUser.getUsername());
+            updateWrapper.set("ratify_by", currentUser.getUsername());//批准人
+            updateWrapper.set("ratify_time",  new Date());//批准时间
             updateWrapper.eq("id", hotDemand.getId());
             boolean update = hotDemandService.update(updateWrapper);
         }
@@ -359,11 +388,18 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
         // queryWrapper.eq("branch_code", branchCode);
         queryWrapper.apply("(produce_state=0 or produce_state is null)");
+        //毛坯类型 0锻件,1铸件,2钢锭
+        queryWrapper.eq("workblank_type",1);
         queryWrapper.in("id", idList);
-        //无模型"且“未排产”产品
+        //无模型"且“未排产” 的铸件产品
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         if(CollectionUtils.isEmpty(hotDemands)){
             return CommonResult.success(ResultCode.SUCCESS,"所选需求均已排产");
+        }
+        for (HotDemand hotDemand : hotDemands) {
+            if(hotDemand.getPlanNum()==null || hotDemand.getPlanNum()<=0){
+                return CommonResult.failed(ResultCode.FAILED, hotDemand.getDemandName()+": 请编辑计划数量不能为0");
+            }
         }
         //将需求数据转换为生产计划并入库
         Map map = this.convertAndSave(currentUser, hotDemands, 1);
@@ -448,6 +484,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             planExtend.setSubmitOrderOrg(hotDemand.getSubmitOrderOrg());//提单单位
             planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
             planExtend.setIngotCase(hotDemand.getIngotCase());//锭 型
+            planExtend.setWorkblankType(hotDemand.getWorkblankType());//毛坯类型 0锻件,1铸件,2钢锭
         planExtendService.save(planExtend);
     }
 
@@ -496,12 +533,16 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         List<String> drawNoList = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
         //根据图号查出工艺信息
         List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoList, branchCode).getData();
-        if (CollectionUtils.isEmpty(byDrawNo)) return CommonResult.failed("没有工艺信息");
+        if (CollectionUtils.isEmpty(byDrawNo)) {
+            return CommonResult.failed("没有工艺信息");
+        }
         List<String> routerIdList = byDrawNo.stream().map(x -> x.getId()).collect(Collectors.toList());
         Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x.getId()));
         //根据工艺id查出工序信息
         List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList);
-        if (CollectionUtils.isEmpty(sequences)) return CommonResult.failed("工艺没有工序信息");
+        if (CollectionUtils.isEmpty(sequences)) {
+            return CommonResult.failed("工艺没有工序信息");
+        }
         //根据工艺id分组
         Map<String, List<Sequence>> sequencesMap = sequences.stream().collect(Collectors.groupingBy(Sequence::getRouterId));
         //根据工序id查询工序字典(拿到关键工序字段)
@@ -557,5 +598,53 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         updateWrapper.in("id", demandIdList);
         hotDemandService.update(updateWrapper);
     }
+
+    /**
+     * 设置提单单位名称
+     * @param branchCode
+     * @param currentUser
+     */
+    @Override
+    public String getSubmitOrderOrg(String branchCode, TenantUserDetails currentUser) {
+        Branch branchInfo = baseServiceClient.getBranchInfoByBranchCode(branchCode);
+        Tenant tenant = systemServiceClient.getTenantById(currentUser.getTenantId()).getData();
+        if(ObjectUtils.isNotEmpty(branchInfo)&&ObjectUtils.isNotEmpty(tenant)){
+           return tenant.getTenantName()+"-"+branchInfo.getBranchName();
+        }else {
+            return null;
+        }
+    }
+
+
+    /**
+     * 根据  图号 工作号  版本号  查重
+     * @param workNo
+     * @param drawNo
+     * @param versionNum
+     * @return
+     */
+    @Override
+    public void checkDemand(String workNo, String drawNo,String versionNum) {
+        QueryWrapper<HotDemand> queryWrapper=new QueryWrapper<>();
+
+        if (StringUtils.isEmpty(workNo)) {
+            throw new GlobalException("工作号不能为空",ResultCode.FAILED);
+        }
+        if (StringUtils.isEmpty(drawNo)) {
+            throw new GlobalException("图号不能为空",ResultCode.FAILED);
+        }
+        if (StringUtils.isEmpty(versionNum)) {
+            throw new GlobalException("版本号不能为空",ResultCode.FAILED);
+        }
+        queryWrapper.eq("work_no",workNo);
+        queryWrapper.eq("draw_no",drawNo);
+        queryWrapper.eq("version_num",versionNum);
+        List<HotDemand> list = hotDemandService.list(queryWrapper);
+        if(CollectionUtils.isNotEmpty(list)){
+            throw new GlobalException("存在重复数据 "+list.get(0).getDemandName()+" 请合并相同项目产品",ResultCode.FAILED);
+        }
+
+    }
+
 
 }

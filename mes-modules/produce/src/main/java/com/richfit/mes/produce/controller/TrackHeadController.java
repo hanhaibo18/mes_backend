@@ -15,6 +15,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -25,6 +26,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLog;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.entity.*;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -81,6 +83,8 @@ public class TrackHeadController extends BaseController {
 
     @Autowired
     private ActionService actionService;
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
     public static String TRACK_HEAD_ID_NULL_MESSAGE = "跟单ID不能为空！";
     public static String TRACK_HEAD_NO_NULL_MESSAGE = "跟单编号不能为空！";
@@ -370,7 +374,30 @@ public class TrackHeadController extends BaseController {
         }
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
-        return CommonResult.success(trackHeadService.queryPage(new Page<TrackHead>(page, limit), queryWrapper), TRACK_HEAD_SUCCESS_MESSAGE);
+        IPage<TrackHeadPublicVo> trackHeadPublicVoIPage = trackHeadService.queryPage(new Page<TrackHead>(page, limit), queryWrapper);
+        //capp属性赋值
+        for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
+            Router router = baseServiceClient.getRouter(record.getRouterId()).getData();
+            //锻造材料规格
+            record.setBlankSpecifi(router.getBlankSpecifi());
+            //锻造下料重量
+            record.setBlankWeight(router.getBlankWeight());
+            //材质
+            record.setTexture(router.getTexture());
+            //单重
+            record.setWeight(router.getWeight());
+            //钢水重量
+            record.setWeightMolten(router.getWeightMolten());
+            //工艺保温时间
+            record.setProcessHoldTime(router.getWeightMolten());
+            //浇筑温度
+            record.setPourTemp(router.getPourTemp());
+            //浇筑时间
+            record.setPourTime(router.getPourTime());
+            //试棒型号
+            record.setTestBar(router.getTestBar());
+        }
+        return CommonResult.success(trackHeadPublicVoIPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "导出跟单信息", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单并导出")
@@ -1114,4 +1141,19 @@ public class TrackHeadController extends BaseController {
     public TrackFlow getFlowInfoById(@RequestParam String id) {
         return trackFlowService.getById(id);
     }
+
+
+    @ApiOperation(value = "根据图号 获取上次填写的跟单的产品号")
+    @GetMapping("/getProductNoByDrawingNo")
+    public CommonResult<String>  getProductNoByDrawingNo(String drawingNo,String branchCode) {
+        return CommonResult.success(trackHeadService.getProductNo(drawingNo,branchCode));
+    }
+
+    @ApiOperation(value = "根据材质 试棒型号获取上次填写跟单的试棒编号")
+    @GetMapping("/getTestBarNoByTextureAndTestBarNo")
+    public CommonResult<String>  getTestBarNoByTextureAndTestBarNo(String texture,String testBarNo,String branchCode) {
+        return CommonResult.success(trackHeadService.getTestBarNo(texture,testBarNo,branchCode));
+    }
+
+
 }

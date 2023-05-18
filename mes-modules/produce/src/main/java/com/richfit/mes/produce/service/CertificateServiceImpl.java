@@ -1,10 +1,13 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.code.CertTypeEnum;
@@ -13,6 +16,7 @@ import com.richfit.mes.common.model.produce.TrackCertificate;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.CertificateMapper;
@@ -71,6 +75,11 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     @Override
+    public List<TrackHead> selectItemTrack(TrackHead trackHead) {
+        return certificateMapper.selectItemTrack(trackHead);
+    }
+
+    @Override
     public boolean autoCertificate(TrackHead trackHead) throws Exception {
         //装配车间
         if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
@@ -81,13 +90,14 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setBranchCode(trackHead.getBranchCode());
         certificate.setCertOrigin("0");
         certificate.setCertificateNo(Code.valueOnUpdate("hege_no", trackHead.getTenantId(), trackHead.getBranchCode(), codeRuleService));
-        certificate.setCheckName(user.getUserId());
+        CommonResult<TenantUserVo> commonResult = systemServiceClient.queryByUserId(user.getUserId());
+        certificate.setCheckName(commonResult.getData().getEmplName());
         certificate.setCheckTime(new Date());
         certificate.setDrawingNo(trackHead.getDrawingNo());
         certificate.setMaterialNo(trackHead.getMaterialNo());
         certificate.setNextOpt("/");
         //裝配开具并生产入库
-        if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
+        if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
             certificate.setNextOptWork("BOMCO_SC");
         }
         certificate.setNumber(trackHead.getNumber());
@@ -130,12 +140,70 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         return saveCertificate(certificate);
     }
 
+    //合格证前面的工序是否完工校验
+    private void checkBefore(Certificate certificate) throws Exception {
+        //判断当前工序之前有没有未完成的工序
+        List<String> ids = certificate.getTrackCertificates().stream().map(TrackCertificate::getThId).collect(Collectors.toList());
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        queryWrapper.in("track_head_id", ids);
+        queryWrapper.le("opt_sequence", certificate.getOptSequence());
+        List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
+        for (TrackItem trackItem : trackItemList) {
+            if ("1".equals(trackItem.getIsFinalComplete())) {
+                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                throw new Exception(trackHead.getTrackNo() + " " + Certificate.FAILED_ON_COMPLETE);
+            }
+        }
+    }
+
+    @Override
+    public void certificateCheck(Certificate certificate) throws Exception {
+        if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
+            throw new Exception(Certificate.CERTIFICATE_NO_NULL_MESSAGE);
+        }
+        if (certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0) {
+            throw new Exception(Certificate.TRACK_NO_NULL_MESSAGE);
+        }
+        //合格证号码重复校验
+        String certificateNo = Code.valueOnUpdate("hege_no", certificate.getTenantId(), certificate.getBranchCode(), codeRuleService);
+        certificate.setCertificateNo(certificateNo);
+        if (this.certNoExits(certificate.getCertificateNo(), certificate.getBranchCode())) {
+            throw new Exception(Certificate.CERTIFICATE_NO_EXIST_MESSAGE);
+        }
+        List<TrackCertificate> trackCertificates = certificate.getTrackCertificates();
+        if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
+            //检查当前工序之前有没有未完成的工序
+            this.checkBefore(certificate);
+            //合格证是否已经开具过
+            for (TrackCertificate trackCertificate : trackCertificates) {
+                Boolean isCertRepeat = trackItemService.checkIsCertRepeat(certificate);
+                if (isCertRepeat) {
+                    throw new Exception(Certificate.CERTIFICATE_HAS_BEEN_ISSUED);
+                }
+            }
+        } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
+            //完工合格证
+            //合格证是否已经开具过
+            for (TrackCertificate trackCertificate : trackCertificates) {
+                TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
+                if (StrUtil.isNotBlank(trackHead.getCertificateNo())) {
+                    throw new Exception(Certificate.CERTIFICATE_HAS_BEEN_ISSUED);
+                }
+            }
+        }
+    }
+
     @Override
     public boolean saveCertificate(Certificate certificate) throws Exception {
+        //合格证开具校验
+        this.certificateCheck(certificate);
+
         //重写拼接产品编号
         certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
         certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
         certificate.setIsPush("0");
+        //合格证来源 0：开出合格证 1：接收合格证
+        certificate.setCertOrigin("0");
         //1 保存合格证
         boolean bool = this.save(certificate);
         //2 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
@@ -143,11 +211,11 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         if (bool) {
             //3 更新跟单或工序对应的合格证编号
             certificate.getTrackCertificates().stream().forEach(track -> {
-                //工序合格证
                 if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
+                    //工序合格证
                     trackItemService.linkToCertNew(track.getThId(), certificate);
-                    //完工合格证
                 } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
+                    //完工合格证
                     trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
                     //更新跟单状态到 9 "已交"
                     trackHeadService.trackHeadDelivery(track.getThId());
@@ -195,7 +263,12 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
      * @param changeTrack 关联的跟单是否有变化
      */
     @Override
-    public void updateCertificate(Certificate certificate, boolean changeTrack) {
+    public void updateCertificate(Certificate certificate, boolean changeTrack) throws Exception {
+        if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
+            //检查当前工序之前有没有未完成的工序
+            this.checkBefore(certificate);
+        }
+        //重写拼接产品编号
         certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
         //1、保存合格证
         this.updateById(certificate);
@@ -253,7 +326,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             }).map(track -> track.getId()).collect(Collectors.toList());
             trackCertificateService.removeByIds(delete);
         }
-
     }
 
     @Override

@@ -6,6 +6,8 @@ import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -54,8 +56,10 @@ public interface BaseServiceClient {
                                               @RequestParam("branchCode") String branchCode
     );
 
+    @GetMapping(value = "/api/base/router/getRouter")
+    public CommonResult<Router> getRouter(@RequestParam("routerId") String routerId);
 
-    @GetMapping(value = "/api/base/router/getByRouterId")
+    @GetMapping(value = "/api/base/router/getByRouter")
     public CommonResult<Router> getByRouterId(@RequestParam("routerId") String routerId,
                                               @RequestParam("branchCode") String branchCode
     );
@@ -64,6 +68,14 @@ public interface BaseServiceClient {
     public CommonResult<List<Router>> getByRouterNos(@RequestParam("routerNos") String routerNos,
                                                      @RequestParam("branchCode") String branchCode
     );
+
+    /**
+     * 根据idList获得工艺
+     * @param idList
+     * @return
+     */
+    @PostMapping("/api/base/router/getByIds")
+    public CommonResult<List<Router>> getByRouterId(@RequestBody List<String> idList);
 
     @GetMapping(value = "/api/base/opt/find")
     public CommonResult<List<Operatipon>> find(@RequestParam("id") String id, @RequestParam("optCode") String optCode, @RequestParam("optName") String optName, @RequestParam("routerId") String routerId, @RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
@@ -241,4 +253,9 @@ public interface BaseServiceClient {
     @ApiOperation(value = "根据branchCode获取机构信息")
     @GetMapping("/api/base/branch/getBranchInfoByBranchCode")
     public Branch getBranchInfoByBranchCode(@RequestParam String branchCode);
+
+    @ApiOperation(value = "查询工艺")
+    @GetMapping("/api/base/router/find")
+    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status,@RequestParam String testBar,@RequestParam String texture);
+
 }

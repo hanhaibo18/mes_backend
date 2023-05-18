@@ -27,6 +27,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Api(value = "热工需求管理", tags = {"热工需求管理"})
+@Transactional(rollbackFor = Exception.class)
 @RestController
 @RequestMapping("/api/produce/demand")
 public class HotDemandController extends BaseController {
@@ -67,8 +69,11 @@ public class HotDemandController extends BaseController {
         hotDemand.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         hotDemand.setSubmitOrderTime(new Date());
         hotDemand.setSubmitById(currentUser.getUserId());
-        hotDemand.setSubmitOrderOrg(currentUser.getOrgId());
+        hotDemand.setSubmitOrderOrg(hotDemandService.getSubmitOrderOrg(hotDemand.getBranchCode(),currentUser));
         hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
+        hotDemand.setPlanNum(hotDemand.getNum());
+        //查重
+        hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
         boolean save = hotDemandService.save(hotDemand);
         if (save) {
             return CommonResult.success(ResultCode.SUCCESS);
@@ -89,6 +94,9 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getProjectName())) {//项目名称
             queryWrapper.eq("project_name", hotDemandParam.getProjectName());
         }
+        if (StringUtils.isNotEmpty(hotDemandParam.getDemandName())) {//名称
+            queryWrapper.eq("demand_name", hotDemandParam.getDemandName());
+        }
         if (StringUtils.isNotEmpty(hotDemandParam.getWorkNo())) {//工作号
             queryWrapper.eq("work_no", hotDemandParam.getWorkNo());
         }
@@ -103,23 +111,26 @@ public class HotDemandController extends BaseController {
         }
         if (StringUtils.isNotEmpty(hotDemandParam.getWorkblankType())) {//毛坯类型
             queryWrapper.eq("workblank_type", hotDemandParam.getWorkblankType());
-        }else {
+        } else {
             queryWrapper.notIn("workblank_type", "2");
         }
-        if (hotDemandParam.getIsExistProcess()!=null) {//有无工艺
+        if (hotDemandParam.getIsExistProcess() != null) {//有无工艺
             queryWrapper.eq("is_exist_process", hotDemandParam.getIsExistProcess());
         }
-        if (hotDemandParam.getIsExistModel()!=null) {//有无模型
+        if (hotDemandParam.getIsExistModel() != null) {//有无模型
             queryWrapper.eq("is_exist_model", hotDemandParam.getIsExistModel());
         }
-        if (hotDemandParam.getProduceState()!=null) {//是否排产
+        if (hotDemandParam.getProduceState() != null) {//是否排产
             queryWrapper.eq("produce_state", hotDemandParam.getProduceState());
         }
-        if (hotDemandParam.getIngotCase()!=null) {//锭型
+        if (hotDemandParam.getIngotCase() != null) {//锭型
             queryWrapper.eq("ingot_case", hotDemandParam.getIngotCase());
         }
-        if (hotDemandParam.getTexture()!=null) {//材质
+        if (hotDemandParam.getTexture() != null) {//材质
             queryWrapper.eq("texture", hotDemandParam.getTexture());
+        }
+        if (StringUtils.isNotEmpty(hotDemandParam.getVoucherNo())) {//凭证号
+            queryWrapper.eq("voucher_no", hotDemandParam.getVoucherNo());
         }
         //0 :未提报  1 :已提报'
         if (hotDemandParam.getSubmitState() != null) {
@@ -149,7 +160,7 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
             queryWrapper.orderByAsc(hotDemandParam.getOrderByColumns());
         }
-         //排序工具
+        //排序工具
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
         return CommonResult.success(page, ResultCode.SUCCESS.getMessage());
@@ -195,11 +206,14 @@ public class HotDemandController extends BaseController {
         List<HotDemand> hotDemands = hotDemandService.listByIds(idList);
         for (HotDemand hotDemand : hotDemands) {
             //提报状态 0 :未提报  1 :已提报
-            if (hotDemand.getSubmitState() != null & hotDemand.getSubmitState() == 1)
+            if (hotDemand.getSubmitState() != null & hotDemand.getSubmitState() == 1) {
                 throw new GlobalException("已提报的不能删除", ResultCode.FAILED);
+            }
         }
         boolean b = hotDemandService.removeByIds(idList);
-        if (b == true) return CommonResult.success(ResultCode.SUCCESS);
+        if (b == true) {
+            return CommonResult.success(ResultCode.SUCCESS);
+        }
         return CommonResult.failed();
     }
 
@@ -211,21 +225,28 @@ public class HotDemandController extends BaseController {
     })
     @PostMapping("/submit_or_revocation")
     public CommonResult submitDemand(@RequestBody List<String> idList, Integer submitState) {
+        //生成凭证号
+        String timeStemp = String.valueOf(System.currentTimeMillis());
+        String voucherNo = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss")+timeStemp.substring(timeStemp.length()-4);
         //需求撤回需要校验是否被热工确认,已经确认的不能撤回
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
         List<HotDemand> demands = hotDemandService.list(queryWrapper);
         for (HotDemand demand : demands) {
-            if (demand.getProduceRatifyState()!=null && demand.getProduceRatifyState() == 1) {
+            if (demand.getProduceRatifyState() != null && demand.getProduceRatifyState() == 1) {
                 return CommonResult.failed(demand.getDemandName() + " 已经批准生产,不可撤回");
             }
+            //设置凭证号
+            demand.setVoucherNo(voucherNo);
         }
 
         UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
         updateWrapper.set("submit_state", submitState);//设置提报状态
         updateWrapper.in("id", idList);
         boolean update = hotDemandService.update(updateWrapper);
-        if (update) return CommonResult.success(ResultCode.SUCCESS);
+        if (update) {
+            return CommonResult.success(ResultCode.SUCCESS);
+        }
         return CommonResult.failed();
     }
 
@@ -246,7 +267,9 @@ public class HotDemandController extends BaseController {
         queryWrapper.apply("is_long_period is null or is_long_period=0");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(drawNos)) return CommonResult.success("所有均已校验完成");
+        if (CollectionUtils.isEmpty(drawNos)) {
+            return CommonResult.success("所有均已校验完成");
+        }
         //根据需求图号查询长周期产品库
         QueryWrapper<HotLongProduct> longWrapper = new QueryWrapper();
         longWrapper.eq("tenant_id", currentUser.getTenantId());
@@ -266,10 +289,13 @@ public class HotDemandController extends BaseController {
         }
         if (CollectionUtils.isNotEmpty(ids)) {
             UpdateWrapper updateWrapper = new UpdateWrapper();
-            updateWrapper.set("is_long_period", 1);//设置为长周期
+            //设置为长周期
+            updateWrapper.set("is_long_period", 1);
             updateWrapper.in("id", ids);
             boolean update = hotDemandService.update(updateWrapper);
-            if (update) return CommonResult.success(ResultCode.SUCCESS);
+            if (update) {
+                return CommonResult.success(ResultCode.SUCCESS);
+            }
             return CommonResult.failed();
         } else {
             return CommonResult.success("操作成功");
@@ -294,7 +320,7 @@ public class HotDemandController extends BaseController {
         queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(drawNos)){
+        if (CollectionUtils.isEmpty(drawNos)) {
             return CommonResult.success("所有均已校验完成");
         }
         //根据需求数据中的图号查询模型库
@@ -303,31 +329,38 @@ public class HotDemandController extends BaseController {
         modelWrapper.in("model_drawing_no", drawNos);
         List<HotModelStore> list = hotModelStoreService.list(modelWrapper);
         //模型map<图号@版本号,模型数据>
-        Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo()+"@"+x.getVersion(), x -> x));
+        Map<String, HotModelStore> ModelMap = list.stream().collect(Collectors.toMap(x -> x.getModelDrawingNo() + "@" + x.getVersion(), x -> x));
 
-        List<String> ids = new ArrayList<>();
+        //List<String> ids = new ArrayList<>();
         //遍历毛坯需求数据,根据图号在模型map中获取,不为空则有模型
         for (HotDemand hotDemand : hotDemands) {
             //根据图号+@+版本号去获取模型
-            HotModelStore hotModelStore = ModelMap.get(hotDemand.getDrawNo()+"@"+hotDemand.getVersionNum());
+            HotModelStore hotModelStore = ModelMap.get(hotDemand.getDrawNo() + "@" + hotDemand.getVersionNum());
             //模型不为空且模型数量大于0判断为有模型
-            if (ObjectUtils.isNotEmpty(hotModelStore) && hotModelStore.getNormalNum()>0) {
+            if (ObjectUtils.isNotEmpty(hotModelStore) && hotModelStore.getNormalNum() > 0) {
                 //收集有模型的毛坯需求id
-                ids.add(hotDemand.getId());
+                //ids.add(hotDemand.getId());
+                //有模型是设置为有模型并把模型材质赋值
+                UpdateWrapper updateWrapper = new UpdateWrapper();
+                updateWrapper.set("is_exist_model", 1);//设置为有模型
+                updateWrapper.set("model_texture",hotModelStore.getModelTexture());//设置模型材质
+                updateWrapper.eq("id", hotDemand.getId());
+                boolean update = hotDemandService.update(updateWrapper);
             }
         }
-        if (CollectionUtils.isNotEmpty(ids)) {
-            UpdateWrapper updateWrapper = new UpdateWrapper();
-            updateWrapper.set("is_exist_model", 1);//设置为有模型
-            updateWrapper.in("id", ids);
-            boolean update = hotDemandService.update(updateWrapper);
-            if (update) {
-                return CommonResult.success(ResultCode.SUCCESS);
-            }
-            return CommonResult.failed();
-        } else {
-            return CommonResult.success("操作成功");
-        }
+        return CommonResult.success("操作成功");
+//        if (CollectionUtils.isNotEmpty(ids)) {
+//            UpdateWrapper updateWrapper = new UpdateWrapper();
+//            updateWrapper.set("is_exist_model", 1);//设置为有模型
+//            updateWrapper.in("id", ids);
+//            boolean update = hotDemandService.update(updateWrapper);
+//            if (update) {
+//                return CommonResult.success(ResultCode.SUCCESS);
+//            }
+//            return CommonResult.failed();
+//        } else {
+//            return CommonResult.success("操作成功");
+//        }
     }
 
     @ApiOperation(value = "检查外协件", notes = "检查外协件")
@@ -397,12 +430,14 @@ public class HotDemandController extends BaseController {
         queryWrapper.eq("tenant_id", currentUser.getTenantId());
         queryWrapper.apply("(is_exist_process=0 or is_exist_process is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
-        if (CollectionUtils.isEmpty(hotDemands)) return CommonResult.success("所有均已校验完成");
+        if (CollectionUtils.isEmpty(hotDemands)) {
+            return CommonResult.success("所有均已校验完成");
+        }
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
         //工艺库数据
-        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x));
+        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getRouterNo(), x -> x));
 
         //遍历毛坯需求数据,根据图号在工艺map中获取,不为空则有工艺
         for (HotDemand hotDemand : hotDemands) {
@@ -413,14 +448,14 @@ public class HotDemandController extends BaseController {
                 updateWrapper.set("is_exist_process", 1);//设置为有工艺
                 updateWrapper.set("texture", router.getTexture());//设置材质
                 //updateWrapper.set("workblank_type", );//设置毛坯类型
-                updateWrapper.set("steel_water_weight",router.getWeightMolten() );//设置钢水重量
-                updateWrapper.set("piece_weight",router.getPieceWeight());//设置单重
+                updateWrapper.set("steel_water_weight", router.getWeightMolten());//设置钢水重量
+                updateWrapper.set("piece_weight", router.getPieceWeight());//设置单重
                 updateWrapper.set("weight", router.getForgWeight());//设置重量
                 updateWrapper.eq("id", hotDemand.getId());
                 hotDemandService.update(updateWrapper);
             }
         }
-            return CommonResult.success("操作成功");
+        return CommonResult.success("操作成功");
     }
 
 
@@ -480,7 +515,6 @@ public class HotDemandController extends BaseController {
     }
 
 
-
     @ApiOperation(value = "模型排产", notes = "模型排产")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
@@ -504,8 +538,6 @@ public class HotDemandController extends BaseController {
     }
 
 
-
-
     @ApiOperation(value = "设置优先级", notes = "设置优先级")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "IdList", required = true, paramType = "query"),
@@ -520,11 +552,10 @@ public class HotDemandController extends BaseController {
         boolean update = hotDemandService.update(updateWrapper);
         if (update) {
             return CommonResult.success(ResultCode.SUCCESS);
-        }else {
+        } else {
             return CommonResult.failed();
         }
     }
-
 
 
 }

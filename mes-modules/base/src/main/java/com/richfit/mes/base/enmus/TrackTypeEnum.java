@@ -1,7 +1,7 @@
 package com.richfit.mes.base.enmus;
 
 /**
- * @Author: longlinhui
+ * @Author:
  * @CreateTime: 2023/4/10
  */
 public enum TrackTypeEnum {
@@ -33,7 +33,7 @@ public enum TrackTypeEnum {
         return message;
     }
 
-    public static TrackTypeEnum getSenderEnum(int stateId) {
+    public static TrackTypeEnum getSenderEnum(String stateId) {
         for (TrackTypeEnum recipientsEnum : TrackTypeEnum.values()) {
             if (recipientsEnum.code.equals(stateId)) {
                 return recipientsEnum;
@@ -42,7 +42,7 @@ public enum TrackTypeEnum {
         throw new IllegalArgumentException("No element matches " + stateId);
     }
 
-    public static String getMessage(int stateId) {
+    public static String getMessage(String stateId) {
         for (TrackTypeEnum recipientsEnum : TrackTypeEnum.values()) {
             if (recipientsEnum.code.equals(stateId)) {
                 return recipientsEnum.getMessage();

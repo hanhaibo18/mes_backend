@@ -242,7 +242,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         for (Branch branch : queryCode.getData()) {
             QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("belong_org_id", branch.getBranchCode())
-                    .eq("status",1);
+                    .eq("status", 1);
             tenantUserList.addAll(tenantUserMapper.queryUserList(queryWrapper));
         }
         return tenantUserList;
@@ -309,7 +309,10 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         QueryWrapper<TenantUserVo> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("user_account", userAccountList);
         List<TenantUserVo> tenantUserVos = tenantUserMapper.queryUserList(queryWrapper);
-        Map<String, TenantUserVo> tenantUserVoMap = tenantUserVos.stream().collect(Collectors.toMap(x -> x.getUserAccount(), x -> x));
+        Map<String, TenantUserVo> tenantUserVoMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(tenantUserVos)) {
+            tenantUserVoMap = tenantUserVos.stream().collect(Collectors.toMap(x -> x.getUserAccount(), x -> x));
+        }
         return tenantUserVoMap;
     }
 
@@ -390,6 +393,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
 
     /**
      * 这个方法前端没用 角色配置以改变（慎用）
+     *
      * @param classes
      * @param branchCode
      * @param tenantId
@@ -417,7 +421,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             String machiningRole = branchCode + "_JMAQ_RGZJ";
             codeList.add(machiningRole);
         }
-        if(codeList.size()>0){
+        if (codeList.size() > 0) {
             QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
             //判断如果codeList 为空会报错
             queryWrapper.in("role_code", codeList);
@@ -427,7 +431,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             if (!CollectionUtils.isEmpty(roleIdList)) {
                 QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
                 queryUser.in("role_id", roleIdList)
-                        .eq("status",1);
+                        .eq("status", 1);
                 return tenantUserMapper.queryByCondition(queryUser);
             }
         }
@@ -438,7 +442,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     public List<TenantUserVo> queryQualityInspectionDepartmentByBranchCode(String branchCode) {
         //组装角色标识 根据组织机构区分
         String role = branchCode + "_JMAQ_ZJ";
-        if(!StringUtils.isEmpty(role)){
+        if (!StringUtils.isEmpty(role)) {
             QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
             //判断如果codeList 为空会报错
             queryWrapper.eq("role_code", role);
@@ -448,7 +452,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             if (!CollectionUtils.isEmpty(roleIdList)) {
                 QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
                 queryUser.in("role_id", roleIdList)
-                        .eq("status",1);
+                        .eq("status", 1);
                 return tenantUserMapper.queryByCondition(queryUser);
             }
         }
@@ -520,7 +524,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         if (!StringUtils.isEmpty(tenantId)) {
             //组装角色标识 根据组织机构区分
             String role = branchCode + "_JMAQ_ZJ";
-            if(!StringUtils.isEmpty(role)){
+            if (!StringUtils.isEmpty(role)) {
                 QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
                 //判断如果codeList 为空会报错
                 queryWrapper.eq("role_code", role);
@@ -530,7 +534,7 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
                 if (!CollectionUtils.isEmpty(roleIdList)) {
                     QueryWrapper<TenantUserVo> queryUser = new QueryWrapper<>();
                     queryUser.in("role_id", roleIdList)
-                            .eq("status",1);
+                            .eq("status", 1);
                     return tenantUserMapper.queryByCondition(queryUser);
                 }
             }
@@ -553,7 +557,8 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             //获取质检租户下所有质检人员
             for (Tenant tenantEntity : tenantList) {
                 userList.addAll(this.queryQualityInspectionDepartment(classes, tenantEntity.getTenantCode(), tenantEntity.getId()));
-            }*/;
+            }*/
+            ;
         }
         return null;
     }
@@ -584,6 +589,16 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
             tenantUserVos = tenantUserMapper.queryByCondition(queryUser);
         }
         return tenantUserVos;
+    }
+
+    @Override
+    public List<TenantUser> queryClass(String userAccount) {
+        QueryWrapper<TenantUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_account",userAccount);
+        TenantUser tenantUser = this.getOne(queryWrapper);
+        QueryWrapper<TenantUser> tenantUserQueryWrapper = new QueryWrapper<>();
+        tenantUserQueryWrapper.eq("belong_org_id",tenantUser.getBelongOrgId());
+        return this.list(tenantUserQueryWrapper);
     }
 
 }
