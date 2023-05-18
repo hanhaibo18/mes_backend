@@ -11,8 +11,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -359,9 +357,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
-                    if (order.equals("desc")) {
+                    if ("desc".equals(order)) {
                         queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                    } else if (order.equals("asc")) {
+                    } else if ("asc".equals(order)) {
                         queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                     }
                 } else {
@@ -775,15 +773,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     private List<ForgControlRecord> buildForgControlRecords(QueryWorkingTimeVo queryWorkingTimeVo, List<ForgControlRecord> forgControlRecordList) {
-        List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("2")).collect(Collectors.toList());
+        List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> "2".equals(x.getType())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(barForgeInfo)) {
             queryWorkingTimeVo.setBarForge(barForgeInfo.get(0).getBarForge());
         }
-        List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("3")).collect(Collectors.toList());
+        List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> "3".equals(x.getType())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(remarkInfo)) {
             queryWorkingTimeVo.setForgeRemark(remarkInfo.get(0).getRemark());
         }
-        forgControlRecordList = forgControlRecordList.stream().filter(x -> x.getType().equals("1")).collect(Collectors.toList());
+        forgControlRecordList = forgControlRecordList.stream().filter(x -> "1".equals(x.getType())).collect(Collectors.toList());
         return forgControlRecordList;
     }
 
@@ -961,7 +959,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 }
             }
             //将当前工序设置为激活
-            if (msg.equals("")) {
+            if ("".equals(msg)) {
                 UpdateWrapper<TrackItem> itemUpdateWrapper = new UpdateWrapper<>();
                 itemUpdateWrapper.eq("id", trackItem.getId())
                         .set("is_doing", 0)
@@ -984,7 +982,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
 
 
-        if (msg.equals("")) {
+        if ("".equals(msg)) {
             return CommonResult.success(null, "删除成功！");
         } else {
             return CommonResult.failed("操作失败，请重试！" + msg);
@@ -1044,6 +1042,18 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             ).collect(Collectors.toList());
             result.addAll(collect);
         }
+        //获取对应的flow
+        List<String> collect = result.stream().map(TrackItem::getFlowId).distinct().collect(Collectors.toList());
+        //修改flow状态
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.in("id", collect);
+        update.set("status", "1");
+        trackFlowService.update(update);
+        //修改跟单状态
+        UpdateWrapper<TrackHead> headUpdateWrapper = new UpdateWrapper<>();
+        headUpdateWrapper.eq("id", list.get(0).getTrackHeadId());
+        headUpdateWrapper.set("status", "1");
+        trackHeadService.update(headUpdateWrapper);
         //检查是否跳工序报工
         this.checkOP(list, result);
         boolean bool = true;
@@ -2011,13 +2021,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-        PageHelper.startPage(1, 1000);
         List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-        PageInfo<TrackComplete> page = new PageInfo(completes);
-        for (int i = 2; i <= page.getPages(); i++) {
-            PageHelper.startPage(i, 1000);
-            completes.addAll(trackCompleteMapper.queryList(queryWrapper));
-        }
         return completes;
     }
 
