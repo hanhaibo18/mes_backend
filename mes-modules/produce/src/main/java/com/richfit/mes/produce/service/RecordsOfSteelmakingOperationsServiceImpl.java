@@ -96,7 +96,7 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         recordsOfSteelmakingOperations.setOperatorTime(new Date());
         recordsOfSteelmakingOperations.setRecordNo(recordNo);
         recordsOfSteelmakingOperations.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        recordsOfSteelmakingOperations.setGroup(branch.getBranchName());
+        recordsOfSteelmakingOperations.setClassGroup(branch.getBranchName());
         //查询预装炉信息
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceId);
         if (prechargeFurnace == null) {

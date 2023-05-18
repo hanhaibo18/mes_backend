@@ -1087,4 +1087,10 @@ public class TrackCompleteController extends BaseController {
         return CommonResult.success(trackCompleteService.prechargeFurnaceYl(prechargeFurnaceId, texture, startTime, endTime, workblankType, status, page, limit));
     }
 
+    @ApiOperation(value = "根据预装炉id获取炉内的工序信息")
+    @GetMapping("/item_list")
+    public CommonResult<List<TrackItem>> getItemList(@ApiParam("预装炉编号") @RequestParam Long prechargeFurnaceId){
+        return CommonResult.success(trackCompleteService.getItemList(prechargeFurnaceId));
+    }
+
 }

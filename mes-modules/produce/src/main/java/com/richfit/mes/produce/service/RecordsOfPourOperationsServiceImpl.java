@@ -64,6 +64,9 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         QueryWrapper<RecordsOfPourOperations> queryWrapperPour = new QueryWrapper<>();
         queryWrapperPour.eq("precharge_furnace_id", prechargeFurnaceId);
         RecordsOfPourOperations recordsOfPourOperation = this.getOne(queryWrapperPour);
+        if (recordsOfPourOperation == null) {
+            throw new GlobalException("没有找到预装炉信息！", ResultCode.FAILED);
+        }
         //根据预装炉号找对应当前工序
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
         itemQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId).eq("is_current", 1);
@@ -84,6 +87,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean init(Long prechargeFurnaceId, String branchCode) {
         String recordNo = null;
         try {
@@ -118,7 +122,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             throw new GlobalException("没有找到预装炉信息！", ResultCode.FAILED);
         }
         recordsOfPourOperations.setTypeOfSteel(prechargeFurnace.getTypeOfSteel());
-        recordsOfPourOperations.setFurnaceNo(steelmakingOperations.getFurnaceNo());
+        recordsOfPourOperations.setFurnaceNo(steelmakingOperations == null ? "" : steelmakingOperations.getFurnaceNo());
         recordsOfPourOperations.setIngotCase(prechargeFurnace.getIngotCase());
         return this.save(recordsOfPourOperations);
     }

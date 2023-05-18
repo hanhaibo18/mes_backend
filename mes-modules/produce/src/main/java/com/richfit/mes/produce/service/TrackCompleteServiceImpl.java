@@ -18,6 +18,7 @@ import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.Device;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.Role;
@@ -122,6 +123,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private KnockoutCacheService knockoutCacheService;
     @Autowired
     private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
+    @Autowired
+    private RecordsOfSteelmakingOperationsService recordsOfSteelmakingOperationsService;
+    @Autowired
+    private RecordsOfPourOperationsService recordsOfPourOperationsService;
 
     @Resource
     private TrackAssemblyService assemblyService;
@@ -418,6 +423,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 return CommonResult.failed("工序Id不能为空");
             }
             TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
+            //下工序装炉
+            if (completeDto.getNextFurnace() != null && completeDto.getNextFurnace()) {
+                QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+                itemQueryWrapper.eq("track_head_id", trackItem.getTrackHeadId());
+                itemQueryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
+                TrackItem nextItem = trackItemService.getOne(itemQueryWrapper);
+                nextItem.setPrechargeFurnaceId(trackItem.getPrechargeFurnaceId());
+                trackItemService.updateById(nextItem);
+            }
             //检验人
             trackItem.setQualityCheckBy(completeDto.getQcPersonId());
             //根据工序Id删除缓存表数据
@@ -735,6 +749,19 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
 
         TrackItem trackItem = trackItemService.getById(tiId);
+        RecordsOfSteelmakingOperations recordsOfSteelmakingOperations = new RecordsOfSteelmakingOperations();
+        RecordsOfPourOperations recordsOfPourOperations = new RecordsOfPourOperations();
+        //该工序如果走的预装炉，根据预装炉id找对应的炼钢记录和浇注记录信息
+        if (trackItem.getPrechargeFurnaceId() != null){
+            //根据预装炉id找炼钢记录
+            QueryWrapper<RecordsOfSteelmakingOperations> recordsOfSteelmakingOperationsQueryWrapper = new QueryWrapper<>();
+            recordsOfSteelmakingOperationsQueryWrapper.eq("precharge_furnace_id",trackItem.getPrechargeFurnaceId());
+            recordsOfSteelmakingOperations = recordsOfSteelmakingOperationsService.getOne(recordsOfSteelmakingOperationsQueryWrapper);
+            //根据预装炉id找浇注记录
+            QueryWrapper<RecordsOfPourOperations> recordsOfPourOperationsQueryWrapper = new QueryWrapper<>();
+            recordsOfPourOperationsQueryWrapper.eq("precharge_furnace_id",trackItem.getPrechargeFurnaceId());
+            recordsOfPourOperations = recordsOfPourOperationsService.getOne(recordsOfPourOperationsQueryWrapper);
+        }
         queryWorkingTimeVo.setTrackCompleteList(completeList);
         queryWorkingTimeVo.setAssign(assign);
         queryWorkingTimeVo.setQcPersonId(trackItem.getQualityCheckBy());
@@ -744,6 +771,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         queryWorkingTimeVo.setRawMaterialRecordList(rawMaterialRecordList);
         queryWorkingTimeVo.setKnockout(knockout);
         queryWorkingTimeVo.setModelingCore(modelingCore);
+        queryWorkingTimeVo.setRecordsOfPourOperations(recordsOfPourOperations);
+        queryWorkingTimeVo.setRecordsOfSteelmakingOperations(recordsOfSteelmakingOperations);
         return CommonResult.success(queryWorkingTimeVo);
     }
 
@@ -2010,6 +2039,19 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             furnaceQueryWrapper.ne("status", 2);
         }
         return prechargeFurnaceService.page(new Page<PrechargeFurnace>(page, limit), furnaceQueryWrapper);
+    }
+
+    @Override
+    public List<TrackItem> getItemList(Long prechargeFurnaceId) {
+        QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+        itemQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId).eq("is_current", 1);
+        List<TrackItem> itemList = trackItemService.list(itemQueryWrapper);
+        for (TrackItem item : itemList) {
+            Router router = baseServiceClient.getRouter(item.getRouterId()).getData();
+            item.setWeightMolten(router.getWeightMolten());
+            item.setPieceWeight(String.valueOf(router.getWeight()));
+        }
+        return itemList;
     }
 
     private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
