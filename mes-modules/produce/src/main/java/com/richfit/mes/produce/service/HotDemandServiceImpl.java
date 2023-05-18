@@ -202,7 +202,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         queryWrapper.apply("(is_exist_model=0 or is_exist_model is null)");
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(drawNos))  return new ArrayList<>();
+        if (CollectionUtils.isEmpty(drawNos)) {
+            return new ArrayList<>();
+        }
         //根据需求数据中的图号查询模型库
         QueryWrapper<HotModelStore> modelWrapper=new QueryWrapper();
         modelWrapper.eq("tenant_id",currentUser.getTenantId());
@@ -531,12 +533,16 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         List<String> drawNoList = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
         //根据图号查出工艺信息
         List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoList, branchCode).getData();
-        if (CollectionUtils.isEmpty(byDrawNo)) return CommonResult.failed("没有工艺信息");
+        if (CollectionUtils.isEmpty(byDrawNo)) {
+            return CommonResult.failed("没有工艺信息");
+        }
         List<String> routerIdList = byDrawNo.stream().map(x -> x.getId()).collect(Collectors.toList());
         Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x.getId()));
         //根据工艺id查出工序信息
         List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList);
-        if (CollectionUtils.isEmpty(sequences)) return CommonResult.failed("工艺没有工序信息");
+        if (CollectionUtils.isEmpty(sequences)) {
+            return CommonResult.failed("工艺没有工序信息");
+        }
         //根据工艺id分组
         Map<String, List<Sequence>> sequencesMap = sequences.stream().collect(Collectors.groupingBy(Sequence::getRouterId));
         //根据工序id查询工序字典(拿到关键工序字段)

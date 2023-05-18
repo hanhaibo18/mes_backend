@@ -831,7 +831,7 @@ public class TrackCompleteController extends BaseController {
         //获取当前激活工序
 
         for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).getIsCurrent() == 1 && curItem.getOptSequence() == items.get(i).getOptSequence()) {
+            if (items.get(i).getIsCurrent() == 1 && curItem.getOptSequence().equals(items.get(i).getOptSequence())) {
                 //如果是当前工序序号的工序，质检不需要或者质检需要并将质检结果是1的话，才能得到当前工序状态，否则是否
                 if (((items.get(i).getIsExistQualityCheck() == 1 && items.get(i).getIsQualityComplete() == 1) || items.get(i).getIsExistQualityCheck() == 0) && ((items.get(i).getIsExistScheduleCheck() == 1 && items.get(i).getIsScheduleComplete() == 1) || items.get(i).getIsExistScheduleCheck() == 0)) {
                 } else {
@@ -841,7 +841,7 @@ public class TrackCompleteController extends BaseController {
         }
         //判断同工序序号的其他工序是否已完成
         for (int i = 0; i < items.size(); i++) {
-            if (curItem.getOptSequence() == items.get(i).getOptSequence() && !items.get(i).getId().equals(curItem.getId())) {
+            if (curItem.getOptSequence().equals(items.get(i).getOptSequence()) && !items.get(i).getId().equals(curItem.getId())) {
                 if (!StringUtils.isNullOrEmpty(items.get(i).getIsFinalComplete()) && !items.get(i).getIsFinalComplete().equals("1")) {
                     curOrderEnable = false;
                 }
@@ -862,7 +862,7 @@ public class TrackCompleteController extends BaseController {
         for (int i = 0; i < items.size(); i++) {
             // 将上个工序设置为完成，不是当前激活工序
             if (curItem.getOptSequence() > -1 && curOrderEnable) {
-                if (items.get(i).getOptSequence() == curItem.getOptSequence()) {
+                if (items.get(i).getOptSequence().equals(curItem.getOptSequence())) {
                     items.get(i).setIsCurrent(0);
                     items.get(i).setIsDoing(0);
                     items.get(i).setIsFinalComplete("1");
@@ -888,7 +888,6 @@ public class TrackCompleteController extends BaseController {
                     } else {
                     }
                 }
-
                 // 将下个工序设置为激活工序
                 if (nextOrder > -1) {
                     if (items.get(i).getOptSequence() == nextOrder) {

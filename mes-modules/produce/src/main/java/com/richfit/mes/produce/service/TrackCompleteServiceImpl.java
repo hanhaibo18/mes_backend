@@ -358,9 +358,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
-                    if (order.equals("desc")) {
+                    if ("desc".equals(order)) {
                         queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderCol));
-                    } else if (order.equals("asc")) {
+                    } else if ("asc".equals(order)) {
                         queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderCol));
                     }
                 } else {
@@ -774,15 +774,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     private List<ForgControlRecord> buildForgControlRecords(QueryWorkingTimeVo queryWorkingTimeVo, List<ForgControlRecord> forgControlRecordList) {
-        List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("2")).collect(Collectors.toList());
+        List<ForgControlRecord> barForgeInfo = forgControlRecordList.stream().filter(x -> "2".equals(x.getType())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(barForgeInfo)) {
             queryWorkingTimeVo.setBarForge(barForgeInfo.get(0).getBarForge());
         }
-        List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> x.getType().equals("3")).collect(Collectors.toList());
+        List<ForgControlRecord> remarkInfo = forgControlRecordList.stream().filter(x -> "3".equals(x.getType())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(remarkInfo)) {
             queryWorkingTimeVo.setForgeRemark(remarkInfo.get(0).getRemark());
         }
-        forgControlRecordList = forgControlRecordList.stream().filter(x -> x.getType().equals("1")).collect(Collectors.toList());
+        forgControlRecordList = forgControlRecordList.stream().filter(x -> "1".equals(x.getType())).collect(Collectors.toList());
         return forgControlRecordList;
     }
 
@@ -960,7 +960,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 }
             }
             //将当前工序设置为激活
-            if (msg.equals("")) {
+            if ("".equals(msg)) {
                 UpdateWrapper<TrackItem> itemUpdateWrapper = new UpdateWrapper<>();
                 itemUpdateWrapper.eq("id", trackItem.getId())
                         .set("is_doing", 0)
@@ -983,7 +983,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
 
 
-        if (msg.equals("")) {
+        if ("".equals(msg)) {
             return CommonResult.success(null, "删除成功！");
         } else {
             return CommonResult.failed("操作失败，请重试！" + msg);

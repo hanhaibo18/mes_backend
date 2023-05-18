@@ -44,7 +44,9 @@ public class ProduceHotForgingStoreConroller {
         }
         produceHotForgingStore.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         boolean save = hotForgingStoreService.save(produceHotForgingStore);
-        if (save == true) return CommonResult.success(true);
+        if (save == true) {
+            return CommonResult.success(true);
+        }
         return CommonResult.failed();
     }
 
@@ -72,7 +74,9 @@ public class ProduceHotForgingStoreConroller {
     @PostMapping("/updateHotForgingStoreById")
     public CommonResult updateHotForgingStore(@RequestBody HotForgingStore hotForgingStore) {
         boolean b = hotForgingStoreService.updateById(hotForgingStore);
-        if (b==true) return CommonResult.success(ResultCode.SUCCESS);
+        if (b==true) {
+            return CommonResult.success(ResultCode.SUCCESS);
+        }
         return CommonResult.failed();
     }
 
@@ -87,7 +91,9 @@ public class ProduceHotForgingStoreConroller {
         queryWrapper.in("forging_store_id",forgingStoreIdList);
         boolean remove = produceHotForgingParamService.remove(queryWrapper);
         boolean b = hotForgingStoreService.removeByIds(forgingStoreIdList);
-        if (b==true) return CommonResult.success(ResultCode.SUCCESS);
+        if (b==true) {
+            return CommonResult.success(ResultCode.SUCCESS);
+        }
         return CommonResult.failed();
     }
 }
