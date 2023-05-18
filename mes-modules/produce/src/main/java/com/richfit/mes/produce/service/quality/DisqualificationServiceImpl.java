@@ -33,7 +33,6 @@ import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.utils.Code;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -790,15 +789,15 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             // 不合格品结果信息
             List<DisqualificationFinalResult> finalResultList = finalResultMapper.selectList(wrapper);
             if (CollectionUtils.isNotEmpty(finalResultList)) {
-                Map<String, DisqualificationFinalResult> resultMap = finalResultList.stream().collect(Collectors.toMap(DisqualificationFinalResult::getId, x -> x, (value1, value2) -> value2));
-                for (Disqualification disqualification: disqualificationList) {
-                    if (ObjectUtils.isNotEmpty(resultMap.get(disqualification.getId()))) {
-                        disqualification.setUnitTreatmentOne(resultMap.get(disqualification.getId()).getUnitTreatmentOne());
-                        disqualification.setUnitTreatmentTwo(resultMap.get(disqualification.getId()).getUnitTreatmentTwo());
+                // 查询条件后结果集
+                List<Disqualification> disqualifications = new ArrayList<>();
+                for (DisqualificationFinalResult finalResult: finalResultList) {
+                    for (Disqualification disqualification: disqualificationList) {
+                        if (finalResult.getId().equals(disqualification.getId())) {
+                            disqualifications.add(disqualification);
+                        }
                     }
                 }
-                // 条件结果后结果集
-                List<Disqualification> disqualifications = disqualificationMapper.selectBatchIds(finalResultList.stream().map(DisqualificationFinalResult::getId).collect(Collectors.toList()));
                 // new Page
                 Page<Disqualification> page = new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit(), disqualifications.size());
                 // 当前页的数据在list位置
