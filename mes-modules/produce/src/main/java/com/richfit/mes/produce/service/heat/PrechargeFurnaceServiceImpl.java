@@ -185,7 +185,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             Router router = routerMap.get(assign.getRouterId());
             if (ObjectUtils.isNotEmpty(router)) {
                 //设置一系列重量
-                assign.setPieceWeight(router.getPieceWeight());
+                assign.setPieceWeight(String.valueOf(router.getWeight()));
                 assign.setWeightMolten(router.getWeightMolten());
                 assign.setForgWeight(router.getForgWeight());
             }

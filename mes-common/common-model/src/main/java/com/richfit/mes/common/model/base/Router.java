@@ -245,6 +245,10 @@ public class Router extends BaseEntity<Router> {
      */
     private String coolingType;
 
+    /**
+     */
+    private String pieceWeight;
+
 
 
 
