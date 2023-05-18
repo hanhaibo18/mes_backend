@@ -125,7 +125,7 @@ public class Certificate extends BaseEntity<Certificate> {
     @TableField(exist = false)
     private String replaceMaterial;
 
-    @ApiModelProperty(value = "单重")
+    @ApiModelProperty(value = "跟单单重")
     private Float weight;
 
     @ApiModelProperty(value = "零件名称")

@@ -1156,8 +1156,8 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "根据材质 试棒型号获取上次填写跟单的试棒编号")
     @GetMapping("/getTestBarNoByTextureAndTestBarNo")
-    public CommonResult<String>  getTestBarNoByTextureAndTestBarNo(String texture,String testBarNo,String branchCode) {
-        List<TrackHead> trackHeads = trackHeadService.getTestBarNo(texture, testBarNo, branchCode,"");
+    public CommonResult<String>  getTestBarNoByTextureAndTestBarNo(String texture,String testBar,String branchCode) {
+        List<TrackHead> trackHeads = trackHeadService.getTestBarNo(texture, testBar, branchCode,"");
         return CommonResult.success(CollectionUtil.isEmpty(trackHeads)?null:trackHeads.get(0).getTestBarNo());
     }
 

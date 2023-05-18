@@ -2083,7 +2083,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         if(!CollectionUtil.isEmpty(routerIds)){
             QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
             trackHeadQueryWrapper.in("router_id",routerIds)
-                    .eq(StringUtils.isNullOrEmpty(testBarNo),"test_bar_no",testBarNo)
+                    .eq(!StringUtils.isNullOrEmpty(testBarNo),"test_bar_no",testBarNo)
                     .eq("branch_code",branchCode)
                     .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
                     .orderByDesc("create_time");
@@ -2104,7 +2104,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public List<TrackHead> getProductNo(String drawingNo,String productNo, String branchCode){
         QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
         trackHeadQueryWrapper
-                .eq(StringUtils.isNullOrEmpty(productNo),"product_no",productNo)
+                .eq(!StringUtils.isNullOrEmpty(productNo),"product_no",productNo)
                 .eq("branch_code",branchCode)
                 .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
                 .orderByDesc("create_time");
@@ -2117,6 +2117,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * 根据图号 获取跟单信息
      * @param trackHead
      */
+    @Override
     public void zGSaveHeadcheckInfo(TrackHeadPublicDto trackHead){
         if(!StringUtils.isNullOrEmpty(String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")))){
             List<TrackHead> products = getProductNo(trackHead.getDrawingNo(),String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")), trackHead.getBranchCode());
