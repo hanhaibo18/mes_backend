@@ -96,4 +96,7 @@ public class PrechargeFurnace {
     private String ingotCase;
     @ApiModelProperty(value = "毛坯类型 0锻件,1铸件,2钢锭", dataType = "String")
     private String workblankType;
+    @ApiModelProperty(value = "钢水总重", dataType = "String")
+    private Double totalMoltenSteel;
+
 }
