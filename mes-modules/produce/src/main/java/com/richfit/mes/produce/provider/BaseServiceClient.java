@@ -253,4 +253,9 @@ public interface BaseServiceClient {
     @ApiOperation(value = "根据branchCode获取机构信息")
     @GetMapping("/api/base/branch/getBranchInfoByBranchCode")
     public Branch getBranchInfoByBranchCode(@RequestParam String branchCode);
+
+    @ApiOperation(value = "查询工艺")
+    @GetMapping("/api/base/router/find")
+    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status,@RequestParam String testBar,@RequestParam String texture);
+
 }

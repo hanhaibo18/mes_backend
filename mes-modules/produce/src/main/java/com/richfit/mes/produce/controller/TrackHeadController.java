@@ -1143,11 +1143,17 @@ public class TrackHeadController extends BaseController {
     }
 
 
-    /*@ApiOperation(value = "根据试棒型号和材质查询试棒编号")
-    @GetMapping("/getFlowInfoById")
-    public TrackFlow getTestBarNoAndProductNo(String drawNo,String ) {
+    @ApiOperation(value = "根据图号 获取上次填写的跟单的产品号")
+    @GetMapping("/getProductNoByDrawingNo")
+    public CommonResult<String>  getProductNoByDrawingNo(String drawingNo,String branchCode) {
+        return CommonResult.success(trackHeadService.getProductNo(drawingNo,branchCode));
+    }
 
-    }*/
+    @ApiOperation(value = "根据材质 试棒型号获取上次填写跟单的试棒编号")
+    @GetMapping("/getTestBarNoByTextureAndTestBarNo")
+    public CommonResult<String>  getTestBarNoByTextureAndTestBarNo(String texture,String testBarNo,String branchCode) {
+        return CommonResult.success(trackHeadService.getTestBarNo(texture,testBarNo,branchCode));
+    }
 
 
 }

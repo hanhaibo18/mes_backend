@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -20,6 +21,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Device;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
@@ -2067,4 +2069,46 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         i += planService.count(queryPlan);
         return i;
     }
+
+    /**
+     * 获取试棒型号(相同试棒型号 相同材质 的上一个跟单的试棒型号)
+     * @param texture
+     * @param testBar
+     * @return
+     */
+    @Override
+    public String getTestBarNo(String texture, String testBar, String branchCode){
+        List<Router> routerList = baseServiceClient.find("", "", "", "", branchCode, SecurityUtils.getCurrentUser().getTenantId(), "", testBar, texture).getData();
+        List<String> routerIds = routerList.stream().map(Router::getId).collect(Collectors.toList());
+        if(!CollectionUtil.isEmpty(routerIds)){
+            QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
+            trackHeadQueryWrapper.in("router_id",routerIds)
+                    .eq("branch_code",branchCode)
+                    .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+                    .orderByDesc("create_time");
+            List<TrackHead> list = this.list(trackHeadQueryWrapper);
+            return CollectionUtil.isEmpty(list)?"":list.get(0).getTestBarNo();
+        }
+        return null;
+    }
+
+    /**
+     * 铸钢开跟单获取铸件编号(相同图号 的上一个跟单的产品编号)
+     * @param drawingNo
+     * @param branchCode
+     * @return
+     */
+    @Override
+    public String getProductNo(String drawingNo, String branchCode){
+        QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
+        trackHeadQueryWrapper
+                .eq("branch_code",branchCode)
+                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+                .orderByDesc("create_time");
+        DrawingNoUtil.queryEq(trackHeadQueryWrapper,"drawing_no",drawingNo);
+        List<TrackHead> list = this.list(trackHeadQueryWrapper);
+        return CollectionUtil.isEmpty(list)?"":list.get(0).getProductNo();
+    }
+
+
 }
