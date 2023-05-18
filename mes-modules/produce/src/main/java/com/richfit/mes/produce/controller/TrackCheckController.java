@@ -494,7 +494,7 @@ public class TrackCheckController extends BaseController {
                         return CommonResult.failed("无法回滚，请先取消工序【" + items.get(i).getOptName() + "】的派工！");
                     } else {
                         for (int j = 0; j < items.size(); j++) {
-                            if (items.get(i).getOptSequence() == items.get(j).getOptSequence()) {
+                            if (items.get(i).getOptSequence().equals(items.get(j).getOptSequence())) {
                                 items.get(j).setIsCurrent(0);
                                 items.get(j).setIsDoing(0);
                                 trackItemService.updateById(items.get(j));

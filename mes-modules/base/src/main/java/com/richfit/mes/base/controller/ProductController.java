@@ -626,7 +626,9 @@ public class ProductController extends BaseController {
             if (idList.size() > 1000) {
                 int page = idList.size() / 1000;
                 int oldPage = idList.size() / 1000;
-                if (idList.size() % 1000 > 0) page += 1;//不能整除页数加1
+                if (idList.size() % 1000 > 0) {
+                    page += 1;//不能整除页数加1
+                }
                 for (int i = 0; i < page; i++) {
                     int index = i == 0 ? i : 1000 * i;//起始下标
                     int toIndex = i == 0 ? 999 : 1000 * i + 999;//结尾下标
@@ -659,22 +661,29 @@ public class ProductController extends BaseController {
         if (idList.size() > 1000) {
             int page = idList.size() / 1000;
             int oldPage = idList.size() / 1000;
-            if (idList.size() % 1000 > 0) page += 1;//不能整除页数加1
+            if (idList.size() % 1000 > 0) {
+                //不能整除页数加1
+                page += 1;
+            }
             for (int i = 0; i < page; i++) {
-                int index = i == 0 ? i : 1000 * i;//起始下标
-                int toIndex = i == 0 ? 999 : 1000 * i + 999;//结尾下标
+                //起始下标
+                int index = i == 0 ? i : 1000 * i;
+                //结尾下标
+                int toIndex = i == 0 ? 999 : 1000 * i + 999;
                 System.out.println(index + "  index-----------------  toindex" + toIndex);
                 List<Object> objects = null;
                 if (i < oldPage) {
                     objects = idList.subList(index, toIndex);
-                } else if (i == oldPage) {//尾页
+                } else if (i == oldPage) {
+                    //尾页
                     objects = idList.subList(index, idList.size());
                 }
                 if (!CollectionUtils.isEmpty(objects)) {
                     UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
                     updateWrapper.set("material_type", 3);
                     updateWrapper.in("id", objects);
-                    productService.update(updateWrapper);//修改成品错乱数据
+                    //修改成品错乱数据
+                    productService.update(updateWrapper);
                 }
             }
         } else {
@@ -683,7 +692,8 @@ public class ProductController extends BaseController {
                 UpdateWrapper<Product> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.set("material_type", 3);
                 updateWrapper.in("id", idList);
-                productService.update(updateWrapper);//修改成品错乱数据
+                //修改成品错乱数据
+                productService.update(updateWrapper);
             }
         }
         return CommonResult.success("操作成功");
