@@ -1,5 +1,7 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -140,19 +142,75 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         return saveCertificate(certificate);
     }
 
+    /**
+     * 热工根据跟单开工序合格证
+     * @param thId
+     * @param nextOptWork 下车间编码
+     * @param flowId
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public boolean heatAutoCertificate(String thId,String nextOptWork,String flowId) throws Exception {
+        //开具合格证的跟单
+        TrackHead trackHead = trackHeadService.getById(thId);
+        //登陆人信息
+        TenantUserVo tenantUser = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId()).getData();
+        Certificate certificate = new Certificate();
+        //跟单属性赋值
+        BeanUtil.copyProperties(trackHead, certificate, new String[]{"id", "createTime", "modifyTime", "modifyBy"});
+        //根据分流id查询当前工序
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("flow_id",flowId)
+                .eq("is_current",1)
+                .orderByAsc("opt_sequence");
+        List<TrackItem> trackItems = trackItemService.list(trackItemQueryWrapper);
+        if(!CollectionUtil.isEmpty(trackItems)){
+            //本工序（开合格证的工序）
+            TrackItem cretificateItem = trackItems.get(0);
+            //根据工序顺序查询下工序
+            QueryWrapper<TrackItem> trackItemQw = new QueryWrapper<>();
+            trackItemQw.eq("opt_sequence",cretificateItem.getNextOptSequence())
+                    .eq("flow_id",cretificateItem.getFlowId());
+            List<TrackItem> nextItems = trackItemService.list(trackItemQw);
+            certificate.setOptSequence(cretificateItem.getOptSequence());
+            certificate.setOptNo(cretificateItem.getOptNo());
+            certificate.setOptName(cretificateItem.getOptName());
+            certificate.setCertOrigin("0");
+            certificate.setCertificateNo(Code.valueOnUpdate("hege_no", trackHead.getTenantId(), trackHead.getBranchCode(), codeRuleService));
+            certificate.setCheckName(tenantUser.getEmplName());
+            certificate.setCheckTime(new Date());
+            certificate.setNextOpt(CollectionUtil.isEmpty(nextItems)?"/":nextItems.get(0).getOptName());
+            //未接收
+            certificate.setIsPush("0");
+            //下车间 车间编码
+            certificate.setNextOptWork(nextOptWork);
+            List<TrackCertificate> trackCertificates = new ArrayList<>();
+            TrackCertificate trackCertificate = new TrackCertificate();
+            trackCertificate.setThId(trackHead.getId());
+            trackCertificates.add(trackCertificate);
+            certificate.setTrackCertificates(trackCertificates);
+            certificate.setType("0");
+
+            return saveCertificate(certificate);
+        }
+        return true;
+    }
+
     //合格证前面的工序是否完工校验
     private void checkBefore(Certificate certificate) throws Exception {
         //判断当前工序之前有没有未完成的工序
         List<String> ids = certificate.getTrackCertificates().stream().map(TrackCertificate::getThId).collect(Collectors.toList());
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         queryWrapper.in("track_head_id", ids);
-        queryWrapper.le("opt_sequence", certificate.getOptSequence());
-        List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
-        for (TrackItem trackItem : trackItemList) {
-            if (!"1".equals(trackItem.getIsFinalComplete())) {
-                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                throw new Exception(trackHead.getTrackNo() + " " + Certificate.FAILED_ON_COMPLETE);
-            }
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        //去重操作(工序号+工序名 都一样认为重复)
+        ArrayList<TrackItem> collect = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(trackItem -> trackItem.getOptName() + "-" + trackItem.getOptNo()))), ArrayList::new));
+        List<TrackItem> current = collect.stream().filter(x -> x.getIsCurrent() == 1).collect(Collectors.toList());
+        //当前工序的前工序 并且最终完成状态 is_final_complete 不为1 的
+        List<TrackItem> before = collect.stream().filter(x -> x.getOptSequence() < current.get(0).getOptSequence() & !"1".equals(x.getIsFinalComplete())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(before)) {
+            throw new Exception(before.get(0).getOptName() + " " + Certificate.FAILED_ON_COMPLETE);
         }
     }
 
