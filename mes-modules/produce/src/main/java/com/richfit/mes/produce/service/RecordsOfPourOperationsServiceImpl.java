@@ -75,8 +75,8 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             trackItem.setPourTime(router.getPourTime());
             trackItem.setWeightMolten(router.getWeightMolten());
             trackItem.setPieceWeight(String.valueOf(router.getWeight()));
-            trackItem.setTestBarTrackNo(trackHead.getTestBarTrackNo());
-            trackItem.setTestBarType(trackHead.getTestBarType());
+            trackItem.setTestBarTrackNo(trackHead.getTestBarNo());
+            trackItem.setTestBarType(router.getTestBar());
             trackItem.setProductName(trackHead.getProductName());
         }
         recordsOfPourOperation.setItemList(trackItemList);
