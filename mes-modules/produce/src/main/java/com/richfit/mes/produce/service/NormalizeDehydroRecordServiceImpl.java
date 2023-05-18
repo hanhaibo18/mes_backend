@@ -68,10 +68,10 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
         }
 
         if(insert>0){
-            //修改装炉为已生成记录 record_status 记录状态 1 未生成记录，2已生成记录，3记录已审核
+            //修改装炉为已生成记录 record_status 记录状态  0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过
             //同步装炉记录状态
             if(StringUtils.isNotEmpty(record.getFurnaceId())){
-                prechargeFurnaceService.updateRecordStatus(Long.valueOf(record.getFurnaceId()),"1");
+                prechargeFurnaceService.updateRecordStatus(Long.valueOf(record.getFurnaceId()),"3");
             }else {
                 throw new GlobalException("缺少预装炉id", ResultCode.FAILED);
             }
