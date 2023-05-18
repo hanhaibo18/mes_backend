@@ -260,5 +260,8 @@ public class HotDemand extends BaseEntity<HotDemand> implements Serializable {
 
     @ApiModelProperty(value = "模型材质 :木制、气化模", dataType = "String")
     private String modelTexture;
+
+    @ApiModelProperty(value = "产品名称", dataType = "String")
+    private String productName;
     private static final long serialVersionUID = 1L;
 }
