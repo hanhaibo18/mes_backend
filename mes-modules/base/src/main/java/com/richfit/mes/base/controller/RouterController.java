@@ -216,7 +216,7 @@ public class RouterController extends BaseController {
             router.setModifyTime(new Date());
             //禁止或激活状态无法直接修改为历史状态;历史状态修改为禁止或启动状态，要把其他的工艺状态设置为历史
             if (router.getStatus().equals("2")) {
-                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1");
+                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1","","");
                 if (result.getData().size() == 0) {
                     return CommonResult.failed("启用状态不能直接修改为历史状态！");
                 }
@@ -254,10 +254,12 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "routerName", value = "名称", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "status", value = "状态", required = true, dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "status", value = "状态", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "testBar", value = "试棒型号", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "texture", value = "材质", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/find")
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status,String testBar,String texture) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -280,6 +282,12 @@ public class RouterController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
+        }
+        if (!StringUtils.isNullOrEmpty(testBar)) {
+            queryWrapper.eq("test_bar", testBar);
+        }
+        if (!StringUtils.isNullOrEmpty(texture)) {
+            queryWrapper.eq("texture", texture);
         }
         /**
          * 描述: 加入版本号降序排序
