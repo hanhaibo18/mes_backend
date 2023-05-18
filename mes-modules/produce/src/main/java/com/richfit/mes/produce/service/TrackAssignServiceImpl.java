@@ -110,6 +110,11 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         return pageAssignsByStatus;
     }
 
+    @Override
+    public IPage<TrackItem> getPageAssignsHot(Page page, QueryWrapper<TrackItem> qw) {
+        return trackAssignMapper.getPageAssignsHot(page, qw);
+    }
+
 
     @Override
     public IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {
@@ -568,6 +573,62 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 assign.setTotalQuantity(trackItem.getNumber());
                 assign.setDispatchingNumber(trackItem.getAssignableQty());
                 assign.setWorkPlanNo(trackHead.getWorkPlanNo());
+            }
+        }
+        return queryPage;
+    }
+
+
+    /**
+     * 铸钢已派工列表查询
+     * @param dispatchingDto
+     * @return
+     * @throws ParseException
+     */
+    @Override
+    public IPage<AssignHot> queryDispatched(ForDispatchingDto dispatchingDto) {
+        QueryWrapper<AssignHot> queryWrapper = new QueryWrapper<>();
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getTrackNo())) {
+            dispatchingDto.setTrackNo(dispatchingDto.getTrackNo().replaceAll(" ", ""));
+            queryWrapper.apply("replace(replace(replace(track_n, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getRouterNo())) {
+            DrawingNoUtil.queryLike(queryWrapper, "drawing_no", dispatchingDto.getRouterNo());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getSiteId())) {
+            queryWrapper.like("assign_by", dispatchingDto.getSiteId());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getProductNo())) {
+            queryWrapper.like("product_no", dispatchingDto.getProductNo());
+        }
+        if (!StrUtil.isBlank(dispatchingDto.getUserId())) {
+            queryWrapper.likeRight("user_id", dispatchingDto.getUserId() + ",");
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
+            queryWrapper.ge(!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime()), "date_format(assign_time, '%Y-%m-%d')", dispatchingDto.getStartTime());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime())) {
+            queryWrapper.le(!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime()), "date_format(assign_time, '%Y-%m-%d')", dispatchingDto.getEndTime());
+        }
+        if (StrUtil.isNotBlank(dispatchingDto.getState())) {
+            queryWrapper.in("state", dispatchingDto.getState());
+        }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkNo())) {
+            queryWrapper.eq("work_no", dispatchingDto.getWorkNo());
+        }
+        //增加工序过滤
+        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+        queryWrapper.eq("classes", dispatchingDto.getClasses());
+        queryWrapper.eq("branch_code", dispatchingDto.getBranchCode());
+        queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
+        IPage<AssignHot> queryPage = trackAssignMapper.queryPageAssignTrackStoreHot(new Page(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
+        if (null != queryPage.getRecords()) {
+            for (AssignHot assign : queryPage.getRecords()) {
+                //添加 派工人员返回
+                QueryWrapper<AssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
+                assignPersonQueryWrapper.eq("assign_id", assign.getId());
+                assign.setAssignPersons(trackAssignPersonService.list(assignPersonQueryWrapper));
             }
         }
         return queryPage;

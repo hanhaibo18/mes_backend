@@ -24,6 +24,7 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/user/find_one")
     public CommonResult<TenantUserVo> getUserById(@RequestParam("id") String id);
+
     @PostMapping(value = "/api/sys/user/find_by_ids")
     public CommonResult<List<TenantUser>> getUserByIds(@RequestBody List<String> ids);
 
@@ -55,6 +56,7 @@ public interface SystemServiceClient {
 
     /**
      * 功能描述： 根据code和name 查询字典参数
+     *
      * @param code
      * @param name
      * @return
@@ -168,10 +170,15 @@ public interface SystemServiceClient {
 
     /**
      * 根据Code查询字典列表项
+     *
      * @param code
      * @param tenantId
      * @return
      */
     @GetMapping("/api/sys/item/param/find_by_class_code")
-    public CommonResult<List<ItemParam>> findItemParamByCode(@RequestParam("code") String code,@RequestParam("tenantId") String tenantId);
+    public CommonResult<List<ItemParam>> findItemParamByCode(@RequestParam("code") String code, @RequestParam("tenantId") String tenantId);
+
+    @ApiOperation(value = "查询同班人员id", notes = "查询同班人员id")
+    @GetMapping("/api/sys/user/query_class")
+    public List<TenantUser> queryClass(@RequestParam String userAccount);
 }

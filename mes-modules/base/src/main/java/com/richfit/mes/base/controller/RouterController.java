@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.enmus.OptTypeEnum;
@@ -215,7 +216,7 @@ public class RouterController extends BaseController {
             router.setModifyTime(new Date());
             //禁止或激活状态无法直接修改为历史状态;历史状态修改为禁止或启动状态，要把其他的工艺状态设置为历史
             if (router.getStatus().equals("2")) {
-                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1");
+                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1","","");
                 if (result.getData().size() == 0) {
                     return CommonResult.failed("启用状态不能直接修改为历史状态！");
                 }
@@ -253,10 +254,12 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "routerName", value = "名称", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "status", value = "状态", required = true, dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "status", value = "状态", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "testBar", value = "试棒型号", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "texture", value = "材质", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/find")
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status,String testBar,String texture) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -279,6 +282,12 @@ public class RouterController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
             queryWrapper.eq("tenant_id", tenantId);
+        }
+        if (!StringUtils.isNullOrEmpty(testBar)) {
+            queryWrapper.eq("test_bar", testBar);
+        }
+        if (!StringUtils.isNullOrEmpty(texture)) {
+            queryWrapper.eq("texture", texture);
         }
         /**
          * 描述: 加入版本号降序排序
@@ -309,7 +318,23 @@ public class RouterController extends BaseController {
         }
 
     }
-
+    @ApiOperation(value = "根据idList获得工艺", notes = "根据idList获得工艺")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "idList", value = "根据idList获得工艺", required = true, dataType = "idList", paramType = "query")
+    })
+    @PostMapping("/getByIds")
+    public CommonResult<List<Router>> getByRouterId(@RequestBody List<String> idList) {
+        QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
+        if (CollectionUtils.isNotEmpty(idList)) {
+            queryWrapper.in("id", idList);
+        }
+        List<Router> routers = routerService.list(queryWrapper);
+        if (routers.size() > 0) {
+            return CommonResult.success(routers, "操作成功！");
+        } else {
+            return CommonResult.success(null, "操作成功！");
+        }
+    }
     @ApiOperation(value = "查询工艺", notes = "根据ID获得工艺")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
@@ -360,6 +385,13 @@ public class RouterController extends BaseController {
         } else {
             return CommonResult.success(null, "操作成功！");
         }
+    }
+
+    @ApiOperation(value = "根据ID查询工艺", notes = "根据ID查询工艺")
+    @ApiImplicitParam(name = "routerId", value = "工艺id", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/getRouter")
+    public CommonResult<Router> getRouter(String routerId) {
+        return CommonResult.success(routerService.getById(routerId), "操作成功！");
     }
 
     @ApiOperation(value = "批量图号查询工艺", notes = "批量图号获得工艺")
@@ -621,9 +653,10 @@ public class RouterController extends BaseController {
     public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode) {
         try {
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            DrawingNoUtil.queryIn(queryWrapper, "draw_no", drawNos);
+            DrawingNoUtil.queryIn(queryWrapper, "router_no", drawNos);
 //            queryWrapper.in("draw_no", drawNos);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            queryWrapper.eq("branch_code", branchCode);
             List<Router> routers = routerService.list(queryWrapper);
             return CommonResult.success(routers);
         } catch (Exception e) {
