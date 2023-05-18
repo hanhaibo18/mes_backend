@@ -99,7 +99,7 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     //工序6烟味是否变淡0否1是
     private Integer time6Choice;
     //工序6锰铁添加量kg
-    private Double time6Mengtie;
+    private Double time6MengTie;
     //工序6温度
     private Double time6Temperature;
     //工序7硅铝钡添加量kg
@@ -199,11 +199,12 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     @ApiModelProperty(value = "班长", dataType = "String")
     private String leader;
     @ApiModelProperty(value = "冶炼班组", dataType = "String")
-    private String group;
+    private String classGroup;
     @ApiModelProperty(value = "钢种", dataType = "String")
     private String typeOfSteel;
     @ApiModelProperty(value = "冶炼设备", dataType = "String")
     private String smeltingEquipment;
+    @TableField(exist = false)
     @ApiModelProperty(value = "锭型", dataType = "String")
     private String ingotCase;
 }

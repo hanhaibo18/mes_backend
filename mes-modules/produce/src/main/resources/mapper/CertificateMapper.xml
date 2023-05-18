@@ -38,6 +38,7 @@
         LEFT JOIN produce_track_item ti ON th.id = ti.track_head_id
         AND ti.flow_id = tf.id
         AND ti.is_final_complete = 1
+        AND ( ti.certificate_no IS NULL OR ti.certificate_no = '' )
         WHERE
         th.STATUS = 1
         <trim suffixOverrides=",">

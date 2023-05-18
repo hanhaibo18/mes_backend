@@ -148,4 +148,6 @@ public interface TrackCompleteService extends IService<TrackComplete> {
     void knockoutLabel(HttpServletResponse response, String tiId);
 
     IPage<PrechargeFurnace> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit);
+
+    List<TrackItem> getItemList(Long prechargeFurnaceId);
 }

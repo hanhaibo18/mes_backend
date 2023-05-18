@@ -1,5 +1,6 @@
 package com.kld.mes.erp.service;
 
+import com.alibaba.fastjson.JSON;
 import com.kld.mes.erp.entity.order.WERKS;
 import com.kld.mes.erp.entity.order.ZC80PPIF009;
 import com.kld.mes.erp.entity.order.ZC80PPIF009Response;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
+import java.sql.SQLOutput;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -75,6 +77,8 @@ public class OrderServiceImpl implements OrderService {
             p.setStartTime(sdf.parse(list.get(i).getGSTRP()));
             p.setEndTime(sdf.parse(list.get(i).getGLTRP()));
             p.setMaterialDesc(list.get(i).getMAKTX());
+            //新增创建人
+            p.setCreateBy(list.get(i).getZYL4());
             orders.add(p);
         }
         return orders;
