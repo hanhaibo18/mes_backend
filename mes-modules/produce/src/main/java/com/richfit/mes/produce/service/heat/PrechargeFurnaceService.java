@@ -54,4 +54,10 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
      * @return: PrechargeFurnace
      **/
     public PrechargeFurnace deleteTrackItem(List<Assign> assignList);
+
+    Boolean updateRecordStatus(Long id, String recordStatus);
+
+    List totalWeightMolten(String branchCode);
+
+    List queryAssignByTexture(String texture,String branchCode);
 }

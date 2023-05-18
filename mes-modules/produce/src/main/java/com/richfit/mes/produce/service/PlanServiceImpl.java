@@ -849,7 +849,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     public void importPlanYL(MultipartFile file, HttpServletRequest request) throws IOException {
         //sheet计划列表
         String[] fieldNames3 = {"productName", "drawNo", "drawNoName", "texture", "priority", "workNo", "ingotCase", "projectName", "orderNo",
-                "projNum", "demandTime", "branchCode", "inchargeOrg", "startTime", "endTime", "projectNo"};
+                "projNum", "demandTime", "branchCode", "inchargeOrg", "startTime", "endTime", "projectNo", "source"};
         this.importPlan(file, request, fieldNames3);
     }
 
@@ -885,6 +885,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 CommonResult<Branch> result = baseServiceClient.selectBranchByCodeAndTenantId(plan.getInchargeOrg(), plan.getTenantId());
                 if (result.getData() == null) {
                     throw new GlobalException("加工车间代码错误:" + plan.getInchargeOrg(), ResultCode.FAILED);
+                }
+                if (plan.getSource() != 1 || plan.getSource() != 2) {
+                    throw new GlobalException("计划类型错误:" + plan.getSource(), ResultCode.FAILED);
                 }
                 plan.setInchargeOrgName(result.getData().getBranchName());
 

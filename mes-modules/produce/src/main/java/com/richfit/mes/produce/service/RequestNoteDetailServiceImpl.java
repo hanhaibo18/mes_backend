@@ -31,4 +31,12 @@ public class RequestNoteDetailServiceImpl extends ServiceImpl<RequestNoteDetailM
         queryWrapper.eq("request_note_number", requestNoteNo);
         return this.list(queryWrapper);
     }
+
+    @Override
+    public List<RequestNoteDetail> queryRequestNoteDetailDetails(List<String> materialNo, List<String> requestNoteNo) {
+        QueryWrapper<RequestNoteDetail> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("material_no", materialNo);
+        queryWrapper.in("request_note_number", requestNoteNo);
+        return this.list(queryWrapper);
+    }
 }

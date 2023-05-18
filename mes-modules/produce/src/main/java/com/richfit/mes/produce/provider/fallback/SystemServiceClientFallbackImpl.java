@@ -171,4 +171,9 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
         return null;
     }
 
+    @Override
+    public List<TenantUser> queryClass(String userAccount) {
+        return null;
+    }
+
 }
