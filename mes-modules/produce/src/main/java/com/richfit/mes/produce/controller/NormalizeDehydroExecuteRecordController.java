@@ -16,6 +16,7 @@ import com.richfit.mes.produce.utils.DateUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -51,19 +52,12 @@ public class NormalizeDehydroExecuteRecordController extends BaseController {
         queryWrapper.eq("record_id", recordId);
         return CommonResult.success(normalizeDehydroExecuteRecordService.list(queryWrapper));
     }
-//
-//
-//
-//    @ApiOperation(value = "正火去氢工序控制记录修改", notes = "正火去氢工序控制记录修改")
-//    @PostMapping("/updateRecordById")
-//    public CommonResult<Boolean> updateRecordById(@RequestBody NormalizeDehydroRecord normalizeDehydroRecord) {
-//        return CommonResult.success(normalizeDehydroRecordService.updateById(normalizeDehydroRecord));
-//    }
-//
-//    @ApiOperation(value = "正火去氢工序控制删除", notes = "正火去氢工序控制删除")
-//    @PostMapping("/deleteNormalizeDehydroRecord")
-//    public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
-//        return CommonResult.success(normalizeDehydroRecordService.removeByIds(normalizeDehydroRecordList));
-//    }
+
+    @ApiOperation(value = "删除工艺执行记录", notes = "删除工艺执行记录")
+    @PostMapping("/deleteNormalizeDehydroExecuteRecord")
+    public CommonResult<Boolean> deleteNormalizeDehydroExecuteRecord(@ApiParam(value = "执行记录id",required = true)@RequestParam String id) {
+        return CommonResult.success(normalizeDehydroExecuteRecordService.removeById(id));
+    }
+
 
 }

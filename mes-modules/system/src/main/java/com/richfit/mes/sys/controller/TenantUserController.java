@@ -1,6 +1,7 @@
 package com.richfit.mes.sys.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
@@ -405,6 +406,13 @@ public class TenantUserController extends BaseController {
     public CommonResult<List<TenantUserVo>> queryAuditsList(@RequestParam String branchCode) {
         return CommonResult.success(tenantUserService.queryAuditsList(branchCode));
     }
+
+    @ApiOperation(value = "查询同班人员id", notes = "查询同班人员id")
+    @GetMapping("/query_class")
+    public List<TenantUser> queryClass(@RequestParam String userAccount){
+        return tenantUserService.queryClass(userAccount);
+    }
+
 
 }
 

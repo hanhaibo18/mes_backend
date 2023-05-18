@@ -364,6 +364,28 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "材质", dataType = "String")
     private String texture;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "零件名称", dataType = "String")
+    private String materialName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ", dataType = "Integer")
+    private Integer isLongPeriod;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "计划完成时间 ", dataType = "Date")
+    private Date planEndTime;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "钢水重量 ", dataType = "String")
+    private String weightMolten;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单重KG ", dataType = "String")
+    private String pieceWeight;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "申请状态 0未配送 1已配送 2已退库 ", dataType = "Date")
+    private Integer applyStatus;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "项目名称 ", dataType = "String")
+    private String projectName;
+
     @ApiModelProperty(value = "是否派工(未派工=0,已派工=1)", dataType = "int")
     private Integer isSchedule;
     @ApiModelProperty(value = "是否给予准结工时", dataType = "int")
@@ -457,4 +479,33 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "不合格Id")
     private String disqualificationId;
+
+    @ApiModelProperty(value = "浇注状态")
+    private Integer pourState;
+
+    @ApiModelProperty(value = "浇注温度")
+    private String pourTemperature;
+
+    @ApiModelProperty(value = "工艺浇注温度")
+    @TableField(exist = false)
+    private Double pourTemperatureRouter;
+
+    @ApiModelProperty(value = "浇注时间 单位秒")
+    private String pourTime;
+
+    @ApiModelProperty(value = "工艺浇注时间 单位秒")
+    @TableField(exist = false)
+    private String pourTimeRouter;
+
+    @ApiModelProperty(value = "热风机关闭时间")
+    private Date fanClosedTime;
+
+    @ApiModelProperty(value = "试棒跟单编号")
+    @TableField(exist = false)
+    private String testBarTrackNo;
+
+    @ApiModelProperty(value = "试棒跟单编号")
+    @TableField(exist = false)
+    private String testBarType;
+
 }

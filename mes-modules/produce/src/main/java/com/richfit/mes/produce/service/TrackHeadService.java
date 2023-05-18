@@ -387,4 +387,21 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @return: 数量
      **/
     List<TrackHead> queryTrackHeadListByPlanId(String planId);
+
+    /**
+     * 根据材质 试棒型号获取上次填写跟单的试棒编号
+     * @param texture
+     * @param testBar
+     * @param branchCode
+     * @return
+     */
+    String getTestBarNo(String texture,String testBar,String branchCode);
+
+    /**
+     * 根据图号 获取上次填写的跟单的产品号
+     * @param drawingNo
+     * @param branchCode
+     * @return
+     */
+    String getProductNo(String drawingNo,String branchCode);
 }

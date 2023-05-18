@@ -1,10 +1,13 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+
 @Data
 public class AssignHot {
     /**
@@ -168,7 +171,7 @@ public class AssignHot {
     /**
      * 是当前的
      */
-    @ApiModelProperty(value = "是当前的", dataType = "String")
+    @ApiModelProperty(value = "是否当前工序 1是  0 否 ", dataType = "String")
     private Byte isCurrent;
 
     /**
@@ -376,9 +379,29 @@ public class AssignHot {
     @ApiModelProperty(value = "结束时间", dataType = "Date")
     private Date planEndTime;
 
+    @ApiModelProperty(value = "工作号", dataType = "String")
+    private String workPlanNo;
+
+    @ApiModelProperty(value = "总数量", dataType = "Integer")
+    private Integer totalQuantity;
+
+    @ApiModelProperty(value = "派工数量", dataType = "Integer")
+    private Integer dispatchingNumber;
+
     /**
      * 下料规格
      */
     @ApiModelProperty(value = "下料规格", dataType = "Date")
     private String blankSpecifi;
+    @ApiModelProperty(value = "锻件重量", dataType = "String")
+    private String forgWeight;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单重", dataType = "String")
+    private String pieceWeight;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "钢水重量", dataType = "String")
+    private String weightMolten;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "派工人", dataType = "List")
+    private List<AssignPerson> assignPersons;
 }
