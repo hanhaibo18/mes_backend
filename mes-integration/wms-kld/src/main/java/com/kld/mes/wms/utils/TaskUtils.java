@@ -169,34 +169,36 @@ public class TaskUtils {
 
     public List<MaterialReceiveDetail> saveMaterialReceiveDetail(List<MaterialReceive> materialReceiveList, Statement stmt) throws Exception {
         List<MaterialReceiveDetail> detailList = new ArrayList<>();
+        String aplyNums = "";
         for (MaterialReceive materialReceive : materialReceiveList) {
-            String sql = "SELECT * FROM v_mes_out_lines where APLY_NUM = '" + materialReceive.getAplyNum() + "'";
-            ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                String outNum = rs.getString("OUT_NUM");
-                String aplyNum = rs.getString("APLY_NUM");
-                String materialNum = rs.getString("MATERIAL_NUM");
-                String name = rs.getString("MATERIAL_DESC");
-                String batchNum = rs.getString("BATCH_NUM");
-                int orderQuantity = rs.getInt("ORDER_QUANTITY");
-                int quantity = rs.getInt("QUANTITY");
-                String unit = rs.getString("UNIT");
-
-                MaterialReceiveDetail materialReceiveDetail = new MaterialReceiveDetail();
-                materialReceiveDetail.setDeliveryNo(outNum);
-                materialReceiveDetail.setAplyNum(aplyNum);
-                materialReceiveDetail.setMaterialNum(materialNum);
-                materialReceiveDetail.setName(name);
-                materialReceiveDetail.setBatchNum(batchNum);
-                materialReceiveDetail.setOrderQuantity(orderQuantity);
-                materialReceiveDetail.setQuantity(quantity);
-                materialReceiveDetail.setUnit(unit);
-                materialReceiveDetail.setState("0");
-                //根据申请单和物料号查询图号
-                detailList.add(materialReceiveDetail);
-            }
-            rs.close();
+            aplyNums = ",'" + materialReceive.getAplyNum() + "'";
         }
+        String sql = "SELECT * FROM v_mes_out_lines where APLY_NUM in (" + aplyNums.substring(1) + ")";
+        ResultSet rs = stmt.executeQuery(sql);
+        while (rs.next()) {
+            String outNum = rs.getString("OUT_NUM");
+            String aplyNum = rs.getString("APLY_NUM");
+            String materialNum = rs.getString("MATERIAL_NUM");
+            String name = rs.getString("MATERIAL_DESC");
+            String batchNum = rs.getString("BATCH_NUM");
+            int orderQuantity = rs.getInt("ORDER_QUANTITY");
+            int quantity = rs.getInt("QUANTITY");
+            String unit = rs.getString("UNIT");
+
+            MaterialReceiveDetail materialReceiveDetail = new MaterialReceiveDetail();
+            materialReceiveDetail.setDeliveryNo(outNum);
+            materialReceiveDetail.setAplyNum(aplyNum);
+            materialReceiveDetail.setMaterialNum(materialNum);
+            materialReceiveDetail.setName(name);
+            materialReceiveDetail.setBatchNum(batchNum);
+            materialReceiveDetail.setOrderQuantity(orderQuantity);
+            materialReceiveDetail.setQuantity(quantity);
+            materialReceiveDetail.setUnit(unit);
+            materialReceiveDetail.setState("0");
+            //根据申请单和物料号查询图号
+            detailList.add(materialReceiveDetail);
+        }
+        rs.close();
         return detailList;
     }
 }

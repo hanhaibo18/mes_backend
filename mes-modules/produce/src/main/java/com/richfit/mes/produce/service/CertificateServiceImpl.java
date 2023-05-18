@@ -149,7 +149,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         queryWrapper.le("opt_sequence", certificate.getOptSequence());
         List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
         for (TrackItem trackItem : trackItemList) {
-            if ("1".equals(trackItem.getIsFinalComplete())) {
+            if (!"1".equals(trackItem.getIsFinalComplete())) {
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 throw new Exception(trackHead.getTrackNo() + " " + Certificate.FAILED_ON_COMPLETE);
             }
