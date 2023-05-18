@@ -3,7 +3,9 @@ package com.richfit.mes.produce.controller;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -26,6 +28,7 @@ import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.DateUtils;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
@@ -49,11 +52,13 @@ public class NormalizeDehydroRecordController extends BaseController {
 
     @Autowired
     private NormalizeDehydroRecordService normalizeDehydroRecordService;
+    @Autowired
+    private PrechargeFurnaceService prechargeFurnaceService;
 
 
     @ApiOperation(value = "正火去氢工序控制查询", notes = "正火去氢工序控制查询")
-    @GetMapping("/pageNormalizeDehydroRecord")
-    public CommonResult<IPage<NormalizeDehydroRecord>> pageNormalizeDehydroRecord(@RequestBody NormalizeDehydroRecord normalizeDehydroRecord, int page, int limit) {
+    @PostMapping("/pageNormalizeDehydroRecord")
+    public CommonResult<IPage<NormalizeDehydroRecord>> pageNormalizeDehydroRecord(@RequestBody NormalizeDehydroRecord normalizeDehydroRecord) {
         QueryWrapper<NormalizeDehydroRecord> queryWrapper = new QueryWrapper<>();
 
         if(!StringUtils.isNullOrEmpty(normalizeDehydroRecord.getSerialNo())){
@@ -68,7 +73,7 @@ public class NormalizeDehydroRecordController extends BaseController {
         if (!StringUtils.isNullOrEmpty(normalizeDehydroRecord.getEndTime())) {
             queryWrapper.le("create_time", normalizeDehydroRecord.getEndTime() + " 23:59:59");
         }
-        return CommonResult.success(normalizeDehydroRecordService.page(new Page<>(page, limit), queryWrapper));
+        return CommonResult.success(normalizeDehydroRecordService.page(new Page<>(normalizeDehydroRecord.getPage(),normalizeDehydroRecord.getLimit()), queryWrapper));
     }
 
 
@@ -77,15 +82,7 @@ public class NormalizeDehydroRecordController extends BaseController {
     @ApiOperation(value = "添加正火去氢工序控制记录", notes = "添加正火去氢工序控制记录")
     @PostMapping("/saveNormalizeDehydroRecord")
     public CommonResult<Boolean> saveNormalizeDehydroRecord(@RequestBody NormalizeDehydroRecord record) {
-        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        //记录编号
-        String timeStemp = String.valueOf(System.currentTimeMillis());
-        String yyyyMMddhhmmss = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss");
-        //记录编号
-        record.setSerialNo(yyyyMMddhhmmss+timeStemp.substring(timeStemp.length()-4));
-        //'审核状态 0 未通过  1 通过'
-        record.setAuditStatus(0);
-        return CommonResult.success(normalizeDehydroRecordService.save(record));
+        return CommonResult.success(normalizeDehydroRecordService.saveNormalizeDehydroRecord(record));
     }
 
     @ApiOperation(value = "根据预装炉id查询正火去氢工序控制记录", notes = "根据预装炉id查询正火去氢工序控制记录")
@@ -97,18 +94,46 @@ public class NormalizeDehydroRecordController extends BaseController {
         return CommonResult.success(normalizeDehydroRecordService.list(queryWrapper));
     }
 
-
+    @ApiOperation(value = "根据id查询正火去氢工序控制记录", notes = "根据id查询正火去氢工序控制记录")
+    @ApiImplicitParam(name = "ID", value = "ID", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/getRecordById")
+    public CommonResult<NormalizeDehydroRecord> getRecordById(String id) {
+        return CommonResult.success(normalizeDehydroRecordService.getById(id));
+    }
 
     @ApiOperation(value = "正火去氢工序控制记录修改", notes = "正火去氢工序控制记录修改")
     @PostMapping("/updateRecordById")
     public CommonResult<Boolean> updateRecordById(@RequestBody NormalizeDehydroRecord normalizeDehydroRecord) {
-        return CommonResult.success(normalizeDehydroRecordService.updateById(normalizeDehydroRecord));
+        return CommonResult.success(normalizeDehydroRecordService.updateNormalizeDehydroRecord(normalizeDehydroRecord));
     }
 
     @ApiOperation(value = "正火去氢工序控制删除", notes = "正火去氢工序控制删除")
     @PostMapping("/deleteNormalizeDehydroRecord")
-    public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<NormalizeDehydroRecord> normalizeDehydroRecordList) {
-        return CommonResult.success(normalizeDehydroRecordService.removeByIds(normalizeDehydroRecordList));
+    public CommonResult<Boolean> deleteNormalizeDehydroRecord(@RequestBody List<String> idList) {
+        return CommonResult.success(normalizeDehydroRecordService.removeByIds(idList));
+    }
+
+    @ApiOperation(value = "正火去氢工序控审核", notes = "正火去氢工序控审核")
+    @PostMapping("/auditNormalizeDehydroRecord")
+    public CommonResult<Boolean> auditNormalizeDehydroRecord(@ApiParam(value = "idList") @RequestBody List<String> idList,
+                                                             @ApiParam(value = "审核状态 0 未通过  1 通过",required = true)@RequestParam Integer status) {
+        UpdateWrapper<NormalizeDehydroRecord> updateWrapper=new UpdateWrapper<>();
+        updateWrapper.in("id",idList);
+        updateWrapper.set("audit_status",status);
+        if(status==1){
+            //修改装炉为已审核
+            QueryWrapper<NormalizeDehydroRecord> queryWrapper=new QueryWrapper();
+            queryWrapper.in("id",idList);
+            List<NormalizeDehydroRecord> list = normalizeDehydroRecordService.list();
+            if(CollectionUtils.isNotEmpty(list)){
+                for (NormalizeDehydroRecord normalizeDehydroRecord : list) {
+                    //同步装炉记录状态
+                    prechargeFurnaceService.updateRecordStatus(Long.valueOf(normalizeDehydroRecord.getFurnaceId()),"3");
+                }
+            }
+
+        }
+        return CommonResult.success(normalizeDehydroRecordService.update(updateWrapper));
     }
 
 }

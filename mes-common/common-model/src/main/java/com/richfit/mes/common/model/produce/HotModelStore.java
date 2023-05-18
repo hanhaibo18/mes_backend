@@ -41,6 +41,9 @@ public class HotModelStore extends BaseEntity<HotModelStore> {
     @ApiModelProperty(value = "版本号", dataType = "String")
     private String version;
 
+    @ApiModelProperty(value = "模型材质 :木制、气化模", dataType = "String")
+    private String modelTexture;
+
 
 }
 

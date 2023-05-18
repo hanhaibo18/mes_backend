@@ -233,4 +233,6 @@ public interface TenantUserService {
     Map usersAccount();
 
     List<TenantUserVo> queryAuditsList(String branchCode);
+
+    List<TenantUser> queryClass(String userAccount);
 }

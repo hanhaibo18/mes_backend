@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
@@ -17,13 +18,13 @@ import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.TrackItemService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Author: zhiqiang.lu
@@ -43,6 +44,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
 
     @Autowired
     private BaseServiceClient baseServiceClient;
+
+    @Autowired
+    private PrechargeFurnaceMapper prechargeFurnaceMapper;
 
     @Override
     public void furnaceCharging(List<Assign> assignList, String tempWork) {
@@ -64,10 +68,44 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     }
 
     /**
+     * 冶炼配炉 根据材质分类合计钢水重量列表
+     * @return
+     */
+    @Override
+    public List totalWeightMolten(String branchCode){
+        List<Map> returnMap = new ArrayList<>();
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("branch_code",branchCode);
+        trackItemQueryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
+        List<TrackItem> pageAssignsHot = trackAssignMapper.getPageAssignsHot(new QueryWrapper<>());
+        Map<String, List<TrackItem>> map = pageAssignsHot.stream().collect(Collectors.groupingBy(item -> item.getTexture()));
+        for (String s : map.keySet()) {
+            Double weightMolten = map.get(s).stream().collect(Collectors.summingDouble(item -> Double.parseDouble(item.getWeightMolten())));
+            Map<String, Object> addMap = new HashMap<>();
+            addMap.put("weightMolten",weightMolten);
+            addMap.put("texture",s);
+            returnMap.add(addMap);
+        }
+        return returnMap;
+    }
+
+    /**
+     * 冶炼配炉 根据材质查询派工列表
+     * @return
+     */
+    @Override
+    public List queryAssignByTexture(String texture,String branchCode){
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("texture",texture);
+        trackItemQueryWrapper.eq("branch_code",branchCode);
+        trackItemQueryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
+        return trackAssignMapper.getPageAssignsHot(trackItemQueryWrapper);
+    }
+
+    /**
      *
      * @param assignList
      * @param texture   材质
-
      */
     @Override
     public void furnaceChargingHot(List<Assign> assignList,String texture) {
@@ -128,7 +166,30 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                 assign.setIsUpdate(0);
             }
         }
+        //设置工艺数据
+        setRouter(assigns);
         return assigns;
+    }
+
+    /**
+     * 设置工艺数据
+     * @param assigns
+     */
+    private void setRouter(List<Assign> assigns) {
+        List<String> routerIdList = assigns.stream().map(x -> x.getRouterId()).collect(Collectors.toList());
+        //根据需求图号查询工艺库
+        CommonResult<List<Router>> byDrawNo = baseServiceClient.getByRouterId(routerIdList);
+        //工艺库数据
+        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+        for (Assign assign : assigns) {
+            Router router = routerMap.get(assign.getRouterId());
+            if (ObjectUtils.isNotEmpty(router)) {
+                //设置一系列重量
+                assign.setPieceWeight(String.valueOf(router.getWeight()));
+                assign.setWeightMolten(router.getWeightMolten());
+                assign.setForgWeight(router.getForgWeight());
+            }
+        }
     }
 
     @Override
@@ -219,4 +280,26 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         }
         return name;
     }
+
+    /**
+     * 更新记录状态
+     * @param id
+     * @param recordStatus
+     * @return
+     */
+    @Override
+    public Boolean updateRecordStatus(Long id, String recordStatus) {
+        PrechargeFurnace prechargeFurnace= new PrechargeFurnace();
+        prechargeFurnace.setId(id);
+        prechargeFurnace.setRecordStatus(recordStatus);
+        int i = prechargeFurnaceMapper.updateById(prechargeFurnace);
+        if(i>0){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+
+
 }

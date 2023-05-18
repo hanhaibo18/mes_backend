@@ -375,6 +375,8 @@ public class TrackAssignController extends BaseController {
                     boolean isCurrent = 1 == trackItem.getIsCurrent();
                     //是否进行齐套并发送申请单 true = 发送 false = 不发送
                     boolean switchOff = "true".equals(off);
+                    //外协工序不允许发送申请单
+//                    boolean optType = !trackItem.getOptType().equals("3");
                     if (assembly && item && isDoing && isCurrent && switchOff && bom) {
                         //控制第一道工序是否发送申请单
                         if (StrUtil.isBlank(trackHead.getProductionOrder())) {

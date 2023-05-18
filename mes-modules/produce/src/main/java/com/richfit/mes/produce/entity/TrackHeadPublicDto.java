@@ -295,6 +295,16 @@ public class TrackHeadPublicDto {
     @ApiModelProperty(value = "单号")
     private String forgeNumber;
     /**
+     * 待用材质
+     */
+    @ApiModelProperty(value = "代用材料")
+    private String substituteMaterial;
+
+    /**
+     * 试棒型号
+     */
+    private String testBar;
+    /**
      * 锻造结束
      **/
 
@@ -307,21 +317,29 @@ public class TrackHeadPublicDto {
      * 钢水重量
      */
     private BigDecimal moltenSteel;
-
     /**
      * 工艺保温时间
      */
-    private Double processHoldingTime;
-
+    private String processHoldTime;
     /**
-     * 工艺浇铸温度
+     * 浇筑温度
      */
-    private String pouringTemperature;
+    private String pourTemp;
 
     /**
      * 工艺浇铸速度
      */
     private String pouringRate;
+    /**
+     * 钢水重量
+     */
+    private String weightMolten;
+    /**
+     * 浇筑时间
+     */
+    private String pourTime;
+
+
     /**
      * 铸造结束
      **/

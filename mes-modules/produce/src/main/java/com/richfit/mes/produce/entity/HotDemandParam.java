@@ -233,6 +233,7 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
     @ApiModelProperty(value = "租户id", dataType = "String")
     private String tenantId;
 
+
     @ApiModelProperty(value = "页码 ", dataType = "int")
     private int page;
     @ApiModelProperty(value = "条数 ", dataType = "int")
@@ -245,4 +246,16 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
 
     @ApiModelProperty(value = "多条件排序字段 ", dataType = "String")
     private String orderByColumns;
+    @ApiModelProperty(value = "产品名称", dataType = "String")
+    private String productName;
+    /**
+     * 批准人
+     */
+    @ApiModelProperty(value = "批准人 ", dataType = "String")
+    private String ratifyBy;
+    /**
+     * 批准时期
+     */
+    @ApiModelProperty(value = "批准时期 ", dataType = "Date")
+    private Date ratifyTime;
 }
