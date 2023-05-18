@@ -79,6 +79,7 @@ public class OrderServiceImpl implements OrderService {
             p.setStartTime(sdf.parse(list.get(i).getGSTRP()));
             p.setEndTime(sdf.parse(list.get(i).getGLTRP()));
             p.setMaterialDesc(list.get(i).getMAKTX());
+            //新增创建人
             p.setCreateBy(list.get(i).getZYL4());
             orders.add(p);
         }
