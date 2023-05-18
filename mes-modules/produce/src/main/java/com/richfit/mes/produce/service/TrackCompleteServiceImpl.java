@@ -56,7 +56,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -121,6 +120,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private ModelingCoreCacheService modelingCoreCacheService;
     @Autowired
     private KnockoutCacheService knockoutCacheService;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
     @Resource
     private TrackAssemblyService assemblyService;
@@ -1976,6 +1977,39 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    @Override
+    public IPage<PrechargeFurnace> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit) {
+        //获取当前用户分派的预装炉信息
+        QueryWrapper<PrechargeFurnaceAssign> assignQueryWrapper = new QueryWrapper<>();
+        assignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+        List<PrechargeFurnaceAssign> assignList = prechargeFurnaceAssignService.list(assignQueryWrapper);
+        if (CollectionUtils.isEmpty(assignList)) {
+            throw new GlobalException("该用户暂无派工信息！", ResultCode.FAILED);
+        }
+        Set<Long> prechargeFurnaceIdList = assignList.stream().map(PrechargeFurnaceAssign::getPrechargeFurnaceId).collect(Collectors.toSet());
+        QueryWrapper<PrechargeFurnace> furnaceQueryWrapper = new QueryWrapper<>();
+        furnaceQueryWrapper.in("id", prechargeFurnaceIdList);
+        furnaceQueryWrapper.eq("workblank_type", workblankType);
+        if (prechargeFurnaceId != null) {
+            furnaceQueryWrapper.eq("id", prechargeFurnaceId);
+        }
+        if (!StringUtils.isNullOrEmpty(texture)) {
+            furnaceQueryWrapper.eq("texture", texture);
+        }
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            furnaceQueryWrapper.apply("UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            furnaceQueryWrapper.apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+        }
+        if (status.equals("2")) {
+            furnaceQueryWrapper.eq("status", 2);
+        } else {
+            furnaceQueryWrapper.ne("status", 2);
+        }
+        return prechargeFurnaceService.page(new Page<PrechargeFurnace>(page, limit), furnaceQueryWrapper);
     }
 
     private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {

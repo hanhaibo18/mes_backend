@@ -16,7 +16,7 @@ public interface RecordsOfSteelmakingOperationsService extends IService<RecordsO
 
     RecordsOfSteelmakingOperations getByPrechargeFurnaceId(Long prechargeFurnaceId);
 
-    Boolean init(Long prechargeFurnaceId, String recordNo);
+    Boolean init(Long prechargeFurnaceId, String branchCode);
 
     Boolean update(RecordsOfSteelmakingOperations recordsOfSteelmakingOperations);
 

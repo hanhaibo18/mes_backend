@@ -9,6 +9,7 @@ import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.RecordsOfSteelmakingOperationsService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  * @author makejava
  * @since 2023-05-15 10:18:52
  */
+@Api(value = "炼钢记录", tags = {"炼钢记录"})
 @RestController
 @RequestMapping("api/produce/records_of_steelmaking_operations")
 public class RecordsOfSteelmakingOperationsController extends ApiController {
@@ -43,8 +45,8 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
 
     @ApiOperation(value = "根据预装炉id初始化炼钢作业记录", notes = "根据预装炉id初始化炼钢作业记录")
     @GetMapping("/init")
-    public CommonResult<Boolean> init(@ApiParam(value = "预装炉id") @RequestParam Long prechargeFurnaceId, @ApiParam(value = "作业单编号") @RequestParam String recordNo) {
-        return CommonResult.success(recordsOfSteelmakingOperationsService.init(prechargeFurnaceId, recordNo));
+    public CommonResult<Boolean> init(@ApiParam(value = "预装炉id") @RequestParam Long prechargeFurnaceId, @ApiParam(value = "车间编码") @RequestParam String branchCode) {
+        return CommonResult.success(recordsOfSteelmakingOperationsService.init(prechargeFurnaceId, branchCode));
     }
 
     @ApiOperation(value = "修改炼钢记录信息", notes = "修改炼钢记录信息")

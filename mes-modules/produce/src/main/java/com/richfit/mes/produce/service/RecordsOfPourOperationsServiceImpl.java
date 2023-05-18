@@ -15,6 +15,8 @@ import com.richfit.mes.produce.dao.RecordsOfPourOperationsMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
+import com.richfit.mes.produce.utils.Code;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
  * @since 2023-05-12 15:53:49
  */
 @Service
+@Slf4j
 public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPourOperationsMapper, RecordsOfPourOperations> implements RecordsOfPourOperationsService {
 
     @Autowired
@@ -50,6 +53,8 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     private SystemServiceClient systemServiceClient;
     @Autowired
     private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
+    @Autowired
+    private CodeRuleService codeRuleService;
 
     @Override
     public RecordsOfPourOperations getByPrechargeFurnaceId(Long prechargeFurnaceId) {
@@ -69,7 +74,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             trackItem.setPourTemperature(router.getPourTemp());
             trackItem.setPourTime(router.getPourTime());
             trackItem.setWeightMolten(router.getWeightMolten());
-            trackItem.setPieceWeight(router.getPieceWeight());
+            trackItem.setPieceWeight(String.valueOf(router.getWeight()));
             trackItem.setTestBarTrackNo(trackHead.getTestBarTrackNo());
             trackItem.setTestBarType(trackHead.getTestBarType());
             trackItem.setProductName(trackHead.getProductName());
@@ -79,17 +84,30 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     }
 
     @Override
-    public Boolean init(Long prechargeFurnaceId, String recordNo) {
+    public Boolean init(Long prechargeFurnaceId, String branchCode) {
+        String recordNo = null;
+        try {
+            recordNo = Code.valueOnUpdate("pour_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
         QueryWrapper<RecordsOfPourOperations> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("record_no", recordNo);
         if (!CollectionUtils.isEmpty(this.list(queryWrapper))) {
             throw new GlobalException("该作业记录编号已存在，请尝试重新初始化！", ResultCode.FAILED);
+        }
+        QueryWrapper<RecordsOfPourOperations> recordsOfPourOperationsQueryWrapper = new QueryWrapper<>();
+        recordsOfPourOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+        //判断预装炉是否已存在浇注记录
+        if (!CollectionUtils.isEmpty(this.list(recordsOfPourOperationsQueryWrapper))) {
+            return true;
         }
         RecordsOfPourOperations recordsOfPourOperations = new RecordsOfPourOperations();
         recordsOfPourOperations.setPrechargeFurnaceId(prechargeFurnaceId);
         recordsOfPourOperations.setOperator(SecurityUtils.getCurrentUser().getUsername());
         recordsOfPourOperations.setOperatorTime(new Date());
         recordsOfPourOperations.setRecordNo(recordNo);
+        recordsOfPourOperations.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         //查询炼钢信息
         QueryWrapper<RecordsOfSteelmakingOperations> recordsOfSteelmakingOperationsQueryWrapper = new QueryWrapper<>();
         recordsOfSteelmakingOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);

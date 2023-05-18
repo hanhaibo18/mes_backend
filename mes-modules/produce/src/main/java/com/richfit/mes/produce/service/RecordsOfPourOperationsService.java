@@ -16,7 +16,7 @@ public interface RecordsOfPourOperationsService extends IService<RecordsOfPourOp
 
     RecordsOfPourOperations getByPrechargeFurnaceId(Long prechargeFurnaceId);
 
-    Boolean init(Long prechargeFurnaceId, String recordNo);
+    Boolean init(Long prechargeFurnaceId, String branchCode);
 
     Boolean update(RecordsOfPourOperations recordsOfPourOperations);
 

@@ -20,16 +20,21 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     /**
      * 预装炉id
      */
+    @ApiModelProperty(value = "班长", dataType = "String")
     private Long prechargeFurnaceId;
     /**
      * 作业记录编号
      */
+    @ApiModelProperty(value = "作业记录编号", dataType = "String")
     private String recordNo;
     //租户ID
+    @ApiModelProperty(value = "租户ID", dataType = "String")
     private String tenantId;
     //炉号
+    @ApiModelProperty(value = "炉号", dataType = "String")
     private String furnaceNo;
     //耗电量（度）
+    @ApiModelProperty(value = "耗电量", dataType = "Double")
     private Double powerConsumption;
     //主罐料重量（kg）
     private Double zhuGuanLiao;
@@ -171,23 +176,30 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     /**
      * 操作者
      */
+    @ApiModelProperty(value = "班长", dataType = "String")
     private String operator;
     /**
      * 操作时间
      */
+    @ApiModelProperty(value = "班长", dataType = "String")
     private Date operatorTime;
     /**
      * 审核员
      */
+    @ApiModelProperty(value = "班长", dataType = "String")
     private String assessor;
     /**
      * 审核时间
      */
+    @ApiModelProperty(value = "审核时间", dataType = "Date")
     private Date assessorTime;
     /**
      * 班长
      */
+    @ApiModelProperty(value = "班长", dataType = "String")
     private String leader;
+    @ApiModelProperty(value = "冶炼班组", dataType = "String")
+    private String group;
     @ApiModelProperty(value = "钢种", dataType = "String")
     private String typeOfSteel;
     @ApiModelProperty(value = "冶炼设备", dataType = "String")

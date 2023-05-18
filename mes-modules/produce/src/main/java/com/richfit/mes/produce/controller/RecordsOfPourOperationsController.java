@@ -5,10 +5,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.RecordsOfPourOperations;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.RecordsOfPourOperationsService;
+import com.richfit.mes.produce.service.TrackItemService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
  * @author makejava
  * @since 2023-05-15 10:18:41
  */
+@Api(value = "浇注记录", tags = {"浇注记录"})
 @RestController
 @RequestMapping("/api/produce/records_of_pour_operations")
 public class RecordsOfPourOperationsController extends ApiController {
@@ -34,6 +38,8 @@ public class RecordsOfPourOperationsController extends ApiController {
     private RecordsOfPourOperationsService recordsOfPourOperationsService;
     @Autowired
     private SystemServiceClient systemServiceClient;
+    @Autowired
+    private TrackItemService trackItemService;
 
     @ApiOperation(value = "通过预装炉id查询浇注记录信息", notes = "通过预装炉id查询浇注记录信息")
     @GetMapping("/{prechargeFurnaceId}")
@@ -43,8 +49,8 @@ public class RecordsOfPourOperationsController extends ApiController {
 
     @ApiOperation(value = "根据预装炉id初始化浇注作业记录", notes = "根据预装炉id初始化炼钢作业记录")
     @GetMapping("/init")
-    public CommonResult<Boolean> init(@ApiParam(value = "预装炉id") @RequestParam Long prechargeFurnaceId, @ApiParam(value = "作业单编号") @RequestParam String recordNo) {
-        return CommonResult.success(recordsOfPourOperationsService.init(prechargeFurnaceId, recordNo));
+    public CommonResult<Boolean> init(@ApiParam(value = "预装炉id") @RequestParam Long prechargeFurnaceId, @ApiParam(value = "作业单编号") @RequestParam String branchCode) {
+        return CommonResult.success(recordsOfPourOperationsService.init(prechargeFurnaceId, branchCode));
     }
 
     @ApiOperation(value = "修改浇注记录信息", notes = "修改炼钢记录信息")
@@ -96,6 +102,13 @@ public class RecordsOfPourOperationsController extends ApiController {
             return CommonResult.success(recordsOfPourOperationsService.czgcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, ingotCase, startTime, endTime, status, page, limit));
         }
     }
+
+    @ApiOperation(value = "浇注页面修改工序信息", notes = "浇注页面修改工序信息")
+    @PutMapping("/item")
+    public CommonResult<Boolean> updateItem(@RequestBody TrackItem item) {
+        return CommonResult.success(trackItemService.updateById(item));
+    }
+
 
 }
 

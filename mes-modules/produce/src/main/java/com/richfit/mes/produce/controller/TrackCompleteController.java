@@ -1082,4 +1082,10 @@ public class TrackCompleteController extends BaseController {
         trackCompleteService.knockoutLabel(response, tiId);
     }
 
+    @ApiOperation(value = "冶炼车间获取预装炉派工信息")
+    @GetMapping("/precharge_furnace_yl")
+    public CommonResult<IPage<PrechargeFurnace>> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
+        return CommonResult.success(trackCompleteService.prechargeFurnaceYl(prechargeFurnaceId, texture, startTime, endTime, workblankType, status, page, limit));
+    }
+
 }

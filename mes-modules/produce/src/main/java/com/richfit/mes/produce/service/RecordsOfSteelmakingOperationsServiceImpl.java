@@ -2,13 +2,13 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
 import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
 import com.richfit.mes.common.model.produce.RecordsOfSteelmakingOperations;
@@ -16,8 +16,10 @@ import com.richfit.mes.common.model.produce.ResultsOfSteelmaking;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.RecordsOfSteelmakingOperationsMapper;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
+import com.richfit.mes.produce.utils.Code;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,10 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
     private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
+    @Autowired
+    private BaseServiceClient baseServiceClient;
+    @Autowired
+    private CodeRuleService codeRuleService;
 
     @Override
     public RecordsOfSteelmakingOperations getByPrechargeFurnaceId(Long prechargeFurnaceId) {
@@ -65,17 +71,32 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
     }
 
     @Override
-    public  Boolean init(Long prechargeFurnaceId, String recordNo) {
+    public Boolean init(Long prechargeFurnaceId, String branchCode) {
+        String recordNo = null;
+        try {
+            recordNo = Code.valueOnUpdate("steelmaking_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        Branch branch = baseServiceClient.selectBranchByCodeAndTenantId(SecurityUtils.getCurrentUser().getBelongOrgId(), SecurityUtils.getCurrentUser().getTenantId()).getData();
         QueryWrapper<RecordsOfSteelmakingOperations> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("record_no", recordNo);
         if (!CollectionUtils.isEmpty(this.list(queryWrapper))) {
             throw new GlobalException("该作业记录编号已存在，请尝试重新初始化！", ResultCode.FAILED);
+        }
+        QueryWrapper<RecordsOfSteelmakingOperations> recordsOfSteelmakingOperationsQueryWrapper = new QueryWrapper<>();
+        recordsOfSteelmakingOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+        //判断预装炉是否已存在炼钢记录
+        if (!CollectionUtils.isEmpty(this.list(recordsOfSteelmakingOperationsQueryWrapper))) {
+            return true;
         }
         RecordsOfSteelmakingOperations recordsOfSteelmakingOperations = new RecordsOfSteelmakingOperations();
         recordsOfSteelmakingOperations.setPrechargeFurnaceId(prechargeFurnaceId);
         recordsOfSteelmakingOperations.setOperator(SecurityUtils.getCurrentUser().getUsername());
         recordsOfSteelmakingOperations.setOperatorTime(new Date());
         recordsOfSteelmakingOperations.setRecordNo(recordNo);
+        recordsOfSteelmakingOperations.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        recordsOfSteelmakingOperations.setGroup(branch.getBranchName());
         //查询预装炉信息
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceId);
         if (prechargeFurnace == null) {
