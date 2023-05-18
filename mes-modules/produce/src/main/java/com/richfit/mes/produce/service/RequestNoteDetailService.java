@@ -27,4 +27,15 @@ public interface RequestNoteDetailService extends IService<RequestNoteDetail> {
      * @return: List<RequestNoteDetail>
      **/
     List<RequestNoteDetail> queryRequestNoteDetailDetails(String materialNo, String requestNoteNo);
+
+    /**
+     * 功能描述: 批量查询详情
+     *
+     * @param materialNo
+     * @param requestNoteNo
+     * @Author: xinYu.hou
+     * @Date: 2023/5/18 11:32
+     * @return: List<RequestNoteDetail>
+     **/
+    List<RequestNoteDetail> queryDetailList(List<String> materialNo, List<String> requestNoteNo);
 }
