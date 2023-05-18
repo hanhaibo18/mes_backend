@@ -62,8 +62,6 @@ public class OrderServiceImpl implements OrderService {
         try {
             ZC80PPIF009Response o = (ZC80PPIF009Response) webServiceTemplate.marshalSendAndReceive(URL_SEARCH, zc80PPIF009);
             list = o.getTAUFK().getItem();
-            System.out.println("-----------------");
-            System.out.println(JSON.toJSONString(list));
         } catch (Exception e) {
             throw new GlobalException("ERP接口异常：" + URL_SEARCH, ResultCode.FAILED);
         }
@@ -79,6 +77,7 @@ public class OrderServiceImpl implements OrderService {
             p.setStartTime(sdf.parse(list.get(i).getGSTRP()));
             p.setEndTime(sdf.parse(list.get(i).getGLTRP()));
             p.setMaterialDesc(list.get(i).getMAKTX());
+            //新增创建人
             p.setCreateBy(list.get(i).getZYL4());
             orders.add(p);
         }
