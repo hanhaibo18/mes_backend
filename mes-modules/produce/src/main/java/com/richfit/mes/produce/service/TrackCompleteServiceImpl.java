@@ -1141,7 +1141,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 //过滤出 传入产品的当前工序
                 result = result.stream().filter(item -> item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
             } else {
-                //分组并排序
+                //分组并排序 自认顺序 从小到大
                 Map<String, List<TrackItem>> map = result.stream().sorted(Comparator.comparing(TrackItem::getOptSequence)).collect(Collectors.groupingBy(TrackItem::getFlowId));
                 //校验是否连续工序
                 boolean optNext = false;
@@ -1189,6 +1189,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //过滤掉已报工的数据&&过滤不在传入产品编号的数据
             result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
         }
+        //过滤需要调度或者质检的工序并从小到大排序
+//        List<TrackItem> items = result.stream().filter(item -> item.getIsExistQualityCheck() == 1 || item.getIsExistScheduleCheck() == 1).sorted(Comparator.comparing(TrackItem::getOptSequence)).collect(Collectors.toList());
         boolean bool = true;
         for (TrackItem trackItem : result) {
             TrackComplete trackComplete = new TrackComplete();
@@ -1223,17 +1225,26 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackItem.setQualityCheckBy(trackComplete.getQualityCheckBy());
             trackItem.setQualityCheckBranch(trackComplete.getQualityCheckBranch());
             bool = trackCompleteService.save(trackComplete);
+            //所有工序的店庆工序修改成0
+            trackItem.setIsCurrent(0);
             //判断是否需要质检和调度审核 再激活下工序
             boolean next = trackItem.getIsExistQualityCheck().equals(0) && trackItem.getIsExistScheduleCheck().equals(0);
             if (next) {
                 trackItem.setIsFinalComplete("1");
                 trackItem.setFinalCompleteTime(new Date());
             }
+            //最后一道工序修改当前工序转台为1
+            if (trackItem.getOptSequence().equals(result.get(result.size() - 1).getOptSequence())) {
+                trackItem.setIsCurrent(1);
+            }
             trackItemService.updateById(trackItem);
-            if (next) {
-                Map<String, String> map = new HashMap<String, String>(1);
-                map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-                publicService.activationProcess(map);
+            //最后一道工序才能进行下工序激活
+            if (trackItem.getOptSequence().equals(result.get(result.size() - 1).getOptSequence())) {
+                if (next) {
+                    Map<String, String> map = new HashMap<String, String>(1);
+                    map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                    publicService.activationProcess(map);
+                }
             }
         }
         if (bool) {
