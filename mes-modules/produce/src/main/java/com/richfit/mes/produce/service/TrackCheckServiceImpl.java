@@ -132,7 +132,6 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
             //是否质检
             if (!StringUtils.isNullOrEmpty(isExistQualityCheck)) {
                 //质检页面只查询指派给自己的质检信息
-//                queryWrapper.and(wrapper -> wrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername()).or().eq("quality_check_by", "/"));
                 queryWrapper.and(wrapper -> wrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername()).or(wrapper1 -> wrapper1.eq("quality_check_by", "/").eq("branch_code", branchCode)));
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }

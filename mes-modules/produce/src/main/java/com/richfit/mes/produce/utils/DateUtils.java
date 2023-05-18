@@ -394,14 +394,15 @@ public class DateUtils {
         SimpleDateFormat shortSdf = new SimpleDateFormat("yyyy-MM-dd");
         Date now = null;
         try {
-            if (currentMonth <= 3)
+            if (currentMonth <= 3) {
                 c.set(Calendar.MONTH, 0);
-            else if (currentMonth <= 6)
+            } else if (currentMonth <= 6) {
                 c.set(Calendar.MONTH, 3);
-            else if (currentMonth <= 9)
+            } else if (currentMonth <= 9) {
                 c.set(Calendar.MONTH, 4);
-            else if (currentMonth <= 12)
+            } else if (currentMonth <= 12) {
                 c.set(Calendar.MONTH, 9);
+            }
             c.set(Calendar.DATE, 1);
             now = longSdf.parse(shortSdf.format(c.getTime()) + " 00:00:00");
         } catch (Exception e) {
@@ -495,7 +496,7 @@ public class DateUtils {
      */
     public static long differentSecond(Date date1, Date date2) {
         long millisecond = differentMillisecond(date1, date2);
-        return millisecond / 1000l;
+        return millisecond / 1000L;
     }
 
     /**
