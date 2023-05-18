@@ -274,7 +274,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             updateWrapper.set("produce_ratify_state", ratifyState);//设置批准状态
             updateWrapper.set("issue_time", new Date());//设置下发时间
             updateWrapper.set("plan_id", map.get(hotDemand.getId()));//设置计划id
-            updateWrapper.set("modify_by",currentUser.getUsername());
+            updateWrapper.set("ratify_by", currentUser.getUsername());//批准人
+            updateWrapper.set("ratify_time",  new Date());//批准时间
             updateWrapper.eq("id", hotDemand.getId());
             boolean update = hotDemandService.update(updateWrapper);
         }
@@ -315,6 +316,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             updateWrapper.set("issue_time", new Date());//设置下发时间
             updateWrapper.set("plan_id", map.get(hotDemand.getId()));//设置计划id
             updateWrapper.set("modify_by",currentUser.getUsername());
+            updateWrapper.set("ratify_by", currentUser.getUsername());//批准人
+            updateWrapper.set("ratify_time",  new Date());//批准时间
             updateWrapper.eq("id", hotDemand.getId());
             boolean update = hotDemandService.update(updateWrapper);
         }

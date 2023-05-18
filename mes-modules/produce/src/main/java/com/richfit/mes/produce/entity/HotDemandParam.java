@@ -248,4 +248,14 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
     private String orderByColumns;
     @ApiModelProperty(value = "产品名称", dataType = "String")
     private String productName;
+    /**
+     * 批准人
+     */
+    @ApiModelProperty(value = "批准人 ", dataType = "String")
+    private String ratifyBy;
+    /**
+     * 批准时期
+     */
+    @ApiModelProperty(value = "批准时期 ", dataType = "Date")
+    private Date ratifyTime;
 }
