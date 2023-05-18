@@ -16,6 +16,19 @@ import java.util.List;
 public class Certificate extends BaseEntity<Certificate> {
 
     private static final long serialVersionUID = -5801277389681557358L;
+
+    public static String CERTIFICATE_NO_NULL_MESSAGE = "合格证编号不能为空!";
+
+    public static String CERTIFICATE_NO_EXIST_MESSAGE = "合格证编号已存在,不能重复!";
+
+    public static String CERTIFICATE_HAS_BEEN_ISSUED = "合格证已开具,不能重复开具!";
+
+    public static String TRACK_NO_NULL_MESSAGE = "请选择跟单!";
+
+    public static String SUCCESS_MESSAGE = "操作成功！";
+    public static String FAILED_MESSAGE = "操作失败！";
+    public static String FAILED_ON_COMPLETE = "工序未完成，不允许开具合格证";
+
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 
