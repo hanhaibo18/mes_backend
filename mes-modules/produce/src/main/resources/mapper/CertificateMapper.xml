@@ -30,7 +30,8 @@
         th.*,
         ti.opt_no,
         ti.opt_name,
-        ti.opt_sequence
+        ti.opt_sequence,
+        ti.certificate_no as opt_certificate_no
         FROM
         produce_track_head th
         LEFT JOIN produce_track_head_flow tf ON tf.track_head_id = th.id
@@ -38,7 +39,6 @@
         LEFT JOIN produce_track_item ti ON th.id = ti.track_head_id
         AND ti.flow_id = tf.id
         AND ti.is_final_complete = 1
-        AND ( ti.certificate_no IS NULL OR ti.certificate_no = '' )
         WHERE
         th.STATUS = 1
         <trim suffixOverrides=",">
@@ -67,6 +67,7 @@
         ) a
         WHERE
         a.AA = 1
+        AND ( ti.opt_certificate_no IS NULL OR ti.opt_certificate_no = '' )
         ORDER BY
         a.track_no DESC
     </select>
