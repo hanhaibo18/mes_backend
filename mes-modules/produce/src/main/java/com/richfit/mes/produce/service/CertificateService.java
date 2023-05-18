@@ -18,6 +18,8 @@ public interface CertificateService extends IService<Certificate> {
 
     public boolean autoCertificate(TrackHead trackHead) throws Exception;
 
+    public void certificateCheck(Certificate certificate) throws Exception;
+
     public boolean saveCertificate(Certificate certificate) throws Exception;
 
     public boolean savePushCert(Certificate certificate) throws Exception;

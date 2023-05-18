@@ -29,7 +29,9 @@ public class ProduceHotForgingParamController {
     @PostMapping("/addHotForgingParam")
     public CommonResult addHotForgingParam(@RequestBody HotForgingParam hotForgingParam) {
         boolean save = produceHotForgingParamService.save(hotForgingParam);
-        if (save == true) return CommonResult.success(true);
+        if (save == true) {
+            return CommonResult.success(true);
+        }
         return CommonResult.failed();
     }
 
@@ -49,7 +51,9 @@ public class ProduceHotForgingParamController {
     @PostMapping("/updateHotForgingParamById")
     public CommonResult updateHotForgingStoreHotForgingParam(@RequestBody HotForgingParam hotForgingParam) {
         boolean b = produceHotForgingParamService.updateById(hotForgingParam);
-        if (b==true) return CommonResult.success(ResultCode.SUCCESS);
+        if (b==true) {
+            return CommonResult.success(ResultCode.SUCCESS);
+        }
         return CommonResult.failed();
     }
 
@@ -60,7 +64,9 @@ public class ProduceHotForgingParamController {
     @PostMapping("/deleteHotForgingParamByIds")
     public CommonResult deleteHotForgingParam(@RequestBody List<String> hotForgingParamIdList) {
         boolean b = produceHotForgingParamService.removeByIds(hotForgingParamIdList);
-        if (b==true) return CommonResult.success(ResultCode.SUCCESS);
+        if (b==true) {
+            return CommonResult.success(ResultCode.SUCCESS);
+        }
         return CommonResult.failed();
     }
 
