@@ -47,14 +47,6 @@ import static java.util.stream.Collectors.toCollection;
 @RequestMapping("/api/produce/certificate")
 public class CertificateController {
 
-    public static String CERTIFICATE_NO_NULL_MESSAGE = "合格证编号不能为空!";
-    public static String CERTIFICATE_NO_EXIST_MESSAGE = "合格证编号已存在,不能重复!";
-
-    public static String CERTIFICATE_HAS_BEEN_ISSUED = "合格证已开具,不能重复开具!";
-    public static String TRACK_NO_NULL_MESSAGE = "请选择跟单!";
-    public static String SUCCESS_MESSAGE = "操作成功！";
-    public static String FAILED_MESSAGE = "操作失败！";
-    public static String FAILED_ON_COMPLETE = "工序未完成，不允许开具合格证";
 
     @Autowired
     private CertificateService certificateService;
@@ -72,77 +64,23 @@ public class CertificateController {
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
     public CommonResult<Certificate> addCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate) throws Exception {
-        if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
-            return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
-        }
-        if (certificate.getTrackCertificates() == null || certificate.getTrackCertificates().size() == 0) {
-            return CommonResult.failed(TRACK_NO_NULL_MESSAGE);
-        }
-        //合格证号码重复校验
-        String certificateNo = Code.valueOnUpdate("hege_no", certificate.getTenantId(), certificate.getBranchCode(), codeRuleService);
-        certificate.setCertificateNo(certificateNo);
-        if (certificateService.certNoExits(certificate.getCertificateNo(), certificate.getBranchCode())) {
-            return CommonResult.failed(CERTIFICATE_NO_EXIST_MESSAGE);
-        }
-        //合格证来源 0：开出合格证 1：接收合格证
-        certificate.setCertOrigin("0");
-
-        List<TrackCertificate> trackCertificates = certificate.getTrackCertificates();
-        if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
-            //检查当前工序之前有没有未完成的工序
-            this.checkBefore(certificate);
-            //合格证是否已经开具过
-            for (TrackCertificate trackCertificate : trackCertificates) {
-                Boolean isCertRepeat = trackItemService.checkIsCertRepeat(certificate);
-                if (isCertRepeat) {
-                    return CommonResult.failed(CERTIFICATE_HAS_BEEN_ISSUED);
-                }
-            }
-        } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
-            //完工合格证
-            //合格证是否已经开具过
-            for (TrackCertificate trackCertificate : trackCertificates) {
-                TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
-                if (StrUtil.isNotBlank(trackHead.getCertificateNo())) {
-                    return CommonResult.failed(CERTIFICATE_HAS_BEEN_ISSUED);
-                }
-            }
-        }
         certificateService.saveCertificate(certificate);
         return CommonResult.success(certificate);
     }
 
-    private CommonResult<Certificate> checkBefore(Certificate certificate) {
-        //判断当前工序之前有没有未完成的工序
-        List<String> ids = certificate.getTrackCertificates().stream().map(TrackCertificate::getThId).collect(Collectors.toList());
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-        queryWrapper.in("track_head_id", ids);
-        List<TrackItem> list = trackItemService.list(queryWrapper);
-        //去重操作(工序号+工序名 都一样认为重复)
-        ArrayList<TrackItem> collect = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(trackItem -> trackItem.getOptName() + "-" + trackItem.getOptNo()))), ArrayList::new));
-        List<TrackItem> current = collect.stream().filter(x -> x.getIsCurrent() == 1).collect(Collectors.toList());
-        //当前工序的前工序 并且最终完成状态 is_final_complete 不为1 的
-        List<TrackItem> before = collect.stream().filter(x -> x.getOptSequence() < current.get(0).getOptSequence() & !"1".equals(x.getIsFinalComplete())).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(before)) {
-            return CommonResult.failed(before.get(0).getOptName() + " " + FAILED_ON_COMPLETE);
-        }
-        return null;
-    }
 
     @ApiOperation(value = "修改合格证", notes = "修改合格证信息")
     @PutMapping("/certificate")
     public CommonResult<Certificate> updateCertificate(@ApiParam(value = "合格证信息") @RequestBody Certificate certificate,
                                                        @ApiParam(value = "是否变更关联跟单") @RequestParam(required = false) Boolean changeTrack) throws Exception {
         if (StringUtils.isNullOrEmpty(certificate.getCertificateNo())) {
-            return CommonResult.failed(CERTIFICATE_NO_NULL_MESSAGE);
+            return CommonResult.failed(Certificate.CERTIFICATE_NO_NULL_MESSAGE);
         } else {
             boolean bool = false;
             certificate.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             certificate.setModifyTime(new Date());
-
             certificateService.updateCertificate(certificate, changeTrack);
-
-            return CommonResult.success(certificate, SUCCESS_MESSAGE);
+            return CommonResult.success(certificate, Certificate.SUCCESS_MESSAGE);
         }
     }
 
@@ -152,7 +90,7 @@ public class CertificateController {
 
         certificateService.delCertificate(ids);
 
-        return CommonResult.success(true, SUCCESS_MESSAGE);
+        return CommonResult.success(true, Certificate.SUCCESS_MESSAGE);
 
     }
 
@@ -220,7 +158,7 @@ public class CertificateController {
                 toCollection(() -> new TreeSet<>(Comparator.comparing(Certificate::getId))), ArrayList::new)
         );
         certificateIPage.setRecords(collect);
-        return CommonResult.success(certificateIPage, SUCCESS_MESSAGE);
+        return CommonResult.success(certificateIPage, Certificate.SUCCESS_MESSAGE);
     }
 
 
@@ -267,14 +205,14 @@ public class CertificateController {
         PageHelper.startPage(page, limit);
         List<Certificate> certificateList = certificateService.list(queryWrapper);
         PageInfo<Certificate> trackFlowPage = new PageInfo(certificateList);
-        return CommonResult.success(trackFlowPage, SUCCESS_MESSAGE);
+        return CommonResult.success(trackFlowPage, Certificate.SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询需要本单位接收的合格证", notes = "根据图号、合格证号查询分页合格证信息")
     @GetMapping("/certificate/need_transfer")
     public CommonResult<IPage<Certificate>> selectCertificateForTransf(@ApiParam(value = "queryDto") CertQueryDto queryDto) {
 
-        return CommonResult.success(certificateService.selectNeedTransferCert(queryDto), SUCCESS_MESSAGE);
+        return CommonResult.success(certificateService.selectNeedTransferCert(queryDto), Certificate.SUCCESS_MESSAGE);
 
     }
 
@@ -293,7 +231,7 @@ public class CertificateController {
         if (!StringUtils.isNullOrEmpty(certificateId)) {
             queryWrapper.eq("certificate_id", certificateId);
         }
-        return CommonResult.success(trackCertificateService.list(queryWrapper), SUCCESS_MESSAGE);
+        return CommonResult.success(trackCertificateService.list(queryWrapper), Certificate.SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "合格证号查询合格证信息", notes = "通过合格证号查询合格证信息")
@@ -301,7 +239,7 @@ public class CertificateController {
     public CommonResult<List<Certificate>> selectByCertificateNo(@ApiParam(value = "合格证号码", required = true) @RequestParam String certificateNo) {
         QueryWrapper<Certificate> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(!StrUtil.isBlank(certificateNo), "certificate_no", certificateNo);
-        return CommonResult.success(certificateService.list(queryWrapper), SUCCESS_MESSAGE);
+        return CommonResult.success(certificateService.list(queryWrapper), Certificate.SUCCESS_MESSAGE);
 
     }
 
@@ -311,6 +249,6 @@ public class CertificateController {
         PageHelper.startPage(page, limit);
         List<TrackHead> trackHeadList = certificateService.selectItemTrack(trackHead);
         PageInfo<TrackHead> trackHeadPageInfo = new PageInfo(trackHeadList);
-        return CommonResult.success(trackHeadPageInfo, SUCCESS_MESSAGE);
+        return CommonResult.success(trackHeadPageInfo, Certificate.SUCCESS_MESSAGE);
     }
 }
