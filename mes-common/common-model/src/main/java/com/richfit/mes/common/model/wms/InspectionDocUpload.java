@@ -103,7 +103,7 @@ public class InspectionDocUpload implements Serializable {
     /**
      * 同步日期
      */
-    private Date inspectionDate;
+    private String inspectionDate;
 
     /**
      * 产品编号列表
