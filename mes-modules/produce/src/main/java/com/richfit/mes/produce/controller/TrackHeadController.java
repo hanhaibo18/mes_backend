@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -181,7 +182,10 @@ public class TrackHeadController extends BaseController {
                 trackHead.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 trackHead.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 trackHead.setCreateTime(new Date());
-
+                //铸钢车间 校验方法
+                if("6".equals(trackHead.getClasses())){
+                    trackHeadService.zGSaveHeadcheckInfo(trackHead);
+                }
                 bool = trackHeadService.saveTrackHead(trackHead);
                 if (bool) {
                     return CommonResult.success(true, TRACK_HEAD_SUCCESS_MESSAGE);
@@ -1146,13 +1150,15 @@ public class TrackHeadController extends BaseController {
     @ApiOperation(value = "根据图号 获取上次填写的跟单的产品号")
     @GetMapping("/getProductNoByDrawingNo")
     public CommonResult<String>  getProductNoByDrawingNo(String drawingNo,String branchCode) {
-        return CommonResult.success(trackHeadService.getProductNo(drawingNo,branchCode));
+        List<TrackHead> trackHeads = trackHeadService.getProductNo(drawingNo,"", branchCode);
+        return CommonResult.success(CollectionUtil.isEmpty(trackHeads)?null:trackHeads.get(0).getProductNo());
     }
 
     @ApiOperation(value = "根据材质 试棒型号获取上次填写跟单的试棒编号")
     @GetMapping("/getTestBarNoByTextureAndTestBarNo")
     public CommonResult<String>  getTestBarNoByTextureAndTestBarNo(String texture,String testBarNo,String branchCode) {
-        return CommonResult.success(trackHeadService.getTestBarNo(texture,testBarNo,branchCode));
+        List<TrackHead> trackHeads = trackHeadService.getTestBarNo(texture, testBarNo, branchCode,"");
+        return CommonResult.success(CollectionUtil.isEmpty(trackHeads)?null:trackHeads.get(0).getTestBarNo());
     }
 
 

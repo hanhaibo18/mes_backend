@@ -517,4 +517,7 @@ public class TrackHeadPublicDto {
      */
     protected String remark;
 
+    @ApiModelProperty(value = "试棒编号", dataType = "String")
+    private String testBarNo;
+
 }
