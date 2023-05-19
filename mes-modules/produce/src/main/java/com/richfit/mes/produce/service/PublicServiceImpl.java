@@ -55,8 +55,8 @@ public class PublicServiceImpl implements PublicService {
         //验证工序制作数量是否全部派工,全部派工才允许下工序激活
         String trackItemId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(trackItemId);
-        //有派工数量情况下直接退出方法不执行工序激活 && 过滤探伤类型工序 探伤类型工序没有派工
-        if (!trackItem.getOptType().equals("6") && 0 != trackItem.getAssignableQty()) {
+        //有派工数量情况下直接退出方法不执行工序激活 && 过滤探伤类型工序 探伤类型工序没有派工 && 过滤检验工序,检验工序直接进行质检
+        if (!trackItem.getOptType().equals("6") && 0 != trackItem.getAssignableQty() && !trackItem.getOptType().equals("5")) {
             return false;
         }
 
@@ -262,13 +262,8 @@ public class PublicServiceImpl implements PublicService {
         if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getTrackHeadId())) {
             return false;
         }
-        for (TrackItem trackItem : currentTrackItemList) {
-            if (2 != trackItem.getIsDoing()) {
-                return false;
-            }
-        }
-        //过滤已完工数据,获取未完工/未开工数据
-        List<TrackItem> collect = currentTrackItemList.stream().filter(item -> item.getIsDoing() != 2).collect(Collectors.toList());
+        //过滤最终完成数据,获取未最终完成数据
+        List<TrackItem> collect = currentTrackItemList.stream().filter(item -> item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
         //判断是最后一道工序 和 没有未完工/未开工数据 调用跟单状态修改
         if (currentTrackItemList.get(0).getNextOptSequence() == 0 && CollectionUtils.isEmpty(collect)) {
             trackHeadService.trackHeadFinish(map.get("flowId"));
