@@ -367,18 +367,10 @@ public class TrackAssignController extends BaseController {
                     boolean bom = StrUtil.isNotBlank(trackHead.getProjectBomId());
                     //判断是否是装配
                     boolean assembly = "2".equals(trackHead.getClasses());
-                    //是否是第一道工序
-                    boolean item = 1 == trackItem.getOptSequence();
-                    //判断是否开工
-                    boolean isDoing = 0 == trackItem.getIsDoing();
-                    //判断当前工序
-                    boolean isCurrent = 1 == trackItem.getIsCurrent();
                     //是否进行齐套并发送申请单 true = 发送 false = 不发送
                     boolean switchOff = "true".equals(off);
-                    //外协工序不允许发送申请单
-//                    boolean optType = !trackItem.getOptType().equals("3");
-                    if (assembly && item && isDoing && isCurrent && switchOff && bom) {
-                        //控制第一道工序是否发送申请单
+                    if (assembly && sendWMSA(trackItem) && switchOff && bom) {
+                        //无生产订单编号不允许发送申请单
                         if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
@@ -416,6 +408,24 @@ public class TrackAssignController extends BaseController {
         } catch (Exception e) {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
+    }
+
+    private boolean sendWMSA(TrackItem trackItem) {
+        //判断是否开工
+        boolean isDoing = 0 == trackItem.getIsDoing();
+        //判断当前工序
+        boolean isCurrent = 1 == trackItem.getIsCurrent();
+        //外协工序不允许发送申请单
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("flow_id", trackItem.getFlowId());
+        queryWrapper.orderByAsc("opt_sequence");
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        //过滤外协工序后,获取最小工序
+        TrackItem minTrackItem = list.stream().filter(item -> !item.getOptType().equals("3")).min(Comparator.comparing(TrackItem::getOptSequence)).get();
+        if (isDoing && isCurrent && trackItem.getOptSequence().equals(minTrackItem.getOptSequence())) {
+            return true;
+        }
+        return false;
     }
 
     /**

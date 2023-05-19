@@ -3,7 +3,9 @@ package com.richfit.mes.produce.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -213,6 +215,9 @@ public class TrackItemController extends BaseController {
                     .orderByDesc("next_opt_sequence");
             trackItems = trackItemService.list(queryWrapper);
         }
+        if (CollectionUtils.isEmpty(trackItems)) {
+            throw new GlobalException("未查询到当前工序,请联系管理员", ResultCode.FAILED);
+        }
         //查询当前跟单产品数量
         QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
         flowQueryWrapper.in("track_head_id", headIds);
@@ -236,7 +241,10 @@ public class TrackItemController extends BaseController {
             //拿到后续工序
             for (List<TrackItem> trackItem : map.values()) {
                 trackItemList.addAll(trackItem);
-                nextOpt(trackItem, trackItemList);
+                //校验不需要质检 不需要调度,查询下面工序
+                if (trackItem.get(0).getIsExistQualityCheck() == 0 && trackItem.get(0).getIsExistScheduleCheck() == 0) {
+                    nextOpt(trackItem, trackItemList);
+                }
             }
         }
         if (!trackItemList.isEmpty()) {
@@ -256,7 +264,10 @@ public class TrackItemController extends BaseController {
         List<TrackItem> list = trackItemService.list(queryWrapper);
         if (!CollectionUtils.isEmpty(list)) {
             newTrackItemList.addAll(list);
-            nextOpt(list, newTrackItemList);
+            //校验不需要质检 不需要调度,查询下面工序
+            if (list.get(0).getIsExistQualityCheck() == 0 && list.get(0).getIsExistScheduleCheck() == 0) {
+                nextOpt(list, newTrackItemList);
+            }
         }
     }
 
