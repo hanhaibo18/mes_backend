@@ -15,6 +15,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.HotDemandUpdateLogMapper;
 import com.richfit.mes.produce.entity.HotDemandParam;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
@@ -60,6 +61,8 @@ public class HotDemandController extends BaseController {
 
     @Resource
     private BaseServiceClient baseServiceClient;
+    @Resource
+    private HotDemandUpdateLogMapper hotDemandUpdateLogMapper;
 
 
     @ApiOperation(value = "新增需求提报", notes = "新增需求提报")
@@ -437,16 +440,33 @@ public class HotDemandController extends BaseController {
         //根据需求图号查询工艺库
         CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
         //工艺库数据
-        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getRouterNo(), x -> x));
+        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion(), x -> x));
 
         //遍历毛坯需求数据,根据图号在工艺map中获取,不为空则有工艺
         for (HotDemand hotDemand : hotDemands) {
-            Router router = routerMap.get(hotDemand.getDrawNo());
+            Router router = routerMap.get(hotDemand.getDrawNo()+hotDemand.getVersionNum());
             if (ObjectUtils.isNotEmpty(router)) {
                 //把有工艺的需求数据状态进行修改
                 UpdateWrapper updateWrapper = new UpdateWrapper();
                 updateWrapper.set("is_exist_process", 1);//设置为有工艺
-                updateWrapper.set("texture", router.getTexture());//设置材质
+                //判断材质是否相同 不通则使用工艺中的材质
+                if(hotDemand.getTexture().isEmpty() ||  !hotDemand.getTexture().equals(router.getTexture())){
+                    //保存修改记录
+                    HotDemandUpdateLog hotDemandUpdateLog = new HotDemandUpdateLog();
+                    hotDemandUpdateLog.setDemand_id(hotDemand.getDemandName());
+                    hotDemandUpdateLog.setDrawNo(hotDemand.getDrawNo());
+                    hotDemandUpdateLog.setVersionNum(hotDemand.getVersionNum());
+                    hotDemandUpdateLog.setVoucherNo(hotDemand.getVoucherNo());
+                    hotDemandUpdateLog.setOldTexture(hotDemand.getTexture());
+                    hotDemandUpdateLog.setNewTexture(router.getTexture());
+                    hotDemandUpdateLog.setCreateBy(currentUser.getUsername());
+                    hotDemandUpdateLog.setModifyBy(currentUser.getUsername());
+                    hotDemandUpdateLog.setCreateTime(new Date());
+                    hotDemandUpdateLog.setModifyTime(new Date());
+                    hotDemandUpdateLogMapper.insert(hotDemandUpdateLog);
+                    //修改材质为工艺中的材质
+                    updateWrapper.set("texture", router.getTexture());//设置材质
+                }
                 //updateWrapper.set("workblank_type", );//设置毛坯类型
                 updateWrapper.set("steel_water_weight", router.getWeightMolten());//设置钢水重量
                 updateWrapper.set("piece_weight", router.getPieceWeight());//设置单重
