@@ -6,8 +6,6 @@ import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -71,6 +69,7 @@ public interface BaseServiceClient {
 
     /**
      * 根据idList获得工艺
+     *
      * @param idList
      * @return
      */
@@ -256,6 +255,14 @@ public interface BaseServiceClient {
 
     @ApiOperation(value = "查询工艺")
     @GetMapping("/api/base/router/find")
-    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status,@RequestParam String testBar,@RequestParam String texture);
+    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status, @RequestParam String testBar, @RequestParam String texture);
+
+    @ApiOperation(value = "获取所有车间")
+    @GetMapping("/query_all_branch")
+    public List<Branch> queryAllBranch();
+
+    @ApiOperation(value = "获取所有车间Inner")
+    @GetMapping("/query_all_branch_inner")
+    public List<Branch> queryAllBranchInner();
 
 }

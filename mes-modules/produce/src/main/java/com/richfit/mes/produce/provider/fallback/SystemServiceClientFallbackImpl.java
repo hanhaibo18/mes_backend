@@ -40,6 +40,11 @@ public class SystemServiceClientFallbackImpl implements SystemServiceClient {
     }
 
     @Override
+    public CommonResult<TenantUserVo> queryByUserAccountInner(String userAccount, String header) {
+        return null;
+    }
+
+    @Override
     public Map<String, TenantUserVo> queryByUserAccountList(List<String> userAccountList) {
         return null;
     }
