@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.HotDemand;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,4 +26,9 @@ public interface HotDemandService extends IService<HotDemand> {
     CommonResult modelProductionScheduling(List<String> idList, String branchCode);
 
     CommonResult<?> initPlanNode(List<String> idList, String branchCode);
+
+    String getSubmitOrderOrg(String branchCode, TenantUserDetails currentUser);
+
+    //请合并相同项目产品
+    void checkDemand(String workNo, String drawNo, String versionNum);
 }

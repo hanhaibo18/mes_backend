@@ -320,6 +320,14 @@ public class TenantUserController extends BaseController {
         return CommonResult.success(tenantUserService.queryByUserAccount(userAccount));
     }
 
+    @ApiOperation(value = "根据用户编码获取人员信息", notes = "根据用户编码获取人员信息")
+    @ApiImplicitParam(name = "userAccount", value = "用户编码", required = true, dataType = "query")
+    @GetMapping("/queryByUserAccountInner")
+    @Inner
+    public CommonResult<TenantUserVo> queryByUserAccountInner(String userAccount) {
+        return CommonResult.success(tenantUserService.queryByUserAccount(userAccount));
+    }
+
     @ApiOperation(value = "根据用户编码List获取人员信息", notes = "根据用户编码List获取人员信息")
     @ApiImplicitParam(name = "userAccountList", value = "用户编码List", required = true, dataType = "List<String>")
     @PostMapping("/queryByUserAccountList")
@@ -405,6 +413,13 @@ public class TenantUserController extends BaseController {
     public CommonResult<List<TenantUserVo>> queryAuditsList(@RequestParam String branchCode) {
         return CommonResult.success(tenantUserService.queryAuditsList(branchCode));
     }
+
+    @ApiOperation(value = "查询同班人员id", notes = "查询同班人员id")
+    @GetMapping("/query_class")
+    public List<TenantUser> queryClass(@RequestParam String userAccount) {
+        return tenantUserService.queryClass(userAccount);
+    }
+
 
 }
 

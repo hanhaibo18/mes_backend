@@ -27,6 +27,12 @@ public interface TrackAssignMapper extends BaseMapper<Assign> {
     @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0) a ${ew.customSqlSegment}")
     IPage<TrackItem> getPageAssignsByStatus(@Param("page") Page page, @Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
 
+    @Select("select * from (SELECT * FROM v_produce_track_item_hot where  (Is_Current =1)  and Assignable_Qty>0) a ${ew.customSqlSegment}")
+    IPage<TrackItem> getPageAssignsHot(@Param("page") Page page, @Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
+
+    @Select("select * from (SELECT * FROM v_produce_track_item_hot where  (Is_Current =1)  and Assignable_Qty>0) a ${ew.customSqlSegment}")
+    List<TrackItem> getPageAssignsHot(@Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
+
 
     @Select("select * from (SELECT * FROM v_produce_track_item where  (Is_Current =1)  and Assignable_Qty>0 and track_head_id in (select id from produce_track_head where replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like concat('%',#{name},'%'))) a  ${ew.customSqlSegment}")
     IPage<TrackItem> getPageAssignsByStatusAndTrack(@Param("page") Page page, @Param("name") String name, @Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);

@@ -24,6 +24,7 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/user/find_one")
     public CommonResult<TenantUserVo> getUserById(@RequestParam("id") String id);
+
     @PostMapping(value = "/api/sys/user/find_by_ids")
     public CommonResult<List<TenantUser>> getUserByIds(@RequestBody List<String> ids);
 
@@ -32,6 +33,9 @@ public interface SystemServiceClient {
 
     @GetMapping(value = "/api/sys/user/queryByUserAccount")
     public CommonResult<TenantUserVo> queryByUserAccount(@RequestParam("userAccount") String userAccount);
+
+    @GetMapping(value = "/api/sys/user/queryByUserAccountInner")
+    public CommonResult<TenantUserVo> queryByUserAccountInner(@RequestParam("userAccount") String userAccount, @RequestHeader(value = SecurityConstants.FROM) String header);
 
     @PostMapping("/api/sys/user/queryByUserAccountList")
     public Map<String, TenantUserVo> queryByUserAccountList(@RequestBody List<String> userAccountList);
@@ -55,6 +59,7 @@ public interface SystemServiceClient {
 
     /**
      * 功能描述： 根据code和name 查询字典参数
+     *
      * @param code
      * @param name
      * @return
@@ -83,8 +88,8 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesList")
     public CommonResult<List<QualityInspectionRules>> queryQualityInspectionRulesList(@RequestParam("branchCode") String branchCode);
 
-    @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesListInner")
-    public List<QualityInspectionRules> queryQualityInspectionRulesListInner(@RequestParam("branchCode") String branchCode, @RequestHeader(value = SecurityConstants.FROM) String header);
+    @GetMapping(value = "/api/sys/qualityInspectionRules/allQualityInspectionRulesListInner")
+    public List<QualityInspectionRules> allQualityInspectionRulesListInner(@RequestHeader(value = SecurityConstants.FROM) String header);
 
     @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesById")
     public CommonResult<QualityInspectionRules> queryQualityInspectionRulesById(@RequestParam("id") String id);
@@ -168,10 +173,15 @@ public interface SystemServiceClient {
 
     /**
      * 根据Code查询字典列表项
+     *
      * @param code
      * @param tenantId
      * @return
      */
     @GetMapping("/api/sys/item/param/find_by_class_code")
-    public CommonResult<List<ItemParam>> findItemParamByCode(@RequestParam("code") String code,@RequestParam("tenantId") String tenantId);
+    public CommonResult<List<ItemParam>> findItemParamByCode(@RequestParam("code") String code, @RequestParam("tenantId") String tenantId);
+
+    @ApiOperation(value = "查询同班人员id", notes = "查询同班人员id")
+    @GetMapping("/api/sys/user/query_class")
+    public List<TenantUser> queryClass(@RequestParam String userAccount);
 }

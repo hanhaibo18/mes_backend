@@ -12,10 +12,9 @@ import lombok.Data;
 public class TrackHeadForge extends BaseEntity<TrackHeadForge> {
 
     /**
-     * 下料规格
+     * 代用材质
      */
-    private String blankingSpecification;
-
+    private String substituteMaterial;
     /**
      * 单号
      */
@@ -24,5 +23,7 @@ public class TrackHeadForge extends BaseEntity<TrackHeadForge> {
     private String branchCode;
 
     private String tenantId;
+
+    private String attachmentId;
 
 }

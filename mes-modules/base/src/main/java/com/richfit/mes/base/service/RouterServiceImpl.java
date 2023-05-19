@@ -81,6 +81,10 @@ public class RouterServiceImpl extends ServiceImpl<RouterMapper, Router> impleme
         query.eq("id", routerId)
                 .eq("branch_code", branchCode);
         List<Router> routerList = this.list(query);
+        if(routerList.size()==0){
+            return null;
+        }
+
         QueryIsHistory queryIsHistory = new QueryIsHistory();
         queryIsHistory.setOldVersions(routerList.get(0).getVersion());
         queryIsHistory.setIsHistory(false);

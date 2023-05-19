@@ -82,7 +82,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     @Override
     public boolean autoCertificate(TrackHead trackHead) throws Exception {
         //装配车间
-        if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
+        if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
             return true;
         }
         TenantUserDetails user = SecurityUtils.getCurrentUser();
@@ -90,14 +90,13 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setBranchCode(trackHead.getBranchCode());
         certificate.setCertOrigin("0");
         certificate.setCertificateNo(Code.valueOnUpdate("hege_no", trackHead.getTenantId(), trackHead.getBranchCode(), codeRuleService));
-        CommonResult<TenantUserVo> commonResult = systemServiceClient.queryByUserId(user.getUserId());
-        certificate.setCheckName(commonResult.getData().getEmplName());
+        certificate.setCheckName("System");
         certificate.setCheckTime(new Date());
         certificate.setDrawingNo(trackHead.getDrawingNo());
         certificate.setMaterialNo(trackHead.getMaterialNo());
         certificate.setNextOpt("/");
         //裝配开具并生产入库
-        if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
+        if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
             certificate.setNextOptWork("BOMCO_SC");
         }
         certificate.setNumber(trackHead.getNumber());
@@ -146,14 +145,13 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         List<String> ids = certificate.getTrackCertificates().stream().map(TrackCertificate::getThId).collect(Collectors.toList());
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         queryWrapper.in("track_head_id", ids);
-        List<TrackItem> list = trackItemService.list(queryWrapper);
-        //去重操作(工序号+工序名 都一样认为重复)
-        ArrayList<TrackItem> collect = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(trackItem -> trackItem.getOptName() + "-" + trackItem.getOptNo()))), ArrayList::new));
-        List<TrackItem> current = collect.stream().filter(x -> x.getIsCurrent() == 1).collect(Collectors.toList());
-        //当前工序的前工序 并且最终完成状态 is_final_complete 不为1 的
-        List<TrackItem> before = collect.stream().filter(x -> x.getOptSequence() < current.get(0).getOptSequence() & !"1".equals(x.getIsFinalComplete())).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(before)) {
-            throw new Exception(before.get(0).getOptName() + " " + Certificate.FAILED_ON_COMPLETE);
+        queryWrapper.le("opt_sequence", certificate.getOptSequence());
+        List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
+        for (TrackItem trackItem : trackItemList) {
+            if (!"1".equals(trackItem.getIsFinalComplete())) {
+                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                throw new Exception(trackHead.getTrackNo() + " " + Certificate.FAILED_ON_COMPLETE);
+            }
         }
     }
 
