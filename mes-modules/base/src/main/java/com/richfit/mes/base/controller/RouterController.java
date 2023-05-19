@@ -657,6 +657,7 @@ public class RouterController extends BaseController {
 //            queryWrapper.in("draw_no", drawNos);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.eq("branch_code", branchCode);
+            queryWrapper.eq("status", 1);
             List<Router> routers = routerService.list(queryWrapper);
             return CommonResult.success(routers);
         } catch (Exception e) {
