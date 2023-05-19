@@ -53,8 +53,8 @@ public class PrechargeFurnaceAssign extends BaseEntity<PrechargeFurnaceAssign> {
     private String optType;
     //材质
     private String texture;
+    //报工时间
+    private Date finishTime;
     private String branchCode;
     private String tenantId;
-    private String finishTime;
-
 }

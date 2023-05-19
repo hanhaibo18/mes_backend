@@ -1083,14 +1083,14 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "冶炼车间获取预装炉派工信息")
     @GetMapping("/precharge_furnace_yl")
-    public CommonResult<IPage<PrechargeFurnace>> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
+    public CommonResult<IPage<PrechargeFurnaceAssign>> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
         return CommonResult.success(trackCompleteService.prechargeFurnaceYl(prechargeFurnaceId, texture, startTime, endTime, workblankType, status, page, limit));
     }
 
-    @ApiOperation(value = "根据预装炉id获取炉内的工序信息")
+    @ApiOperation(value = "根据预装炉派工id获取炉内的工序信息")
     @GetMapping("/item_list")
-    public CommonResult<List<TrackItem>> getItemList(@ApiParam("预装炉编号") @RequestParam Long prechargeFurnaceId){
-        return CommonResult.success(trackCompleteService.getItemList(prechargeFurnaceId));
+    public CommonResult<List<TrackItem>> getItemList(@ApiParam("预装炉派工id") @RequestParam String prechargeFurnaceAssignId){
+        return CommonResult.success(trackCompleteService.getItemList(prechargeFurnaceAssignId));
     }
 
 }

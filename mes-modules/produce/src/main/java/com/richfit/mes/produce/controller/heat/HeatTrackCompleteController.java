@@ -77,8 +77,8 @@ public class HeatTrackCompleteController extends BaseController {
 
     @ApiOperation(value = "开工")
     @GetMapping("/startWork")
-    public CommonResult<Boolean> startWork(@ApiParam(value = "预装炉id", required = true) @RequestParam String prechargeFurnaceId) {
-        return CommonResult.success(heatTrackCompleteService.startWork(prechargeFurnaceId));
+    public CommonResult<Boolean> startWork(@ApiParam(value = "预装炉派工Id", required = true) @RequestParam String prechargeFurnaceAssignId) {
+        return CommonResult.success(heatTrackCompleteService.startWork(prechargeFurnaceAssignId));
     }
 
     @ApiOperation(value = "根据预装炉id获取报工信息")

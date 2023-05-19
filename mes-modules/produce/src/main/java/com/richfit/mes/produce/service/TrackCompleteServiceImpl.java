@@ -127,6 +127,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private RecordsOfSteelmakingOperationsService recordsOfSteelmakingOperationsService;
     @Autowired
     private RecordsOfPourOperationsService recordsOfPourOperationsService;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
     @Resource
     private TrackAssemblyService assemblyService;
@@ -528,13 +530,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 //派工状态设置为完成
                 assign.setState(2);
                 trackAssignService.updateById(assign);
-                //修改预装炉状态为完工
-                if (!StringUtils.isNullOrEmpty(assign.getPrechargeFurnaceId())) {
-                    UpdateWrapper<PrechargeFurnace> prechargeFurnaceUpdateWrapper = new UpdateWrapper<>();
-                    prechargeFurnaceUpdateWrapper.eq("id", assign.getPrechargeFurnaceId())
-                            .set("status", END_START_WORK)
-                            .set("step_status", END_START_WORK);
-                    prechargeFurnaceService.update(prechargeFurnaceUpdateWrapper);
+                //修改预装炉派工表状态为完工
+                if (!StringUtils.isNullOrEmpty(trackItem.getPrechargeFurnaceAssignId())) {
+                    PrechargeFurnaceAssign assignInfo = prechargeFurnaceAssignService.getById(trackItem.getPrechargeFurnaceAssignId());
+                    assignInfo.setIsDoing(END_START_WORK);
+                    assignInfo.setFinishTime(new Date());
+                    prechargeFurnaceAssignService.updateById(assignInfo);
                 }
 
             }
@@ -751,14 +752,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         RecordsOfSteelmakingOperations recordsOfSteelmakingOperations = new RecordsOfSteelmakingOperations();
         RecordsOfPourOperations recordsOfPourOperations = new RecordsOfPourOperations();
         //该工序如果走的预装炉，根据预装炉id找对应的炼钢记录和浇注记录信息
-        if (trackItem.getPrechargeFurnaceId() != null){
+        if (trackItem.getPrechargeFurnaceId() != null) {
             //根据预装炉id找炼钢记录
             QueryWrapper<RecordsOfSteelmakingOperations> recordsOfSteelmakingOperationsQueryWrapper = new QueryWrapper<>();
-            recordsOfSteelmakingOperationsQueryWrapper.eq("precharge_furnace_id",trackItem.getPrechargeFurnaceId());
+            recordsOfSteelmakingOperationsQueryWrapper.eq("precharge_furnace_id", trackItem.getPrechargeFurnaceId());
             recordsOfSteelmakingOperations = recordsOfSteelmakingOperationsService.getOne(recordsOfSteelmakingOperationsQueryWrapper);
             //根据预装炉id找浇注记录
             QueryWrapper<RecordsOfPourOperations> recordsOfPourOperationsQueryWrapper = new QueryWrapper<>();
-            recordsOfPourOperationsQueryWrapper.eq("precharge_furnace_id",trackItem.getPrechargeFurnaceId());
+            recordsOfPourOperationsQueryWrapper.eq("precharge_furnace_id", trackItem.getPrechargeFurnaceId());
             recordsOfPourOperations = recordsOfPourOperationsService.getOne(recordsOfPourOperationsQueryWrapper);
         }
         queryWorkingTimeVo.setTrackCompleteList(completeList);
@@ -2011,42 +2012,42 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public IPage<PrechargeFurnace> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit) {
+    public IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit) {
         //获取当前用户分派的预装炉信息
-        QueryWrapper<PrechargeFurnaceAssignPerson> assignQueryWrapper = new QueryWrapper<>();
-        assignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
-        List<PrechargeFurnaceAssignPerson> assignList = prechargeFurnaceAssignPersonService.list(assignQueryWrapper);
+        QueryWrapper<PrechargeFurnaceAssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
+        assignPersonQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+        List<PrechargeFurnaceAssignPerson> assignList = prechargeFurnaceAssignPersonService.list(assignPersonQueryWrapper);
         if (CollectionUtils.isEmpty(assignList)) {
             throw new GlobalException("该用户暂无派工信息！", ResultCode.FAILED);
         }
-        Set<Long> prechargeFurnaceIdList = assignList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceId).collect(Collectors.toSet());
-        QueryWrapper<PrechargeFurnace> furnaceQueryWrapper = new QueryWrapper<>();
-        furnaceQueryWrapper.in("id", prechargeFurnaceIdList);
-        furnaceQueryWrapper.eq("workblank_type", workblankType);
+        Set<String> prechargeFurnaceAssignIdList = assignList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceAssignId).collect(Collectors.toSet());
+        QueryWrapper<PrechargeFurnaceAssign> assignQueryWrapper = new QueryWrapper<>();
+        assignQueryWrapper.in("id", prechargeFurnaceAssignIdList);
+        assignQueryWrapper.eq("workblank_type", workblankType);
         if (prechargeFurnaceId != null) {
-            furnaceQueryWrapper.eq("id", prechargeFurnaceId);
+            assignQueryWrapper.eq("furnace_id", prechargeFurnaceId);
         }
         if (!StringUtils.isNullOrEmpty(texture)) {
-            furnaceQueryWrapper.eq("texture", texture);
+            assignQueryWrapper.eq("texture", texture);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
-            furnaceQueryWrapper.apply("UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+            assignQueryWrapper.apply("UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
         }
         if (!StringUtils.isNullOrEmpty(endTime)) {
-            furnaceQueryWrapper.apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+            assignQueryWrapper.apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
         }
         if (status.equals("2")) {
-            furnaceQueryWrapper.eq("status", 2);
+            assignQueryWrapper.eq("is_doing", 2);
         } else {
-            furnaceQueryWrapper.ne("status", 2);
+            assignQueryWrapper.apply("(is_doing = 0 or (is_doing = 1 and start_doing_user = '" + SecurityUtils.getCurrentUser().getUsername() + "'))");
         }
-        return prechargeFurnaceService.page(new Page<PrechargeFurnace>(page, limit), furnaceQueryWrapper);
+        return prechargeFurnaceAssignService.page(new Page<PrechargeFurnaceAssign>(page, limit), assignQueryWrapper);
     }
 
     @Override
-    public List<TrackItem> getItemList(Long prechargeFurnaceId) {
+    public List<TrackItem> getItemList(String prechargeFurnaceAssignId) {
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
-        itemQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId).eq("is_current", 1);
+        itemQueryWrapper.eq("precharge_furnace_assign_id", prechargeFurnaceAssignId);
         List<TrackItem> itemList = trackItemService.list(itemQueryWrapper);
         for (TrackItem item : itemList) {
             Router router = baseServiceClient.getRouter(item.getRouterId()).getData();
