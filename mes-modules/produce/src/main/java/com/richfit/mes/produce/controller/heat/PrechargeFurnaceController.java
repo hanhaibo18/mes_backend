@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller.heat;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
@@ -180,4 +181,27 @@ public class PrechargeFurnaceController extends BaseController {
     public CommonResult<List<TrackItem>> queryAssignByTexture(String texture, String branchCode) {
         return CommonResult.success(prechargeFurnaceService.queryAssignByTexture(texture,branchCode));
     }
+
+    @ApiOperation(value = "配炉未派工列表查询")
+    @GetMapping("/assign_furnace_page_list")
+    public CommonResult<Page> assignFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType){
+        QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
+        prechargeFurnaceQueryWrapper.eq("branch_code",branchCode)
+                .eq(!ObjectUtil.isEmpty(id),"id",id)
+                .eq(!StringUtils.isNullOrEmpty(texture),"texture",texture)
+                .ge(!StringUtils.isNullOrEmpty(startTime),"date_format(create_time, '%Y-%m-%d')", startTime)
+                .le(!StringUtils.isNullOrEmpty(endTime),"date_format(create_time, '%Y-%m-%d')", endTime)
+                .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType);
+        return CommonResult.success(prechargeFurnaceService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper));
+    }
+
+    @ApiOperation(value = "配炉工序列表查询")
+    @GetMapping("/furnace_item_list")
+    public CommonResult<List> furnaceItemList(Long id){
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_current",1)
+                .eq("precharge_furnace_id",id);
+        return CommonResult.success(trackItemService.list(queryWrapper));
+    }
+
 }

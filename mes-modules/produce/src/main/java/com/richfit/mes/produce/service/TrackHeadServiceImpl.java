@@ -1386,8 +1386,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //更新跟单动作
             trackHeadMapper.updateById(trackHead);
-            //合格证
-            certificateService.autoCertificate(trackHead);
+            if (StrUtil.isBlank(trackHead.getCertificateNo())) {
+                //合格证
+                certificateService.autoCertificate(trackHead);
+            }
             //计划数据更新
             planService.planData(trackHead.getWorkPlanId());
             //订单数据更新
@@ -2071,66 +2073,46 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     /**
-     * 根据材质 试棒型号获取跟单信息
+     * 获取试棒型号(相同试棒型号 相同材质 的上一个跟单的试棒型号)
+     *
      * @param texture
      * @param testBar
      * @return
      */
     @Override
-    public List<TrackHead> getTestBarNo(String texture, String testBar, String branchCode,String testBarNo){
+    public String getTestBarNo(String texture, String testBar, String branchCode) {
         List<Router> routerList = baseServiceClient.find("", "", "", "", branchCode, SecurityUtils.getCurrentUser().getTenantId(), "", testBar, texture).getData();
         List<String> routerIds = routerList.stream().map(Router::getId).collect(Collectors.toList());
-        if(!CollectionUtil.isEmpty(routerIds)){
+        if (!CollectionUtil.isEmpty(routerIds)) {
             QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
-            trackHeadQueryWrapper.in("router_id",routerIds)
-                    .eq(!StringUtils.isNullOrEmpty(testBarNo),"test_bar_no",testBarNo)
-                    .eq("branch_code",branchCode)
-                    .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+            trackHeadQueryWrapper.in("router_id", routerIds)
+                    .eq("branch_code", branchCode)
+                    .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
                     .orderByDesc("create_time");
             List<TrackHead> list = this.list(trackHeadQueryWrapper);
-            return list;
+            return CollectionUtil.isEmpty(list) ? "" : list.get(0).getTestBarNo();
         }
         return null;
     }
 
     /**
-     * 根据图号 获取跟单信息
+     * 铸钢开跟单获取铸件编号(相同图号 的上一个跟单的产品编号)
+     *
      * @param drawingNo
      * @param branchCode
      * @param productNo
      * @return
      */
     @Override
-    public List<TrackHead> getProductNo(String drawingNo,String productNo, String branchCode){
+    public String getProductNo(String drawingNo, String branchCode) {
         QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
         trackHeadQueryWrapper
-                .eq(!StringUtils.isNullOrEmpty(productNo),"product_no",productNo)
-                .eq("branch_code",branchCode)
-                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+                .eq("branch_code", branchCode)
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
                 .orderByDesc("create_time");
-        DrawingNoUtil.queryEq(trackHeadQueryWrapper,"drawing_no",drawingNo);
+        DrawingNoUtil.queryEq(trackHeadQueryWrapper, "drawing_no", drawingNo);
         List<TrackHead> list = this.list(trackHeadQueryWrapper);
-        return list;
-    }
-
-    /**
-     * 根据图号 获取跟单信息
-     * @param trackHead
-     */
-    @Override
-    public void zGSaveHeadcheckInfo(TrackHeadPublicDto trackHead){
-        if(!StringUtils.isNullOrEmpty(String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")))){
-            List<TrackHead> products = getProductNo(trackHead.getDrawingNo(),String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")), trackHead.getBranchCode());
-            if(!CollectionUtil.isEmpty(products)){
-                throw new GlobalException("铸件编码已存在",ResultCode.FAILED);
-            }
-        }
-        if(!StringUtils.isNullOrEmpty(trackHead.getTestBarNo())){
-            List<TrackHead> testBarNos = getTestBarNo(trackHead.getTexture(), trackHead.getTestBar(), trackHead.getBranchCode(),trackHead.getTestBarNo());
-            if(!CollectionUtil.isEmpty(testBarNos)){
-                throw new GlobalException("试棒编码已存在",ResultCode.FAILED);
-            }
-        }
+        return CollectionUtil.isEmpty(list) ? "" : list.get(0).getProductNo();
     }
 
 

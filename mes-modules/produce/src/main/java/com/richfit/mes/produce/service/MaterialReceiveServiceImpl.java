@@ -129,7 +129,9 @@ public class MaterialReceiveServiceImpl extends ServiceImpl<MaterialReceiveMappe
                     }
                 }
             });
-            materialReceiveDetailService.saveDetailList(material.getDetailList());
+//            原明细批量存储
+//            materialReceiveDetailService.saveDetailList(material.getDetailList());
+            materialReceiveDetailService.saveBatch(material.getDetailList());
         } catch (GlobalException e) {
             //既能实现回滚也能返回结果
             flag = false;
