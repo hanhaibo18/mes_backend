@@ -450,22 +450,25 @@ public class HotDemandController extends BaseController {
                 UpdateWrapper updateWrapper = new UpdateWrapper();
                 updateWrapper.set("is_exist_process", 1);//设置为有工艺
                 //判断材质是否相同 不通则使用工艺中的材质
-                if(hotDemand.getTexture().isEmpty() ||  !hotDemand.getTexture().equals(router.getTexture())){
-                    //保存修改记录
-                    HotDemandUpdateLog hotDemandUpdateLog = new HotDemandUpdateLog();
-                    hotDemandUpdateLog.setDemandId(hotDemand.getId());
-                    hotDemandUpdateLog.setDrawNo(hotDemand.getDrawNo());
-                    hotDemandUpdateLog.setVersionNum(hotDemand.getVersionNum());
-                    hotDemandUpdateLog.setVoucherNo(hotDemand.getVoucherNo());
-                    hotDemandUpdateLog.setOldTexture(hotDemand.getTexture());
-                    hotDemandUpdateLog.setNewTexture(router.getTexture());
-                    hotDemandUpdateLog.setCreateBy(currentUser.getUsername());
-                    hotDemandUpdateLog.setModifyBy(currentUser.getUsername());
-                    hotDemandUpdateLog.setCreateTime(new Date());
-                    hotDemandUpdateLog.setModifyTime(new Date());
-                    hotDemandUpdateLogMapper.insert(hotDemandUpdateLog);
-                    //修改材质为工艺中的材质
-                    updateWrapper.set("texture", router.getTexture());//设置材质
+                if(StringUtils.isEmpty(hotDemand.getTexture()) ||  !hotDemand.getTexture().equals(router.getTexture())){
+                    //工艺材质不能为空
+                    if(StringUtils.isNotEmpty(router.getTexture())){
+                        //保存修改记录
+                        HotDemandUpdateLog hotDemandUpdateLog = new HotDemandUpdateLog();
+                        hotDemandUpdateLog.setDemandId(hotDemand.getId());
+                        hotDemandUpdateLog.setDrawNo(hotDemand.getDrawNo());
+                        hotDemandUpdateLog.setVersionNum(hotDemand.getVersionNum());
+                        hotDemandUpdateLog.setVoucherNo(hotDemand.getVoucherNo());
+                        hotDemandUpdateLog.setOldTexture(hotDemand.getTexture());
+                        hotDemandUpdateLog.setNewTexture(router.getTexture());
+                        hotDemandUpdateLog.setCreateBy(currentUser.getUsername());
+                        hotDemandUpdateLog.setModifyBy(currentUser.getUsername());
+                        hotDemandUpdateLog.setCreateTime(new Date());
+                        hotDemandUpdateLog.setModifyTime(new Date());
+                        hotDemandUpdateLogMapper.insert(hotDemandUpdateLog);
+                        //修改材质为工艺中的材质
+                        updateWrapper.set("texture", router.getTexture());//设置材质
+                    }
                 }
                 //updateWrapper.set("workblank_type", );//设置毛坯类型
                 updateWrapper.set("steel_water_weight", router.getWeightMolten());//设置钢水重量
