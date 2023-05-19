@@ -339,10 +339,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
-        System.out.println("-------------------------------");
-        System.out.println(completes.size());
         return stringObjectHashMap;
     }
 
@@ -1513,6 +1512,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
@@ -1727,6 +1727,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
@@ -1941,6 +1942,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
