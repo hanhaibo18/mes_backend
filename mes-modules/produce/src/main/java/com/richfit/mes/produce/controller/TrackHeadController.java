@@ -379,6 +379,10 @@ public class TrackHeadController extends BaseController {
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
         IPage<TrackHeadPublicVo> trackHeadPublicVoIPage = trackHeadService.queryPage(new Page<>(page, limit), queryWrapper);
+        //工艺ids
+        List<String> routerIds = new ArrayList<>(trackHeadPublicVoIPage.getRecords().stream().map(item -> item.getRouterId()).collect(Collectors.toSet()));
+
+
         return CommonResult.success(trackHeadPublicVoIPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
@@ -1127,15 +1131,16 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "根据图号 获取上次填写的跟单的产品号")
     @GetMapping("/getProductNoByDrawingNo")
-    public CommonResult<String> getProductNoByDrawingNo(String drawingNo, String branchCode) {
-        return CommonResult.success(trackHeadService.getProductNo(drawingNo, branchCode));
+    public CommonResult<String>  getProductNoByDrawingNo(String drawingNo,String branchCode) {
+        List<TrackHead> trackHeads = trackHeadService.getProductNo(drawingNo,"", branchCode);
+        return CommonResult.success(CollectionUtil.isEmpty(trackHeads)?null:trackHeads.get(0).getProductNo());
     }
 
     @ApiOperation(value = "根据材质 试棒型号获取上次填写跟单的试棒编号")
     @GetMapping("/getTestBarNoByTextureAndTestBarNo")
-    public CommonResult<String> getTestBarNoByTextureAndTestBarNo(String texture, String testBarNo, String branchCode) {
-        return CommonResult.success(trackHeadService.getTestBarNo(texture, testBarNo, branchCode));
+    public CommonResult<String>  getTestBarNoByTextureAndTestBarNo(String texture,String testBar,String branchCode) {
+        List<TrackHead> trackHeads = trackHeadService.getTestBarNo(texture, testBar, branchCode,"");
+        return CommonResult.success(CollectionUtil.isEmpty(trackHeads)?null:trackHeads.get(0).getTestBarNo());
     }
-
 
 }
