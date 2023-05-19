@@ -362,7 +362,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
      * @param prechargeFurnaceAssignId
      */
     @Override
-    public boolean startWork(String prechargeFurnaceAssignId){
+    public boolean pLstartWork(String prechargeFurnaceAssignId){
         PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getById(prechargeFurnaceAssignId);
         if(prechargeFurnaceAssign.getIsDoing().equals(PrechargeFurnace.END_START_WORK)){
             throw new GlobalException("工序已完工无法再开工",ResultCode.FAILED);
@@ -403,6 +403,56 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 .in("id", itemIds);
         trackItemService.update(trackItemUpdateWrapper);
         return prechargeFurnaceAssignService.updateById(prechargeFurnaceAssign);
+    }
+
+    /**
+     * 功能描述: 热工报工开工
+     * 预装炉id
+     * @param prechargeFurnaceId
+     */
+    @Override
+    public boolean startWork(String prechargeFurnaceId){
+        PrechargeFurnace prechargeFurnace= prechargeFurnaceService.getById(prechargeFurnaceId);
+        if(prechargeFurnace.getStatus().equals(PrechargeFurnace.END_START_WORK)){
+            throw new GlobalException("工序已完工无法再开工",ResultCode.FAILED);
+        }
+        if(prechargeFurnace.getStatus().equals(PrechargeFurnace.YES_START_WORK)){
+            throw new GlobalException("工序已开工无法再开工",ResultCode.FAILED);
+        }
+        prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
+        prechargeFurnace.setStepStatus(PrechargeFurnace.YES_START_WORK);
+        prechargeFurnace.setStartWorkBy(SecurityUtils.getCurrentUser().getUserId());
+
+        //设置开工
+        List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_id", prechargeFurnaceId));
+        List<String> itemIds = items.stream().map(TrackItem::getId).collect(Collectors.toList());
+        List<String> headIds = items.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
+        List<String> flowIds = items.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
+        //将跟单状态改为在制
+        UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+        trackHeadUpdateWrapper.set("status","1")
+                .eq("status","0")
+                .in("id",headIds);
+        trackHeadService.update(trackHeadUpdateWrapper);
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.set("status", "1")
+                .eq("status","0")
+                .in("id", flowIds);
+        trackHeadFlowService.update(update);
+        UpdateWrapper<Assign> assignUpdate;
+        assignUpdate = new UpdateWrapper<>();
+        assignUpdate.set("state", "1")
+                .eq("state","0")
+                .in("ti_id", itemIds);
+        trackAssignService.update(assignUpdate);
+        UpdateWrapper<TrackItem>  trackItemUpdateWrapper = new UpdateWrapper<>();
+        trackItemUpdateWrapper.set("is_doing", 1)
+                .set("start_doing_time",new Date())
+                .set("start_doing_user",SecurityUtils.getCurrentUser().getUsername())
+                .eq("is_doing",0)
+                .in("id", itemIds);
+        trackItemService.update(trackItemUpdateWrapper);
+        return prechargeFurnaceService.updateById(prechargeFurnace);
     }
 
     /**
