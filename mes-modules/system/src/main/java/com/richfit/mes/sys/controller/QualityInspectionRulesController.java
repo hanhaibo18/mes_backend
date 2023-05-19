@@ -75,12 +75,11 @@ public class QualityInspectionRulesController {
         return CommonResult.success(qualityInspectionRulesService.queryQualityInspectionRulesList(branchCode));
     }
 
-    @ApiOperation(value = "查询质量规则列表", notes = "根据车间编码查询")
-    @ApiImplicitParam(name = "branchCode", value = "车间", dataType = "String", paramType = "query")
-    @GetMapping("/queryQualityInspectionRulesListInner")
+    @ApiOperation(value = "查询全部质量规则列表", notes = "查询全部质量规则列表")
+    @GetMapping("/allQualityInspectionRulesListInner")
     @Inner
-    public List<QualityInspectionRules> queryQualityInspectionRulesListInner(String branchCode) {
-        return qualityInspectionRulesService.queryQualityInspectionRulesList(branchCode);
+    public List<QualityInspectionRules> allQualityInspectionRulesList() {
+        return qualityInspectionRulesService.list();
     }
 
     @ApiOperation(value = "查询质检规则", notes = "根据Id查询质检规则")
