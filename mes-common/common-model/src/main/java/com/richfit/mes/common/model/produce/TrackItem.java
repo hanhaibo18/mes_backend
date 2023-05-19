@@ -508,6 +508,10 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String testBarType;
 
+    @ApiModelProperty(value = "定型")
+    @TableField(exist = false)
+    private String ingotCase;
+
     @ApiModelProperty(value = "预装炉派工id")
     private String prechargeFurnaceAssignId;
 

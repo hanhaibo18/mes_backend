@@ -188,6 +188,10 @@ public class TrackHeadPublicDto {
     @ApiModelProperty(value = "跟单附件id，多个用，隔开", dataType = "String")
     private String filesId;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "毛坯类型 0锻件,1铸件,2钢锭", dataType = "String")
+    private String workblankType;
+
 
     @ApiModelProperty(value = "跟单工序")
     @TableField(exist = false)

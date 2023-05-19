@@ -2,11 +2,20 @@ package com.richfit.mes.produce.controller;
 
 
 
+import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.api.R;
+import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.service.PrechargeFurnaceAssignService;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -28,50 +37,15 @@ public class PrechargeFurnaceAssignController extends ApiController {
     @Resource
     private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
-
-
-    /**
-     * 通过主键查询单条数据
-     *
-     * @param id 主键
-     * @return 单条数据
-     */
-    @GetMapping("{id}")
-    public R selectOne(@PathVariable Serializable id) {
-        return success(this.prechargeFurnaceAssignService.getById(id));
-    }
-
-    /**
-     * 新增数据
-     *
-     * @param prechargeFurnaceAssign 实体对象
-     * @return 新增结果
-     */
-    @PostMapping
-    public R insert(@RequestBody PrechargeFurnaceAssign prechargeFurnaceAssign) {
-        return success(this.prechargeFurnaceAssignService.save(prechargeFurnaceAssign));
-    }
-
-    /**
-     * 修改数据
-     *
-     * @param prechargeFurnaceAssign 实体对象
-     * @return 修改结果
-     */
-    @PutMapping
-    public R update(@RequestBody PrechargeFurnaceAssign prechargeFurnaceAssign) {
-        return success(this.prechargeFurnaceAssignService.updateById(prechargeFurnaceAssign));
-    }
-
-    /**
-     * 删除数据
-     *
-     * @param idList 主键结合
-     * @return 删除结果
-     */
-    @DeleteMapping
-    public R delete(@RequestParam("idList") List<Long> idList) {
-        return success(this.prechargeFurnaceAssignService.removeByIds(idList));
+    @ApiOperation(value = "批量新增预装炉派工", notes = "批量新增预装炉派工")
+    @PostMapping("/furnaceAssign")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> furnaceAssign(@RequestBody JSONObject jsonObject) {
+        //预装炉ids
+        List<Long> furnaceIds = JSON.parseArray(com.alibaba.fastjson.JSONObject.toJSONString(jsonObject.get("furnaceIds")), Long.class);
+        //派工信息
+        Assign assign = (Assign) jsonObject.get("assign");
+        return CommonResult.success(prechargeFurnaceAssignService.furnaceAssign(assign,furnaceIds));
     }
 }
 

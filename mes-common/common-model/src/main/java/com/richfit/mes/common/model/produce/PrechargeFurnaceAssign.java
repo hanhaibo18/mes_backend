@@ -23,15 +23,17 @@ public class PrechargeFurnaceAssign extends BaseEntity<PrechargeFurnaceAssign> {
     private String assignBy;
     //派工时间
     private Date assignTime;
-    //派工状态（0未派工，1已派工）
-    private String assignStatus;
-    //派给的班组
-    private Integer assignSiteId;
+    //派给的班组编码
+    private String assignSiteId;
+    //派给的班组名称
+    private String assignSiteName;
     //派给的人员（用逗号隔开，具体人员数据去预装炉人员派工表去找）
     private String assignUser;
+    //派给的人员中文名称（仅用于前端展示）
+    private String assignUserName;
     //开工人
     private String startDoingUser;
-    //开工状态
+    //开工状态(0未报工1已报工)
     private String isDoing;
     //报工人
     private String completeBy;
@@ -51,4 +53,8 @@ public class PrechargeFurnaceAssign extends BaseEntity<PrechargeFurnaceAssign> {
     private String optType;
     //材质
     private String texture;
+    private String branchCode;
+    private String tenantId;
+    private String finishTime;
+
 }
