@@ -47,4 +47,8 @@ public class PrechargeFurnaceAssign extends BaseEntity<PrechargeFurnaceAssign> {
     private String workblankType;
     //钢水总重
     private Double totalMoltenSteel;
+    //工序类型
+    private String optType;
+    //材质
+    private String texture;
 }

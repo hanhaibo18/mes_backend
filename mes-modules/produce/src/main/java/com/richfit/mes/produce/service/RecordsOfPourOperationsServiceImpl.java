@@ -183,7 +183,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             recordsOfPourOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
         }
         if (!StringUtils.isNullOrEmpty(ingotCase)) {
-            recordsOfPourOperationsQueryWrapper.eq("smelting_equipment", ingotCase);
+            recordsOfPourOperationsQueryWrapper.eq("ingot_case", ingotCase);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             recordsOfPourOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");

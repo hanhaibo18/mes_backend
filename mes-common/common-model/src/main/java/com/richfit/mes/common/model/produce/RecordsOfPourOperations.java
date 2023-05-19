@@ -95,6 +95,8 @@ public class RecordsOfPourOperations extends BaseEntity<RecordsOfPourOperations>
     private String ingotCase;
     @ApiModelProperty(value = "租户ID", dataType = "String")
     private String tenantId;
+    @ApiModelProperty(value = "冶炼班组", dataType = "String")
+    private String classGroup;
 
 }
 
