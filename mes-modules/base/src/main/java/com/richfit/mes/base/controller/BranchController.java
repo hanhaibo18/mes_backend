@@ -9,6 +9,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.security.annotation.Inner;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import io.swagger.annotations.Api;
@@ -334,4 +335,20 @@ public class BranchController extends BaseController {
         return branchService.getOne(queryWrapper);
     }
 
+    @ApiOperation(value = "获取所有车间")
+    @GetMapping("/query_all_branch")
+    public List<Branch> queryAllBranch() {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_type", 0);
+        return branchService.list(queryWrapper);
+    }
+
+    @ApiOperation(value = "获取所有车间Inner")
+    @GetMapping("/query_all_branch_inner")
+    @Inner
+    public List<Branch> queryAllBranchInner() {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("branch_type", 0);
+        return branchService.list(queryWrapper);
+    }
 }

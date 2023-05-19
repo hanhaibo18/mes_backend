@@ -34,6 +34,9 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/user/queryByUserAccount")
     public CommonResult<TenantUserVo> queryByUserAccount(@RequestParam("userAccount") String userAccount);
 
+    @GetMapping(value = "/api/sys/user/queryByUserAccountInner")
+    public CommonResult<TenantUserVo> queryByUserAccountInner(@RequestParam("userAccount") String userAccount, @RequestHeader(value = SecurityConstants.FROM) String header);
+
     @PostMapping("/api/sys/user/queryByUserAccountList")
     public Map<String, TenantUserVo> queryByUserAccountList(@RequestBody List<String> userAccountList);
 
