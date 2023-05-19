@@ -378,24 +378,26 @@ public class TrackHeadController extends BaseController {
         //capp属性赋值
         for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
             Router router = baseServiceClient.getByRouterId(record.getRouterId(), branchCode).getData();
-            //锻造材料规格
-            record.setBlankSpecifi(router.getBlankSpecifi());
-            //锻造下料重量
-            record.setBlankWeight(router.getBlankWeight());
-            //材质
-            record.setTexture(router.getTexture());
-            //单重
-            record.setWeight(router.getWeight());
-            //钢水重量
-            record.setWeightMolten(router.getWeightMolten());
-            //工艺保温时间
-            record.setProcessHoldTime(router.getWeightMolten());
-            //浇筑温度
-            record.setPourTemp(router.getPourTemp());
-            //浇筑时间
-            record.setPourTime(router.getPourTime());
-            //试棒型号
-            record.setTestBar(router.getTestBar());
+            if(router!=null){
+                //锻造材料规格
+                record.setBlankSpecifi(router.getBlankSpecifi());
+                //锻造下料重量
+                record.setBlankWeight(router.getBlankWeight());
+                //材质
+                record.setTexture(router.getTexture());
+                //单重
+                record.setWeight(router.getWeight());
+                //钢水重量
+                record.setWeightMolten(router.getWeightMolten());
+                //工艺保温时间
+                record.setProcessHoldTime(router.getWeightMolten());
+                //浇筑温度
+                record.setPourTemp(router.getPourTemp());
+                //浇筑时间
+                record.setPourTime(router.getPourTime());
+                //试棒型号
+                record.setTestBar(router.getTestBar());
+            }
         }
         return CommonResult.success(trackHeadPublicVoIPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
