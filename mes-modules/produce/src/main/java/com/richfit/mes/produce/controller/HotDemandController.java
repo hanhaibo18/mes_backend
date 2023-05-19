@@ -453,7 +453,7 @@ public class HotDemandController extends BaseController {
                 if(hotDemand.getTexture().isEmpty() ||  !hotDemand.getTexture().equals(router.getTexture())){
                     //保存修改记录
                     HotDemandUpdateLog hotDemandUpdateLog = new HotDemandUpdateLog();
-                    hotDemandUpdateLog.setDemand_id(hotDemand.getDemandName());
+                    hotDemandUpdateLog.setDemandId(hotDemand.getId());
                     hotDemandUpdateLog.setDrawNo(hotDemand.getDrawNo());
                     hotDemandUpdateLog.setVersionNum(hotDemand.getVersionNum());
                     hotDemandUpdateLog.setVoucherNo(hotDemand.getVoucherNo());
