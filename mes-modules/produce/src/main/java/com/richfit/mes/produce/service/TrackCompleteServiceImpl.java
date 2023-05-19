@@ -1199,8 +1199,19 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //过滤掉已报工的数据&&过滤不在传入产品编号的数据
             result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
         }
+        //获取对应的flow
+        List<String> collectFlow = result.stream().map(TrackItem::getFlowId).distinct().collect(Collectors.toList());
+        //修改flow状态
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.in("id", collectFlow);
+        update.set("status", "1");
+        trackFlowService.update(update);
+        //修改跟单状态
+        UpdateWrapper<TrackHead> headUpdateWrapper = new UpdateWrapper<>();
+        headUpdateWrapper.eq("id", list.get(0).getTrackHeadId());
+        headUpdateWrapper.set("status", "1");
+        trackHeadService.update(headUpdateWrapper);
         //过滤需要调度或者质检的工序并从小到大排序
-//        List<TrackItem> items = result.stream().filter(item -> item.getIsExistQualityCheck() == 1 || item.getIsExistScheduleCheck() == 1).sorted(Comparator.comparing(TrackItem::getOptSequence)).collect(Collectors.toList());
         boolean bool = true;
         for (TrackItem trackItem : result) {
             TrackComplete trackComplete = new TrackComplete();
@@ -1227,7 +1238,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
             trackComplete.setCompletedQty(Double.valueOf(trackItem.getNumber()));
-            trackComplete.setTrackNo(trackHead.getId());
+            trackComplete.setTrackNo(trackHead.getProductNo());
 
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsOperationComplete(1);
