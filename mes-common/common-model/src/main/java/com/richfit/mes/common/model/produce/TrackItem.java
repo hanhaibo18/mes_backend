@@ -515,4 +515,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "预装炉派工id")
     private String prechargeFurnaceAssignId;
 
+    @ApiModelProperty(value = "是否冶炼配炉::是；否")
+    @TableField(exist = false)
+    private String ifPrechargeFurnace;
+
 }

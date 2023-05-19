@@ -1,6 +1,7 @@
 package com.richfit.mes.base.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -394,6 +395,18 @@ public class RouterController extends BaseController {
         return CommonResult.success(routerService.getById(routerId), "操作成功！");
     }
 
+    @ApiOperation(value = "根据IDs查询工艺", notes = "根据IDs查询工艺")
+    @ApiImplicitParam(name = "routerIds", value = "工艺ids", required = true, dataType = "String", paramType = "query")
+    @GetMapping("/getRouterByIds")
+    public CommonResult<List<Router>> getRouterByIds(@RequestBody List<String> routerIds) {
+        if(CollectionUtil.isEmpty(routerIds)){
+            return CommonResult.success(null, "操作成功！");
+        }
+        QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
+        routerQueryWrapper.in("id",routerIds);
+        return CommonResult.success(routerService.list(routerQueryWrapper), "操作成功！");
+    }
+
     @ApiOperation(value = "批量图号查询工艺", notes = "批量图号获得工艺")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "routerNos", value = "批量图号（,隔开）", required = true, dataType = "String", paramType = "query"),
@@ -657,7 +670,6 @@ public class RouterController extends BaseController {
 //            queryWrapper.in("draw_no", drawNos);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.eq("branch_code", branchCode);
-            queryWrapper.eq("status", 1);
             List<Router> routers = routerService.list(queryWrapper);
             return CommonResult.success(routers);
         } catch (Exception e) {
