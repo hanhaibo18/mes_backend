@@ -122,7 +122,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     @Autowired
     private KnockoutCacheService knockoutCacheService;
     @Autowired
-    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
+    private PrechargeFurnaceAssignPersonService prechargeFurnaceAssignPersonService;
     @Autowired
     private RecordsOfSteelmakingOperationsService recordsOfSteelmakingOperationsService;
     @Autowired
@@ -2011,13 +2011,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     @Override
     public IPage<PrechargeFurnace> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit) {
         //获取当前用户分派的预装炉信息
-        QueryWrapper<PrechargeFurnaceAssign> assignQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<PrechargeFurnaceAssignPerson> assignQueryWrapper = new QueryWrapper<>();
         assignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
-        List<PrechargeFurnaceAssign> assignList = prechargeFurnaceAssignService.list(assignQueryWrapper);
+        List<PrechargeFurnaceAssignPerson> assignList = prechargeFurnaceAssignPersonService.list(assignQueryWrapper);
         if (CollectionUtils.isEmpty(assignList)) {
             throw new GlobalException("该用户暂无派工信息！", ResultCode.FAILED);
         }
-        Set<Long> prechargeFurnaceIdList = assignList.stream().map(PrechargeFurnaceAssign::getPrechargeFurnaceId).collect(Collectors.toSet());
+        Set<Long> prechargeFurnaceIdList = assignList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceId).collect(Collectors.toSet());
         QueryWrapper<PrechargeFurnace> furnaceQueryWrapper = new QueryWrapper<>();
         furnaceQueryWrapper.in("id", prechargeFurnaceIdList);
         furnaceQueryWrapper.eq("workblank_type", workblankType);

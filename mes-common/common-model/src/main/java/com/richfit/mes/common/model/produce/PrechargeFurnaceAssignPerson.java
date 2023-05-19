@@ -8,7 +8,7 @@ import lombok.Data;
  * @date 2023/5/16 9:57
  */
 @Data
-public class PrechargeFurnaceAssign extends BaseEntity<PrechargeFurnaceAssign> {
+public class PrechargeFurnaceAssignPerson extends BaseEntity<PrechargeFurnaceAssignPerson> {
     /**
      * 预装炉id
      */
@@ -17,5 +17,9 @@ public class PrechargeFurnaceAssign extends BaseEntity<PrechargeFurnaceAssign> {
      * 配送人id
      */
     private String userId;
+    /**
+     * 预装炉派工id
+     */
+    private String prechargeFurnaceAssignId;
 
 }

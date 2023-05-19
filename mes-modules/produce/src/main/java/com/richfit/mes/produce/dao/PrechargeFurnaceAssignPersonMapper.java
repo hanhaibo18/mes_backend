@@ -1,7 +1,7 @@
 package com.richfit.mes.produce.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
+import com.richfit.mes.common.model.produce.PrechargeFurnaceAssignPerson;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @since 2023-05-16 10:01:16
  */
 @Mapper
-public interface PrechargeFurnaceAssignMapper extends BaseMapper<PrechargeFurnaceAssign> {
+public interface PrechargeFurnaceAssignPersonMapper extends BaseMapper<PrechargeFurnaceAssignPerson> {
 
 }
 
