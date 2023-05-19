@@ -377,7 +377,7 @@ public class TrackHeadController extends BaseController {
         IPage<TrackHeadPublicVo> trackHeadPublicVoIPage = trackHeadService.queryPage(new Page<TrackHead>(page, limit), queryWrapper);
         //capp属性赋值
         for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
-            Router router = baseServiceClient.getRouter(record.getRouterId()).getData();
+            Router router = baseServiceClient.getByRouterId(record.getRouterId(), branchCode).getData();
             //锻造材料规格
             record.setBlankSpecifi(router.getBlankSpecifi());
             //锻造下料重量
@@ -1145,14 +1145,14 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "根据图号 获取上次填写的跟单的产品号")
     @GetMapping("/getProductNoByDrawingNo")
-    public CommonResult<String>  getProductNoByDrawingNo(String drawingNo,String branchCode) {
-        return CommonResult.success(trackHeadService.getProductNo(drawingNo,branchCode));
+    public CommonResult<String> getProductNoByDrawingNo(String drawingNo, String branchCode) {
+        return CommonResult.success(trackHeadService.getProductNo(drawingNo, branchCode));
     }
 
     @ApiOperation(value = "根据材质 试棒型号获取上次填写跟单的试棒编号")
     @GetMapping("/getTestBarNoByTextureAndTestBarNo")
-    public CommonResult<String>  getTestBarNoByTextureAndTestBarNo(String texture,String testBarNo,String branchCode) {
-        return CommonResult.success(trackHeadService.getTestBarNo(texture,testBarNo,branchCode));
+    public CommonResult<String> getTestBarNoByTextureAndTestBarNo(String texture, String testBarNo, String branchCode) {
+        return CommonResult.success(trackHeadService.getTestBarNo(texture, testBarNo, branchCode));
     }
 
 
