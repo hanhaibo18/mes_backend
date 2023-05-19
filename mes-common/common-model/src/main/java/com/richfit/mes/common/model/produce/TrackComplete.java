@@ -17,7 +17,7 @@ import java.util.List;
  * @ModifyTime: 2022年08月15日 12:08:00
  */
 @Data
-public class TrackComplete extends BaseEntity<TrackComplete> {
+public class TrackComplete extends BaseEntity<TrackComplete> implements Comparable<TrackComplete> {
 
     private static final long serialVersionUID = 2731220432204410300L;
 
@@ -310,4 +310,13 @@ public class TrackComplete extends BaseEntity<TrackComplete> {
     @TableField(exist = false)
     @ApiModelProperty(value = "所在结构Id", dataType = "String")
     private String belongOrgId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序完工时间", dataType = "工序完工时间")
+    private String finalCompleteTime;
+
+    @Override
+    public int compareTo(TrackComplete o) {
+        return o.getFinalCompleteTime().compareTo(this.getFinalCompleteTime());
+    }
 }
