@@ -34,6 +34,9 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/user/queryByUserAccount")
     public CommonResult<TenantUserVo> queryByUserAccount(@RequestParam("userAccount") String userAccount);
 
+    @GetMapping(value = "/api/sys/user/queryByUserAccountInner")
+    public CommonResult<TenantUserVo> queryByUserAccountInner(@RequestParam("userAccount") String userAccount, @RequestHeader(value = SecurityConstants.FROM) String header);
+
     @PostMapping("/api/sys/user/queryByUserAccountList")
     public Map<String, TenantUserVo> queryByUserAccountList(@RequestBody List<String> userAccountList);
 
@@ -85,8 +88,8 @@ public interface SystemServiceClient {
     @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesList")
     public CommonResult<List<QualityInspectionRules>> queryQualityInspectionRulesList(@RequestParam("branchCode") String branchCode);
 
-    @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesListInner")
-    public List<QualityInspectionRules> queryQualityInspectionRulesListInner(@RequestParam("branchCode") String branchCode, @RequestHeader(value = SecurityConstants.FROM) String header);
+    @GetMapping(value = "/api/sys/qualityInspectionRules/allQualityInspectionRulesListInner")
+    public List<QualityInspectionRules> allQualityInspectionRulesListInner(@RequestHeader(value = SecurityConstants.FROM) String header);
 
     @GetMapping(value = "/api/sys/qualityInspectionRules/queryQualityInspectionRulesById")
     public CommonResult<QualityInspectionRules> queryQualityInspectionRulesById(@RequestParam("id") String id);

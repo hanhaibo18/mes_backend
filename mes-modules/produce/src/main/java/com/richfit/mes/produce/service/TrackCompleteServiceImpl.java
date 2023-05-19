@@ -142,7 +142,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!CollectionUtils.isEmpty(completes)) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
             //查询当前车间下所有质检规则
-            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.queryQualityInspectionRulesListInner(completes.get(0).getBranchCode(), SecurityConstants.FROM_INNER));
+            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER));
             //根据员工分组
             Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
@@ -262,7 +262,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
 
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
-                        if (trackItem.getIsQualityComplete() == 1) {
+                        if (trackItem.getIsExistQualityCheck() == 1) {
 //                            List<TrackCheck> trackChecks = trackChecksMap.get(trackItem.getId());
                             if (StrUtil.isNotBlank(trackItem.getRuleId())) {
                                 QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
@@ -286,7 +286,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                 sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                 track.setQualityResult("没有质检内容");
                             }
-                        } else if (trackItem.getIsExistQualityCheck() == 0) {
+                        } else {
                             //不质检也计算工时
                             //累计实际额定工时
                             sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
@@ -339,10 +339,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
-        System.out.println("-------------------------------");
-        System.out.println(completes.size());
         return stringObjectHashMap;
     }
 
@@ -1318,7 +1317,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!allCompletes.isEmpty()) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
             //查询当前车间下所有质检规则
-            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.queryQualityInspectionRulesListInner(allCompletes.get(0).getBranchCode(), SecurityConstants.FROM_INNER));
+            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER));
             //根据员工分组
             Map<String, List<TrackComplete>> completesMap = allCompletes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
@@ -1436,7 +1435,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         //累计额定工时
                         sumReportHours = sumReportHours.add(reportHours);
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
-                        if (trackItem.getIsQualityComplete() == 1) {
+                        if (trackItem.getIsExistQualityCheck() == 1) {
                             if (StrUtil.isNotBlank(trackItem.getRuleId())) {
                                 QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
                                 if (rules != null) {
@@ -1459,7 +1458,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                 sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                 track.setQualityResult("没有质检内容");
                             }
-                        } else if (trackItem.getIsExistQualityCheck() == 0) {
+                        } else {
                             //不质检也计算工时
                             //累计实际额定工时
                             sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
@@ -1513,6 +1512,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
@@ -1530,7 +1530,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!allCompletes.isEmpty()) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
             //查询当前车间下所有质检规则
-            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.queryQualityInspectionRulesListInner(allCompletes.get(0).getBranchCode(), SecurityConstants.FROM_INNER));
+            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER));
             //根据员工分组
             Map<String, List<TrackComplete>> completesMap = allCompletes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
@@ -1649,7 +1649,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         sumReportHours = sumReportHours.add(reportHours);
 
                         //已质检 校验不合格是否给工时(单件工时/额定工时)
-                        if (trackItem.getIsQualityComplete() == 1) {
+                        if (trackItem.getIsExistQualityCheck() == 1) {
                             if (StrUtil.isNotBlank(trackItem.getRuleId())) {
                                 QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
                                 if (rules != null) {
@@ -1672,7 +1672,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                 sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                 track.setQualityResult("没有质检内容");
                             }
-                        } else if (trackItem.getIsExistQualityCheck() == 0) {
+                        } else {
                             //不质检也计算工时
                             //累计实际额定工时
                             sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
@@ -1727,6 +1727,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
@@ -1741,7 +1742,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!CollectionUtils.isEmpty(completes)) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
             //查询当前车间下所有质检规则
-            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.queryQualityInspectionRulesListInner(completes.get(0).getBranchCode(), SecurityConstants.FROM_INNER));
+            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER));
             //根据员工分组
             Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIds = new ArrayList<>(completesMap.keySet());
@@ -1863,7 +1864,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             //累计额定工时
                             sumReportHours = sumReportHours.add(reportHours);
                             //已质检 校验不合格是否给工时(单件工时/额定工时)
-                            if (trackItem.getIsQualityComplete() == 1) {
+                            if (trackItem.getIsExistQualityCheck() == 1) {
                                 if (StrUtil.isNotBlank(trackItem.getRuleId())) {
                                     QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
                                     if (rules != null) {
@@ -1886,7 +1887,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                                     sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                                     track.setQualityResult("没有质检内容");
                                 }
-                            } else if (trackItem.getIsExistQualityCheck() == 0) {
+                            } else {
                                 //不质检也计算工时
                                 //累计实际额定工时
                                 sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
@@ -1941,6 +1942,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
