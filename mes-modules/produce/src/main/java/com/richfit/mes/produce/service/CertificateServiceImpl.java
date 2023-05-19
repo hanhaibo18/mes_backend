@@ -97,7 +97,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setNextOpt("/");
         //裝配开具并生产入库
         if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
-            certificate.setNextOptWork("BOMCO_SC");
+//            certificate.setNextOptWork("BOMCO_SC");
         }
         certificate.setNumber(trackHead.getNumber());
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
