@@ -67,7 +67,7 @@
         ) a
         WHERE
         a.AA = 1
-        AND ( ti.opt_certificate_no IS NULL OR ti.opt_certificate_no = '' )
+        AND ( opt_certificate_no IS NULL OR opt_certificate_no = '' )
         ORDER BY
         a.track_no DESC
     </select>
