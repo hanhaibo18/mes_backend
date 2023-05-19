@@ -56,7 +56,7 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
         String yyyyMMddhhmmss = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss");
         //记录编号
         record.setSerialNo(yyyyMMddhhmmss+timeStemp.substring(timeStemp.length()-4));
-        //'审核状态 0 未通过  1 通过'
+        //'审核状态 0 未审核  1 通过,2 未通过
         record.setAuditStatus(0);
         int insert = normalizeDehydroRecordMapper.insert(record);
         if (CollectionUtils.isNotEmpty(record.getExecuteRecord())){
