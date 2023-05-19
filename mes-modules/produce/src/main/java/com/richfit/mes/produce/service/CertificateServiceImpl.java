@@ -90,15 +90,14 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setBranchCode(trackHead.getBranchCode());
         certificate.setCertOrigin("0");
         certificate.setCertificateNo(Code.valueOnUpdate("hege_no", trackHead.getTenantId(), trackHead.getBranchCode(), codeRuleService));
-        CommonResult<TenantUserVo> commonResult = systemServiceClient.queryByUserId(user.getUserId());
-        certificate.setCheckName(commonResult.getData().getEmplName());
+        certificate.setCheckName("System");
         certificate.setCheckTime(new Date());
         certificate.setDrawingNo(trackHead.getDrawingNo());
         certificate.setMaterialNo(trackHead.getMaterialNo());
         certificate.setNextOpt("/");
         //裝配开具并生产入库
         if ("2".equals(trackHead.getClasses()) && "BOMCO_BY_ZPG1_TEST".equals(trackHead.getTemplateCode())) {
-            certificate.setNextOptWork("BOMCO_SC");
+//            certificate.setNextOptWork("BOMCO_SC");
         }
         certificate.setNumber(trackHead.getNumber());
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
