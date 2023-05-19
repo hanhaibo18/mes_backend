@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
 import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.CompleteDto;
@@ -147,5 +147,7 @@ public interface TrackCompleteService extends IService<TrackComplete> {
 
     void knockoutLabel(HttpServletResponse response, String tiId);
 
-    IPage<PrechargeFurnace> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit);
+    IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit);
+
+    List<TrackItem> getItemList(String prechargeFurnaceAssignId);
 }

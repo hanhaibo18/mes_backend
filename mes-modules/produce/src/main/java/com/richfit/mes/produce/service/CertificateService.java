@@ -53,4 +53,14 @@ public interface CertificateService extends IService<Certificate> {
      * @return
      */
     void setPushHourComplete(Certificate certificate);
+
+    /**
+     * 根据跟单信息 开具工序合格证
+     * @param thId
+     * @param nextOptWork 下车间编码
+     * @param flowId
+     * @return
+     * @throws Exception
+     */
+    boolean heatAutoCertificate(String thId,String nextOptWork,String flowId) throws Exception;
 }

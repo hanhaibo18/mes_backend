@@ -500,12 +500,19 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "热风机关闭时间")
     private Date fanClosedTime;
 
-    @ApiModelProperty(value = "试棒跟单编号")
+    @ApiModelProperty(value = "试棒编号")
     @TableField(exist = false)
-    private String testBarTrackNo;
+    private String testBarNo;
 
     @ApiModelProperty(value = "试棒跟单编号")
     @TableField(exist = false)
     private String testBarType;
+
+    @ApiModelProperty(value = "定型")
+    @TableField(exist = false)
+    private String ingotCase;
+
+    @ApiModelProperty(value = "预装炉派工id")
+    private String prechargeFurnaceAssignId;
 
 }

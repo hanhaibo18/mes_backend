@@ -10,7 +10,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
-import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
+import com.richfit.mes.common.model.produce.PrechargeFurnaceAssignPerson;
 import com.richfit.mes.common.model.produce.RecordsOfSteelmakingOperations;
 import com.richfit.mes.common.model.produce.ResultsOfSteelmaking;
 import com.richfit.mes.common.model.sys.TenantUser;
@@ -25,7 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
     @Autowired
     private SystemServiceClient systemServiceClient;
     @Autowired
-    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
+    private PrechargeFurnaceAssignPersonService prechargeFurnaceAssignPersonService;
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
     @Autowired
@@ -93,10 +94,10 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         RecordsOfSteelmakingOperations recordsOfSteelmakingOperations = new RecordsOfSteelmakingOperations();
         recordsOfSteelmakingOperations.setPrechargeFurnaceId(prechargeFurnaceId);
         recordsOfSteelmakingOperations.setOperator(SecurityUtils.getCurrentUser().getUsername());
-        recordsOfSteelmakingOperations.setOperatorTime(new Date());
+        recordsOfSteelmakingOperations.setOperatorTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         recordsOfSteelmakingOperations.setRecordNo(recordNo);
         recordsOfSteelmakingOperations.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-        recordsOfSteelmakingOperations.setGroup(branch.getBranchName());
+        recordsOfSteelmakingOperations.setClassGroup(branch.getBranchName());
         //查询预装炉信息
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceId);
         if (prechargeFurnace == null) {
@@ -120,7 +121,7 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
 
     @Override
     public Boolean check(List<String> ids, int state) {
-        Date date = new Date();
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String username = SecurityUtils.getCurrentUser().getUsername();
         QueryWrapper<RecordsOfSteelmakingOperations> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", ids);
@@ -139,14 +140,14 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         List<TenantUser> tenantUserList = systemServiceClient.queryClass(SecurityUtils.getCurrentUser().getUsername());
         List<String> userIdList = tenantUserList.stream().map(TenantUser::getUserAccount).collect(Collectors.toList());
         //根据员工号查询派炉信息
-        QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceAssignQueryWrapper.in("user_id", userIdList);
-        List<PrechargeFurnaceAssign> prechargeFurnaceAssignList = prechargeFurnaceAssignService.list(prechargeFurnaceAssignQueryWrapper);
-        if (CollectionUtils.isEmpty(prechargeFurnaceAssignList)) {
+        List<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignPersonList = prechargeFurnaceAssignPersonService.list(prechargeFurnaceAssignQueryWrapper);
+        if (CollectionUtils.isEmpty(prechargeFurnaceAssignPersonList)) {
             return null;
         }
         //获取派送预装炉id
-        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignList.stream().map(PrechargeFurnaceAssign::getPrechargeFurnaceId).collect(Collectors.toSet());
+        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignPersonList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceId).collect(Collectors.toSet());
         //根据预装炉id获取炼钢记录
         QueryWrapper<RecordsOfSteelmakingOperations> recordsOfSteelmakingOperationsQueryWrapper = new QueryWrapper<>();
         recordsOfSteelmakingOperationsQueryWrapper.in("precharge_furnace_id", prechargeFurnaceIdSet);
@@ -181,14 +182,14 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
     @Override
     public IPage<RecordsOfSteelmakingOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit) {
         //根据员工号查询派炉信息
-        QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceAssignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
-        List<PrechargeFurnaceAssign> prechargeFurnaceAssignList = prechargeFurnaceAssignService.list(prechargeFurnaceAssignQueryWrapper);
-        if (CollectionUtils.isEmpty(prechargeFurnaceAssignList)) {
+        List<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignPersonList = prechargeFurnaceAssignPersonService.list(prechargeFurnaceAssignQueryWrapper);
+        if (CollectionUtils.isEmpty(prechargeFurnaceAssignPersonList)) {
             return null;
         }
         //获取派送预装炉id
-        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignList.stream().map(PrechargeFurnaceAssign::getPrechargeFurnaceId).collect(Collectors.toSet());
+        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignPersonList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceId).collect(Collectors.toSet());
         //根据预装炉id获取炼钢记录
         QueryWrapper<RecordsOfSteelmakingOperations> recordsOfSteelmakingOperationsQueryWrapper = new QueryWrapper<>();
         recordsOfSteelmakingOperationsQueryWrapper.in("precharge_furnace_id", prechargeFurnaceIdSet);

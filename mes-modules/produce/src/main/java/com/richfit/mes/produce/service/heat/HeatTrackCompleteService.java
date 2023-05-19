@@ -40,12 +40,12 @@ public interface HeatTrackCompleteService extends IService<TrackComplete> {
     /**
      * 功能描述: 热工报工开工
      *
-     * @param prechargeFurnaceId
+     * @param prechargeFurnaceAssignId
      * @Author: renzewen
      * @Date: 2023/1/8 14:08
      * @return: Boolean
      **/
-    boolean startWork(String prechargeFurnaceId);
+    boolean startWork(String prechargeFurnaceAssignId);
 
     /**
      * 功能描述: 根据预装炉id获取报工信息

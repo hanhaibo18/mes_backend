@@ -293,6 +293,9 @@ public class TrackHead extends BaseEntity<TrackHead> {
 
     @ApiModelProperty(value = "试棒编号", dataType = "String")
     private String testBarNo;
+
+    @ApiModelProperty(value = "毛坯类型", dataType = "String")
+    private String workblankType;
     /**
      * 跟单分流表开始
      */

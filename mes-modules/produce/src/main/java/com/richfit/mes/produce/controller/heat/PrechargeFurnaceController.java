@@ -9,6 +9,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
@@ -176,7 +177,7 @@ public class PrechargeFurnaceController extends BaseController {
 
     @ApiOperation(value = "冶炼配炉 根据材质查询派工列表")
     @GetMapping("/query_assign_by_texture")
-    public CommonResult<List> queryAssignByTexture(String texture,String branchCode) {
+    public CommonResult<List<TrackItem>> queryAssignByTexture(String texture, String branchCode) {
         return CommonResult.success(prechargeFurnaceService.queryAssignByTexture(texture,branchCode));
     }
 }

@@ -64,6 +64,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     private TrackHeadFlowService trackFlowService;
     @Autowired
     private CodeRuleService codeRuleService;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
 
     @Override
@@ -357,23 +359,22 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     /**
      * 功能描述: 热工报工开工
      * 预装炉id
-     * @param prechargeFurnaceId
+     * @param prechargeFurnaceAssignId
      */
     @Override
-    public boolean startWork(String prechargeFurnaceId){
-        PrechargeFurnace prechargeFurnace= prechargeFurnaceService.getById(prechargeFurnaceId);
-        if(prechargeFurnace.getStatus().equals(PrechargeFurnace.END_START_WORK)){
+    public boolean startWork(String prechargeFurnaceAssignId){
+        PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getById(prechargeFurnaceAssignId);
+        if(prechargeFurnaceAssign.getIsDoing().equals(PrechargeFurnace.END_START_WORK)){
             throw new GlobalException("工序已完工无法再开工",ResultCode.FAILED);
         }
-        if(prechargeFurnace.getStatus().equals(PrechargeFurnace.YES_START_WORK)){
+        if(prechargeFurnaceAssign.getIsDoing().equals(PrechargeFurnace.YES_START_WORK)){
             throw new GlobalException("工序已开工无法再开工",ResultCode.FAILED);
         }
-        prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
-        prechargeFurnace.setStepStatus(PrechargeFurnace.YES_START_WORK);
-        prechargeFurnace.setStartWorkBy(SecurityUtils.getCurrentUser().getUserId());
+        prechargeFurnaceAssign.setIsDoing(PrechargeFurnace.YES_START_WORK);
+        prechargeFurnaceAssign.setStartDoingUser(SecurityUtils.getCurrentUser().getUserId());
 
         //设置开工
-        List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_id", prechargeFurnaceId));
+        List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_assign_id", prechargeFurnaceAssignId));
         List<String> itemIds = items.stream().map(TrackItem::getId).collect(Collectors.toList());
         List<String> headIds = items.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
         List<String> flowIds = items.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
@@ -401,7 +402,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 .eq("is_doing",0)
                 .in("id", itemIds);
         trackItemService.update(trackItemUpdateWrapper);
-        return prechargeFurnaceService.updateById(prechargeFurnace);
+        return prechargeFurnaceAssignService.updateById(prechargeFurnaceAssign);
     }
 
     /**

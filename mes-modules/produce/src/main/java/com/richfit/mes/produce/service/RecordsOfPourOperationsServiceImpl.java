@@ -22,7 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,7 +53,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     @Autowired
     private SystemServiceClient systemServiceClient;
     @Autowired
-    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
+    private PrechargeFurnaceAssignPersonService prechargeFurnaceAssignPersonService;
     @Autowired
     private CodeRuleService codeRuleService;
 
@@ -64,6 +65,9 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         QueryWrapper<RecordsOfPourOperations> queryWrapperPour = new QueryWrapper<>();
         queryWrapperPour.eq("precharge_furnace_id", prechargeFurnaceId);
         RecordsOfPourOperations recordsOfPourOperation = this.getOne(queryWrapperPour);
+        if (recordsOfPourOperation == null) {
+            throw new GlobalException("没有找到预装炉信息！", ResultCode.FAILED);
+        }
         //根据预装炉号找对应当前工序
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
         itemQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId).eq("is_current", 1);
@@ -75,15 +79,17 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             trackItem.setPourTime(router.getPourTime());
             trackItem.setWeightMolten(router.getWeightMolten());
             trackItem.setPieceWeight(String.valueOf(router.getWeight()));
-            trackItem.setTestBarTrackNo(trackHead.getTestBarNo());
+            trackItem.setTestBarNo(trackHead.getTestBarNo());
             trackItem.setTestBarType(router.getTestBar());
             trackItem.setProductName(trackHead.getProductName());
+            trackItem.setTrackNo(trackHead.getTrackNo());
         }
         recordsOfPourOperation.setItemList(trackItemList);
         return recordsOfPourOperation;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean init(Long prechargeFurnaceId, String branchCode) {
         String recordNo = null;
         try {
@@ -105,7 +111,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         RecordsOfPourOperations recordsOfPourOperations = new RecordsOfPourOperations();
         recordsOfPourOperations.setPrechargeFurnaceId(prechargeFurnaceId);
         recordsOfPourOperations.setOperator(SecurityUtils.getCurrentUser().getUsername());
-        recordsOfPourOperations.setOperatorTime(new Date());
+        recordsOfPourOperations.setOperatorTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         recordsOfPourOperations.setRecordNo(recordNo);
         recordsOfPourOperations.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         //查询炼钢信息
@@ -118,7 +124,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             throw new GlobalException("没有找到预装炉信息！", ResultCode.FAILED);
         }
         recordsOfPourOperations.setTypeOfSteel(prechargeFurnace.getTypeOfSteel());
-        recordsOfPourOperations.setFurnaceNo(steelmakingOperations.getFurnaceNo());
+        recordsOfPourOperations.setFurnaceNo(steelmakingOperations == null ? "" : steelmakingOperations.getFurnaceNo());
         recordsOfPourOperations.setIngotCase(prechargeFurnace.getIngotCase());
         return this.save(recordsOfPourOperations);
     }
@@ -134,7 +140,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
 
     @Override
     public Boolean check(List<String> ids, int state) {
-        Date date = new Date();
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String username = SecurityUtils.getCurrentUser().getUsername();
         QueryWrapper<RecordsOfPourOperations> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", ids);
@@ -153,14 +159,14 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         List<TenantUser> tenantUserList = systemServiceClient.queryClass(SecurityUtils.getCurrentUser().getUsername());
         List<String> userIdList = tenantUserList.stream().map(TenantUser::getUserAccount).collect(Collectors.toList());
         //根据员工号查询派炉信息
-        QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceAssignQueryWrapper.in("user_id", userIdList);
-        List<PrechargeFurnaceAssign> prechargeFurnaceAssignList = prechargeFurnaceAssignService.list(prechargeFurnaceAssignQueryWrapper);
-        if (CollectionUtils.isEmpty(prechargeFurnaceAssignList)) {
+        List<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignPersonList = prechargeFurnaceAssignPersonService.list(prechargeFurnaceAssignQueryWrapper);
+        if (CollectionUtils.isEmpty(prechargeFurnaceAssignPersonList)) {
             return null;
         }
         //获取派送预装炉id
-        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignList.stream().map(PrechargeFurnaceAssign::getPrechargeFurnaceId).collect(Collectors.toSet());
+        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignPersonList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceId).collect(Collectors.toSet());
         //根据预装炉id获取浇注信息
         QueryWrapper<RecordsOfPourOperations> recordsOfPourOperationsQueryWrapper = new QueryWrapper<>();
         recordsOfPourOperationsQueryWrapper.in("precharge_furnace_id", prechargeFurnaceIdSet);
@@ -177,7 +183,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             recordsOfPourOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
         }
         if (!StringUtils.isNullOrEmpty(ingotCase)) {
-            recordsOfPourOperationsQueryWrapper.eq("smelting_equipment", ingotCase);
+            recordsOfPourOperationsQueryWrapper.eq("ingot_case", ingotCase);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             recordsOfPourOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
@@ -194,14 +200,14 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     @Override
     public IPage<RecordsOfPourOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit) {
         //根据员工号查询派炉信息
-        QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceAssignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
-        List<PrechargeFurnaceAssign> prechargeFurnaceAssignList = prechargeFurnaceAssignService.list(prechargeFurnaceAssignQueryWrapper);
-        if (CollectionUtils.isEmpty(prechargeFurnaceAssignList)) {
+        List<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignPersonList = prechargeFurnaceAssignPersonService.list(prechargeFurnaceAssignQueryWrapper);
+        if (CollectionUtils.isEmpty(prechargeFurnaceAssignPersonList)) {
             return null;
         }
         //获取派送预装炉id
-        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignList.stream().map(PrechargeFurnaceAssign::getPrechargeFurnaceId).collect(Collectors.toSet());
+        Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignPersonList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceId).collect(Collectors.toSet());
         //根据预装炉id获取浇注信息
         QueryWrapper<RecordsOfPourOperations> recordsOfPourOperationsQueryWrapper = new QueryWrapper<>();
         recordsOfPourOperationsQueryWrapper.in("precharge_furnace_id", prechargeFurnaceIdSet);

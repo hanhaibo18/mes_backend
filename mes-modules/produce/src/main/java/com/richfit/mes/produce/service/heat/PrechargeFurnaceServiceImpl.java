@@ -94,7 +94,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
      * @return
      */
     @Override
-    public List queryAssignByTexture(String texture,String branchCode){
+    public List<TrackItem> queryAssignByTexture(String texture,String branchCode){
         QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
         trackItemQueryWrapper.eq("texture",texture);
         trackItemQueryWrapper.eq("branch_code",branchCode);
@@ -233,7 +233,6 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
             updateWrapper.eq("id", assign.getTiId());
             updateWrapper.set("precharge_furnace_id", assign.getPrechargeFurnaceId());
-            trackItemService.update(updateWrapper);
             trackItemService.update(updateWrapper);
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
