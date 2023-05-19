@@ -147,7 +147,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!CollectionUtils.isEmpty(completes)) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
             //查询当前车间下所有质检规则
-            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.queryQualityInspectionRulesListInner(completes.get(0).getBranchCode(), SecurityConstants.FROM_INNER));
+            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER));
             //根据员工分组
             Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
@@ -344,10 +344,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
-        System.out.println("-------------------------------");
-        System.out.println(completes.size());
         return stringObjectHashMap;
     }
 
@@ -1347,7 +1346,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!allCompletes.isEmpty()) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
             //查询当前车间下所有质检规则
-            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.queryQualityInspectionRulesListInner(allCompletes.get(0).getBranchCode(), SecurityConstants.FROM_INNER));
+            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER));
             //根据员工分组
             Map<String, List<TrackComplete>> completesMap = allCompletes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
@@ -1542,6 +1541,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
@@ -1559,7 +1559,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!allCompletes.isEmpty()) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
             //查询当前车间下所有质检规则
-            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.queryQualityInspectionRulesListInner(allCompletes.get(0).getBranchCode(), SecurityConstants.FROM_INNER));
+            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER));
             //根据员工分组
             Map<String, List<TrackComplete>> completesMap = allCompletes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
@@ -1756,6 +1756,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
@@ -1770,7 +1771,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!CollectionUtils.isEmpty(completes)) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
             //查询当前车间下所有质检规则
-            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.queryQualityInspectionRulesListInner(completes.get(0).getBranchCode(), SecurityConstants.FROM_INNER));
+            Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER));
             //根据员工分组
             Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
             ArrayList<String> userIds = new ArrayList<>(completesMap.keySet());
@@ -1970,6 +1971,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
