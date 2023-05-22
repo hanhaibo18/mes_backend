@@ -88,5 +88,12 @@ public class PrechargeFurnace {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否回滚标志", dataType = "int")
     private int isRollBack;
-
+    @ApiModelProperty(value = "钢种", dataType = "String")
+    private String typeOfSteel;
+    @ApiModelProperty(value = "冶炼设备", dataType = "String")
+    private String smeltingEquipment;
+    @ApiModelProperty(value = "锭型", dataType = "String")
+    private String ingotCase;
+    @ApiModelProperty(value = "毛坯类型 0锻件,1铸件,2钢锭", dataType = "String")
+    private String workblankType;
 }

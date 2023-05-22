@@ -226,6 +226,10 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
                 if (!ObjectUtil.isEmpty(router)){
                     //下料规格
                     assign.setBlankSpecifi(router.getBlankSpecifi());
+                    //设置一系列重量
+                    assign.setPieceWeight(router.getPieceWeight());
+                    assign.setWeightMolten(router.getWeightMolten());
+                    assign.setForgWeight(router.getForgWeight());
                 }
             }
         }

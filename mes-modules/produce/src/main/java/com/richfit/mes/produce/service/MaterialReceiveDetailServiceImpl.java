@@ -56,21 +56,32 @@ public class MaterialReceiveDetailServiceImpl extends ServiceImpl<MaterialReceiv
         QueryWrapper<MaterialReceiveDetail> wrapper = new QueryWrapper<>();
         wrapper.eq("delivery_no", deliveryNo);
         List<MaterialReceiveDetail> list = materialReceiveDetailService.list(wrapper);
-        boolean b = lineStoreService.addStoreByWmsSend(list, branchCode);
-        if (b) {
-            UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.set("state", 1);
-            updateWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
-            updateWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-            materialReceiveService.update(updateWrapper);
-            UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
-            detailWrapper.set("state", 1);
-            detailWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
-            this.update(detailWrapper);
-            return true;
-        } else {
-            return false;
-        }
+        //        线边库接收物料流程取消
+        //        boolean b = lineStoreService.addStoreByWmsSend(list, branchCode);
+        //        if (b) {
+        //            UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
+        //            updateWrapper.set("state", 1);
+        //            updateWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
+        //            updateWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        //            materialReceiveService.update(updateWrapper);
+        //            UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
+        //            detailWrapper.set("state", 1);
+        //            detailWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
+        //            this.update(detailWrapper);
+        //            return true;
+        //        } else {
+        //            return false;
+        //        }
+        UpdateWrapper<MaterialReceive> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.set("state", 1);
+        updateWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
+        updateWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        materialReceiveService.update(updateWrapper);
+        UpdateWrapper<MaterialReceiveDetail> detailWrapper = new UpdateWrapper<>();
+        detailWrapper.set("state", 1);
+        detailWrapper.eq("delivery_no", list.get(0).getDeliveryNo());
+        this.update(detailWrapper);
+        return true;
     }
 
     @Override
