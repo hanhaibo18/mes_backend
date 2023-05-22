@@ -2,7 +2,6 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
-import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
@@ -248,10 +247,6 @@ public interface BaseServiceClient {
     @PostMapping("/api/base/project_bom/getBomListByMainBomId")
     public List<ProjectBom> getBomListByMainBomId(@RequestParam String id);
 
-    @ApiOperation(value = "通过条件查询物料信息")
-    @PostMapping("/api/base/product/select_condition_product")
-    public CommonResult<List<Product>> selectConditionProduct(@RequestBody ProductTypeDto productTypeDto);
-
     @ApiOperation(value = "根据branchCode获取机构信息")
     @GetMapping("/api/base/branch/getBranchInfoByBranchCode")
     public Branch getBranchInfoByBranchCode(@RequestParam String branchCode);
@@ -261,11 +256,11 @@ public interface BaseServiceClient {
     public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status, @RequestParam String testBar, @RequestParam String texture);
 
     @ApiOperation(value = "获取所有车间")
-    @GetMapping("/query_all_branch")
+    @GetMapping("/api/base/branch/query_all_branch")
     public List<Branch> queryAllBranch();
 
     @ApiOperation(value = "获取所有车间Inner")
-    @GetMapping("/query_all_branch_inner")
-    public List<Branch> queryAllBranchInner();
+    @GetMapping("/api/base/branch/query_all_branch_inner")
+    public List<Branch> queryAllBranchInner(@RequestHeader(value = SecurityConstants.FROM) String header);
 
 }

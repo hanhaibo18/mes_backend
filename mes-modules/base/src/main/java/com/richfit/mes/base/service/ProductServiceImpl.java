@@ -1,7 +1,6 @@
 package com.richfit.mes.base.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -20,14 +19,12 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.Product;
-import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.common.model.wms.MaterialBasis;
-import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -375,14 +372,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         inventoryQueryList = inventoryQueryList.stream().skip((page - 1) * limit).limit(limit).collect(Collectors.toList());
         resultPage.setRecords(inventoryQueryList);
         return resultPage;
-    }
-
-    @Override
-    public List<Product> selectConditionProduct(ProductTypeDto productTypeDto) {
-        LambdaQueryWrapper<Product> productLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        productLambdaQueryWrapper.eq(Product::getTenantId, SecurityUtils.getCurrentUser().getTenantId());
-        productLambdaQueryWrapper.in(Product::getMaterialNo, productTypeDto.getMaterialNoSet());
-        return productService.list(productLambdaQueryWrapper);
     }
 
 

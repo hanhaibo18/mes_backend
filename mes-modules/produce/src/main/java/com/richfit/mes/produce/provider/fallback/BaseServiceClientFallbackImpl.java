@@ -2,7 +2,6 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
-import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Component;
@@ -236,11 +235,6 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Product>> selectConditionProduct(ProductTypeDto productTypeDto) {
-        return null;
-    }
-
-    @Override
     public Branch getBranchInfoByBranchCode(String branchCode) {
         return null;
     }
@@ -256,7 +250,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public List<Branch> queryAllBranchInner() {
+    public List<Branch> queryAllBranchInner(String header) {
         return null;
     }
 
