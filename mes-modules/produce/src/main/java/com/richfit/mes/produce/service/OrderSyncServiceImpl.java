@@ -178,7 +178,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     private String getBranchCode(String userName) {
         if (null == SecurityUtils.getCurrentUser()) {
             CommonResult<TenantUserVo> userAccountInner = systemServiceClient.queryByUserAccountInner(userName, SecurityConstants.FROM_INNER);
-            List<Branch> branchList = baseServiceClient.queryAllBranchInner();
+            List<Branch> branchList = baseServiceClient.queryAllBranchInner(SecurityConstants.FROM_INNER);
             for (Branch branch : branchList) {
                 if (userAccountInner.getData().getBelongOrgId().contains(branch.getBranchCode())) {
                     return branch.getBranchCode();

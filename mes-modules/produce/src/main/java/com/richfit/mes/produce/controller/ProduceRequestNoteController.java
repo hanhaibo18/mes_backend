@@ -82,10 +82,4 @@ public class ProduceRequestNoteController extends BaseController {
     public List<RequestNoteDetail> queryRequestNoteDetailDetails(String materialNo, String requestNoteNo) {
         return requestNoteDetailService.queryRequestNoteDetailDetails(materialNo, requestNoteNo);
     }
-
-    @ApiOperation(value = "根据勾选申请单上传到wms", notes = "根据勾选申请单上传到wms")
-    @PostMapping("/upload_request_note")
-    public CommonResult<Boolean> uploadRequestNote(@RequestBody List<String> ids) {
-        return requestNoteService.uploadRequestNote(ids);
-    }
 }
