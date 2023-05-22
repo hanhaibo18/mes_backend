@@ -139,11 +139,6 @@ public class HeatTrackAssignController extends BaseController {
         queryWrapper.eq(!StringUtils.isNullOrEmpty(workNo),"work_no", workNo);
         queryWrapper.ne("is_schedule", 1);
 
-        if("4".equals(classes) || "6".equals(classes) || "7".equals(classes)){
-            queryWrapper.ne("opt_type","14")
-                    .ne("opt_type","13");
-        }
-
         //排序
         if (StringUtils.isNullOrEmpty(orderCol)) {
             queryWrapper.orderByDesc(new String[]{"modify_time", "sequence_order_by"});
