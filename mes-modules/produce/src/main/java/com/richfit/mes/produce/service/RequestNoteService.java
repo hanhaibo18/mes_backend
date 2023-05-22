@@ -1,7 +1,6 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.wms.ApplyListUpload;
 
@@ -15,11 +14,4 @@ public interface RequestNoteService extends IService<RequestNote> {
 
     boolean saveRequestNoteInfo(ApplyListUpload applyListUpload, TrackHead trackHead, TrackItem trackItem, String branchCode);
 
-    /**
-     * 申请单上传wms
-     *
-     * @param ids
-     * @return
-     */
-    CommonResult<Boolean> uploadRequestNote(List<String> ids);
 }
