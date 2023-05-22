@@ -308,19 +308,15 @@ public class HeatTrackAssignController extends BaseController {
                     orderCol, productNo);
 
             for (TrackItem trackItem : itemList) {
-                if (Strings.isBlank(trackItem.getPrechargeFurnaceAssignId())) {
-                    trackItem.setIfPrechargeFurnace("否");
-                } else {
-                    trackItem.setIfPrechargeFurnace("是");
-                }
+                //是否冶炼配炉
+                trackItem.setIfPrechargeFurnace(Strings.isBlank(trackItem.getPrechargeFurnaceAssignId()) ? "否" : "是");
             }
 
             String[] columnHeaders = {"序号", "跟单号", "冶炼配炉", "项目名称", "工作号", "产品名称", "产品编号", "图号", "工艺版本号", "工序顺序号", "工序号", "工序名称",
                     "工序类型", "材质", "单重（KG）", "钢水（KG）", "炉号", "长周期", "优先级", "计划完成时间", "备注"};
 
-            //todo 试图需要添加数据，之后补充数据
             String[] fieldNames = {"id", "trackHeadId", "ifPrechargeFurnace", "projectName", "workNo", "productName", "productNo", "drawingNo", "versions", "originalOptSequence", "optSequence", "optName",
-                    "optType", "texture", "pieceWeight", "weightMolten", "prechargeFurnaceId", "--", "--", "planEndTime", "--"};
+                    "optType", "texture", "pieceWeight", "weightMolten", "prechargeFurnaceId", "isLongPeriod", "priority", "planEndTime", "--"};
 
 
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
