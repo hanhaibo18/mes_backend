@@ -124,7 +124,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 }
             }
             //查重
-            hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
+            //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             this.save(hotDemand);
             //demandList.add(hotDemand);
         }
@@ -177,7 +177,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             //0锻件,1铸件,2钢锭
             hotDemand.setWorkblankType("2");//冶炼
             //查重
-            hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
+            //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             demandList.add(hotDemand);
         }
         this.saveBatch(demandList);
