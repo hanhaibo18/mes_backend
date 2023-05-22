@@ -239,12 +239,11 @@ public class HotDemandController extends BaseController {
             if (demand.getProduceRatifyState() != null && demand.getProduceRatifyState() == 1) {
                 return CommonResult.failed(demand.getDemandName() + " 已经批准生产,不可撤回");
             }
-            //设置凭证号
-            demand.setVoucherNo(voucherNo);
         }
 
         UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
         updateWrapper.set("submit_state", submitState);//设置提报状态
+        updateWrapper.set("voucher_no", voucherNo);//设置凭证号
         updateWrapper.in("id", idList);
         boolean update = hotDemandService.update(updateWrapper);
         if (update) {
