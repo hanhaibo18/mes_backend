@@ -192,10 +192,10 @@ public class PublicServiceImpl implements PublicService {
             trackItemService.updateById(trackItem);
             //校验并行工序是否完成,完成执行下工序激活,并调用跟单统计接口
             if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId())) {
-                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                    planService.planData(trackHead.getWorkPlanId());
-                }
+//                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+//                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
+//                    planService.planData(trackHead.getWorkPlanId());
+//                }
                 return activationProcess(map);
             }
         }
@@ -229,11 +229,11 @@ public class PublicServiceImpl implements PublicService {
         }
         //校验是否并行完成,全部完成执行下工序激活
         if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId())) {
-            //校验是否是最后一道工序
-            if (0 == trackItem.getNextOptSequence()) {
-                //并行全部完成,而且还是最后一道工序,执行跟单完成方法
-                trackHeadService.trackHeadFinish(trackItem.getFlowId());
-            }
+//            //校验是否是最后一道工序
+//            if (0 == trackItem.getNextOptSequence()) {
+//                //并行全部完成,而且还是最后一道工序,执行跟单完成方法
+//                trackHeadService.trackHeadFinish(trackItem.getFlowId());
+//            }
             return this.activationProcess(map);
         }
         return true;
