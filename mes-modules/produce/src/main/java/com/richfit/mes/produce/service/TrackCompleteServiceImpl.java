@@ -422,7 +422,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //根据工序Id删除缓存表数据
             QueryWrapper<TrackCompleteCache> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("ti_id", completeDto.getTiId());
-            double numDouble = 0.00;
+            double number = 0.00;
+            double time = 0.00;
             for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
                 //验证输入值是否合法
 //                String s = this.verifyTrackComplete(trackComplete, trackItem, companyCode);
@@ -441,41 +442,45 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackComplete.setCompleteTime(new Date());
                 trackComplete.setDetectionResult("-");
                 trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                numDouble += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
+                number += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
+                time += trackComplete.getReportHours() == null ? 0.00 : trackComplete.getReportHours();
             }
             Assign assign = trackAssignService.getById(completeDto.getAssignId());
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             //机加、装配需要判断报工数量，才去进行下工序处理
             if ("1".equals(trackHead.getClasses()) || "2".equals(trackHead.getClasses())) {
+                //校验当前派工是否报工
+                QueryWrapper<TrackComplete> queryWrapperComplete = new QueryWrapper<>();
+                queryWrapperComplete.eq("assign_id", completeDto.getAssignId());
+                int completeSize = this.count(queryWrapperComplete);
+                if (completeSize > 0) {
+                    throw new GlobalException("当前派工已经报工完成", ResultCode.FAILED);
+                }
+                //校验数量X单间额定工时 = 报工工时
+                //单件工时*报工总数 != 上报总工时
+                if (trackItem.getSinglePieceHours() * number != time) {
+                    throw new GlobalException("报工总数乘单件工时与上报总工时数值不匹配", ResultCode.FAILED);
+                }
                 //跟新工序完成数量
-                trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + numDouble : numDouble);
-                double intervalNumber = assign.getQty() + 0.0;
-                if (numDouble > assign.getQty()) {
-                    return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得大于" + assign.getQty());
+                trackItem.setCompleteQty(!Objects.isNull(trackItem.getCompleteQty()) ? trackItem.getCompleteQty() + number : number);
+                //最后一次报工进行下工序激活
+                if (queryIsComplete(assign)) {
+                    //更改状态 标识当前工序完成
+                    trackItem.setIsDoing(2);
+                    trackItem.setIsOperationComplete(1);
+                    trackItemService.updateById(trackItem);
+                    trackCompleteCacheService.remove(queryWrapper);
+                    //调用工序激活方法
+                    Map<String, String> map = new HashMap<>(3);
+                    map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                    map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
+                    map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
+                    map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
+                    publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
                 }
-                if (numDouble < intervalNumber - 0.01) {
-                    return CommonResult.failed("报工数量:" + numDouble + ",派工数量:" + assign.getQty() + "完工数量不得少于" + (intervalNumber - 0.01));
-                }
-                if (assign.getQty() >= numDouble && intervalNumber - 0.01 <= numDouble) {
-                    //最后一次报工进行下工序激活
-                    if (queryIsComplete(assign)) {
-                        //更改状态 标识当前工序完成
-                        trackItem.setIsDoing(2);
-                        trackItem.setIsOperationComplete(1);
-                        trackItemService.updateById(trackItem);
-                        trackCompleteCacheService.remove(queryWrapper);
-                        //调用工序激活方法
-                        Map<String, String> map = new HashMap<>(3);
-                        map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-                        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
-                        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
-                        map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
-                        publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
-                    }
-                    //派工状态设置为完成
-                    assign.setState(2);
-                    trackAssignService.updateById(assign);
-                }
+                //派工状态设置为完成
+                assign.setState(2);
+                trackAssignService.updateById(assign);
                 //外协报工最后一道工序校验所有关键件全部绑定完成
                 if ("2".equals(trackHead.getClasses()) && trackItem.getNextOptSequence() == 0) {
                     //获取当前跟单下所有工序,并且根据opt_sequence倒序排序
@@ -661,23 +666,21 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
      **/
     private boolean queryIsComplete(Assign assign) {
         TrackItem trackItem = trackItemService.getById(assign.getTiId());
-        //只制作一件物品不进行判断
-        if (trackItem.getNumber() == 1) {
-            return true;
+        //可派工数量不为0的时候 不进行判断
+        if (trackItem.getAssignableQty() != 0) {
+            return false;
         }
         QueryWrapper<Assign> query = new QueryWrapper<>();
         query.eq("ti_id", assign.getTiId());
         //state = 2 (已完工)
-        query.eq("state", 2);
+        query.notIn("state", 2);
         List<Assign> assignList = trackAssignService.list(query);
-        //获取已完成数量
-        int size = 0;
-        for (Assign assignEntity : assignList) {
-            size += assignEntity.getQty();
+        //未完工数据超过1条返回false
+        if (assignList.size() > 1) {
+            return false;
         }
-
-        //当前工序制造总数 - 已完成数量 == 这次报工数量
-        return trackItem.getNumber() - size == assign.getQty();
+        //最后一道未报工的ID跟传入ID对比
+        return assignList.get(0).getId().equals(assign.getId());
     }
 
 
