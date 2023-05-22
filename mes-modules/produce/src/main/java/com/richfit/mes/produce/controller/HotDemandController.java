@@ -91,9 +91,9 @@ public class HotDemandController extends BaseController {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<HotDemand>();
         //queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        if (StringUtils.isNotEmpty(hotDemandParam.getBranchCode())) {//车间代码
-            queryWrapper.eq("branch_code", hotDemandParam.getBranchCode());
-        }
+//        if (StringUtils.isNotEmpty(hotDemandParam.getBranchCode())) {//车间代码
+//            queryWrapper.eq("branch_code", hotDemandParam.getBranchCode());
+//        }
         if (StringUtils.isNotEmpty(hotDemandParam.getProjectName())) {//项目名称
             queryWrapper.eq("project_name", hotDemandParam.getProjectName());
         }
@@ -163,6 +163,7 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
             queryWrapper.orderByAsc(hotDemandParam.getOrderByColumns());
         }
+        queryWrapper.eq("tenant_id",currentUser.getTenantId());
         //排序工具
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
