@@ -498,7 +498,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String pourTimeRouter;
 
     @ApiModelProperty(value = "热风机关闭时间")
-    private Date fanClosedTime;
+    private String fanClosedTime;
 
     @ApiModelProperty(value = "试棒编号")
     @TableField(exist = false)
