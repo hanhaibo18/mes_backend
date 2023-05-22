@@ -470,13 +470,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     trackItem.setIsOperationComplete(1);
                     trackItemService.updateById(trackItem);
                     trackCompleteCacheService.remove(queryWrapper);
-                    //调用工序激活方法
-                    Map<String, String> map = new HashMap<>(3);
-                    map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-                    map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
-                    map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
-                    map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
-                    publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+                    //增加工序是否调度是否质检判断,不质检不调度进行下工序激活
+                    if (trackItem.getIsExistQualityCheck() == 0 && trackItem.getIsExistScheduleCheck() == 0) {
+                        //调用工序激活方法
+                        Map<String, String> map = new HashMap<>(3);
+                        map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+                        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), completeDto.getTrackId());
+                        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), completeDto.getTiId());
+                        map.put(IdEnum.ASSIGN_ID.getMessage(), completeDto.getAssignId());
+                        publicService.publicUpdateState(map, PublicCodeEnum.COMPLETE.getCode());
+                    }
                 }
                 //派工状态设置为完成
                 assign.setState(2);
