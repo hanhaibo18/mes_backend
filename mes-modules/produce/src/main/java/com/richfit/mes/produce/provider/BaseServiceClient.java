@@ -57,8 +57,8 @@ public interface BaseServiceClient {
     @GetMapping(value = "/api/base/router/getRouter")
     public CommonResult<Router> getRouter(@RequestParam("routerId") String routerId);
 
-    @GetMapping(value = "/api/base/router/getRouterByIds")
-    public CommonResult<List<Router>> getRouterIds(@RequestBody List<String> routerIds);
+    @PostMapping(value = "/api/base/router/getRouterByIdAndBranchCode")
+    public CommonResult<List<Router>> getRouterByIdAndBranchCode(@RequestBody List<String> routerIds);
 
     @GetMapping(value = "/api/base/router/getByRouter")
     public CommonResult<Router> getByRouterId(@RequestParam("routerId") String routerId,

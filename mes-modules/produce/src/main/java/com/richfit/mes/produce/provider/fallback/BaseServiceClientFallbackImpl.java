@@ -69,7 +69,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Router>> getRouterIds(List<String> routerIds) {
+    public CommonResult<List<Router>> getRouterByIdAndBranchCode(List<String> routerIds) {
         return null;
     }
 

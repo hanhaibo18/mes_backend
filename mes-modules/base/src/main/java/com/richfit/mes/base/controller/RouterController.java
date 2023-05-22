@@ -397,13 +397,13 @@ public class RouterController extends BaseController {
 
     @ApiOperation(value = "根据IDs查询工艺", notes = "根据IDs查询工艺")
     @ApiImplicitParam(name = "routerIds", value = "工艺ids", required = true, dataType = "String", paramType = "query")
-    @GetMapping("/getRouterByIds")
-    public CommonResult<List<Router>> getRouterByIds(@RequestBody List<String> routerIds) {
-        if(CollectionUtil.isEmpty(routerIds)){
+    @PostMapping("/getRouterByIdAndBranchCode")
+    public CommonResult<List<Router>> getRouterByIds(@RequestBody List<String> routerIdAndBranchCodes) {
+        if(CollectionUtil.isEmpty(routerIdAndBranchCodes)){
             return CommonResult.success(null, "操作成功！");
         }
         QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
-        routerQueryWrapper.in("id",routerIds);
+        routerQueryWrapper.in("CONCAT_WS( '_', id, branch_code )",routerIdAndBranchCodes);
         return CommonResult.success(routerService.list(routerQueryWrapper), "操作成功！");
     }
 

@@ -108,11 +108,12 @@ public class HeatTrackAssignController extends BaseController {
             @ApiImplicitParam(name = "endTime", value = "结束时间", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "order", value = "排序类型", dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "orderCol", value = "排序字段", dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "orderCol", value = "排序字段", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query")
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo) throws ParseException {
+            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes) throws ParseException {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
@@ -137,6 +138,11 @@ public class HeatTrackAssignController extends BaseController {
         queryWrapper.eq(!StringUtils.isNullOrEmpty(optName),"opt_name", optName);
         queryWrapper.eq(!StringUtils.isNullOrEmpty(workNo),"work_no", workNo);
         queryWrapper.ne("is_schedule", 1);
+
+        if("4".equals(classes) || "6".equals(classes) || "7".equals(classes)){
+            queryWrapper.ne("opt_type","14")
+                    .ne("opt_type","13");
+        }
 
         //排序
         if (StringUtils.isNullOrEmpty(orderCol)) {

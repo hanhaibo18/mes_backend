@@ -265,11 +265,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());
         //queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
-        //根据classes判断  对下料、锻造、去氢、正火进行查询控制
-        if("4".equals(classes) || "6".equals(classes) || "7".equals(classes)){
-            queryWrapper.ne("opt_name","去氢")
-                    .ne("opt_name","正火");
-        }
+
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
                 if ("desc".equals(order)) {
@@ -620,6 +616,10 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkNo())) {
             queryWrapper.eq("work_no", dispatchingDto.getWorkNo());
+        }
+        if("4".equals(dispatchingDto.getClasses()) || "6".equals(dispatchingDto.getClasses()) || "7".equals(dispatchingDto.getClasses())){
+            queryWrapper.ne("opt_type","14")
+                    .ne("opt_type","13");
         }
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);

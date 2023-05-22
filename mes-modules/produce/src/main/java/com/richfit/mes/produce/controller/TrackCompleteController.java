@@ -148,10 +148,6 @@ public class TrackCompleteController extends BaseController {
             }
             //增加工序过滤
 //            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
-            //锻造车间、铸钢车间、冶炼车间的工序名称过滤（锻车间人员报工不涉及正火和去氢）
-            if ("4".equals(classes) || "6".equals(classes) || "7".equals(classes)) {
-                queryWrapper.and(wrapper1 -> wrapper1.ne("opt_name", "正火").ne("opt_name", "去氢"));
-            }
 
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {

@@ -382,34 +382,36 @@ public class TrackHeadController extends BaseController {
         OrderUtil.query(queryWrapper, orderCol, order);
         IPage<TrackHeadPublicVo> trackHeadPublicVoIPage = trackHeadService.queryPage(new Page<>(page, limit), queryWrapper);
         //工艺ids
-        List<String> routerIds = new ArrayList<>(trackHeadPublicVoIPage.getRecords().stream().map(item -> item.getRouterId()).collect(Collectors.toSet()));
-        List<Router> getRouter = baseServiceClient.getRouterIds(routerIds).getData();
-        Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
-        //capp工艺属性赋值
-        for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
-            Router router = routerMap.get(record.getRouterId());
-            if(!ObjectUtil.isEmpty(router)){
-                //锻造材料规格
-                record.setBlankSpecifi(router.getBlankSpecifi());
-                //锻造下料重量
-                record.setBlankWeight(router.getBlankWeight());
-                //材质
-                record.setTexture(router.getTexture());
-                //单重
-                record.setWeight(router.getWeight());
-                //钢水重量
-                record.setWeightMolten(router.getWeightMolten());
-                //工艺保温时间
-                record.setProcessHoldTime(router.getWeightMolten());
-                //浇筑温度
-                record.setPourTemp(router.getPourTemp());
-                //浇筑时间
-                record.setPourTime(router.getPourTime());
-                //试棒型号
-                record.setTestBar(router.getTestBar());
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackHeadPublicVoIPage.getRecords().stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
+        if(!CollectionUtil.isEmpty(getRouter)){
+            Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+            //capp工艺属性赋值
+            for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
+                Router router = routerMap.get(record.getRouterId()+"_"+record.getBranchCode());
+                if(!ObjectUtil.isEmpty(router)){
+                    //锻造材料规格
+                    record.setBlankSpecifi(router.getBlankSpecifi());
+                    //锻造下料重量
+                    record.setBlankWeight(router.getBlankWeight());
+                    //材质
+                    record.setTexture(router.getTexture());
+                    //单重
+                    record.setWeight(router.getWeight());
+                    //钢水重量
+                    record.setWeightMolten(router.getWeightMolten());
+                    //工艺保温时间
+                    record.setProcessHoldTime(router.getWeightMolten());
+                    //浇筑温度
+                    record.setPourTemp(router.getPourTemp());
+                    //浇筑时间
+                    record.setPourTime(router.getPourTime());
+                    //试棒型号
+                    record.setTestBar(router.getTestBar());
+                }
             }
-
         }
+
 
         return CommonResult.success(trackHeadPublicVoIPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
