@@ -16,7 +16,7 @@ import java.util.Date;
 public class HotDemandUpdateLog extends BaseEntity<HotDemandUpdateLog> implements Serializable {
 
     @ApiModelProperty(value = "需求提报id ", dataType = "String")
-    private String demand_id;
+    private String demandId;
     /**
      * 图号
      */

@@ -98,5 +98,12 @@ public class PrechargeFurnace {
     private String workblankType;
     @ApiModelProperty(value = "钢水总重", dataType = "String")
     private Double totalMoltenSteel;
+    @ApiModelProperty(value = "机构编码", dataType = "Integer")
+    private String branchCode;
+
+    @ApiModelProperty(value = "租户ID", dataType = "Integer")
+    private String tenantId;
+    @ApiModelProperty(value = "派工状态", dataType = "Integer")
+    private Integer assignStatus;
 
 }

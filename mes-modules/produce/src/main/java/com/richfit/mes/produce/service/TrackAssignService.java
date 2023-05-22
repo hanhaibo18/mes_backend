@@ -26,6 +26,8 @@ public interface TrackAssignService extends IService<Assign> {
 
     IPage<TrackItem> getPageAssignsHot(Page page, QueryWrapper<TrackItem> qw);
 
+    List<TrackItem> getAssignsHot( QueryWrapper<TrackItem> qw);
+
     IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);
 
     IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);

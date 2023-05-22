@@ -1,10 +1,7 @@
 package com.richfit.mes.common.model.produce;
 
-import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
-
-import java.io.Serializable;
 import java.util.Date;
 
 /**

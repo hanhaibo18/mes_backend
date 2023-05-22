@@ -498,7 +498,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String pourTimeRouter;
 
     @ApiModelProperty(value = "热风机关闭时间")
-    private Date fanClosedTime;
+    private String fanClosedTime;
 
     @ApiModelProperty(value = "试棒编号")
     @TableField(exist = false)
@@ -514,5 +514,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "预装炉派工id")
     private String prechargeFurnaceAssignId;
+
+    @ApiModelProperty(value = "是否冶炼配炉::是；否")
+    @TableField(exist = false)
+    private String ifPrechargeFurnace;
 
 }

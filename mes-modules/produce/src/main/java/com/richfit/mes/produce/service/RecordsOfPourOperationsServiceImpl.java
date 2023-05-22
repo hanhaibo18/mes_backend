@@ -66,7 +66,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         queryWrapperPour.eq("precharge_furnace_id", prechargeFurnaceId);
         RecordsOfPourOperations recordsOfPourOperation = this.getOne(queryWrapperPour);
         if (recordsOfPourOperation == null) {
-            throw new GlobalException("没有找到预装炉信息！", ResultCode.FAILED);
+            throw new GlobalException("没有找到预装炉浇注信息！", ResultCode.FAILED);
         }
         //根据预装炉号找对应当前工序
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();

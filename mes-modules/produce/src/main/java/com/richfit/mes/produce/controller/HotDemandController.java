@@ -76,7 +76,7 @@ public class HotDemandController extends BaseController {
         hotDemand.setSubmitOrderOrgId(currentUser.getBelongOrgId());
         hotDemand.setPlanNum(hotDemand.getNum());
         //查重
-        hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
+        //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
         boolean save = hotDemandService.save(hotDemand);
         if (save) {
             return CommonResult.success(ResultCode.SUCCESS);
@@ -91,9 +91,9 @@ public class HotDemandController extends BaseController {
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<HotDemand>();
         //queryWrapper.eq("tenant_id", currentUser.getTenantId());
-        if (StringUtils.isNotEmpty(hotDemandParam.getBranchCode())) {//车间代码
-            queryWrapper.eq("branch_code", hotDemandParam.getBranchCode());
-        }
+//        if (StringUtils.isNotEmpty(hotDemandParam.getBranchCode())) {//车间代码
+//            queryWrapper.eq("branch_code", hotDemandParam.getBranchCode());
+//        }
         if (StringUtils.isNotEmpty(hotDemandParam.getProjectName())) {//项目名称
             queryWrapper.eq("project_name", hotDemandParam.getProjectName());
         }
@@ -163,6 +163,7 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
             queryWrapper.orderByAsc(hotDemandParam.getOrderByColumns());
         }
+        queryWrapper.eq("tenant_id",currentUser.getTenantId());
         //排序工具
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
@@ -224,10 +225,12 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "需求提报与撤回", notes = "需求提报与撤回")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
-            @ApiImplicitParam(name = "submitState", value = "提报状态 0 :未提报  1 :已提报  2:需求退回", required = true, paramType = "query")
+            @ApiImplicitParam(name = "submitState", value = "提报状态 0 :未提报  1 :已提报  2:需求退回", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "车间编码", required = true, paramType = "query")
     })
     @PostMapping("/submit_or_revocation")
-    public CommonResult submitDemand(@RequestBody List<String> idList, Integer submitState) {
+    public CommonResult submitDemand(@RequestBody List<String> idList, Integer submitState,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         //生成凭证号
         String timeStemp = String.valueOf(System.currentTimeMillis());
         String voucherNo = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss")+timeStemp.substring(timeStemp.length()-4);
@@ -239,12 +242,15 @@ public class HotDemandController extends BaseController {
             if (demand.getProduceRatifyState() != null && demand.getProduceRatifyState() == 1) {
                 return CommonResult.failed(demand.getDemandName() + " 已经批准生产,不可撤回");
             }
-            //设置凭证号
-            demand.setVoucherNo(voucherNo);
         }
 
         UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
         updateWrapper.set("submit_state", submitState);//设置提报状态
+        updateWrapper.set("voucher_no", voucherNo);//设置凭证号
+        updateWrapper.set("submit_order_time", new Date());
+        updateWrapper.set("submit_order_org", hotDemandService.getSubmitOrderOrg(branchCode,currentUser));
+        updateWrapper.set("submit_by_id", currentUser.getUserId());
+        updateWrapper.set("submit_order_org_id", currentUser.getBelongOrgId());
         updateWrapper.in("id", idList);
         boolean update = hotDemandService.update(updateWrapper);
         if (update) {
@@ -450,22 +456,25 @@ public class HotDemandController extends BaseController {
                 UpdateWrapper updateWrapper = new UpdateWrapper();
                 updateWrapper.set("is_exist_process", 1);//设置为有工艺
                 //判断材质是否相同 不通则使用工艺中的材质
-                if(hotDemand.getTexture().isEmpty() ||  !hotDemand.getTexture().equals(router.getTexture())){
-                    //保存修改记录
-                    HotDemandUpdateLog hotDemandUpdateLog = new HotDemandUpdateLog();
-                    hotDemandUpdateLog.setDemand_id(hotDemand.getDemandName());
-                    hotDemandUpdateLog.setDrawNo(hotDemand.getDrawNo());
-                    hotDemandUpdateLog.setVersionNum(hotDemand.getVersionNum());
-                    hotDemandUpdateLog.setVoucherNo(hotDemand.getVoucherNo());
-                    hotDemandUpdateLog.setOldTexture(hotDemand.getTexture());
-                    hotDemandUpdateLog.setNewTexture(router.getTexture());
-                    hotDemandUpdateLog.setCreateBy(currentUser.getUsername());
-                    hotDemandUpdateLog.setModifyBy(currentUser.getUsername());
-                    hotDemandUpdateLog.setCreateTime(new Date());
-                    hotDemandUpdateLog.setModifyTime(new Date());
-                    hotDemandUpdateLogMapper.insert(hotDemandUpdateLog);
-                    //修改材质为工艺中的材质
-                    updateWrapper.set("texture", router.getTexture());//设置材质
+                if(StringUtils.isEmpty(hotDemand.getTexture()) ||  !hotDemand.getTexture().equals(router.getTexture())){
+                    //工艺材质不能为空
+                    if(StringUtils.isNotEmpty(router.getTexture())){
+                        //保存修改记录
+                        HotDemandUpdateLog hotDemandUpdateLog = new HotDemandUpdateLog();
+                        hotDemandUpdateLog.setDemandId(hotDemand.getId());
+                        hotDemandUpdateLog.setDrawNo(hotDemand.getDrawNo());
+                        hotDemandUpdateLog.setVersionNum(hotDemand.getVersionNum());
+                        hotDemandUpdateLog.setVoucherNo(hotDemand.getVoucherNo());
+                        hotDemandUpdateLog.setOldTexture(hotDemand.getTexture());
+                        hotDemandUpdateLog.setNewTexture(router.getTexture());
+                        hotDemandUpdateLog.setCreateBy(currentUser.getUsername());
+                        hotDemandUpdateLog.setModifyBy(currentUser.getUsername());
+                        hotDemandUpdateLog.setCreateTime(new Date());
+                        hotDemandUpdateLog.setModifyTime(new Date());
+                        hotDemandUpdateLogMapper.insert(hotDemandUpdateLog);
+                        //修改材质为工艺中的材质
+                        updateWrapper.set("texture", router.getTexture());//设置材质
+                    }
                 }
                 //updateWrapper.set("workblank_type", );//设置毛坯类型
                 updateWrapper.set("steel_water_weight", router.getWeightMolten());//设置钢水重量

@@ -68,6 +68,11 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
+    public CommonResult<List<Router>> getRouterByIdAndBranchCode(List<String> routerIds) {
+        return null;
+    }
+
+    @Override
     public CommonResult<Router> getByRouterId(String routerId, String branchCode) {
         return CommonResult.success(null);
     }
@@ -203,7 +208,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
-    @GetMapping("/api/base/sequence/query_by_routerIds")
+    @PostMapping("/api/base/sequence/query_by_routerIds")
     @Override
     public List<Sequence> querySequenceByRouterIds(List<String> routerIds) {
         return null;
