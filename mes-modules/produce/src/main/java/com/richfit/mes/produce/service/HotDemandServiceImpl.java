@@ -70,7 +70,6 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult importDemand(MultipartFile file, String branchCode) {
-        CommonResult result = null;
         String submitOrderOrg = hotDemandService.getSubmitOrderOrg(branchCode, SecurityUtils.getCurrentUser());
         java.lang.reflect.Field[] fields = DemandExcel.class.getDeclaredFields();
 

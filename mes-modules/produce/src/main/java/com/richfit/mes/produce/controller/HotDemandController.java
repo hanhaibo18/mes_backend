@@ -225,10 +225,12 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "需求提报与撤回", notes = "需求提报与撤回")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "需求提报IdList", required = true, paramType = "query"),
-            @ApiImplicitParam(name = "submitState", value = "提报状态 0 :未提报  1 :已提报  2:需求退回", required = true, paramType = "query")
+            @ApiImplicitParam(name = "submitState", value = "提报状态 0 :未提报  1 :已提报  2:需求退回", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "branchCode", value = "车间编码", required = true, paramType = "query")
     })
     @PostMapping("/submit_or_revocation")
-    public CommonResult submitDemand(@RequestBody List<String> idList, Integer submitState) {
+    public CommonResult submitDemand(@RequestBody List<String> idList, Integer submitState,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         //生成凭证号
         String timeStemp = String.valueOf(System.currentTimeMillis());
         String voucherNo = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss")+timeStemp.substring(timeStemp.length()-4);
@@ -245,6 +247,10 @@ public class HotDemandController extends BaseController {
         UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
         updateWrapper.set("submit_state", submitState);//设置提报状态
         updateWrapper.set("voucher_no", voucherNo);//设置凭证号
+        updateWrapper.set("submit_order_time", new Date());
+        updateWrapper.set("submit_order_org", hotDemandService.getSubmitOrderOrg(branchCode,currentUser));
+        updateWrapper.set("submit_by_id", currentUser.getUserId());
+        updateWrapper.set("submit_order_org_id", currentUser.getBelongOrgId());
         updateWrapper.in("id", idList);
         boolean update = hotDemandService.update(updateWrapper);
         if (update) {
