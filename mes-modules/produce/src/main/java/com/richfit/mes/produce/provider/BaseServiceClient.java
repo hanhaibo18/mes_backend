@@ -226,7 +226,7 @@ public interface BaseServiceClient {
     public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode);
 
 
-    @GetMapping("/api/base/sequence/query_by_routerIds")
+    @PostMapping("/api/base/sequence/query_by_routerIds")
     public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds);
 
     /**
@@ -235,7 +235,7 @@ public interface BaseServiceClient {
      * @Author: hujia
      **/
     @ApiOperation(value = "根据id查询工序字典列表", notes = "根据id查询工序字典列表")
-    @GetMapping("/api/base/opt/queryOptByIds")
+    @PostMapping("/api/base/opt/queryOptByIds")
     List<Operatipon> queryOptByIds(@ApiParam(value = "工序字典idList") @RequestBody List<String> optIds);
 
     @PostMapping("/api/base/project_bom/bindingBom")
