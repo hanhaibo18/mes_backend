@@ -69,7 +69,7 @@ public class ApplyListUpload implements Serializable {
     private Date createTime;
 
     /**
-     * 行数据
+     * 行数据 明细列表
      */
     @TableField(exist = false)
     private List<ApplyLineList> lineList;
