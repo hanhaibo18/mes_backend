@@ -62,6 +62,7 @@ secure:
       - /api/base/sequence/push
       - /api/base/product/product/listByNo
       - /api/base/product/selectOrderProduct/inner
+      - /api/base/branch/query_all_branch_inner
 
 swagger:
   basic:

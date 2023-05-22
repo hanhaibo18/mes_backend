@@ -335,7 +335,7 @@ public class BranchController extends BaseController {
         return branchService.getOne(queryWrapper);
     }
 
-    @ApiOperation(value = "获取所有车间")
+    @ApiOperation(value = "获取所有车间", response = List.class)
     @GetMapping("/query_all_branch")
     public List<Branch> queryAllBranch() {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
@@ -343,7 +343,7 @@ public class BranchController extends BaseController {
         return branchService.list(queryWrapper);
     }
 
-    @ApiOperation(value = "获取所有车间Inner")
+    @ApiOperation(value = "获取所有车间Inner", response = List.class)
     @GetMapping("/query_all_branch_inner")
     @Inner
     public List<Branch> queryAllBranchInner() {

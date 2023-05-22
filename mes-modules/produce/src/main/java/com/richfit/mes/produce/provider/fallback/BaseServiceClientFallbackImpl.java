@@ -245,7 +245,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public List<Branch> queryAllBranchInner() {
+    public List<Branch> queryAllBranchInner(String header) {
         return null;
     }
 

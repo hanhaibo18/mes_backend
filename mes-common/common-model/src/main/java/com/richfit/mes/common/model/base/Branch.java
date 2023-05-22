@@ -3,7 +3,9 @@ package com.richfit.mes.common.model.base;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -12,6 +14,8 @@ import java.util.List;
  * @Description 组织机构
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Branch extends BaseEntity<Branch> {
 
     private static final long serialVersionUID = -5801273490970600632L;
@@ -66,7 +70,7 @@ public class Branch extends BaseEntity<Branch> {
     @TableField(exist = false)
     @ApiModelProperty(value = "子节点", dataType = "String")
     private List<Branch> branchList;
-    
+
 
     /**
      * 描述: 分类：1机加  2装配 3热处理 4钢结构

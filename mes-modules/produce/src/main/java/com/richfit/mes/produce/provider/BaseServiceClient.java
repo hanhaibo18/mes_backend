@@ -253,11 +253,11 @@ public interface BaseServiceClient {
     public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status, @RequestParam String testBar, @RequestParam String texture);
 
     @ApiOperation(value = "获取所有车间")
-    @GetMapping("/query_all_branch")
+    @GetMapping("/api/base/branch/query_all_branch")
     public List<Branch> queryAllBranch();
 
     @ApiOperation(value = "获取所有车间Inner")
-    @GetMapping("/query_all_branch_inner")
-    public List<Branch> queryAllBranchInner();
+    @GetMapping("/api/base/branch/query_all_branch_inner")
+    public List<Branch> queryAllBranchInner(@RequestHeader(value = SecurityConstants.FROM) String header);
 
 }
