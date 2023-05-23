@@ -118,7 +118,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         prechargeFurnace.setSiteId(assignList.get(0).getSiteId());
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
         prechargeFurnace.setTexture(texture);
-        prechargeFurnace.setRecordStatus("1");
+        prechargeFurnace.setRecordStatus("0");
         this.save(prechargeFurnace);
         for (Assign assign : assignList) {
             //跟单工序添加装炉id

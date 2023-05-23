@@ -83,7 +83,7 @@ public class PrechargeFurnace {
     private String number;
     @ApiModelProperty(value = "材质", dataType = "String")
     private String texture;
-    @ApiModelProperty(value = "记录状态", dataType = "String")
+    @ApiModelProperty(value = "记录状态 0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过", dataType = "String")
     private String recordStatus;
     @TableField(exist = false)
     @ApiModelProperty(value = "是否回滚标志", dataType = "int")
