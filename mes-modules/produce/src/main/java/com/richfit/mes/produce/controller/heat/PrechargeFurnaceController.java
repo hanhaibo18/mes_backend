@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller.heat;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
@@ -8,12 +9,16 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import io.swagger.annotations.Api;
@@ -24,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zhiqiang.lu
@@ -38,6 +44,12 @@ public class PrechargeFurnaceController extends BaseController {
 
     @Autowired
     private TrackItemService trackItemService;
+
+    @Autowired
+    private TrackHeadMapper trackHeadMapper;
+
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
@@ -202,6 +214,30 @@ public class PrechargeFurnaceController extends BaseController {
         queryWrapper.eq("is_current",1)
                 .eq("precharge_furnace_id",id);
         return CommonResult.success(trackItemService.list(queryWrapper));
+    }
+
+    @ApiOperation(value = "配炉工序列表查询")
+    @GetMapping("/furnace_item_list_YL")
+    public CommonResult<List<TrackItem>> furnaceItemListYl(Long id) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_current", 1)
+                .eq("precharge_furnace_id", id);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        for (TrackItem trackItem : list) {
+            //查询跟单信息
+            LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            trackHeadLambdaQueryWrapper.eq(TrackHead::getId, trackItem.getTrackHeadId());
+            TrackHead trackHead = trackHeadMapper.selectOne(trackHeadLambdaQueryWrapper);
+            trackItem.setTexture(trackHead.getTexture());
+            trackItem.setWorkNo(trackHead.getWorkNo());
+            trackItem.setProductName(trackHead.getProductName());
+            trackItem.setPriority(trackHead.getPriority());
+            //查询工艺信息
+            Router data = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
+            trackItem.setPieceWeight(Objects.nonNull(data) ? data.getPieceWeight() : "");
+            trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
+        }
+        return CommonResult.success(list);
     }
 
 }
