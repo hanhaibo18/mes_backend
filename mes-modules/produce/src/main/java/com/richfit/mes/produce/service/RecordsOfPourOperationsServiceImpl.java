@@ -81,8 +81,8 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         for (TrackItem trackItem : trackItemList) {
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             Router router = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
-            trackItem.setPourTemperature(router.getPourTemp());
-            trackItem.setPourTime(router.getPourTime());
+            trackItem.setPourTemperatureRouter(router.getPourTemp());
+            trackItem.setPourTimeRouter(router.getPourTime());
             trackItem.setWeightMolten(router.getWeightMolten());
             trackItem.setPieceWeight(String.valueOf(router.getWeight()));
             trackItem.setTestBarNo(trackHead.getTestBarNo());

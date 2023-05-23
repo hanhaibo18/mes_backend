@@ -55,7 +55,7 @@ public class RecordsOfPourOperationsController extends ApiController {
     }
 
     @ApiOperation(value = "修改浇注记录信息", notes = "修改炼钢记录信息")
-    @PutMapping()
+    @PutMapping
     public CommonResult<Boolean> update(@RequestBody RecordsOfPourOperations recordsOfPourOperations) {
         return CommonResult.success(recordsOfPourOperationsService.update(recordsOfPourOperations));
     }
