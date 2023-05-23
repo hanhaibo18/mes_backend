@@ -109,11 +109,12 @@ public class HeatTrackAssignController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "order", value = "排序类型", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "orderCol", value = "排序字段", dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "state", value = "", dataType = "String", paramType = "query")
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes) throws ParseException {
+            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes,String state) throws ParseException {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
@@ -147,6 +148,11 @@ public class HeatTrackAssignController extends BaseController {
                 orderCol = orderCol.substring(0, orderCol.length()-1);
             }
             OrderUtil.query(queryWrapper, orderCol, StringUtils.isNullOrEmpty(order)?"desc":order);
+        }
+
+        //查询未配炉
+        if ("0".equals(state)) {
+            queryWrapper.isNull("precharge_furnace_assign_id");
         }
 
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
