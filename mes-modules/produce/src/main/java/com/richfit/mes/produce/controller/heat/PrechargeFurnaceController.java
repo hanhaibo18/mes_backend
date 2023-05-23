@@ -60,7 +60,7 @@ public class PrechargeFurnaceController extends BaseController {
 
     @ApiOperation(value = "预装炉删除")
     @PostMapping("/delete")
-    public CommonResult delete(@ApiParam(value = "预装炉ID", required = true) @RequestParam Long id) {
+    public CommonResult delete(@ApiParam(value = "预装炉ID", required = true) @RequestParam(value = "id") Long id) {
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(id);
         if (!PrechargeFurnace.STATE_WKG.equals(prechargeFurnace.getStatus())) {
             throw new GlobalException("只能删除未开工的预装炉", ResultCode.FAILED);
