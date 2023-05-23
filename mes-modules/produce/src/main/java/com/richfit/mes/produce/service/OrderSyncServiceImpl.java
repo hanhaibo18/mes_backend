@@ -268,17 +268,14 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         if (order.getTenantId().equals("12345678901234567890123456789002")) {
             String branchCode = getBranchCode(order.getCreateBy());
             if (StrUtil.isBlank(branchCode)) {
-                log.setSyncState("0");
-                log.setOpinion("未查询到车间信息,不进行同步");
-                orderLogService.save(log);
-                return false;
+                order.setBranchCode("BOMCO_BF_BY");
+            } else {
+                order.setBranchCode(branchCode);
             }
-            order.setBranchCode(branchCode);
+            //通过判断同步状态为1
+            log.setSyncState("1");
+            log.setOpinion("同步成功");
+            orderLogService.save(log);
+            return true;
         }
-        //通过判断同步状态为1
-        log.setSyncState("1");
-        log.setOpinion("同步成功");
-        orderLogService.save(log);
-        return true;
     }
-}
