@@ -523,4 +523,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String assignId;
 
+    @ApiModelProperty(value = "根据材质和锭型进行分组后的数量")
+    @TableField(exist = false)
+    private Integer numByTexture;
+
 }
