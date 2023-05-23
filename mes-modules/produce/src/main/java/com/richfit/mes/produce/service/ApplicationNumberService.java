@@ -20,7 +20,7 @@ public interface ApplicationNumberService extends IService<ApplicationNumber> {
      * @Date: 2022/11/18 10:38
      * @return: int
      **/
-    int acquireApplicationNumber(String itemId, String branchCode);
+    Long acquireApplicationNumber(String itemId, String branchCode);
 
     /**
      * 功能描述: 根据工序Id查询申请单号
@@ -30,7 +30,7 @@ public interface ApplicationNumberService extends IService<ApplicationNumber> {
      * @Date: 2022/11/18 10:59
      * @return: int
      **/
-    int queryApplicationNumber(String item);
+    Long queryApplicationNumber(String item);
 
     /**
      * 功能描述:根据工序删除申请单号
