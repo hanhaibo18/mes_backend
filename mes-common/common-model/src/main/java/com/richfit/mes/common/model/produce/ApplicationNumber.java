@@ -21,7 +21,7 @@ public class ApplicationNumber {
      * 申请单数字Id
      */
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     /**
      * 工序Id
