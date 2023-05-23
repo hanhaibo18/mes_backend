@@ -519,4 +519,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String ifPrechargeFurnace;
 
+    @ApiModelProperty(value = "派工id")
+    @TableField(exist = false)
+    private String assignId;
+
 }

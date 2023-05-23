@@ -383,7 +383,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceAssign.getFurnaceId());
         prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
         prechargeFurnace.setStepStatus(PrechargeFurnace.YES_START_WORK);
-        prechargeFurnace.setStartWorkBy(SecurityUtils.getCurrentUser().getUsername());
+        prechargeFurnace.setStartWorkBy(SecurityUtils.getCurrentUser().getUserId());
         prechargeFurnaceService.updateById(prechargeFurnace);
 
         //设置开工

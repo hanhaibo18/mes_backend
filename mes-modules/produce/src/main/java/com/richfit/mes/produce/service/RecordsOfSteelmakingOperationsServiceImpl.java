@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
 import com.richfit.mes.common.model.produce.PrechargeFurnaceAssignPerson;
@@ -25,8 +26,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,6 +56,8 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
     private BaseServiceClient baseServiceClient;
     @Autowired
     private CodeRuleService codeRuleService;
+    @Autowired
+    public RecordsOfPourOperationsService recordsOfPourOperationsService;
 
     @Override
     public RecordsOfSteelmakingOperations getByPrechargeFurnaceId(Long prechargeFurnaceId) {
@@ -219,6 +225,103 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         }
 
         return this.page(new Page<>(page, limit), recordsOfSteelmakingOperationsQueryWrapper);
+    }
+
+    @Override
+    public void export(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, HttpServletResponse response) {
+        boolean isBzz = recordsOfPourOperationsService.isBzz();
+        List<RecordsOfSteelmakingOperations> list = new ArrayList<>();
+        if (isBzz) {
+            //班组长查询同班员工号
+            List<TenantUser> tenantUserList = systemServiceClient.queryClass(SecurityUtils.getCurrentUser().getUsername());
+            List<String> userIdList = tenantUserList.stream().map(TenantUser::getUserAccount).collect(Collectors.toList());
+            //根据员工号查询派炉信息
+            QueryWrapper<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+            prechargeFurnaceAssignQueryWrapper.in("user_id", userIdList);
+            List<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignPersonList = prechargeFurnaceAssignPersonService.list(prechargeFurnaceAssignQueryWrapper);
+            if (CollectionUtils.isEmpty(prechargeFurnaceAssignPersonList)) {
+                throw new GlobalException("没有派工信息！", ResultCode.FAILED);
+            }
+            //获取派送预装炉id
+            Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignPersonList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceId).collect(Collectors.toSet());
+            //根据预装炉id获取炼钢记录
+            QueryWrapper<RecordsOfSteelmakingOperations> recordsOfSteelmakingOperationsQueryWrapper = new QueryWrapper<>();
+            recordsOfSteelmakingOperationsQueryWrapper.in("precharge_furnace_id", prechargeFurnaceIdSet);
+            if (!StringUtils.isNullOrEmpty(recordNo)) {
+                recordsOfSteelmakingOperationsQueryWrapper.like("record_no", recordNo);
+            }
+            if (prechargeFurnaceId != null) {
+                recordsOfSteelmakingOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+            }
+            if (!StringUtils.isNullOrEmpty(furnaceNo)) {
+                recordsOfSteelmakingOperationsQueryWrapper.like("furnace_no", furnaceNo);
+            }
+            if (!StringUtils.isNullOrEmpty(typeOfSteel)) {
+                recordsOfSteelmakingOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
+            }
+            if (!StringUtils.isNullOrEmpty(smeltingEquipment)) {
+                recordsOfSteelmakingOperationsQueryWrapper.eq("smelting_equipment", smeltingEquipment);
+            }
+            if (!StringUtils.isNullOrEmpty(startTime)) {
+                recordsOfSteelmakingOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+            }
+            if (!StringUtils.isNullOrEmpty(endTime)) {
+                recordsOfSteelmakingOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+            }
+            if (status != null) {
+                recordsOfSteelmakingOperationsQueryWrapper.eq("status", status);
+            }
+            list = this.list(recordsOfSteelmakingOperationsQueryWrapper);
+        } else {
+            //根据员工号查询派炉信息
+            QueryWrapper<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+            prechargeFurnaceAssignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
+            List<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignPersonList = prechargeFurnaceAssignPersonService.list(prechargeFurnaceAssignQueryWrapper);
+            if (CollectionUtils.isEmpty(prechargeFurnaceAssignPersonList)) {
+                throw new GlobalException("没有派工信息！", ResultCode.FAILED);
+            }
+            //获取派送预装炉id
+            Set<Long> prechargeFurnaceIdSet = prechargeFurnaceAssignPersonList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceId).collect(Collectors.toSet());
+            //根据预装炉id获取炼钢记录
+            QueryWrapper<RecordsOfSteelmakingOperations> recordsOfSteelmakingOperationsQueryWrapper = new QueryWrapper<>();
+            recordsOfSteelmakingOperationsQueryWrapper.in("precharge_furnace_id", prechargeFurnaceIdSet);
+            if (!StringUtils.isNullOrEmpty(recordNo)) {
+                recordsOfSteelmakingOperationsQueryWrapper.like("record_no", recordNo);
+            }
+            if (prechargeFurnaceId != null) {
+                recordsOfSteelmakingOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+            }
+            if (!StringUtils.isNullOrEmpty(furnaceNo)) {
+                recordsOfSteelmakingOperationsQueryWrapper.like("furnace_no", furnaceNo);
+            }
+            if (!StringUtils.isNullOrEmpty(typeOfSteel)) {
+                recordsOfSteelmakingOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
+            }
+            if (!StringUtils.isNullOrEmpty(smeltingEquipment)) {
+                recordsOfSteelmakingOperationsQueryWrapper.eq("smelting_equipment", smeltingEquipment);
+            }
+            if (!StringUtils.isNullOrEmpty(startTime)) {
+                recordsOfSteelmakingOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+            }
+            if (!StringUtils.isNullOrEmpty(endTime)) {
+                recordsOfSteelmakingOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+            }
+            if (status != null) {
+                recordsOfSteelmakingOperationsQueryWrapper.eq("status", status);
+            }
+            list = this.list(recordsOfSteelmakingOperationsQueryWrapper);
+        }
+        if (CollectionUtils.isEmpty(list)) {
+            throw new GlobalException("没有找到炼钢记录信息！", ResultCode.FAILED);
+        }
+        String fileName = "炼钢记录" + LocalDateTime.now();
+        String[] columnHeaders = {"审核状态", "记录编号", "配炉编号", "炉号", "钢种", "冶炼设备", "冶炼班组", "班长", "记录人", "记录时间", "审核人", "审核时间"};
+        String[] fieldNames = {"status", "recordNo", "prechargeFurnaceId", "furnaceNo", "typeOfSteel", "smeltingEquipment", "classGroup", "leader", "operator", "operatorTime", "assessor", "assessorTime", "remark"};
+        try {
+            ExcelUtils.exportExcel(fileName, list, columnHeaders, fieldNames, response);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
     }
 }
 

@@ -13,6 +13,7 @@ import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.OutsourceCompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import io.swagger.annotations.ApiParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -153,7 +154,7 @@ public interface TrackCompleteService extends IService<TrackComplete> {
 
     List<TrackItem> getItemList(String prechargeFurnaceAssignId);
 
-    Map<String, List<PrechargeFurnace>> getPrechargeFurnaceMap(String workblankType, String branchCode);
+    Map<String, List<PrechargeFurnace>> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime);
 
     Boolean prechargeFurnaceChange(Long beforeId, Long afterId);
 }

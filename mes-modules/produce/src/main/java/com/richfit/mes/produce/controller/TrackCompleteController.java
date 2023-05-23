@@ -1091,14 +1091,19 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "冶炼材质变更获取配炉列表")
     @GetMapping("/precharge_furnace")
-    public CommonResult<Map<String, List<PrechargeFurnace>>> getPrechargeFurnaceMap(@ApiParam("毛坯类型 0锻件,1铸件,2钢锭") String workblankType, @ApiParam("车间编码") String branchCode) {
-        return CommonResult.success(trackCompleteService.getPrechargeFurnaceMap(workblankType, branchCode));
+    public CommonResult<Map<String, List<PrechargeFurnace>>> getPrechargeFurnaceMap(@ApiParam("毛坯类型 0锻件,1铸件,2钢锭") String workblankType,
+                                                                                    @ApiParam("车间编码") String branchCode,
+                                                                                    @ApiParam("配炉（预装炉编号）") Long prechargeFurnaceId,
+                                                                                    @ApiParam("材质") String texture,
+                                                                                    @ApiParam("开始日期") String startTime,
+                                                                                    @ApiParam("截止日期") String endTime) {
+        return CommonResult.success(trackCompleteService.getPrechargeFurnaceMap(workblankType, branchCode,prechargeFurnaceId,texture,startTime,endTime));
     }
 
     @ApiOperation(value = "冶炼材质变更")
     @GetMapping("precharge_furnace_change")
-    public CommonResult<Boolean> prechargeFurnaceChange(Long beforeId,Long afterId){
-        return CommonResult.success(trackCompleteService.prechargeFurnaceChange(beforeId,afterId));
+    public CommonResult<Boolean> prechargeFurnaceChange(Long beforeId, Long afterId) {
+        return CommonResult.success(trackCompleteService.prechargeFurnaceChange(beforeId, afterId));
     }
 
 }
