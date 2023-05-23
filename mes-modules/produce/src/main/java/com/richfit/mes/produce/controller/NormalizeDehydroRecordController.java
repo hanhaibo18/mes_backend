@@ -117,9 +117,12 @@ public class NormalizeDehydroRecordController extends BaseController {
     @PostMapping("/auditNormalizeDehydroRecord")
     public CommonResult<Boolean> auditNormalizeDehydroRecord(@ApiParam(value = "idList") @RequestBody List<String> idList,
                                                              @ApiParam(value = "审核状态  0 未审核  1 通过,2 未通过",required = true)@RequestParam Integer status) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         UpdateWrapper<NormalizeDehydroRecord> updateWrapper=new UpdateWrapper<>();
         updateWrapper.in("id",idList);
         updateWrapper.set("audit_status",status);
+        updateWrapper.set("audit_by",currentUser.getUsername());
+        updateWrapper.set("audit_time",new Date());
 
         //查出审核的装炉记录
         QueryWrapper<NormalizeDehydroRecord> queryWrapper=new QueryWrapper();
