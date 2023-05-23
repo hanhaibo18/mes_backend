@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service.heat;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -167,7 +168,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             }
         }
         //设置工艺数据
-        setRouter(assigns);
+        if (CollectionUtils.isNotEmpty(assigns)){
+            setRouter(assigns);
+        }
         return assigns;
     }
 
@@ -178,7 +181,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     private void setRouter(List<Assign> assigns) {
         List<String> routerIdList = assigns.stream().map(x -> x.getRouterId()).collect(Collectors.toList());
         //根据需求图号查询工艺库
-        CommonResult<List<Router>> byDrawNo = baseServiceClient.getByRouterId(routerIdList);
+        List<String> routerIdAndBranchCodeList =new ArrayList<>(assigns.stream().map(x -> x.getRouterId() + "_" + x.getBranchCode()).collect(Collectors.toSet()));
+        CommonResult<List<Router>> byDrawNo = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList);
         //工艺库数据
         Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
         for (Assign assign : assigns) {

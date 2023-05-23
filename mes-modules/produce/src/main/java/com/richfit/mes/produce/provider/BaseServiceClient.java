@@ -69,14 +69,6 @@ public interface BaseServiceClient {
                                                      @RequestParam("branchCode") String branchCode
     );
 
-    /**
-     * 根据idList获得工艺
-     *
-     * @param idList
-     * @return
-     */
-    @PostMapping("/api/base/router/getByIds")
-    public CommonResult<List<Router>> getByRouterId(@RequestBody List<String> idList);
 
     @GetMapping(value = "/api/base/opt/find")
     public CommonResult<List<Operatipon>> find(@RequestParam("id") String id, @RequestParam("optCode") String optCode, @RequestParam("optName") String optName, @RequestParam("routerId") String routerId, @RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
