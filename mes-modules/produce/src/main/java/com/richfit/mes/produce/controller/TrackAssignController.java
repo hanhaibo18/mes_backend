@@ -484,7 +484,7 @@ public class TrackAssignController extends BaseController {
             //计量单位
             applyLine.setUnit(trackAssembly.getUnit());
             //申请单数量
-            applyLine.setQuantity(0);
+            applyLine.setQuantity(1D);
             //物料类型
             applyLine.setMaterialType(trackAssembly.getSourceType());
             //关键件

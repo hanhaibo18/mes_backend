@@ -20,7 +20,7 @@ public class ProductNoList implements Serializable {
     /**
      * 产品编号
      */
-    private Integer productNum;
+    private String productNum;
 
     /**
      * 合格数量
