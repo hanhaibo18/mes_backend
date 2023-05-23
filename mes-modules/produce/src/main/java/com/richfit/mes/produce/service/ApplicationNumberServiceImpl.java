@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class ApplicationNumberServiceImpl extends ServiceImpl<ApplicationNumberMapper, ApplicationNumber> implements ApplicationNumberService {
 
     @Override
-    public int acquireApplicationNumber(String itemId, String branchCode) {
+    public Long acquireApplicationNumber(String itemId, String branchCode) {
         ApplicationNumber applicationNumber = new ApplicationNumber();
         applicationNumber.applicationNumber(itemId, branchCode, SecurityUtils.getCurrentUser().getUsername(), SecurityUtils.getCurrentUser().getTenantId());
         this.save(applicationNumber);
@@ -25,7 +25,7 @@ public class ApplicationNumberServiceImpl extends ServiceImpl<ApplicationNumberM
     }
 
     @Override
-    public int queryApplicationNumber(String itemId) {
+    public Long queryApplicationNumber(String itemId) {
         QueryWrapper<ApplicationNumber> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("item_id", itemId);
         return this.getOne(queryWrapper).getId();
