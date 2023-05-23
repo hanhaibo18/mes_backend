@@ -7,10 +7,6 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.ApplicationNumberMapper;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
 /**
  * @ClassName: ApplicationNumberServiceImpl.java
  * @Author: Hou XinYu
@@ -22,21 +18,10 @@ public class ApplicationNumberServiceImpl extends ServiceImpl<ApplicationNumberM
 
     @Override
     public int acquireApplicationNumber(String itemId, String branchCode) {
-        //获取当前时间装换成20221118格式
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        String date = dateFormat.format(new Date());
-        //查询数据库有没有今天发送的申请单
-        QueryWrapper<ApplicationNumber> queryWrapper = new QueryWrapper<>();
-        //以时间为开始结尾模糊匹配
-        queryWrapper.likeRight("id", Integer.parseInt(date));
-        List<ApplicationNumber> numberList = this.list(queryWrapper);
-        //用数量组装 格式202211181
-        date = date + numberList.size();
         ApplicationNumber applicationNumber = new ApplicationNumber();
-        applicationNumber.applicationNumber(Integer.parseInt(date), itemId, branchCode, SecurityUtils.getCurrentUser().getUsername(), SecurityUtils.getCurrentUser().getTenantId());
-        applicationNumber.setId(Integer.parseInt(date));
+        applicationNumber.applicationNumber(itemId, branchCode, SecurityUtils.getCurrentUser().getUsername(), SecurityUtils.getCurrentUser().getTenantId());
         this.save(applicationNumber);
-        return Integer.parseInt(date);
+        return applicationNumber.getId();
     }
 
     @Override

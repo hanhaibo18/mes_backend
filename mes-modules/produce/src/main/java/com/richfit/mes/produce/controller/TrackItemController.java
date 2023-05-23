@@ -212,47 +212,39 @@ public class TrackItemController extends BaseController {
             queryWrapper.in("track_head_id", headIds)
                     .eq("opt_type", "3")
                     .eq("is_operation_complete", 0)
-                    .eq("is_current", 1)
                     .orderByAsc("opt_sequence");
             trackItems = trackItemService.list(queryWrapper);
         }
         if (CollectionUtils.isEmpty(trackItems)) {
             throw new GlobalException("未查询到当前工序,请联系管理员", ResultCode.FAILED);
         }
-        //查询所有外协工序
+        //过滤当前工序跟单
+        List<TrackItem> isCurrentList = trackItems.stream().filter(item -> item.getIsCurrent() == 1).collect(Collectors.toList());
         //查询当前跟单产品数量
         QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
         flowQueryWrapper.in("track_head_id", headIds);
         int count = trackFlowService.count(flowQueryWrapper);
         //过滤未完成数量
-        int size = (int) trackItems.stream().filter(item -> item.getIsFinalComplete().equals("0")).count();
+        int size = (int) isCurrentList.stream().filter(item -> item.getIsFinalComplete().equals("0")).count();
         //重新创建List每组数据组装完 向当前List填充
         List<TrackItem> trackItemList = new ArrayList<>();
         //获取List中最大当前工序值和最小工序值
         //最大值
-        int max = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).max().getAsInt();
+        int max = isCurrentList.stream().mapToInt(TrackItem::getOriginalOptSequence).max().getAsInt();
         //最小值
-        int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
+        int min = isCurrentList.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
         //过滤出所有最小的工序||产品数量大于1 并且 产品总数 大于未完成数量
         if (max != min || (count > 1 && count > size)) {
             //过滤出所有最小的工序
-            trackItemList.addAll(trackItems.stream().filter(item -> item.getOriginalOptSequence() == min).collect(Collectors.toList()));
+            trackItemList.addAll(isCurrentList.stream().filter(item -> item.getOriginalOptSequence() == min).collect(Collectors.toList()));
         } else {
             //根据FlowID分组
             Map<String, List<TrackItem>> map = trackItems.stream().collect(Collectors.groupingBy(TrackItem::getFlowId));
             //拿到后续工序
             for (List<TrackItem> nowadaysItemList : map.values()) {
                 //根据flow查询对应产品下所有外协工序
-                QueryWrapper<TrackItem> query = new QueryWrapper<>();
-                query.eq("flow_id", nowadaysItemList.get(0).getFlowId());
-                query.eq("opt_type", "3");
-                query.eq("is_operation_complete", 0);
-                //当前工序以后所有的外协工序
-                query.ge("opt_sequence", nowadaysItemList.get(0).getOptSequence());
-                query.orderByAsc("opt_sequence");
-                List<TrackItem> itemList = trackItemService.list(query);
                 int optSequence = nowadaysItemList.get(0).getOptSequence();
-                for (TrackItem trackItem : itemList) {
+                for (TrackItem trackItem : nowadaysItemList) {
                     boolean nowadaysSequence = false;
                     //判断是否是查询出的第一道工序
                     if (!nowadaysItemList.get(0).getId().equals(trackItem.getId())) {
