@@ -158,7 +158,9 @@ public class HeatTrackAssignController extends BaseController {
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
 
         //根据材质和锭型进行分组
-        Map<String, Map<String, List<TrackItem>>> collect = pageAssignsHot.getRecords().stream().collect(Collectors.groupingBy(e->Optional.ofNullable(e.getTexture()).orElse("null"), Collectors.groupingBy(TrackItem::getIngotCase)));
+        Map<String, Map<String, List<TrackItem>>> collect = pageAssignsHot.getRecords().stream().collect(
+                Collectors.groupingBy(e -> Optional.ofNullable(e.getTexture()).orElse("null"),
+                        Collectors.groupingBy(e -> Optional.ofNullable(e.getIngotCase()).orElse("null"))));
         for (TrackItem data : pageAssignsHot.getRecords()) {
             //默认未配送
             data.setApplyStatus(0);
