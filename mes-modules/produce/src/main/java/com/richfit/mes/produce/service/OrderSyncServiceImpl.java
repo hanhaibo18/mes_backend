@@ -180,7 +180,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             CommonResult<TenantUserVo> userAccountInner = systemServiceClient.queryByUserAccountInner(userName, SecurityConstants.FROM_INNER);
             List<Branch> branchList = baseServiceClient.queryAllBranchInner(SecurityConstants.FROM_INNER);
             for (Branch branch : branchList) {
-                if (userAccountInner.getData().getBelongOrgId().contains(branch.getBranchCode())) {
+                if (userAccountInner.getData().getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
                     return branch.getBranchCode();
                 }
             }
@@ -188,7 +188,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(userName);
             List<Branch> branchList = baseServiceClient.queryAllBranch();
             for (Branch branch : branchList) {
-                if (userAccount.getData().getBelongOrgId().contains(branch.getBranchCode())) {
+                if (userAccount.getData().getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
                     return branch.getBranchCode();
                 }
             }
