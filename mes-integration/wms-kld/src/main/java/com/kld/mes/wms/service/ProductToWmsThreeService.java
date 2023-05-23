@@ -76,7 +76,7 @@ public class ProductToWmsThreeService {
     }
 
 
-    // MES领料单上传WMS(待接口)
+    // MES领料单上传WMS
     public ApplicationResult materialRequisitionUploadInterface(List<MaterialRequisitionUpload> materialRequisitionUploads) {
         Map<String, Object> params = convertToInput(materialRequisitionUploads);
         //调用上传接口
