@@ -272,10 +272,11 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             } else {
                 order.setBranchCode(branchCode);
             }
-            //通过判断同步状态为1
-            log.setSyncState("1");
-            log.setOpinion("同步成功");
-            orderLogService.save(log);
-            return true;
         }
+        //通过判断同步状态为1
+        log.setSyncState("1");
+        log.setOpinion("同步成功");
+        orderLogService.save(log);
+        return true;
     }
+}
