@@ -3,7 +3,9 @@ package com.richfit.mes.produce.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -205,14 +207,19 @@ public class TrackItemController extends BaseController {
         }
         List<TrackItem> trackItems = new ArrayList<>();
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        //定位当前工序
         if (!headIds.isEmpty()) {
             queryWrapper.in("track_head_id", headIds)
                     .eq("opt_type", "3")
                     .eq("is_operation_complete", 0)
                     .eq("is_current", 1)
-                    .orderByDesc("next_opt_sequence");
+                    .orderByAsc("opt_sequence");
             trackItems = trackItemService.list(queryWrapper);
         }
+        if (CollectionUtils.isEmpty(trackItems)) {
+            throw new GlobalException("未查询到当前工序,请联系管理员", ResultCode.FAILED);
+        }
+        //查询所有外协工序
         //查询当前跟单产品数量
         QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
         flowQueryWrapper.in("track_head_id", headIds);
@@ -234,14 +241,42 @@ public class TrackItemController extends BaseController {
             //根据FlowID分组
             Map<String, List<TrackItem>> map = trackItems.stream().collect(Collectors.groupingBy(TrackItem::getFlowId));
             //拿到后续工序
-            for (List<TrackItem> trackItem : map.values()) {
-                trackItemList.addAll(trackItem);
-                nextOpt(trackItem, trackItemList);
+            for (List<TrackItem> nowadaysItemList : map.values()) {
+                //根据flow查询对应产品下所有外协工序
+                QueryWrapper<TrackItem> query = new QueryWrapper<>();
+                query.eq("flow_id", nowadaysItemList.get(0).getFlowId());
+                query.eq("opt_type", "3");
+                query.eq("is_operation_complete", 0);
+                //当前工序以后所有的外协工序
+                query.ge("opt_sequence", nowadaysItemList.get(0).getOptSequence());
+                query.orderByAsc("opt_sequence");
+                List<TrackItem> itemList = trackItemService.list(query);
+                int optSequence = nowadaysItemList.get(0).getOptSequence();
+                for (TrackItem trackItem : itemList) {
+                    boolean nowadaysSequence = false;
+                    //判断是否是查询出的第一道工序
+                    if (!nowadaysItemList.get(0).getId().equals(trackItem.getId())) {
+                        //连续工序判断
+                        nowadaysSequence = trackItem.getOptSequence() - 1 == optSequence;
+                    } else {
+                        nowadaysSequence = true;
+                    }
+                    //质检or调度判断
+                    boolean quantityOrSchedule = trackItem.getIsExistQualityCheck() == 1 || trackItem.getIsExistScheduleCheck() == 1;
+                    //校验不需要质检 不需要调度,查询下面工序
+                    if (trackItem.getIsExistQualityCheck() == 0 && trackItem.getIsExistScheduleCheck() == 0 && nowadaysSequence) {
+                        trackItemList.add(trackItem);
+                        optSequence = trackItem.getOptSequence();
+                    } else if (quantityOrSchedule && nowadaysSequence) {
+                        trackItemList.add(trackItem);
+                        break;
+                    }
+                }
             }
-        }
-        if (!trackItemList.isEmpty()) {
-            for (TrackItem trackItem : trackItemList) {
-                trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
+            if (!trackItemList.isEmpty()) {
+                for (TrackItem trackItem : trackItemList) {
+                    trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
+                }
             }
         }
         return CommonResult.success(trackItemList, SUCCESS_MESSAGE);
