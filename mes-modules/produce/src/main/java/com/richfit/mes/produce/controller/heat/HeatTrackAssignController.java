@@ -117,7 +117,7 @@ public class HeatTrackAssignController extends BaseController {
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes,String state,String status) throws ParseException {
+            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes,String state,String status,String materialName) throws ParseException {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
@@ -141,6 +141,7 @@ public class HeatTrackAssignController extends BaseController {
         queryWrapper.like(!StringUtils.isNullOrEmpty(productName),"product_name", productName);
         queryWrapper.eq(!StringUtils.isNullOrEmpty(optName),"opt_name", optName);
         queryWrapper.eq(!StringUtils.isNullOrEmpty(workNo),"work_no", workNo);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(materialName),"material_name", materialName);
         queryWrapper.ne("is_schedule", 1);
 
         //排序

@@ -1,8 +1,10 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
@@ -267,5 +269,17 @@ public class CertificateController {
         List<TrackHead> trackHeadList = certificateService.selectItemTrack(trackHead);
         PageInfo<TrackHead> trackHeadPageInfo = new PageInfo(trackHeadList);
         return CommonResult.success(trackHeadPageInfo, Certificate.SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "合格证推送", notes = "合格证推送")
+    @PostMapping("/push")
+    public CommonResult<Boolean> push(@RequestBody List<String> ids) {
+        if(CollectionUtil.isEmpty(ids)){
+            return CommonResult.success(true, Certificate.SUCCESS_MESSAGE);
+        }
+        UpdateWrapper<Certificate> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.in("id",ids)
+                .set("is_push",1);
+        return CommonResult.success(certificateService.update(updateWrapper), Certificate.SUCCESS_MESSAGE);
     }
 }
