@@ -1,5 +1,6 @@
 package com.richfit.mes.sys.service;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -61,6 +62,10 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
     private RoleService roleService;
     @Resource
     private ItemParamService itemParamService;
+    @Autowired
+    private RoleMenuService roleMenuService;
+    @Autowired
+    private MenuService menuService;
 
 
     @Value("${password.default:mes@123456}")
@@ -106,6 +111,21 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         TenantUserDetails tenantUserDetails = SecurityUtils.getCurrentUser();
         tenantUserVo.setTenantErpCode(tenantUserDetails.getTenantErpCode());
         tenantUserVo.setCompanyCode(tenantUserDetails.getCompanyCode());
+        //菜单权限标识 menu_type = 2 的menu_code
+        if(!CollectionUtil.isEmpty(tenantUserVo.getRoleList())){
+            List<String> roleIds = tenantUserVo.getRoleList().stream().map(item -> item.getId()).collect(Collectors.toList());
+            QueryWrapper<RoleMenu> roleMenuQueryWrapper = new QueryWrapper<>();
+            roleMenuQueryWrapper.eq("role_id",roleIds);
+            List<RoleMenu> list = roleMenuService.list(roleMenuQueryWrapper);
+            Set<String> menuIds = list.stream().map(item -> item.getMenuId()).collect(Collectors.toSet());
+            QueryWrapper<Menu> menuQueryWrapper = new QueryWrapper<>();
+            menuQueryWrapper.in("id",menuIds)
+                    .eq("menu_type",2);
+            List<Menu> menus = menuService.list(menuQueryWrapper);
+            if(!CollectionUtil.isEmpty(menus)){
+                tenantUserVo.setPermissions(menus.stream().map(item->item.getMenuCode()).collect(Collectors.toSet()));
+            }
+        }
         return tenantUserVo;
     }
 

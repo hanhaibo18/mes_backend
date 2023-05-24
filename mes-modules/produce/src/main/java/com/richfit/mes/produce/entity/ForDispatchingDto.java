@@ -52,5 +52,6 @@ public class ForDispatchingDto extends QueryPageDto {
     private Long id;
     @ApiModelProperty(value = "材质", dataType = "String")
     private String texture;
-
+    @ApiModelProperty(value = "零件名称", dataType = "String")
+    private String materialName;
 }
