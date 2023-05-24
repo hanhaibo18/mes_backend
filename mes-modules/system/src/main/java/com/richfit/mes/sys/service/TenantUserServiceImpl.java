@@ -115,15 +115,17 @@ public class TenantUserServiceImpl extends ServiceImpl<TenantUserMapper, TenantU
         if(!CollectionUtil.isEmpty(tenantUserVo.getRoleList())){
             List<String> roleIds = tenantUserVo.getRoleList().stream().map(item -> item.getId()).collect(Collectors.toList());
             QueryWrapper<RoleMenu> roleMenuQueryWrapper = new QueryWrapper<>();
-            roleMenuQueryWrapper.eq("role_id",roleIds);
+            roleMenuQueryWrapper.in("role_id",roleIds);
             List<RoleMenu> list = roleMenuService.list(roleMenuQueryWrapper);
             Set<String> menuIds = list.stream().map(item -> item.getMenuId()).collect(Collectors.toSet());
-            QueryWrapper<Menu> menuQueryWrapper = new QueryWrapper<>();
-            menuQueryWrapper.in("id",menuIds)
-                    .eq("menu_type",2);
-            List<Menu> menus = menuService.list(menuQueryWrapper);
-            if(!CollectionUtil.isEmpty(menus)){
-                tenantUserVo.setPermissions(menus.stream().map(item->item.getMenuCode()).collect(Collectors.toSet()));
+            if(!CollectionUtil.isEmpty(menuIds)){
+                QueryWrapper<Menu> menuQueryWrapper = new QueryWrapper<>();
+                menuQueryWrapper.in("id",menuIds)
+                        .eq("menu_type",2);
+                List<Menu> menus = menuService.list(menuQueryWrapper);
+                if(!CollectionUtil.isEmpty(menus)){
+                    tenantUserVo.setPermissions(menus.stream().map(item->item.getMenuCode()).collect(Collectors.toSet()));
+                }
             }
         }
         return tenantUserVo;

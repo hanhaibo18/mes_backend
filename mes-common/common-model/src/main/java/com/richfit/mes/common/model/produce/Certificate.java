@@ -141,7 +141,7 @@ public class Certificate extends BaseEntity<Certificate> {
     private String nextWorkOpts;
 
     @ApiModelProperty(value = "金额")
-    private String money;
+    private Double money;
 
     @ApiModelProperty(value = "本车间名称")
     @TableField(exist = false)
