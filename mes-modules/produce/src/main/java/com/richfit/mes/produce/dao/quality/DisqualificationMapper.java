@@ -7,9 +7,12 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.common.model.produce.Disqualification;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
+import com.richfit.mes.produce.entity.quality.DisqualificationVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * @Author: xinYu.hou
@@ -31,4 +34,8 @@ public interface DisqualificationMapper extends BaseMapper<Disqualification> {
 
     @Select("SELECT dis.* FROM produce_disqualification dis LEFT JOIN produce_disqualification_final_result final ON dis.id = final.id ${ew.customSqlSegment}")
     IPage<Disqualification> query(@Param("page") Page page, @Param(Constants.WRAPPER) Wrapper<Disqualification> wrapper);
+
+    @Select("SELECT * FROM produce_disqualification dis LEFT JOIN produce_disqualification_final_result final ON dis.id = final.id ${ew.customSqlSegment}")
+    List<DisqualificationVo> query(@Param("page") Page page, @Param(Constants.WRAPPER) Wrapper<Disqualification> wrapper);
+
 }
