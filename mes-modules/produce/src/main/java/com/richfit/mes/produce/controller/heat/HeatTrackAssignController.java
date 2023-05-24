@@ -112,8 +112,8 @@ public class HeatTrackAssignController extends BaseController {
             @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "materialName", value = "", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "state", value = "", dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "status", value = "", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "state", value = "配炉状态", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "status", value = "派工状态", dataType = "String", paramType = "query"),
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
@@ -161,13 +161,7 @@ public class HeatTrackAssignController extends BaseController {
         if("1".equals(status)){
             queryWrapper.isNotNull("precharge_furnace_assign_id");
         }
-
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
-
-        //根据材质和锭型进行分组
-        Map<String, Map<String, List<TrackItem>>> collect = pageAssignsHot.getRecords().stream().collect(
-                Collectors.groupingBy(e -> Optional.ofNullable(e.getTexture()).orElse("null"),
-                        Collectors.groupingBy(e -> Optional.ofNullable(e.getIngotCase()).orElse("null"))));
         for (TrackItem data : pageAssignsHot.getRecords()) {
             //默认未配送
             data.setApplyStatus(0);
@@ -191,12 +185,6 @@ public class HeatTrackAssignController extends BaseController {
                 data.setApplyStatus(mode.get(0).getApplyStatus());
             }else{
                 data.setApplyStatus(modelApplyList.get(0).getApplyStatus());
-            }
-            //根据材质和锭型获取数量
-            if (!StringUtils.isNullOrEmpty(data.getTexture()) && !StringUtils.isNullOrEmpty(data.getIngotCase())) {
-                data.setNumByTexture(collect.get(data.getTexture()).get(data.getIngotCase()).size());
-            } else {
-                data.setNumByTexture(0);
             }
         }
 
