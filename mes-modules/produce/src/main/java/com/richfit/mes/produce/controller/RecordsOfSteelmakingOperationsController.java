@@ -51,7 +51,7 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
     }
 
     @ApiOperation(value = "修改炼钢记录信息", notes = "修改炼钢记录信息")
-    @PutMapping()
+    @PutMapping
     public CommonResult<Boolean> update(@RequestBody RecordsOfSteelmakingOperations recordsOfSteelmakingOperations) {
         return CommonResult.success(recordsOfSteelmakingOperationsService.update(recordsOfSteelmakingOperations));
     }
