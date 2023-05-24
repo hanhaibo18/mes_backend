@@ -148,10 +148,6 @@ public class TrackCompleteController extends BaseController {
             }
             //增加工序过滤
 //            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
-            //锻造车间、铸钢车间、冶炼车间的工序名称过滤（锻车间人员报工不涉及正火和去氢）
-            if ("4".equals(classes) || "6".equals(classes) || "7".equals(classes)) {
-                queryWrapper.and(wrapper1 -> wrapper1.ne("opt_name", "正火").ne("opt_name", "去氢"));
-            }
 
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
@@ -995,7 +991,7 @@ public class TrackCompleteController extends BaseController {
     @ApiOperation(value = "外协报工(新)", notes = "外协报工(新)")
     @PostMapping("/save_outsource")
     public CommonResult<Boolean> saveOutsource(@RequestBody OutsourceCompleteDto outsource) {
-        return trackCompleteService.saveOutsource(outsource);
+        return trackCompleteService.saveOutsourceNew(outsource);
     }
 
     @ApiOperation(value = "下料信息记录", notes = "下料信息记录")
@@ -1083,8 +1079,31 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "冶炼车间获取预装炉派工信息")
     @GetMapping("/precharge_furnace_yl")
-    public CommonResult<IPage<PrechargeFurnace>> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
+    public CommonResult<IPage<PrechargeFurnaceAssign>> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
         return CommonResult.success(trackCompleteService.prechargeFurnaceYl(prechargeFurnaceId, texture, startTime, endTime, workblankType, status, page, limit));
+    }
+
+    @ApiOperation(value = "根据预装炉派工id获取炉内的工序信息")
+    @GetMapping("/item_list")
+    public CommonResult<List<TrackItem>> getItemList(@ApiParam("预装炉派工id") @RequestParam String prechargeFurnaceAssignId) {
+        return CommonResult.success(trackCompleteService.getItemList(prechargeFurnaceAssignId));
+    }
+
+    @ApiOperation(value = "冶炼材质变更获取配炉列表")
+    @GetMapping("/precharge_furnace")
+    public CommonResult<Map<String, List<PrechargeFurnace>>> getPrechargeFurnaceMap(@ApiParam("毛坯类型 0锻件,1铸件,2钢锭") String workblankType,
+                                                                                    @ApiParam("车间编码") String branchCode,
+                                                                                    @ApiParam("配炉（预装炉编号）") Long prechargeFurnaceId,
+                                                                                    @ApiParam("材质") String texture,
+                                                                                    @ApiParam("开始日期") String startTime,
+                                                                                    @ApiParam("截止日期") String endTime) {
+        return CommonResult.success(trackCompleteService.getPrechargeFurnaceMap(workblankType, branchCode,prechargeFurnaceId,texture,startTime,endTime));
+    }
+
+    @ApiOperation(value = "冶炼材质变更")
+    @GetMapping("precharge_furnace_change")
+    public CommonResult<Boolean> prechargeFurnaceChange(Long beforeId, Long afterId) {
+        return CommonResult.success(trackCompleteService.prechargeFurnaceChange(beforeId, afterId));
     }
 
 }

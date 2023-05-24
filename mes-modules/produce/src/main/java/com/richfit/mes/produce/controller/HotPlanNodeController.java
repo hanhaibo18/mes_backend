@@ -36,9 +36,6 @@ public class HotPlanNodeController extends BaseController {
     }
 
     @ApiOperation(value = "修改工序计划", notes = "修改工序计划")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "planNodes", value = "需求提报Id", required = true, paramType = "List")
-    })
     @PostMapping("/batch_update")
     public CommonResult batchUpdate(@RequestBody List<HotPlanNode> planNodes) {
         for (HotPlanNode planNode : planNodes) {

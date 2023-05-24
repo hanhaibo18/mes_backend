@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 /**
  * @author renzewen
  * @Description
- *
  */
 @Service
 public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, TrackComplete> implements HeatTrackCompleteService {
@@ -64,6 +63,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     private TrackHeadFlowService trackFlowService;
     @Autowired
     private CodeRuleService codeRuleService;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
 
     @Override
@@ -73,27 +74,28 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
     /**
      * 功能描述: 热工报工接口
-     * @Author: renzewen
+     *
      * @param heatCompleteDto
      * @return
      * @throws Exception
+     * @Author: renzewen
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveComplete(HeatCompleteDto heatCompleteDto) throws Exception {
         PrechargeFurnace furnace = prechargeFurnaceService.getById(heatCompleteDto.getPrechargeFurnaceId());
-        if(furnace.getStepStatus().equals("0")){
-            throw new GlobalException("请先开工后报工！",ResultCode.FAILED);
+        if (furnace.getStepStatus().equals("0")) {
+            throw new GlobalException("请先开工后报工！", ResultCode.FAILED);
         }
         //校验报工信息
         if (null == heatCompleteDto.getTrackCompleteList() && heatCompleteDto.getTrackCompleteList().isEmpty()) {
-            throw new GlobalException("报工人员不能为空",ResultCode.FAILED);
+            throw new GlobalException("报工人员不能为空", ResultCode.FAILED);
         }
-        if(ObjectUtil.isEmpty(heatCompleteDto.getTiIds()) || heatCompleteDto.getTiIds().size()==0){
-            throw new GlobalException("报工工序Id不能为空",ResultCode.FAILED);
+        if (ObjectUtil.isEmpty(heatCompleteDto.getTiIds()) || heatCompleteDto.getTiIds().size() == 0) {
+            throw new GlobalException("报工工序Id不能为空", ResultCode.FAILED);
         }
-        if(ObjectUtil.isEmpty(heatCompleteDto.getPrechargeFurnaceId())){
-            throw new GlobalException("预装炉Id不能为空",ResultCode.FAILED);
+        if (ObjectUtil.isEmpty(heatCompleteDto.getPrechargeFurnaceId())) {
+            throw new GlobalException("预装炉Id不能为空", ResultCode.FAILED);
         }
         //是否最后一道工序
         boolean isFinal = TrackComplete.IS_FINAL_STEP.equals(heatCompleteDto.getTrackCompleteList().get(0).getIsFinalStep());
@@ -101,7 +103,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         TrackComplete complete = heatCompleteDto.getTrackCompleteList().get(0);
         //处理炉设备转换
         String deviceName = null;
-        if(!StringUtils.isNullOrEmpty(complete.getDeviceId())){
+        if (!StringUtils.isNullOrEmpty(complete.getDeviceId())) {
             RgDevice rgDevice = rgDeviceService.getById(complete.getDeviceId());
             deviceName = ObjectUtil.isEmpty(rgDevice) ? null : rgDevice.getDeviceName();
         }
@@ -109,17 +111,17 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         String stepGroupId = UUID.randomUUID().toString().replaceAll("-", "");
         //保存每一个工序的报工信息
         for (String tiId : heatCompleteDto.getTiIds()) {
-            if(heatCompleteDto.getIsUpdate().equals(HeatCompleteDto.IS_UPDATE)){
+            if (heatCompleteDto.getIsUpdate().equals(HeatCompleteDto.IS_UPDATE)) {
                 //修改操作
                 //删除当前报工数据
                 QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<TrackComplete>();
-                completeQueryWrapper.eq("ti_id",tiId).eq("is_current",TrackComplete.YES_IS_CURRENT);
+                completeQueryWrapper.eq("ti_id", tiId).eq("is_current", TrackComplete.YES_IS_CURRENT);
                 this.remove(completeQueryWrapper);
-            }else{
+            } else {
                 //新增操作
                 //把之前的当前报工数据修改为非当前报工数据
                 UpdateWrapper<TrackComplete> trackCompleteUpdateWrapper = new UpdateWrapper<>();
-                trackCompleteUpdateWrapper.eq("ti_id",tiId).set("is_current",TrackComplete.NO_IS_CURRENT);
+                trackCompleteUpdateWrapper.eq("ti_id", tiId).set("is_current", TrackComplete.NO_IS_CURRENT);
                 this.update(trackCompleteUpdateWrapper);
             }
             TrackItem trackItem = trackItemService.getById(tiId);
@@ -148,13 +150,13 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                 trackComplete.setStepGroupId(stepGroupId);
             }
             //最后一道步骤需要激活下工序
-            if(isFinal){
+            if (isFinal) {
                 //检验人
                 trackItem.setQualityCheckBy(complete.getQualityCheckBy());
                 //检验车间
                 trackItem.setQualityCheckBranch(complete.getQualityCheckBranch());
                 nextItemActivate(tiId, trackItem, assign);
-            }else{
+            } else {
                 trackItem.setIsDoing(1);
                 trackItemService.updateById(trackItem);
                 //派工状态设置在制
@@ -173,20 +175,21 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
     /**
      * 编辑报工
+     *
      * @param trackCompleteList
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean updateComplete(List<TrackComplete> trackCompleteList){
+    public boolean updateComplete(List<TrackComplete> trackCompleteList) {
         //校验报工信息
         if (null == trackCompleteList && trackCompleteList.isEmpty()) {
-            throw new GlobalException("报工人员不能为空",ResultCode.FAILED);
+            throw new GlobalException("报工人员不能为空", ResultCode.FAILED);
         }
         //报工工序ids
         TrackComplete complete = trackCompleteList.get(0);
         String stepGroupId = complete.getStepGroupId();
         QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
-        wrapper.eq("step_group_id",stepGroupId);
+        wrapper.eq("step_group_id", stepGroupId);
         List<TrackComplete> completes = trackCompleteMapper.queryList(wrapper);
         Set<String> tiIds = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
         //删除旧的
@@ -218,11 +221,12 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
     /**
      * 功能描述: 最后一步需要激活下工序，并且对下工序派工
-     * @Author: renzewen
+     *
      * @param tiId
      * @param trackItem
      * @param assign
      * @throws Exception
+     * @Author: renzewen
      */
     private void nextItemActivate(String tiId, TrackItem trackItem, Assign assign) throws Exception {
         //跟新工序完成数量(热工不涉及拆分默认全部派工和报工  派工全部派  报工也是全部报工)
@@ -246,7 +250,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
             map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackItem.getTrackHeadId());
             map.put(IdEnum.TRACK_ITEM_ID.getMessage(), tiId);
             map.put(IdEnum.ASSIGN_ID.getMessage(), assign.getId());
-            this.activationProcess(map,assign);
+            this.activationProcess(map, assign);
         }
     }
 
@@ -257,7 +261,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
      * @Date: 2023/1/10 10:08
      **/
     @Transactional(rollbackFor = Exception.class)
-    public Boolean activationProcess(Map<String, String> map,Assign assign) throws Exception {
+    public Boolean activationProcess(Map<String, String> map, Assign assign) throws Exception {
         //倒序获取工序列表
         QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
         currentTrackItem.eq("flow_id", map.get("flowId"));
@@ -301,7 +305,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         queryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
         List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
         for (TrackItem trackItemEntity : trackItemList) {
-            if(trackItemEntity.getIsAutoSchedule().equals(1)){
+            if (trackItemEntity.getIsAutoSchedule().equals(1)) {
                 //自动派工
                 heatTrackAssignService.automaticProcess(trackItemEntity.getId());
             }
@@ -311,9 +315,10 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
     /**
      * 功能描述: 步骤报工后，预装炉信息跟新
+     *
+     * @param heatCompleteDto 报工信息
+     * @param isFinal         是否最后一步骤
      * @Author: renzewen
-     * @param heatCompleteDto  报工信息
-     * @param isFinal  是否最后一步骤
      */
     private void completeUpdatePreChargeFurnaceInfo(HeatCompleteDto heatCompleteDto, boolean isFinal) {
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(heatCompleteDto.getPrechargeFurnaceId());
@@ -324,29 +329,29 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         prechargeFurnace.setCurrStep(heatCompleteDto.getTrackCompleteList().get(0).getStep());
         prechargeFurnace.setFurnaceNo(heatCompleteDto.getTrackCompleteList().get(0).getFurnaceNo());
         prechargeFurnace.setDealFurnace(heatCompleteDto.getTrackCompleteList().get(0).getDeviceName());
-        if(!isFinal){
+        if (!isFinal) {
             prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
             //工步状态设为未开工
             prechargeFurnace.setStepStatus(PrechargeFurnace.NO_START_WORK);
-        }else{
+        } else {
             //完工
             prechargeFurnace.setStatus(PrechargeFurnace.END_START_WORK);
             prechargeFurnace.setStepStatus(PrechargeFurnace.END_START_WORK);
         }
         //次数字段赋值
-        int number = getNumber(prechargeFurnace.getId(),prechargeFurnace.getCurrStep());
+        int number = getNumber(prechargeFurnace.getId(), prechargeFurnace.getCurrStep());
         prechargeFurnace.setNumber(String.valueOf(number));
 
         prechargeFurnaceService.updateById(prechargeFurnace);
     }
 
     //同预装炉 相同步骤报工次数计算
-    private int getNumber(Long fuId,String step) {
+    private int getNumber(Long fuId, String step) {
         QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
-        trackCompleteQueryWrapper.eq("precharge_furnace_id",fuId)
-                .eq("step",step);
+        trackCompleteQueryWrapper.eq("precharge_furnace_id", fuId)
+                .eq("step", step);
         List<TrackComplete> list = this.list(trackCompleteQueryWrapper);
-        Map<String, List<TrackComplete>> itemCompleteMap = list.stream().collect(Collectors.groupingBy(item->item.getStepGroupId()));
+        Map<String, List<TrackComplete>> itemCompleteMap = list.stream().collect(Collectors.groupingBy(item -> item.getStepGroupId()));
 
         return itemCompleteMap.keySet().size();
     }
@@ -357,16 +362,76 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
     /**
      * 功能描述: 热工报工开工
      * 预装炉id
+     *
+     * @param prechargeFurnaceAssignId
+     */
+    @Override
+    public boolean pLstartWork(String prechargeFurnaceAssignId) {
+        PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getById(prechargeFurnaceAssignId);
+        if (ObjectUtil.isEmpty(prechargeFurnaceAssign)) {
+            throw new GlobalException("该Id没有找到派工信息！", ResultCode.FAILED);
+        }
+        if (prechargeFurnaceAssign.getIsDoing().equals(PrechargeFurnace.END_START_WORK)) {
+            throw new GlobalException("工序已完工无法再开工", ResultCode.FAILED);
+        }
+        if (prechargeFurnaceAssign.getIsDoing().equals(PrechargeFurnace.YES_START_WORK)) {
+            throw new GlobalException("工序已开工无法再开工", ResultCode.FAILED);
+        }
+        prechargeFurnaceAssign.setIsDoing(PrechargeFurnace.YES_START_WORK);
+        prechargeFurnaceAssign.setStartDoingUser(SecurityUtils.getCurrentUser().getUsername());
+        //更新预装炉信息
+        PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceAssign.getFurnaceId());
+        prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
+        prechargeFurnace.setStepStatus(PrechargeFurnace.YES_START_WORK);
+        prechargeFurnace.setStartWorkBy(SecurityUtils.getCurrentUser().getUserId());
+        prechargeFurnaceService.updateById(prechargeFurnace);
+
+        //设置开工
+        List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_assign_id", prechargeFurnaceAssignId));
+        List<String> itemIds = items.stream().map(TrackItem::getId).collect(Collectors.toList());
+        List<String> headIds = items.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
+        List<String> flowIds = items.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
+        //将跟单状态改为在制
+        UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+        trackHeadUpdateWrapper.set("status", "1")
+                .eq("status", "0")
+                .in("id", headIds);
+        trackHeadService.update(trackHeadUpdateWrapper);
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.set("status", "1")
+                .eq("status", "0")
+                .in("id", flowIds);
+        trackHeadFlowService.update(update);
+        UpdateWrapper<Assign> assignUpdate;
+        assignUpdate = new UpdateWrapper<>();
+        assignUpdate.set("state", "1")
+                .eq("state", "0")
+                .in("ti_id", itemIds);
+        trackAssignService.update(assignUpdate);
+        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+        trackItemUpdateWrapper.set("is_doing", 1)
+                .set("start_doing_time", new Date())
+                .set("start_doing_user", SecurityUtils.getCurrentUser().getUsername())
+                .eq("is_doing", 0)
+                .in("id", itemIds);
+        trackItemService.update(trackItemUpdateWrapper);
+        return prechargeFurnaceAssignService.updateById(prechargeFurnaceAssign);
+    }
+
+    /**
+     * 功能描述: 热工报工开工
+     * 预装炉id
+     *
      * @param prechargeFurnaceId
      */
     @Override
-    public boolean startWork(String prechargeFurnaceId){
-        PrechargeFurnace prechargeFurnace= prechargeFurnaceService.getById(prechargeFurnaceId);
-        if(prechargeFurnace.getStatus().equals(PrechargeFurnace.END_START_WORK)){
-            throw new GlobalException("工序已完工无法再开工",ResultCode.FAILED);
+    public boolean startWork(String prechargeFurnaceId) {
+        PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceId);
+        if (prechargeFurnace.getStatus().equals(PrechargeFurnace.END_START_WORK)) {
+            throw new GlobalException("工序已完工无法再开工", ResultCode.FAILED);
         }
-        if(prechargeFurnace.getStatus().equals(PrechargeFurnace.YES_START_WORK)){
-            throw new GlobalException("工序已开工无法再开工",ResultCode.FAILED);
+        if (prechargeFurnace.getStatus().equals(PrechargeFurnace.YES_START_WORK)) {
+            throw new GlobalException("工序已开工无法再开工", ResultCode.FAILED);
         }
         prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
         prechargeFurnace.setStepStatus(PrechargeFurnace.YES_START_WORK);
@@ -379,26 +444,26 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         List<String> flowIds = items.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
         //将跟单状态改为在制
         UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
-        trackHeadUpdateWrapper.set("status","1")
-                .eq("status","0")
-                .in("id",headIds);
+        trackHeadUpdateWrapper.set("status", "1")
+                .eq("status", "0")
+                .in("id", headIds);
         trackHeadService.update(trackHeadUpdateWrapper);
         UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
         update.set("status", "1")
-                .eq("status","0")
+                .eq("status", "0")
                 .in("id", flowIds);
         trackHeadFlowService.update(update);
         UpdateWrapper<Assign> assignUpdate;
         assignUpdate = new UpdateWrapper<>();
         assignUpdate.set("state", "1")
-                .eq("state","0")
+                .eq("state", "0")
                 .in("ti_id", itemIds);
         trackAssignService.update(assignUpdate);
-        UpdateWrapper<TrackItem>  trackItemUpdateWrapper = new UpdateWrapper<>();
+        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
         trackItemUpdateWrapper.set("is_doing", 1)
-                .set("start_doing_time",new Date())
-                .set("start_doing_user",SecurityUtils.getCurrentUser().getUsername())
-                .eq("is_doing",0)
+                .set("start_doing_time", new Date())
+                .set("start_doing_user", SecurityUtils.getCurrentUser().getUsername())
+                .eq("is_doing", 0)
                 .in("id", itemIds);
         trackItemService.update(trackItemUpdateWrapper);
         return prechargeFurnaceService.updateById(prechargeFurnace);
@@ -406,25 +471,26 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
     /**
      * 根据预装炉id获取当前步骤的报工信息
+     *
      * @param prechargeFurnaceId
      * @return
      */
     @Override
-    public Map<String,Object> getCompleteInfoByFuId(String prechargeFurnaceId){
+    public Map<String, Object> getCompleteInfoByFuId(String prechargeFurnaceId) {
         Map<String, Object> returnMap = new HashMap<>();
 
         QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
-        trackCompleteQueryWrapper.eq("precharge_furnace_id",prechargeFurnaceId)
-                .eq("is_current","1");
+        trackCompleteQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId)
+                .eq("is_current", "1");
         List<TrackComplete> completeList = this.list(trackCompleteQueryWrapper);
 
         Map<String, List<TrackComplete>> groups = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
         //报工信息
-        returnMap.put("completeInfo",completeList.get(0));
+        returnMap.put("completeInfo", completeList.get(0));
         //人员信息
         for (Map.Entry<String, List<TrackComplete>> completePeoples : groups.entrySet()) {
-            if(!ObjectUtil.isEmpty(completePeoples)){
-                returnMap.put("completePeoples",completePeoples);
+            if (!ObjectUtil.isEmpty(completePeoples)) {
+                returnMap.put("completePeoples", completePeoples);
                 break;
             }
         }
@@ -435,16 +501,17 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
     /**
      * 步骤工时计算  工序标准工时* 步骤工时标准比列 / 预装炉步骤次数 / 报工人数
+     *
      * @param stepGroupId
      * @return
      */
-    public void calculationHour(String stepGroupId){
+    public void calculationHour(String stepGroupId) {
         QueryWrapper<TrackComplete> wrapper = new QueryWrapper<>();
-        wrapper.eq("step_group_id",stepGroupId);
+        wrapper.eq("step_group_id", stepGroupId);
         List<TrackComplete> list = trackCompleteMapper.queryList(wrapper);
         //报工步骤
-        if(list.size() == 0){
-            throw new GlobalException("当前步骤没有对应的报工信息，无法计算工时！",ResultCode.FAILED);
+        if (list.size() == 0) {
+            throw new GlobalException("当前步骤没有对应的报工信息，无法计算工时！", ResultCode.FAILED);
         }
         String stepName = list.get(0).getStep();
 
@@ -453,7 +520,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         String fuId = list.get(0).getPrechargeFurnaceId();
         List<TrackComplete> trackCompletes = this.list(new QueryWrapper<TrackComplete>().eq("precharge_furnace_id", fuId));
         List<String> stepNameList = trackCompletes.stream().map(TrackComplete::getStep).collect(Collectors.toList());
-        if(stepNameList.contains("保温")){
+        if (stepNameList.contains("保温")) {
             stepType = "多步骤有保温";
         }
 
@@ -463,25 +530,25 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
         //查询当前激活的步骤工时标准版本
         List<StepHourVer> stepHourVer = stepHourVerService.list(new QueryWrapper<StepHourVer>().eq("is_activate", StepHourVer.YES_ACTIVATE));
-        if(stepHourVer.size() == 0){
-            throw new GlobalException("当前没有激活的工时标准版本，无法报工时！",ResultCode.FAILED);
+        if (stepHourVer.size() == 0) {
+            throw new GlobalException("当前没有激活的工时标准版本，无法报工时！", ResultCode.FAILED);
         }
         List<String> steps = new ArrayList<>();
         steps.add("保温");
         steps.add("装炉");
         steps.add("出炉");
         steps.add("校直");
-        List<StepHour> stepHours = stepHourService.list(new QueryWrapper<StepHour>().eq("ver_id", stepHourVer.get(0).getId()).eq("step_type", stepType).eq("step_name",!steps.contains(stepName)?"工序":stepName));
-        if(stepHours.size()>0){
+        List<StepHour> stepHours = stepHourService.list(new QueryWrapper<StepHour>().eq("ver_id", stepHourVer.get(0).getId()).eq("step_type", stepType).eq("step_name", !steps.contains(stepName) ? "工序" : stepName));
+        if (stepHours.size() > 0) {
             QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
-            trackCompleteQueryWrapper.eq("precharge_furnace_id",fuId)
-                    .eq("step",stepName);
+            trackCompleteQueryWrapper.eq("precharge_furnace_id", fuId)
+                    .eq("step", stepName);
             //修改报工信息的工时
-            Map<String, List<TrackComplete>> itemMap = this.queryList(trackCompleteQueryWrapper).stream().collect(Collectors.groupingBy(item->item.getStepGroupId()+"_"+item.getTiId()));
+            Map<String, List<TrackComplete>> itemMap = this.queryList(trackCompleteQueryWrapper).stream().collect(Collectors.groupingBy(item -> item.getStepGroupId() + "_" + item.getTiId()));
             //修改后的报工信息
             List<TrackComplete> updateCompletes = new ArrayList<>();
 
-            itemMap.forEach((key,value)->{
+            itemMap.forEach((key, value) -> {
                 //该步骤报工人数
                 int poepleNumber = value.size();
                 BigDecimal stepHour = new BigDecimal(stepHours.get(0).getHourRatio());
@@ -489,12 +556,12 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                     //工序标准工时
                     BigDecimal hour = complete.getHeatHour();
                     //报工工时
-                    if(hour==null || hour.compareTo(new BigDecimal(0))==0){
+                    if (hour == null || hour.compareTo(new BigDecimal(0)) == 0) {
                         complete.setCompletedHours(0.0);
                         complete.setActualHours(0.0);
                         complete.setReportHours(0.0);
                         complete.setStaticHours(0.0);
-                    }else{
+                    } else {
                         BigDecimal completeHour = hour.multiply(stepHour).divide(new BigDecimal(number)).divide(new BigDecimal(poepleNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
                         complete.setCompletedHours(Double.parseDouble(String.valueOf(completeHour)));
                         complete.setActualHours(Double.parseDouble(String.valueOf(completeHour)));
@@ -612,8 +679,8 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
                         //计算总工时
                         sumPrepareEndHours = sumPrepareEndHours + trackItem.getPrepareEndHours();
                         sumSinglePieceHours = sumSinglePieceHours + trackItem.getSinglePieceHours();
-                        sumTotalHours = sumTotalHours + track.getCompletedQty() * (ObjectUtil.isEmpty(track.getCompletedHours())?0.0:track.getCompletedHours());
-                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * (ObjectUtil.isEmpty(track.getCompletedHours())?0.0:track.getCompletedHours())).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
+                        sumTotalHours = sumTotalHours + track.getCompletedQty() * (ObjectUtil.isEmpty(track.getCompletedHours()) ? 0.0 : track.getCompletedHours());
+                        track.setTotalHours(new BigDecimal(track.getCompletedQty() * (ObjectUtil.isEmpty(track.getCompletedHours()) ? 0.0 : track.getCompletedHours())).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());//总工时
                         track.setUserName(tenantUserVo.getEmplName());
                         track0.setUserName(tenantUserVo.getEmplName());
                         track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
@@ -643,23 +710,24 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
     /**
      * 获取报工炉号
+     *
      * @param deviceName
      * @return
      */
     @Override
-    public String getFurnaceNo(String deviceName,String branchCode,String code) throws Exception {
+    public String getFurnaceNo(String deviceName, String branchCode, String code) throws Exception {
         //获取当前流水号
         String curValue = Code.valueOnUpdate(code, SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
         //设备编码
         String furnaceNo = "";
         //处理设备名称
-        if(deviceName.contains("-")){
-            String zm = deviceName.split("-")[1].replaceAll("[^(a-zA-Z)]","" );  //取出字母
+        if (deviceName.contains("-")) {
+            String zm = deviceName.split("-")[1].replaceAll("[^(a-zA-Z)]", "");  //取出字母
 
             String number = deviceName.split("-")[1].replaceAll("[^(0-9)]", "");   //取出数字
-            furnaceNo = zm+"-"+number+"-";
+            furnaceNo = zm + "-" + number + "-";
         }
-        furnaceNo = furnaceNo+curValue;
+        furnaceNo = furnaceNo + curValue;
 
         return furnaceNo;
     }
@@ -667,61 +735,60 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
 
     /**
      * 报工步骤回滚
+     *
      * @param prechargeFurnaceId
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean rollBack(Long prechargeFurnaceId){
+    public boolean rollBack(Long prechargeFurnaceId) {
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceId);
-        if(StringUtil.isEmpty(prechargeFurnace.getCurrStep()) && StringUtil.isEmpty(prechargeFurnace.getUpStep())){
-            throw new GlobalException("当前预装炉没有报工步骤,无法回滚",ResultCode.FAILED);
+        if (StringUtil.isEmpty(prechargeFurnace.getCurrStep()) && StringUtil.isEmpty(prechargeFurnace.getUpStep())) {
+            throw new GlobalException("当前预装炉没有报工步骤,无法回滚", ResultCode.FAILED);
         }
         //删除当前步骤
         QueryWrapper<TrackComplete> deleteWrapper = new QueryWrapper<>();
-        deleteWrapper.eq("is_current",1)
-                .eq("precharge_furnace_id",prechargeFurnaceId);
+        deleteWrapper.eq("is_current", 1)
+                .eq("precharge_furnace_id", prechargeFurnaceId);
         this.remove(deleteWrapper);
         //预装炉当前步骤、上步骤 、次数、开工状态赋值
         String currStep = null;
         String upStep = null;
         String number = null;
         QueryWrapper<TrackComplete> completeWrapper = new QueryWrapper<>();
-        completeWrapper.eq("precharge_furnace_id",prechargeFurnaceId)
+        completeWrapper.eq("precharge_furnace_id", prechargeFurnaceId)
                 .orderByDesc("complete_time");
         List<TrackComplete> completes = this.list(completeWrapper);
         Map<String, List<TrackComplete>> completeGroup = completes.stream().collect(Collectors.groupingBy(TrackComplete::getStepGroupId));
         List<List<TrackComplete>> stepGroupList = new ArrayList<>(completeGroup.values());
-        stepGroupList.sort((t1,t2)->t2.get(0).getCompleteTime().compareTo(t1.get(0).getCompleteTime()));
-        currStep = stepGroupList.size()>0?stepGroupList.get(0).get(0).getStep():null;
-        upStep = stepGroupList.size()>1?stepGroupList.get(1).get(0).getStep():null;
-        if(StringUtil.isEmpty(currStep)){
+        stepGroupList.sort((t1, t2) -> t2.get(0).getCompleteTime().compareTo(t1.get(0).getCompleteTime()));
+        currStep = stepGroupList.size() > 0 ? stepGroupList.get(0).get(0).getStep() : null;
+        upStep = stepGroupList.size() > 1 ? stepGroupList.get(1).get(0).getStep() : null;
+        if (StringUtil.isEmpty(currStep)) {
             number = "0";
-        }else{
+        } else {
             number = String.valueOf(getNumber(prechargeFurnaceId, currStep));
         }
         //修改预装炉信息
         UpdateWrapper<PrechargeFurnace> prechargeFurnaceUpdateWrapper = new UpdateWrapper<>();
-        prechargeFurnaceUpdateWrapper.eq("id",prechargeFurnaceId)
-                .set("curr_step",currStep)
-                .set("up_step",upStep)
-                .set("number",number)
-                .set(StringUtil.isEmpty(currStep),"furnace_no",null)
-                .set(StringUtil.isEmpty(currStep),"deal_furnace",null)
-                .set("step_status","0");
+        prechargeFurnaceUpdateWrapper.eq("id", prechargeFurnaceId)
+                .set("curr_step", currStep)
+                .set("up_step", upStep)
+                .set("number", number)
+                .set(StringUtil.isEmpty(currStep), "furnace_no", null)
+                .set(StringUtil.isEmpty(currStep), "deal_furnace", null)
+                .set("step_status", "0");
         //修改当前报工当前步骤信息
-        if(stepGroupList.size()>0){
+        if (stepGroupList.size() > 0) {
             List<String> completeIds = stepGroupList.get(0).stream().map(TrackComplete::getId).collect(Collectors.toList());
             UpdateWrapper<TrackComplete> trackCompleteUpdateWrapper = new UpdateWrapper<>();
-            trackCompleteUpdateWrapper.in("id",completeIds)
-                    .set("is_current","1");
+            trackCompleteUpdateWrapper.in("id", completeIds)
+                    .set("is_current", "1");
             this.update(trackCompleteUpdateWrapper);
         }
 
         return prechargeFurnaceService.update(prechargeFurnaceUpdateWrapper);
     }
-
-
 
 
 }

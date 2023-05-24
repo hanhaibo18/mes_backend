@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.controller.heat;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
@@ -9,6 +10,7 @@ import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zhiqiang.lu
@@ -37,6 +40,8 @@ public class PrechargeFurnaceController extends BaseController {
     @Autowired
     private TrackItemService trackItemService;
 
+
+
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
 
@@ -51,14 +56,14 @@ public class PrechargeFurnaceController extends BaseController {
     @ApiOperation(value = "装炉(热工)")
     @PostMapping("/furnace_charging_hot")
     public CommonResult furnaceChargingHot(@ApiParam(value = "保存信息", required = true) @RequestBody List<Assign> assignList,
-                                        @ApiParam(value = "材质", required = true) @RequestParam String texture) {
+                                        @ApiParam(value = "材质", required = false) @RequestParam String texture) {
         prechargeFurnaceService.furnaceChargingHot(assignList,texture);
         return CommonResult.success("装炉成功");
     }
 
     @ApiOperation(value = "预装炉删除")
     @PostMapping("/delete")
-    public CommonResult delete(@ApiParam(value = "预装炉ID", required = true) @RequestParam Long id) {
+    public CommonResult delete(@ApiParam(value = "预装炉ID", required = true) @RequestParam(value = "id") Long id) {
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(id);
         if (!PrechargeFurnace.STATE_WKG.equals(prechargeFurnace.getStatus())) {
             throw new GlobalException("只能删除未开工的预装炉", ResultCode.FAILED);
@@ -139,8 +144,9 @@ public class PrechargeFurnaceController extends BaseController {
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTexture())) {
             queryWrapper.eq("texture",dispatchingDto.getTexture());
         }
-
-
+        if (dispatchingDto.getId()!=null) {
+            queryWrapper.eq("id",dispatchingDto.getId());
+        }
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper));
     }
 
@@ -176,7 +182,35 @@ public class PrechargeFurnaceController extends BaseController {
 
     @ApiOperation(value = "冶炼配炉 根据材质查询派工列表")
     @GetMapping("/query_assign_by_texture")
-    public CommonResult<List> queryAssignByTexture(String texture,String branchCode) {
+    public CommonResult<List<TrackItem>> queryAssignByTexture(String texture, String branchCode) {
         return CommonResult.success(prechargeFurnaceService.queryAssignByTexture(texture,branchCode));
+    }
+
+    @ApiOperation(value = "配炉未派工列表查询")
+    @GetMapping("/assign_furnace_page_list")
+    public CommonResult<Page> assignFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType){
+        QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
+        prechargeFurnaceQueryWrapper.eq("branch_code",branchCode)
+                .eq(!ObjectUtil.isEmpty(id),"id",id)
+                .eq(!StringUtils.isNullOrEmpty(texture),"texture",texture)
+                .ge(!StringUtils.isNullOrEmpty(startTime),"date_format(create_time, '%Y-%m-%d')", startTime)
+                .le(!StringUtils.isNullOrEmpty(endTime),"date_format(create_time, '%Y-%m-%d')", endTime)
+                .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType);
+        return CommonResult.success(prechargeFurnaceService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper));
+    }
+
+    @ApiOperation(value = "配炉工序列表查询")
+    @GetMapping("/furnace_item_list")
+    public CommonResult<List> furnaceItemList(Long id){
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_current",1)
+                .eq("precharge_furnace_id",id);
+        return CommonResult.success(trackItemService.list(queryWrapper));
+    }
+
+    @ApiOperation(value = "配炉工序列表查询")
+    @GetMapping("/furnace_item_list_YL")
+    public CommonResult<List<TrackItem>> furnaceItemListYl(Long id) {
+        return CommonResult.success(prechargeFurnaceService.getItemsByPrechargeFurnace(id));
     }
 }

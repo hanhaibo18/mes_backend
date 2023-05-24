@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service.heat;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.model.produce.TrackItem;
 
 import java.util.List;
 
@@ -59,5 +60,9 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
 
     List totalWeightMolten(String branchCode);
 
-    List queryAssignByTexture(String texture,String branchCode);
+    List<TrackItem> queryAssignByTexture(String texture, String branchCode);
+
+    List<TrackItem> getItemsByPrechargeFurnace(Long id);
+
+
 }

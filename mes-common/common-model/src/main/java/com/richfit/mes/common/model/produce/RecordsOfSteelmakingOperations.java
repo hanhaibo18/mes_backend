@@ -51,43 +51,43 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     //配料总重（kg）
     private Double peiLiaoZongZhong;
     //工序1操作时间
-    private Date time1;
+    private String time1;
     //工序2操作时间
-    private Date time2;
+    private String time2;
     //工序3操作时间
-    private Date time3;
+    private String time3;
     //工序4操作时间
-    private Date time4;
+    private String time4;
     //工序5操作时间
-    private Date time5;
+    private String time5;
     //工序6操作时间
-    private Date time6;
+    private String time6;
     //工序7操作时间
-    private Date time7;
+    private String time7;
     //工序8操作时间
-    private Date time8;
+    private String time8;
     //工序9操作时间
-    private Date time9;
+    private String time9;
     //工序10操作时间
-    private Date time10;
+    private String time10;
     //工序11操作时间
-    private Date time11;
+    private String time11;
     //工序12操作时间
-    private Date time12;
+    private String time12;
     //工序13操作时间
-    private Date time13;
+    private String time13;
     //工序14操作时间
-    private Date time14;
+    private String time14;
     //工序15操作时间
-    private Date time15;
+    private String time15;
     //工序16操作时间
-    private Date time16;
+    private String time16;
     //工序17操作时间
-    private Date time17;
+    private String time17;
     //工序18操作时间
-    private Date time18;
+    private String time18;
     //工序19操作时间
-    private Date time19;
+    private String time19;
     //固体炉料低于20？0否1是
     private Integer time3Choice;
     //工序4钼铁添加量kg
@@ -99,7 +99,7 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     //工序6烟味是否变淡0否1是
     private Integer time6Choice;
     //工序6锰铁添加量kg
-    private Double time6Mengtie;
+    private Double time6MengTie;
     //工序6温度
     private Double time6Temperature;
     //工序7硅铝钡添加量kg
@@ -176,34 +176,35 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     /**
      * 操作者
      */
-    @ApiModelProperty(value = "班长", dataType = "String")
+    @ApiModelProperty(value = "操作人", dataType = "String")
     private String operator;
     /**
      * 操作时间
      */
-    @ApiModelProperty(value = "班长", dataType = "String")
-    private Date operatorTime;
+    @ApiModelProperty(value = "操作时间", dataType = "String")
+    private String operatorTime;
     /**
      * 审核员
      */
-    @ApiModelProperty(value = "班长", dataType = "String")
+    @ApiModelProperty(value = "审核人", dataType = "String")
     private String assessor;
     /**
      * 审核时间
      */
     @ApiModelProperty(value = "审核时间", dataType = "Date")
-    private Date assessorTime;
+    private String assessorTime;
     /**
      * 班长
      */
     @ApiModelProperty(value = "班长", dataType = "String")
     private String leader;
     @ApiModelProperty(value = "冶炼班组", dataType = "String")
-    private String group;
+    private String classGroup;
     @ApiModelProperty(value = "钢种", dataType = "String")
     private String typeOfSteel;
     @ApiModelProperty(value = "冶炼设备", dataType = "String")
     private String smeltingEquipment;
+    @TableField(exist = false)
     @ApiModelProperty(value = "锭型", dataType = "String")
     private String ingotCase;
 }

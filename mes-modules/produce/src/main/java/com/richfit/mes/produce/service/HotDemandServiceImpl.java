@@ -70,7 +70,6 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
     @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResult importDemand(MultipartFile file, String branchCode) {
-        CommonResult result = null;
         String submitOrderOrg = hotDemandService.getSubmitOrderOrg(branchCode, SecurityUtils.getCurrentUser());
         java.lang.reflect.Field[] fields = DemandExcel.class.getDeclaredFields();
 
@@ -124,7 +123,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 }
             }
             //查重
-            hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
+            //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             this.save(hotDemand);
             //demandList.add(hotDemand);
         }
@@ -177,7 +176,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             //0锻件,1铸件,2钢锭
             hotDemand.setWorkblankType("2");//冶炼
             //查重
-            hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
+            //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             demandList.add(hotDemand);
         }
         this.saveBatch(demandList);
@@ -455,6 +454,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setModifyBy(currentUser.getUsername());
                 plan.setModifyTime(new Date());
                 plan.setDrawNoName("");//图号名称
+                plan.setMaterialName(hotDemand.getDemandName());//零件名称
                 planService.save(plan);
                 //扩展字段保存
                 this.saveExtend(hotDemand, plan);
@@ -472,7 +472,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         //扩展字段保存
         PlanExtend planExtend = new PlanExtend();
             planExtend.setProjectName(hotDemand.getProjectName());//项目名称
-            planExtend.setProductName(hotDemand.getDemandName());//产品名称
+            planExtend.setProductName(hotDemand.getProductName());//产品名称
             planExtend.setSampleNum(0);//实样数量
             planExtend.setDemandId(hotDemand.getId());//需求表id
             planExtend.setPlanId(plan.getId());//生产计划id
@@ -537,7 +537,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             return CommonResult.failed("没有工艺信息");
         }
         List<String> routerIdList = byDrawNo.stream().map(x -> x.getId()).collect(Collectors.toList());
-        Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getDrawNo(), x -> x.getId()));
+        Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion(), x -> x.getId()));
+
         //根据工艺id查出工序信息
         List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList);
         if (CollectionUtils.isEmpty(sequences)) {
@@ -554,7 +555,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         ArrayList<String> demandIdList = new ArrayList<>();
         //根据需求信息自动生成生产计划数据
         for (HotDemand hotDemand : hotDemands) {
-            String s = routerIdMap.get(hotDemand.getDrawNo());
+            String s = routerIdMap.get(hotDemand.getDrawNo()+hotDemand.getVersionNum());
             //有工艺的情况下
             if (StringUtils.isNotEmpty(s)) {
                 List<Sequence> sequencesList = sequencesMap.get(s);

@@ -2,6 +2,7 @@ package com.richfit.mes.produce.entity;
 
 import com.richfit.mes.common.model.produce.*;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import lombok.Data;
 
 import java.util.List;
@@ -35,4 +36,8 @@ public class QueryWorkingTimeVo {
     private Knockout knockout;
     @ApiModelProperty(value = "造型/制芯工序报工信息", dataType = "ModelingCore")
     private ModelingCore modelingCore;
+    @ApiModelProperty(value = "炼钢作业记录", dataType = "RecordsOfSteelmakingOperations")
+    private RecordsOfSteelmakingOperations recordsOfSteelmakingOperations;
+    @ApiModelProperty(value = "浇注作业记录", dataType = "RecordsOfPourOperations")
+    private RecordsOfPourOperations recordsOfPourOperations;
 }

@@ -103,10 +103,10 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "所属机构")
     private String branchCode;
 
-    @ApiModelProperty(value = "加工车间")
+    @ApiModelProperty(value = "加工单位")
     private String inchargeOrg;
 
-    @ApiModelProperty(value = "加工车间名称")
+    @ApiModelProperty(value = "加工单位名称")
     private String inchargeOrgName;
 
     @ApiModelProperty(value = "状态  -1未发布 0未开始 1进行中 2关闭 3已完成")
@@ -166,6 +166,12 @@ public class Plan extends BaseEntity<Plan> {
 
     @ApiModelProperty(value = "总装承制单位")
     private String finalAssemblyContractorUnit;
+
+    @ApiModelProperty(value = "零件名称")
+    private String materialName;
+
+    @ApiModelProperty(value = "加工车间 ", dataType = "String")
+    private String inchargeWorkshop;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "工艺状态")
