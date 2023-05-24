@@ -2,7 +2,6 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
-import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Component;
@@ -69,6 +68,12 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
+    public CommonResult<List<Router>> getRouterByIdAndBranchCode(List<String> routerIds) {
+        return null;
+    }
+
+    @GetMapping("/api/base/router/getByRouter")
+    @Override
     public CommonResult<Router> getByRouterId(String routerId, String branchCode) {
         return CommonResult.success(null);
     }
@@ -78,10 +83,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return CommonResult.success(null);
     }
 
-    @Override
-    public CommonResult<List<Router>> getByRouterId(List<String> idList) {
-        return CommonResult.success(null);
-    }
+
 
     @Override
     public CommonResult<List<Operatipon>> find(String id, String optCode, String optName, String routerId, String branchCode, String tenantId) {
@@ -204,7 +206,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
-    @GetMapping("/api/base/sequence/query_by_routerIds")
+    @PostMapping("/api/base/sequence/query_by_routerIds")
     @Override
     public List<Sequence> querySequenceByRouterIds(List<String> routerIds) {
         return null;
@@ -231,11 +233,6 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Product>> selectConditionProduct(ProductTypeDto productTypeDto) {
-        return null;
-    }
-
-    @Override
     public Branch getBranchInfoByBranchCode(String branchCode) {
         return null;
     }
@@ -251,7 +248,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public List<Branch> queryAllBranchInner() {
+    public List<Branch> queryAllBranchInner(String header) {
         return null;
     }
 

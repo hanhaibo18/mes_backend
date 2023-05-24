@@ -26,7 +26,7 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     private Integer type;
     @ApiModelProperty(value = "设备编号", dataType = "String")
     private String equipmentNo;
-    @ApiModelProperty(value = "审核状态 0 未通过  1 通过", dataType = "Integer")
+    @ApiModelProperty(value = "审核状态 0 未审核  1 通过,2 未通过", dataType = "Integer")
     private Integer auditStatus;
     @ApiModelProperty(value = "附件记录id", dataType = "String")
     private String attachmentId;
@@ -42,6 +42,8 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     protected Date recordTime;
     @ApiModelProperty(value = "文件id", dataType = "String")
     private String fileId;
+    @ApiModelProperty(value = "最大壁厚", dataType = "String")
+    private String maxThickness;
     @ApiModelProperty(value = "开始时间", dataType = "String")
     @TableField(exist = false)
     private String startTime;

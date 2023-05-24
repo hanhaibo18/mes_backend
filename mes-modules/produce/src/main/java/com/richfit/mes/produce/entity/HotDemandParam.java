@@ -34,7 +34,7 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
     /**
      * 名称
      */
-    @ApiModelProperty(value = "名称 ", dataType = "String")
+    @ApiModelProperty(value = "零件名称 ", dataType = "String")
     private String demandName;
 
     /**

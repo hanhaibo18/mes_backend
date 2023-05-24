@@ -1,7 +1,6 @@
 package com.richfit.mes.produce.service;
 
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -34,7 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -299,7 +301,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
         Assign assign = trackAssignService.getOne(queryWrapper);
         IngredientApplicationDto ingredient = new IngredientApplicationDto();
         //申请单号保持唯一
-        int number = numberService.queryApplicationNumber(trackItem.getId());
+        Long number = numberService.queryApplicationNumber(trackItem.getId());
         QueryWrapper<RequestNote> queryWrapperNote = new QueryWrapper<>();
         queryWrapperNote.likeRight("request_note_number", number);
         int count = requestNoteService.count(queryWrapperNote);

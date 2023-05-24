@@ -178,9 +178,9 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
     private String getBranchCode(String userName) {
         if (null == SecurityUtils.getCurrentUser()) {
             CommonResult<TenantUserVo> userAccountInner = systemServiceClient.queryByUserAccountInner(userName, SecurityConstants.FROM_INNER);
-            List<Branch> branchList = baseServiceClient.queryAllBranchInner();
+            List<Branch> branchList = baseServiceClient.queryAllBranchInner(SecurityConstants.FROM_INNER);
             for (Branch branch : branchList) {
-                if (userAccountInner.getData().getBelongOrgId().contains(branch.getBranchCode())) {
+                if (userAccountInner.getData().getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
                     return branch.getBranchCode();
                 }
             }
@@ -188,7 +188,7 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
             CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(userName);
             List<Branch> branchList = baseServiceClient.queryAllBranch();
             for (Branch branch : branchList) {
-                if (userAccount.getData().getBelongOrgId().contains(branch.getBranchCode())) {
+                if (userAccount.getData().getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
                     return branch.getBranchCode();
                 }
             }
@@ -268,12 +268,10 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         if (order.getTenantId().equals("12345678901234567890123456789002")) {
             String branchCode = getBranchCode(order.getCreateBy());
             if (StrUtil.isBlank(branchCode)) {
-                log.setSyncState("0");
-                log.setOpinion("未查询到车间信息,不进行同步");
-                orderLogService.save(log);
-                return false;
+                order.setBranchCode("BOMCO_BF_BY");
+            } else {
+                order.setBranchCode(branchCode);
             }
-            order.setBranchCode(branchCode);
         }
         //通过判断同步状态为1
         log.setSyncState("1");

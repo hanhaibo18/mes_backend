@@ -48,4 +48,6 @@ public class CompleteDto {
     private Knockout knockout;
     @ApiModelProperty(value = "造型/制芯工序报工信息", dataType = "ModelingCore")
     private ModelingCore modelingCore;
+    @ApiModelProperty(value = "下工序装炉", dataType = "Boolean")
+    private Boolean nextFurnace;
 }

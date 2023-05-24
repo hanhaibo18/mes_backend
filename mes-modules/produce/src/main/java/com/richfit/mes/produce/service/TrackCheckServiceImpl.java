@@ -126,7 +126,7 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
                 queryWrapper.eq("is_recheck", 1);
             } else if (Boolean.FALSE.equals(isRecheck)) {
                 //未质检
-                queryWrapper.eq("is_quality_complete", 0);
+                queryWrapper.and(wrapper -> wrapper.eq("is_quality_complete", 0).or().eq("opt_type", 5));
                 queryWrapper.and(wrapper -> wrapper.isNull("is_recheck").or().eq("is_recheck", 0));
             }
             //是否质检
@@ -135,7 +135,7 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
                 queryWrapper.and(wrapper -> wrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername()).or(wrapper1 -> wrapper1.eq("quality_check_by", "/").eq("branch_code", branchCode)));
                 queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
             }
-            queryWrapper.or(wrapper -> wrapper.eq("opt_type", 5).eq("is_current", 1).eq("branch_code", branchCode));
+            queryWrapper.eq("is_current", 1);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
             for (TrackItem item : assigns.getRecords()) {

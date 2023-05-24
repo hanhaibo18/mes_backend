@@ -116,22 +116,32 @@ public class NormalizeDehydroRecordController extends BaseController {
     @ApiOperation(value = "正火去氢工序控审核", notes = "正火去氢工序控审核")
     @PostMapping("/auditNormalizeDehydroRecord")
     public CommonResult<Boolean> auditNormalizeDehydroRecord(@ApiParam(value = "idList") @RequestBody List<String> idList,
-                                                             @ApiParam(value = "审核状态 0 未通过  1 通过",required = true)@RequestParam Integer status) {
+                                                             @ApiParam(value = "审核状态  0 未审核  1 通过,2 未通过",required = true)@RequestParam Integer status) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         UpdateWrapper<NormalizeDehydroRecord> updateWrapper=new UpdateWrapper<>();
         updateWrapper.in("id",idList);
         updateWrapper.set("audit_status",status);
+        updateWrapper.set("audit_by",currentUser.getUsername());
+        updateWrapper.set("audit_time",new Date());
+
+        //查出审核的装炉记录
+        QueryWrapper<NormalizeDehydroRecord> queryWrapper=new QueryWrapper();
+        queryWrapper.in("id",idList);
+        List<NormalizeDehydroRecord> list = normalizeDehydroRecordService.list(queryWrapper);
         if(status==1){
-            //修改装炉为已审核
-            QueryWrapper<NormalizeDehydroRecord> queryWrapper=new QueryWrapper();
-            queryWrapper.in("id",idList);
-            List<NormalizeDehydroRecord> list = normalizeDehydroRecordService.list();
             if(CollectionUtils.isNotEmpty(list)){
                 for (NormalizeDehydroRecord normalizeDehydroRecord : list) {
-                    //同步装炉记录状态
-                    prechargeFurnaceService.updateRecordStatus(Long.valueOf(normalizeDehydroRecord.getFurnaceId()),"3");
+                    //根据装炉记录同步装炉中是记录状态  审核通过
+                    prechargeFurnaceService.updateRecordStatus(Long.valueOf(normalizeDehydroRecord.getFurnaceId()),"1");
                 }
             }
-
+        }else if(status==2){
+            if(CollectionUtils.isNotEmpty(list)){
+                for (NormalizeDehydroRecord normalizeDehydroRecord : list) {
+                    //根据装炉记录同步装炉中是记录状态  审核通过
+                    prechargeFurnaceService.updateRecordStatus(Long.valueOf(normalizeDehydroRecord.getFurnaceId()),"2");
+                }
+            }
         }
         return CommonResult.success(normalizeDehydroRecordService.update(updateWrapper));
     }

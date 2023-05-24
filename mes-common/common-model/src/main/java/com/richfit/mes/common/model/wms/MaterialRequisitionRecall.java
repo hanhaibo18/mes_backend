@@ -17,9 +17,24 @@ public class MaterialRequisitionRecall implements Serializable {
     private String applyId;
 
     /**
-     * MES领料单行项目ID
+     * MES领料单编号
      */
-    private String applyLineId;
+    private String applyNum;
+
+    /**
+     * 操作人
+     */
+    private String returnUser;
+
+    /**
+     * 操作时间
+     */
+    private String returnDate;
+
+    /**
+     * 备注
+     */
+    private String remark;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

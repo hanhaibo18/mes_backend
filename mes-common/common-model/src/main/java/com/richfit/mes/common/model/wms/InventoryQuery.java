@@ -11,11 +11,6 @@ import java.io.Serializable;
 @Data
 public class InventoryQuery implements Serializable {
     /**
-     * 库存ID
-     */
-    private String id;
-
-    /**
      * 工厂
      */
     private String workCode;
@@ -26,29 +21,9 @@ public class InventoryQuery implements Serializable {
     private String invCode;
 
     /**
-     * 物料组
-     */
-    private String materialGroup;
-
-    /**
      * 物料编码
      */
     private String materialNum;
-
-    /**
-     * 物料描述
-     */
-    private String materialDesc;
-
-    /**
-     * 计量单位
-     */
-    private String unit;
-
-    /**
-     * 库存数量
-     */
-    private String invQuantity;
 
     /**
      * 库存类型  正式/在途/无参考
@@ -59,11 +34,6 @@ public class InventoryQuery implements Serializable {
      * 工作号
      */
     private String jobNo;
-
-    /**
-     * 仓位
-     */
-    private String location;
 
     //图号
     @TableField(exist = false)

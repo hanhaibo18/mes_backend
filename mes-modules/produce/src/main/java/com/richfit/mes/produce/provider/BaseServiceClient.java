@@ -2,7 +2,6 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
-import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
@@ -57,6 +56,9 @@ public interface BaseServiceClient {
     @GetMapping(value = "/api/base/router/getRouter")
     public CommonResult<Router> getRouter(@RequestParam("routerId") String routerId);
 
+    @PostMapping(value = "/api/base/router/getRouterByIdAndBranchCode")
+    public CommonResult<List<Router>> getRouterByIdAndBranchCode(@RequestBody List<String> routerIds);
+
     @GetMapping(value = "/api/base/router/getByRouter")
     public CommonResult<Router> getByRouterId(@RequestParam("routerId") String routerId,
                                               @RequestParam("branchCode") String branchCode
@@ -67,14 +69,6 @@ public interface BaseServiceClient {
                                                      @RequestParam("branchCode") String branchCode
     );
 
-    /**
-     * 根据idList获得工艺
-     *
-     * @param idList
-     * @return
-     */
-    @PostMapping("/api/base/router/getByIds")
-    public CommonResult<List<Router>> getByRouterId(@RequestBody List<String> idList);
 
     @GetMapping(value = "/api/base/opt/find")
     public CommonResult<List<Operatipon>> find(@RequestParam("id") String id, @RequestParam("optCode") String optCode, @RequestParam("optName") String optName, @RequestParam("routerId") String routerId, @RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
@@ -223,7 +217,7 @@ public interface BaseServiceClient {
     public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode);
 
 
-    @GetMapping("/api/base/sequence/query_by_routerIds")
+    @PostMapping("/api/base/sequence/query_by_routerIds")
     public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds);
 
     /**
@@ -232,7 +226,7 @@ public interface BaseServiceClient {
      * @Author: hujia
      **/
     @ApiOperation(value = "根据id查询工序字典列表", notes = "根据id查询工序字典列表")
-    @GetMapping("/api/base/opt/queryOptByIds")
+    @PostMapping("/api/base/opt/queryOptByIds")
     List<Operatipon> queryOptByIds(@ApiParam(value = "工序字典idList") @RequestBody List<String> optIds);
 
     @PostMapping("/api/base/project_bom/bindingBom")
@@ -245,10 +239,6 @@ public interface BaseServiceClient {
     @PostMapping("/api/base/project_bom/getBomListByMainBomId")
     public List<ProjectBom> getBomListByMainBomId(@RequestParam String id);
 
-    @ApiOperation(value = "通过条件查询物料信息")
-    @PostMapping("/api/base/product/select_condition_product")
-    public CommonResult<List<Product>> selectConditionProduct(@RequestBody ProductTypeDto productTypeDto);
-
     @ApiOperation(value = "根据branchCode获取机构信息")
     @GetMapping("/api/base/branch/getBranchInfoByBranchCode")
     public Branch getBranchInfoByBranchCode(@RequestParam String branchCode);
@@ -258,11 +248,11 @@ public interface BaseServiceClient {
     public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status, @RequestParam String testBar, @RequestParam String texture);
 
     @ApiOperation(value = "获取所有车间")
-    @GetMapping("/query_all_branch")
+    @GetMapping("/api/base/branch/query_all_branch")
     public List<Branch> queryAllBranch();
 
     @ApiOperation(value = "获取所有车间Inner")
-    @GetMapping("/query_all_branch_inner")
-    public List<Branch> queryAllBranchInner();
+    @GetMapping("/api/base/branch/query_all_branch_inner")
+    public List<Branch> queryAllBranchInner(@RequestHeader(value = SecurityConstants.FROM) String header);
 
 }
