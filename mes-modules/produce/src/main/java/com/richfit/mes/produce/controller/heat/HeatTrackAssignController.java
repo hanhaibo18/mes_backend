@@ -94,7 +94,7 @@ public class HeatTrackAssignController extends BaseController {
         return CommonResult.success(heatTrackAssignService.assignItem(assign), "操作成功！");
     }
 
-    @ApiOperation(value = "热工铸钢车间派工查询", notes = "热工铸钢车间派工查询")
+    @ApiOperation(value = "热工车间派工查询", notes = "热工车间派工查询")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "trackNo", value = "跟单号", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "drawingNo", value = "图号", dataType = "String", paramType = "query"),
@@ -109,6 +109,8 @@ public class HeatTrackAssignController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "order", value = "排序类型", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "orderCol", value = "排序字段", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "materialName", value = "", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "state", value = "", dataType = "String", paramType = "query")
     })
