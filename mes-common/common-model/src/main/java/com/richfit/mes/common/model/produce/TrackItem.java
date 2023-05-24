@@ -133,7 +133,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "开工时间", dataType = "Date")
     private Date startDoingTime;
-    @ApiModelProperty(value = "当前工序是否完成", dataType = "Integer")
+    @ApiModelProperty(value = "当前工序是否报工", dataType = "Integer")
     private Integer isOperationComplete;
     /**
      * 完工时间
