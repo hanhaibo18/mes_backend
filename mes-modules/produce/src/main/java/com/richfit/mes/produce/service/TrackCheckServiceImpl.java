@@ -117,25 +117,21 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
     }
 
     @Override
-    public CommonResult<IPage<TrackItem>> queryQualityPage(int page, int limit, String branchCode, String isExistQualityCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol) {
+    public CommonResult<IPage<TrackItem>> queryQualityPage(int page, int limit, String branchCode, int isExistQualityCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol) {
         try {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
             publicQuery(isScheduleComplete, startTime, endTime, trackNo, productNo, tenantId, drawingNo, queryWrapper);
             //复检
             if (Boolean.TRUE.equals(isRecheck)) {
+                queryWrapper.eq("is_quality_complete", 1);
                 queryWrapper.eq("is_recheck", 1);
             } else if (Boolean.FALSE.equals(isRecheck)) {
                 //未质检
                 queryWrapper.eq("is_quality_complete", 0);
                 queryWrapper.and(wrapper -> wrapper.isNull("is_recheck").or().eq("is_recheck", 0));
             }
-            //是否质检
-            if (!StringUtils.isNullOrEmpty(isExistQualityCheck)) {
-                //质检页面只查询指派给自己的质检信息
-                queryWrapper.and(wrapper -> wrapper.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername()).or(wrapper1 -> wrapper1.eq("quality_check_by", "/").eq("branch_code", branchCode)));
-                queryWrapper.eq("is_exist_quality_check", Integer.parseInt(isExistQualityCheck));
-            }
-            queryWrapper.or(wrapper -> wrapper.eq("opt_type", 5).eq("is_current", 1).eq("branch_code", branchCode));
+            queryWrapper.and(wrapper -> wrapper.and(w -> w.eq("is_exist_quality_check", isExistQualityCheck).eq("is_operation_complete", 1).and(w2 -> w2.eq("quality_check_by", SecurityUtils.getCurrentUser().getUsername()).or(wrapper1 -> wrapper1.eq("quality_check_by", "/").eq("branch_code", branchCode)))).or(w3 -> w3.eq("opt_type", 5).eq("branch_code", branchCode)));
+            queryWrapper.eq("is_current", 1);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
             for (TrackItem item : assigns.getRecords()) {
@@ -245,10 +241,5 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
             calendar.add(Calendar.DAY_OF_MONTH, 1);
             queryWrapper.apply("UNIX_TIMESTAMP(modify_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
         }
-        //增加工序过滤
-//        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
-        queryWrapper.eq("is_doing", 2);
-        queryWrapper.eq("is_operation_complete", 1);
     }
-
 }

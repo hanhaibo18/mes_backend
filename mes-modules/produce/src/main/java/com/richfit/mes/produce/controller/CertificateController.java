@@ -12,10 +12,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.code.CertTypeEnum;
-import com.richfit.mes.common.model.produce.Certificate;
-import com.richfit.mes.common.model.produce.TrackCertificate;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -60,6 +57,29 @@ public class CertificateController {
     public TrackItemService trackItemService;
     @Autowired
     public CodeRuleService codeRuleService;
+
+    @ApiOperation(value = "生成合格证", notes = "生成合格证")
+    @GetMapping("/auto")
+    public void addCertificate() throws Exception {
+        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("template_code", "BOMCO_BY_ZPG1");
+        queryWrapper.eq("tenant_id", "12345678901234567890123456789002");
+        queryWrapper.ge("create_time", "2023-04-01 00:00:00");
+        queryWrapper.isNull("certificate_no");
+        queryWrapper.isNotNull("product_no");
+        List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
+        System.out.println("----------------------");
+        System.out.println(trackHeadList.size());
+        int i = 0;
+        for (TrackHead trackHead : trackHeadList) {
+            try {
+                System.out.println("----------------------" + i++);
+                certificateService.autoCertificate(trackHead);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
