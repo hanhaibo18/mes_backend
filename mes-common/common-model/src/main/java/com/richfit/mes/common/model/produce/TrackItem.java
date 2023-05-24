@@ -488,7 +488,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "工艺浇注温度")
     @TableField(exist = false)
-    private Double pourTemperatureRouter;
+    private String pourTemperatureRouter;
 
     @ApiModelProperty(value = "浇注时间 单位秒")
     private String pourTime;
@@ -518,5 +518,13 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "是否冶炼配炉::是；否")
     @TableField(exist = false)
     private String ifPrechargeFurnace;
+
+    @ApiModelProperty(value = "派工id")
+    @TableField(exist = false)
+    private String assignId;
+
+    @ApiModelProperty(value = "根据材质和锭型进行分组后的数量")
+    @TableField(exist = false)
+    private Integer numByTexture;
 
 }

@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zhiqiang.lu
@@ -39,6 +40,8 @@ public class PrechargeFurnaceController extends BaseController {
     @Autowired
     private TrackItemService trackItemService;
 
+
+
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
 
@@ -53,14 +56,14 @@ public class PrechargeFurnaceController extends BaseController {
     @ApiOperation(value = "装炉(热工)")
     @PostMapping("/furnace_charging_hot")
     public CommonResult furnaceChargingHot(@ApiParam(value = "保存信息", required = true) @RequestBody List<Assign> assignList,
-                                        @ApiParam(value = "材质", required = true) @RequestParam String texture) {
+                                        @ApiParam(value = "材质", required = false) @RequestParam String texture) {
         prechargeFurnaceService.furnaceChargingHot(assignList,texture);
         return CommonResult.success("装炉成功");
     }
 
     @ApiOperation(value = "预装炉删除")
     @PostMapping("/delete")
-    public CommonResult delete(@ApiParam(value = "预装炉ID", required = true) @RequestParam Long id) {
+    public CommonResult delete(@ApiParam(value = "预装炉ID", required = true) @RequestParam(value = "id") Long id) {
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(id);
         if (!PrechargeFurnace.STATE_WKG.equals(prechargeFurnace.getStatus())) {
             throw new GlobalException("只能删除未开工的预装炉", ResultCode.FAILED);
@@ -204,4 +207,9 @@ public class PrechargeFurnaceController extends BaseController {
         return CommonResult.success(trackItemService.list(queryWrapper));
     }
 
+    @ApiOperation(value = "配炉工序列表查询")
+    @GetMapping("/furnace_item_list_YL")
+    public CommonResult<List<TrackItem>> furnaceItemListYl(Long id) {
+        return CommonResult.success(prechargeFurnaceService.getItemsByPrechargeFurnace(id));
+    }
 }

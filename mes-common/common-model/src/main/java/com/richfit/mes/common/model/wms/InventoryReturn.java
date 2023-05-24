@@ -3,11 +3,13 @@ package com.richfit.mes.common.model.wms;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * MES实时查询WMS库存 返回对象
  */
 @Data
-public class InventoryReturn {
+public class InventoryReturn implements Serializable {
 
     /**
      * 库存类型
@@ -95,4 +97,6 @@ public class InventoryReturn {
     @TableField(exist = false)
     private String texture;
 
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
 }

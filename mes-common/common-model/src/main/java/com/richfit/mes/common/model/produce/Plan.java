@@ -167,6 +167,9 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "总装承制单位")
     private String finalAssemblyContractorUnit;
 
+    @ApiModelProperty(value = "零件名称")
+    private String materialName;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "工艺状态")
     private Integer processStatus;

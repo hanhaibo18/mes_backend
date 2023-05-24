@@ -446,7 +446,7 @@ public class TrackAssignController extends BaseController {
         //id
         applyListUpload.setId(UUID.randomUUID().toString().replace("-", ""));
         //申请单号
-        int applicationNumber = numberService.acquireApplicationNumber(trackItem.getId(), branchCode);
+        Long applicationNumber = numberService.acquireApplicationNumber(trackItem.getId(), branchCode);
         applyListUpload.setApplyNum(applicationNumber + "@0");
         // 单据类型
         applyListUpload.setTransType(null);
@@ -522,7 +522,7 @@ public class TrackAssignController extends BaseController {
         //组装申请单信息
         IngredientApplicationDto ingredient = new IngredientApplicationDto();
         //申请单号
-        int applicationNumber = numberService.acquireApplicationNumber(trackItem.getId(), branchCode);
+        Long applicationNumber = numberService.acquireApplicationNumber(trackItem.getId(), branchCode);
         ingredient.setSqd(applicationNumber + "@0");
         //工厂编码
         ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());

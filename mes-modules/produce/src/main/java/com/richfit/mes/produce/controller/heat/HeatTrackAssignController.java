@@ -109,11 +109,12 @@ public class HeatTrackAssignController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "order", value = "排序类型", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "orderCol", value = "排序字段", dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "state", value = "", dataType = "String", paramType = "query")
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes) throws ParseException {
+            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes,String state) throws ParseException {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
@@ -139,11 +140,6 @@ public class HeatTrackAssignController extends BaseController {
         queryWrapper.eq(!StringUtils.isNullOrEmpty(workNo),"work_no", workNo);
         queryWrapper.ne("is_schedule", 1);
 
-        if("4".equals(classes) || "6".equals(classes) || "7".equals(classes)){
-            queryWrapper.ne("opt_type","14")
-                    .ne("opt_type","13");
-        }
-
         //排序
         if (StringUtils.isNullOrEmpty(orderCol)) {
             queryWrapper.orderByDesc(new String[]{"modify_time", "sequence_order_by"});
@@ -154,7 +150,17 @@ public class HeatTrackAssignController extends BaseController {
             OrderUtil.query(queryWrapper, orderCol, StringUtils.isNullOrEmpty(order)?"desc":order);
         }
 
+        //查询未配炉
+        if ("0".equals(state)) {
+            queryWrapper.isNull("precharge_furnace_assign_id");
+        }
+
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
+
+        //根据材质和锭型进行分组
+        Map<String, Map<String, List<TrackItem>>> collect = pageAssignsHot.getRecords().stream().collect(
+                Collectors.groupingBy(e -> Optional.ofNullable(e.getTexture()).orElse("null"),
+                        Collectors.groupingBy(e -> Optional.ofNullable(e.getIngotCase()).orElse("null"))));
         for (TrackItem data : pageAssignsHot.getRecords()) {
             //默认未配送
             data.setApplyStatus(0);
@@ -179,7 +185,12 @@ public class HeatTrackAssignController extends BaseController {
             }else{
                 data.setApplyStatus(modelApplyList.get(0).getApplyStatus());
             }
-
+            //根据材质和锭型获取数量
+            if (!StringUtils.isNullOrEmpty(data.getTexture()) && !StringUtils.isNullOrEmpty(data.getIngotCase())) {
+                data.setNumByTexture(collect.get(data.getTexture()).get(data.getIngotCase()).size());
+            } else {
+                data.setNumByTexture(0);
+            }
         }
 
         return CommonResult.success(pageAssignsHot, "操作成功！");

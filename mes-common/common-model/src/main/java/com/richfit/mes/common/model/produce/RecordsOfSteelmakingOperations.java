@@ -176,17 +176,17 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     /**
      * 操作者
      */
-    @ApiModelProperty(value = "班长", dataType = "String")
+    @ApiModelProperty(value = "操作人", dataType = "String")
     private String operator;
     /**
      * 操作时间
      */
-    @ApiModelProperty(value = "班长", dataType = "String")
+    @ApiModelProperty(value = "操作时间", dataType = "String")
     private String operatorTime;
     /**
      * 审核员
      */
-    @ApiModelProperty(value = "班长", dataType = "String")
+    @ApiModelProperty(value = "审核人", dataType = "String")
     private String assessor;
     /**
      * 审核时间

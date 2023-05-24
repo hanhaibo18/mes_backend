@@ -36,7 +36,7 @@ public class HotDemand extends BaseEntity<HotDemand> implements Serializable {
     /**
      * 名称
      */
-    @ApiModelProperty(value = "名称 ", dataType = "String")
+    @ApiModelProperty(value = "零件名称 ", dataType = "String")
     private String demandName;
 
     /**

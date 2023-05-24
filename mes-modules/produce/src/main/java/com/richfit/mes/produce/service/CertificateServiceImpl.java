@@ -87,6 +87,10 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         if (!"2".equals(trackHead.getClasses()) && !"BOMCO_BY_ZPG1".equals(trackHead.getTemplateCode())) {
             return true;
         }
+        //开具合格证校验
+        if (StrUtil.isBlank(trackHead.getProductNo())) {
+            throw new Exception("当前跟单没有产品编码，请先补齐信息");
+        }
         TenantUserDetails user = SecurityUtils.getCurrentUser();
         Certificate certificate = new Certificate();
         certificate.setBranchCode(trackHead.getBranchCode());

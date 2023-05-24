@@ -72,6 +72,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @GetMapping("/api/base/router/getByRouter")
     @Override
     public CommonResult<Router> getByRouterId(String routerId, String branchCode) {
         return CommonResult.success(null);
@@ -82,10 +83,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return CommonResult.success(null);
     }
 
-    @Override
-    public CommonResult<List<Router>> getByRouterId(List<String> idList) {
-        return CommonResult.success(null);
-    }
+
 
     @Override
     public CommonResult<List<Operatipon>> find(String id, String optCode, String optName, String routerId, String branchCode, String tenantId) {

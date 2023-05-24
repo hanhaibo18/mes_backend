@@ -319,23 +319,7 @@ public class RouterController extends BaseController {
         }
 
     }
-    @ApiOperation(value = "根据idList获得工艺", notes = "根据idList获得工艺")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "idList", value = "根据idList获得工艺", required = true, dataType = "idList", paramType = "query")
-    })
-    @PostMapping("/getByIds")
-    public CommonResult<List<Router>> getByRouterId(@RequestBody List<String> idList) {
-        QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-        if (CollectionUtils.isNotEmpty(idList)) {
-            queryWrapper.in("id", idList);
-        }
-        List<Router> routers = routerService.list(queryWrapper);
-        if (routers.size() > 0) {
-            return CommonResult.success(routers, "操作成功！");
-        } else {
-            return CommonResult.success(null, "操作成功！");
-        }
-    }
+
     @ApiOperation(value = "查询工艺", notes = "根据ID获得工艺")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),

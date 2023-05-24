@@ -1,6 +1,7 @@
 package com.richfit.mes.common.model.produce;
 
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -148,4 +149,7 @@ public class TrackCompleteCache extends BaseEntity<TrackCompleteCache> {
      * 权重
      */
     private Double ratioHours;
+
+    @ApiModelProperty(value = "钢水重量", dataType = "String")
+    private String weightMolten;
 }

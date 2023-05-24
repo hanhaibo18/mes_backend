@@ -1,8 +1,10 @@
 package com.richfit.mes.produce.service.heat;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -10,11 +12,13 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.TrackItemService;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +39,8 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMapper, PrechargeFurnace> implements PrechargeFurnaceService {
 
+    @Autowired
+    private TrackHeadMapper trackHeadMapper;
 
     @Autowired
     private TrackItemService trackItemService;
@@ -102,6 +108,29 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         return trackAssignMapper.getPageAssignsHot(trackItemQueryWrapper);
     }
 
+    @Override
+    public List<TrackItem> getItemsByPrechargeFurnace(Long id) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_current", 1)
+                .eq("precharge_furnace_id", id);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        for (TrackItem trackItem : list) {
+            //查询跟单信息
+            LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            trackHeadLambdaQueryWrapper.eq(TrackHead::getId, trackItem.getTrackHeadId());
+            TrackHead trackHead = trackHeadMapper.selectOne(trackHeadLambdaQueryWrapper);
+            trackItem.setTexture(trackHead.getTexture());
+            trackItem.setWorkNo(trackHead.getWorkNo());
+            trackItem.setProductName(trackHead.getProductName());
+            trackItem.setPriority(trackHead.getPriority());
+            //查询工艺信息
+            Router data = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
+            trackItem.setPieceWeight(Objects.nonNull(data) ? data.getPieceWeight() : "");
+            trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
+        }
+        return list;
+    }
+
     /**
      *
      * @param assignList
@@ -117,7 +146,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         prechargeFurnace.setSiteId(assignList.get(0).getSiteId());
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
         prechargeFurnace.setTexture(texture);
-        prechargeFurnace.setRecordStatus("1");
+        prechargeFurnace.setRecordStatus("0");
         this.save(prechargeFurnace);
         for (Assign assign : assignList) {
             //跟单工序添加装炉id
@@ -167,7 +196,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             }
         }
         //设置工艺数据
-        setRouter(assigns);
+        if (CollectionUtils.isNotEmpty(assigns)){
+            setRouter(assigns);
+        }
         return assigns;
     }
 
@@ -178,7 +209,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     private void setRouter(List<Assign> assigns) {
         List<String> routerIdList = assigns.stream().map(x -> x.getRouterId()).collect(Collectors.toList());
         //根据需求图号查询工艺库
-        CommonResult<List<Router>> byDrawNo = baseServiceClient.getByRouterId(routerIdList);
+        List<String> routerIdAndBranchCodeList =new ArrayList<>(assigns.stream().map(x -> x.getRouterId() + "_" + x.getBranchCode()).collect(Collectors.toSet()));
+        CommonResult<List<Router>> byDrawNo = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList);
         //工艺库数据
         Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
         for (Assign assign : assigns) {

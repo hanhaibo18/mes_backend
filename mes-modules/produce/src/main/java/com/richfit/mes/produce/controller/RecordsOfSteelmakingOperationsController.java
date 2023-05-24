@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -99,6 +100,16 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
         }
     }
 
+    @ApiOperation(value = "导出炼钢记录excel", notes = "导出炼钢记录excel")
+    @GetMapping("/export")
+    public void export(@ApiParam(value = "作业单编号") String recordNo,
+                       @ApiParam(value = "预装炉id") Long prechargeFurnaceId,
+                       @ApiParam(value = "炉号") String furnaceNo,
+                       @ApiParam(value = "钢种") String typeOfSteel,
+                       @ApiParam(value = "冶炼设备") String smeltingEquipment,
+                       String startTime, String endTime, @ApiParam(value = "审核状态") Integer status, HttpServletResponse response) {
+        recordsOfSteelmakingOperationsService.export(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, response);
+    }
 
 }
 
