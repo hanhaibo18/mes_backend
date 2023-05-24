@@ -103,7 +103,7 @@ public class PrechargeFurnace {
 
     @ApiModelProperty(value = "租户ID", dataType = "Integer")
     private String tenantId;
-    @ApiModelProperty(value = "派工状态", dataType = "Integer")
+    @ApiModelProperty(value = "派工状态::0:未派工，1::已派工", dataType = "Integer")
     private Integer assignStatus;
     @ApiModelProperty(value = "数量", dataType = "Integer")
     private Integer num;
