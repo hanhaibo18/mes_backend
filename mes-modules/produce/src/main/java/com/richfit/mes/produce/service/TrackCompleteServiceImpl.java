@@ -423,7 +423,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             QueryWrapper<TrackCompleteCache> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("ti_id", completeDto.getTiId());
             double number = 0.00;
-            double time = 0.00;
+            BigDecimal time = new BigDecimal(0);
             for (TrackComplete trackComplete : completeDto.getTrackCompleteList()) {
                 //验证输入值是否合法
 //                String s = this.verifyTrackComplete(trackComplete, trackItem, companyCode);
@@ -443,7 +443,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackComplete.setDetectionResult("-");
                 trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 number += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
-                time += trackComplete.getReportHours() == null ? 0.00 : trackComplete.getReportHours();
+                time = time.add(new BigDecimal(trackComplete.getReportHours() == null ? 0.00 : trackComplete.getReportHours()));
             }
             Assign assign = trackAssignService.getById(completeDto.getAssignId());
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
@@ -458,7 +458,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 }
                 //校验数量X单间额定工时 = 报工工时
                 //单件工时*报工总数 != 上报总工时
-                if (trackItem.getSinglePieceHours() * number != time) {
+                BigDecimal zjgs = new BigDecimal(trackItem.getSinglePieceHours() * number);
+                if (!zjgs.setScale(2, BigDecimal.ROUND_HALF_UP).equals(time.setScale(2, BigDecimal.ROUND_HALF_UP))) {
                     throw new GlobalException("报工总数乘单件工时与上报总工时数值不匹配", ResultCode.FAILED);
                 }
                 //跟新工序完成数量
@@ -1207,6 +1208,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
         boolean bool = true;
         for (TrackItem trackItem : result) {
+            if (trackItem.getIsOperationComplete() == 1) {
+                throw new GlobalException("工序:" + trackItem.getOptName() + "已报工,请刷新页面", ResultCode.FAILED);
+            }
             TrackComplete trackComplete = new TrackComplete();
             BeanUtils.copyProperties(outsource.getTrackComplete(), trackComplete);
             if (StringUtils.isNullOrEmpty(trackItem.getStartDoingUser())) {

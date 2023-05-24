@@ -339,7 +339,7 @@ public class BranchController extends BaseController {
     @GetMapping("/query_all_branch")
     public List<Branch> queryAllBranch() {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branch_type", 0);
+        queryWrapper.eq("branch_type", "0");
         return branchService.list(queryWrapper);
     }
 
@@ -348,7 +348,7 @@ public class BranchController extends BaseController {
     @Inner
     public List<Branch> queryAllBranchInner() {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("branch_type", 0);
+        queryWrapper.eq("branch_type", "0");
         return branchService.list(queryWrapper);
     }
 }
