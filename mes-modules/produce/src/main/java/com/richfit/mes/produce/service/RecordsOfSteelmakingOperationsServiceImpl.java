@@ -121,6 +121,9 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         QueryWrapper<ResultsOfSteelmaking> resultsOfSteelmakingQueryWrapper = new QueryWrapper<>();
         resultsOfSteelmakingQueryWrapper.eq("steelmaking_id", recordsOfSteelmakingOperations.getId());
         resultsOfSteelmakingService.remove(resultsOfSteelmakingQueryWrapper);
+        for (ResultsOfSteelmaking resultsOfSteelmaking : recordsOfSteelmakingOperations.getResultsOfSteelmaking()) {
+            resultsOfSteelmaking.setSteelmakingId(recordsOfSteelmakingOperations.getId());
+        }
         resultsOfSteelmakingService.saveBatch(recordsOfSteelmakingOperations.getResultsOfSteelmaking());
         return this.updateById(recordsOfSteelmakingOperations);
     }
