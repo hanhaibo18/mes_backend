@@ -1091,13 +1091,15 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "冶炼材质变更获取配炉列表")
     @GetMapping("/precharge_furnace")
-    public CommonResult<Map<String, List<PrechargeFurnace>>> getPrechargeFurnaceMap(@ApiParam("毛坯类型 0锻件,1铸件,2钢锭") String workblankType,
-                                                                                    @ApiParam("车间编码") String branchCode,
-                                                                                    @ApiParam("配炉（预装炉编号）") Long prechargeFurnaceId,
-                                                                                    @ApiParam("材质") String texture,
-                                                                                    @ApiParam("开始日期") String startTime,
-                                                                                    @ApiParam("截止日期") String endTime) {
-        return CommonResult.success(trackCompleteService.getPrechargeFurnaceMap(workblankType, branchCode,prechargeFurnaceId,texture,startTime,endTime));
+    public CommonResult<Map<String, Object>> getPrechargeFurnaceMap(@ApiParam("毛坯类型 0锻件,1铸件,2钢锭") String workblankType,
+                                                                  @ApiParam("车间编码") String branchCode,
+                                                                  @ApiParam("配炉（预装炉编号）") Long prechargeFurnaceId,
+                                                                  @ApiParam("材质") String texture,
+                                                                  @ApiParam("开始日期") String startTime,
+                                                                  @ApiParam("截止日期") String endTime,
+                                                                  @RequestParam(defaultValue = "1") int page,
+                                                                  @RequestParam(defaultValue = "10") int limit) {
+        return CommonResult.success(trackCompleteService.getPrechargeFurnaceMap(workblankType, branchCode, prechargeFurnaceId, texture, startTime, endTime, page, limit));
     }
 
     @ApiOperation(value = "冶炼材质变更")
