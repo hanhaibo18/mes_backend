@@ -893,7 +893,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 writer.resetRow();
                 writer.passRows(5);
                 int currentRow = writer.getCurrentRow();
-                int number = 0;
                 // 依次写入Excel
                 for (DisqualificationResultVo disqualification: list) {
                     writer.writeCellValue(0, currentRow, disqualification.getDisqualificationName());
@@ -937,7 +936,6 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                     writer.writeCellValue(38, currentRow, disqualification.getResponsibilityName());
                     writer.writeCellValue(39, currentRow, disqualification.getTechnologyName());
                     currentRow ++;
-                    number ++;
                 }
                 rsp.setContentType("application/octet-stream");
                 rsp.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode("不合格品处理单查询结果.xlsx", "UTF-8"));
