@@ -144,8 +144,9 @@ public class PrechargeFurnaceController extends BaseController {
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTexture())) {
             queryWrapper.eq("texture",dispatchingDto.getTexture());
         }
-
-
+        if (dispatchingDto.getId()!=null) {
+            queryWrapper.eq("id",dispatchingDto.getId());
+        }
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper));
     }
 
