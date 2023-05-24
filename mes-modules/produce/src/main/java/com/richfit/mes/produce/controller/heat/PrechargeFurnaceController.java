@@ -147,6 +147,9 @@ public class PrechargeFurnaceController extends BaseController {
         if (dispatchingDto.getId()!=null) {
             queryWrapper.eq("id",dispatchingDto.getId());
         }
+        if (dispatchingDto.getAssignStatus()!=null) {
+            queryWrapper.eq("assignStatus",dispatchingDto.getAssignStatus());
+        }
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper));
     }
 
