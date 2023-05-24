@@ -778,7 +778,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
         getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
         //只查询本租户创建的不合格品申请单
-        queryWrapper.and(wrapper -> wrapper.eq("unit_treatment_one", tenantId).or().eq("unit_treatment_two", tenantId).or().eq("dis.tenant_id", tenantId));
+        queryWrapper.and(wrapper -> wrapper.eq("unit_treatment_one", tenantId).or().eq("unit_responsibility_within", tenantId).or().eq("unit_treatment_two", tenantId).or().eq("dis.tenant_id", tenantId));
         // 不合格品信息
         return disqualificationMapper.query(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
