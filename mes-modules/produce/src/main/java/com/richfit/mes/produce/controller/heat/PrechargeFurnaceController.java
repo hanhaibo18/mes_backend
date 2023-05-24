@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zhiqiang.lu
@@ -38,6 +39,8 @@ public class PrechargeFurnaceController extends BaseController {
 
     @Autowired
     private TrackItemService trackItemService;
+
+
 
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
@@ -204,4 +207,9 @@ public class PrechargeFurnaceController extends BaseController {
         return CommonResult.success(trackItemService.list(queryWrapper));
     }
 
+    @ApiOperation(value = "配炉工序列表查询")
+    @GetMapping("/furnace_item_list_YL")
+    public CommonResult<List<TrackItem>> furnaceItemListYl(Long id) {
+        return CommonResult.success(prechargeFurnaceService.getItemsByPrechargeFurnace(id));
+    }
 }

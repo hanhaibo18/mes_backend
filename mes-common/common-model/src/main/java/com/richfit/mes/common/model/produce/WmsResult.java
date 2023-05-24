@@ -3,13 +3,11 @@ package com.richfit.mes.common.model.produce;
 import lombok.Data;
 
 /**
- * 实时查询通用返回类
- * @param <T>
+ * WMS通用返回类
+ *
  */
 @Data
-public class InventoryResult<T> {
+public class WmsResult {
     private String retStatus;
     private String retMsg;
-    private T data;
-
 }

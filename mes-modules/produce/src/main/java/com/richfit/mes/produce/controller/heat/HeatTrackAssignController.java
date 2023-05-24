@@ -152,7 +152,7 @@ public class HeatTrackAssignController extends BaseController {
 
         //查询未配炉
         if ("0".equals(state)) {
-            queryWrapper.isNull("precharge_furnace_assign_id");
+            queryWrapper.isNull("precharge_furnace_id");
         }
 
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);

@@ -61,4 +61,8 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
     List totalWeightMolten(String branchCode);
 
     List<TrackItem> queryAssignByTexture(String texture, String branchCode);
+
+    List<TrackItem> getItemsByPrechargeFurnace(Long id);
+
+
 }

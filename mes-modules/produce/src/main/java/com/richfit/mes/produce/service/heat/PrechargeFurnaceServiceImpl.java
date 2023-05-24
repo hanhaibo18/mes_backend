@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service.heat;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -11,11 +12,13 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.TrackItemService;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +39,8 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMapper, PrechargeFurnace> implements PrechargeFurnaceService {
 
+    @Autowired
+    private TrackHeadMapper trackHeadMapper;
 
     @Autowired
     private TrackItemService trackItemService;
@@ -101,6 +106,29 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         trackItemQueryWrapper.eq("branch_code",branchCode);
         trackItemQueryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         return trackAssignMapper.getPageAssignsHot(trackItemQueryWrapper);
+    }
+
+    @Override
+    public List<TrackItem> getItemsByPrechargeFurnace(Long id) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_current", 1)
+                .eq("precharge_furnace_id", id);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        for (TrackItem trackItem : list) {
+            //查询跟单信息
+            LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            trackHeadLambdaQueryWrapper.eq(TrackHead::getId, trackItem.getTrackHeadId());
+            TrackHead trackHead = trackHeadMapper.selectOne(trackHeadLambdaQueryWrapper);
+            trackItem.setTexture(trackHead.getTexture());
+            trackItem.setWorkNo(trackHead.getWorkNo());
+            trackItem.setProductName(trackHead.getProductName());
+            trackItem.setPriority(trackHead.getPriority());
+            //查询工艺信息
+            Router data = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
+            trackItem.setPieceWeight(Objects.nonNull(data) ? data.getPieceWeight() : "");
+            trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
+        }
+        return list;
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +20,8 @@ public class ApplicationNumber {
     /**
      * 申请单数字Id
      */
-    private Integer id;
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
 
     /**
      * 工序Id
@@ -57,8 +60,7 @@ public class ApplicationNumber {
 
     private String remark;
 
-    public void applicationNumber(int id, String itemId, String branchCode, String user, String tenantId) {
-        this.id = id;
+    public void applicationNumber(String itemId, String branchCode, String user, String tenantId) {
         this.branchCode = branchCode;
         this.itemId = itemId;
         this.createBy = user;
