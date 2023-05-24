@@ -1208,6 +1208,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
         boolean bool = true;
         for (TrackItem trackItem : result) {
+            if (trackItem.getIsOperationComplete() == 1) {
+                throw new GlobalException("工序:" + trackItem.getOptName() + "已报工,请刷新页面", ResultCode.FAILED);
+            }
             TrackComplete trackComplete = new TrackComplete();
             BeanUtils.copyProperties(outsource.getTrackComplete(), trackComplete);
             if (StringUtils.isNullOrEmpty(trackItem.getStartDoingUser())) {
