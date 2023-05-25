@@ -130,11 +130,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
-        try {
-            deleteComplete();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            deleteComplete();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         return trackCompleteMapper.queryPage(page, query);
     }
 
