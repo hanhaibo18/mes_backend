@@ -114,7 +114,7 @@ public class HeatTrackAssignController extends BaseController {
             @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "state", value = "配炉状态", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "status", value = "派工状态", dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "workblankType", value = "毛坯类型", dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "workblankType", value = "毛坯类型:: 0锻件,1铸件,2钢锭", dataType = "String", paramType = "query")
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
