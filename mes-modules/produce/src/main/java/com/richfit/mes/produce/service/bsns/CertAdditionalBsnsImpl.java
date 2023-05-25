@@ -60,7 +60,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     public void doAdditionalBsns(Certificate certificate) {
         String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
         if (needScjk(certificate)) {
-//            wmsServiceClient.sendJkInfo(certificate);
+            wmsServiceClient.sendJkInfo(certificate);
             //根据数据字段配置，判断推送哪个系统
             if (Tenant.COMPANYCODE_BEISHI.equals(companyCode)) {
                 //推送北石
@@ -90,9 +90,9 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
 
                 List<TrackItem> trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
 
-//                CommonResult<Boolean> b = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), certificate.getNumber(), unit);
-//
-//                log.debug("[{}] query erp push-hour finish , result is [{}]", trackHead.getTrackNo(), b.getData());
+                CommonResult<Boolean> b = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), certificate.getNumber(), unit);
+
+                log.debug("[{}] query erp push-hour finish , result is [{}]", trackHead.getTrackNo(), b.getData());
 
             }
 
