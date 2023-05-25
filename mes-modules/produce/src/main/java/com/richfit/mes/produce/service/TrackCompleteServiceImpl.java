@@ -130,6 +130,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
+//        try {
+//            deleteComplete();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         return trackCompleteMapper.queryPage(page, query);
     }
 
@@ -2065,5 +2070,70 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWrapper<TrackComplete> removeComplete = new QueryWrapper<>();
         removeComplete.eq("ti_id", tiId);
         return this.remove(removeComplete);
+    }
+
+    //处理重复报工数据
+    private void deleteComplete() {
+        //错误问题工序20条
+        List<String> trackItemList = trackItemMapper.queryBugTrackItemList();
+        //查询工序所有报工记录
+        QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
+        completeQueryWrapper.in("ti_id", trackItemList);
+        completeQueryWrapper.orderByAsc("complete_time");
+        List<TrackComplete> completeList = this.list(completeQueryWrapper);
+        //查询所有工序信息
+        QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+        itemQueryWrapper.in("id", trackItemList);
+        Map<String, TrackItem> itemMap = trackItemService.list(itemQueryWrapper).stream().collect(Collectors.toMap(TrackItem::getId, item -> item));
+        //查询所有派工信息
+        QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
+        assignQueryWrapper.in("ti_id", trackItemList);
+        Map<String, Assign> assignMap = trackAssignService.list(assignQueryWrapper).stream().collect(Collectors.toMap(Assign::getId, assign -> assign));
+        //根据派工分组报工记录
+        Map<String, List<TrackComplete>> listMap = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getAssignId));
+        //循环派工记录分组
+        for (List<TrackComplete> trackCompleteList : listMap.values()) {
+            //查询派工数量
+            BigDecimal qty = BigDecimal.valueOf(assignMap.get(trackCompleteList.get(0).getAssignId()).getQty());
+            //获取单件工时
+            BigDecimal singlePieceHours = BigDecimal.valueOf(itemMap.get(trackCompleteList.get(0).getTiId()).getSinglePieceHours());
+            //派工合计工时
+            BigDecimal assignHours = singlePieceHours.multiply(qty).setScale(2, BigDecimal.ROUND_DOWN);
+            //报工合计工时
+            BigDecimal completeHours = null;
+            //是否有合格信息
+            boolean isRetain = false;
+            //报工工序信息
+            List<TrackComplete> isRetainList = new ArrayList<>();
+            for (TrackComplete trackComplete : trackCompleteList) {
+                completeHours = completeHours.add(BigDecimal.valueOf(trackComplete.getReportHours()));
+                if (completeHours.compareTo(assignHours) == 0) {
+                    isRetainList.add(trackComplete);
+                    isRetain = true;
+                    break;
+                } else if (completeHours.compareTo(assignHours) == -1) {
+                    isRetainList.add(trackComplete);
+                } else {
+                    isRetainList.clear();
+                    completeHours = null;
+                    completeHours = completeHours.add(BigDecimal.valueOf(trackComplete.getReportHours()));
+                    isRetainList.add(trackComplete);
+                }
+            }
+            //处理是否删除数据
+            if (isRetain) {
+                Map<String, TrackComplete> collecMap = isRetainList.stream().collect(Collectors.toMap(TrackComplete::getId, x -> x));
+                for (TrackComplete trackComplete : trackCompleteList) {
+                    if (null == collecMap.get(trackComplete.getId())) {
+                        trackComplete.setIsRetain(2);
+                    } else {
+                        trackComplete.setIsRetain(1);
+                    }
+                }
+            } else {
+                trackCompleteList.forEach(complete -> complete.setIsRetain(3));
+            }
+            trackCompleteService.updateBatchById(trackCompleteList);
+        }
     }
 }

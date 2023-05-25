@@ -1,7 +1,10 @@
 package com.richfit.mes.produce.service.quality;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -19,11 +22,9 @@ import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.quality.DisqualificationFinalResultMapper;
 import com.richfit.mes.produce.dao.quality.DisqualificationMapper;
+import com.richfit.mes.produce.enmus.TrackTypeEnum;
 import com.richfit.mes.produce.enmus.UnitEnum;
-import com.richfit.mes.produce.entity.quality.DisqualificationDto;
-import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
-import com.richfit.mes.produce.entity.quality.QueryCheckDto;
-import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
+import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.CodeRuleService;
@@ -31,13 +32,19 @@ import com.richfit.mes.produce.service.TrackHeadFlowService;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.utils.Code;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -89,6 +96,14 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Autowired
     private DisqualificationUserOpinionService disqualificationUserOpinionService;
 
+    public static final String TENANT_ID = "12345678901234567890123456789100";
+    // 不合格外协单位
+    public static final String UNIT_CODE = "qualityUnqualityUnitW";
+    // 不合格常用工序
+    public static final String PROCESS_CODE = "qualityUnqualityOpt";
+    // 不合格类型
+    public static final String UNQUALIFIED_TYPE = "qualityUnqualityType";
+
     @Override
     public IPage<Disqualification> queryInspector(QueryInspectorDto queryInspectorDto) {
         QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
@@ -99,7 +114,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return disqualificationMapper.query(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
     }
 
-    private void getDisqualificationByQueryInspectorDto(QueryWrapper<Disqualification> queryWrapper, QueryInspectorDto queryInspectorDto) {
+    private void getDisqualificationByQueryInspectorDto(QueryWrapper queryWrapper, QueryInspectorDto queryInspectorDto) {
         //图号查询
         if (StrUtil.isNotBlank(queryInspectorDto.getDrawingNo())) {
             queryWrapper.like("drawing_no", queryInspectorDto.getDrawingNo());
@@ -772,15 +787,26 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return "success";
     }
 
-    @Override
-    public IPage<Disqualification> queryInspectorByCompany(QueryInspectorDto queryInspectorDto) {
-        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
-        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
-        getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
-        //只查询本租户创建的不合格品申请单
-        queryWrapper.and(wrapper -> wrapper.eq("unit_treatment_one", tenantId).or().eq("unit_responsibility_within", tenantId).or().eq("unit_treatment_two", tenantId).or().eq("dis.tenant_id", tenantId));
-        // 不合格品信息
-        return disqualificationMapper.query(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
+    /**
+     * 按逗号分隔的属性转换 不合格外协
+     *
+     * @param target
+     * @param map
+     * @return
+     */
+    private static String convertType(String target, Map<String, ItemParam> map) {
+        String[] split = target.split(",");
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String s : split) {
+            if (map.containsKey(s)) {
+                stringBuilder.append(map.get(s).getLabel()).append(",");
+            }
+        }
+        if (stringBuilder.length() > 0) {
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            return stringBuilder.toString();
+        }
+        return null;
     }
 
     @Override
@@ -801,6 +827,174 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         return disqualificationItemVo;
     }
 
+    /**
+     * 按逗号分隔的属性转换
+     *
+     * @param
+     * @param
+     * @return
+     */
+    private static String convertName(String target, Map<String, String> map) {
+        String[] split = target.split(",");
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String s : split) {
+            if (map.containsKey(s)) {
+                stringBuilder.append(map.get(s)).append(",");
+            }
+        }
+        if (stringBuilder.length() > 0) {
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            return stringBuilder.toString();
+        }
+        return null;
+    }
+
+    @Override
+    public IPage<Disqualification> queryInspectorByCompany(QueryInspectorDto queryInspectorDto) {
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
+        getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
+        //只查询本租户创建的不合格品申请单
+        if (!tenantId.equals("12345678901234567890123456789100")) {
+            queryWrapper.and(wrapper -> wrapper.eq("unit_treatment_one", tenantId).or().eq("unit_responsibility_within", tenantId).or().eq("unit_treatment_two", tenantId).or().eq("dis.tenant_id", tenantId));
+        }
+        // 不合格品信息
+        return disqualificationMapper.query(new Page<>(queryInspectorDto.getPage(), queryInspectorDto.getLimit()), queryWrapper);
+    }
+
+    @Override
+    public void exportExcel(HttpServletResponse rsp, QueryInspectorDto queryInspectorDto) {
+        try {
+            String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+            QueryWrapper<DisqualificationResultVo> queryWrapper = new QueryWrapper<>();
+            getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
+            //只查询本租户创建的不合格品申请单
+            if (!tenantId.equals("12345678901234567890123456789100")) {
+                queryWrapper.and(wrapper -> wrapper.eq("unit_treatment_one", tenantId).or().eq("unit_responsibility_within", tenantId).or().eq("unit_treatment_two", tenantId).or().eq("dis.tenant_id", tenantId));
+            }
+            List<DisqualificationResultVo> list = disqualificationMapper.queryDisqualificationResult(queryWrapper);
+            if (CollectionUtils.isNotEmpty(list)) {
+                // 获取不合格类型
+                Map<String, ItemParam> typeMap = systemServiceClient.findItemParamByCode(UNQUALIFIED_TYPE, TENANT_ID).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
+                // 获取所有的租户列表信息(包括内置)
+                Map<String, Tenant> tenantMap = systemServiceClient.queryTenantAllList().getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
+                // 获取不合格外协
+                Map<String, ItemParam> unitMap = systemServiceClient.findItemParamByCode(UNIT_CODE, TENANT_ID).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
+                // 获取不合格常用工序
+                Map<String, ItemParam> processMap = systemServiceClient.findItemParamByCode(PROCESS_CODE, TENANT_ID).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
+                // 获取用户和姓名键值对
+                Map<String, String> usersAccountMap = systemServiceClient.usersAccount().getData();
+
+                for (DisqualificationResultVo disqualificationResultVo : list) {
+                    if (StringUtils.isNotEmpty(disqualificationResultVo.getDisqualificationType())) {
+                        // 不合格类型
+                        disqualificationResultVo.setDisqualificationType(convertType(disqualificationResultVo.getDisqualificationType(), typeMap));
+                    }
+
+                    if (StringUtils.isNotEmpty(disqualificationResultVo.getUnitResponsibilityWithin())) {
+                        // 责任单位内
+                        disqualificationResultVo.setUnitResponsibilityWithin(tenantMap.get(disqualificationResultVo.getUnitResponsibilityWithin()).getTenantName());
+
+                    }
+
+                    if (StringUtils.isNotEmpty(disqualificationResultVo.getUnitTreatmentOne())) {
+                        // 处理单位1
+                        disqualificationResultVo.setUnitTreatmentOne(tenantMap.get(disqualificationResultVo.getUnitTreatmentOne()).getTenantName());
+                    }
+
+                    if (StringUtils.isNotEmpty(disqualificationResultVo.getUnitTreatmentTwo())) {
+                        // 处理单位2
+                        disqualificationResultVo.setUnitTreatmentTwo(tenantMap.get(disqualificationResultVo.getUnitTreatmentTwo()).getTenantName());
+                    }
+
+                    if (StringUtils.isNotEmpty(disqualificationResultVo.getDiscoverTenant())) {
+                        // 发现单位
+                        disqualificationResultVo.setDiscoverTenant(tenantMap.get(disqualificationResultVo.getDiscoverTenant()).getTenantName());
+                    }
+
+                    if (StringUtils.isNotEmpty(disqualificationResultVo.getUnitResponsibilityOutside())) {
+                        // 责任单位(外)
+                        disqualificationResultVo.setUnitResponsibilityOutside(unitMap.get(disqualificationResultVo.getUnitResponsibilityOutside()).getLabel());
+                    }
+
+                    if (StringUtils.isNotEmpty(disqualificationResultVo.getDiscoverItem())) {
+                        // 发现工序
+                        if (ObjectUtils.isNotEmpty(processMap.get(disqualificationResultVo.getDiscoverItem()))) {
+                            disqualificationResultVo.setDiscoverItem(processMap.get(disqualificationResultVo.getDiscoverItem()).getLabel());
+                        }
+                    }
+
+                    if (StringUtils.isNotEmpty(disqualificationResultVo.getQualityCheckBy())) {
+                        // 质控工程师
+                        disqualificationResultVo.setQualityCheckBy(convertName(disqualificationResultVo.getQualityCheckBy(), usersAccountMap));
+                    }
+                    if (StringUtils.isNotEmpty(disqualificationResultVo.getTrackHeadType())) {
+                        // 跟单类型
+                        disqualificationResultVo.setTrackHeadType(TrackTypeEnum.getMessage(disqualificationResultVo.getTrackHeadType()));
+                    }
+                }
+                // 读文件
+                ClassPathResource classPathResource = new ClassPathResource("excel/" + "disqualificationTemplate.xlsx");
+                ExcelWriter writer = null;
+                writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
+                writer.writeCellValue("A1", new StringBuilder().append("共搜索到").append(list.size()).append("条符合条件的信息"));
+                writer.resetRow();
+                writer.passRows(5);
+                int currentRow = writer.getCurrentRow();
+                // 依次写入Excel
+                for (DisqualificationResultVo disqualification : list) {
+                    writer.writeCellValue(0, currentRow, disqualification.getDisqualificationName());
+                    writer.writeCellValue(1, currentRow, disqualification.getCreateTime());
+                    writer.writeCellValue(2, currentRow, disqualification.getBranchCode());
+                    writer.writeCellValue(3, currentRow, disqualification.getProcessSheetNo());
+                    writer.writeCellValue(4, currentRow, disqualification.getTrackNo());
+                    writer.writeCellValue(5, currentRow, disqualification.getDisqualificationType());
+                    writer.writeCellValue(6, currentRow, disqualification.getDiscoverTenant());
+                    writer.writeCellValue(7, currentRow, disqualification.getUnitResponsibilityWithin());
+                    writer.writeCellValue(8, currentRow, disqualification.getUnitResponsibilityOutside());
+                    writer.writeCellValue(9, currentRow, disqualification.getWorkNo());
+                    writer.writeCellValue(10, currentRow, disqualification.getProductName());
+                    writer.writeCellValue(11, currentRow, disqualification.getPartName());
+                    writer.writeCellValue(12, currentRow, disqualification.getPartDrawingNo());
+                    writer.writeCellValue(13, currentRow, disqualification.getProductNo());
+                    writer.writeCellValue(14, currentRow, disqualification.getTrackHeadType());
+                    writer.writeCellValue(15, currentRow, disqualification.getPartMaterials());
+                    writer.writeCellValue(16, currentRow, disqualification.getHeatNumber());
+                    writer.writeCellValue(17, currentRow, disqualification.getNumber());
+                    writer.writeCellValue(18, currentRow, disqualification.getTotalWeight());
+                    writer.writeCellValue(19, currentRow, disqualification.getDisqualificationCondition());
+                    writer.writeCellValue(20, currentRow, disqualification.getQualityControlOpinion());
+                    writer.writeCellValue(21, currentRow, disqualification.getUnitTreatmentOneOpinion());
+                    writer.writeCellValue(22, currentRow, disqualification.getUnitTreatmentTwoOpinion());
+                    writer.writeCellValue(23, currentRow, disqualification.getResponsibilityOpinion());
+                    writer.writeCellValue(24, currentRow, disqualification.getQualityCheckBy());
+                    writer.writeCellValue(25, currentRow, disqualification.getUnitTreatmentOne());
+                    writer.writeCellValue(26, currentRow, disqualification.getUnitTreatmentTwo());
+                    writer.writeCellValue(27, currentRow, disqualification.getDiscoverItem());
+                    writer.writeCellValue(28, currentRow, disqualification.getDiscardTime());
+                    writer.writeCellValue(29, currentRow, disqualification.getReuseTime());
+                    writer.writeCellValue(30, currentRow, disqualification.getAcceptDeviation());
+                    writer.writeCellValue(31, currentRow, disqualification.getRepairQualified());
+                    writer.writeCellValue(32, currentRow, disqualification.getScrap());
+                    writer.writeCellValue(33, currentRow, disqualification.getSalesReturn());
+                    writer.writeCellValue(34, currentRow, disqualification.getSalesReturnLoss());
+                    writer.writeCellValue(35, currentRow, disqualification.getCloseTime());
+                    writer.writeCellValue(36, currentRow, disqualification.getTreatmentOneName());
+                    writer.writeCellValue(37, currentRow, disqualification.getTreatmentTwoName());
+                    writer.writeCellValue(38, currentRow, disqualification.getResponsibilityName());
+                    writer.writeCellValue(39, currentRow, disqualification.getTechnologyName());
+                    currentRow++;
+                }
+                rsp.setContentType("application/octet-stream");
+                rsp.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode("不合格品处理单查询结果.xlsx", "UTF-8"));
+                ServletOutputStream outputStream = rsp.getOutputStream();
+                writer.flush(outputStream, true);
+                IoUtil.close(outputStream);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void saveRecord(String id, String record, Integer type, String name) {
         QueryWrapper<DisqualificationUserOpinion> queryWrapper = new QueryWrapper<>();
