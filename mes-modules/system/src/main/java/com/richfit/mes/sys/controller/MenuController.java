@@ -194,7 +194,8 @@ public class MenuController extends BaseController {
         //系统管理员 返回所有菜单
         if (SecurityUtils.getCurrentUser().isSysAdmin()) {
             List<Menu> menus = menuService.list(new QueryWrapper<Menu>()
-                    .orderByAsc("menu_order"));
+                    .orderByAsc("menu_order")
+                    .ne("menu_type",2));
             all.addAll(menus);
             return CommonResult.success(menuService.filterMenu(all, parentId));
         }

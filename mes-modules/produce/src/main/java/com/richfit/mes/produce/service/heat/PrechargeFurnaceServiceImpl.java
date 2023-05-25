@@ -122,7 +122,6 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             trackItem.setTexture(trackHead.getTexture());
             trackItem.setWorkNo(trackHead.getWorkNo());
             trackItem.setProductName(trackHead.getProductName());
-            trackItem.setPriority(trackHead.getPriority());
             //查询工艺信息
             Router data = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
             trackItem.setPieceWeight(Objects.nonNull(data) ? data.getPieceWeight() : "");

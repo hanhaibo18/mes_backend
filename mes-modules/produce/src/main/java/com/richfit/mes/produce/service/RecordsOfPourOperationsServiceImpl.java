@@ -311,7 +311,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         if (CollectionUtils.isEmpty(list)) {
             throw new GlobalException("没有找到浇注记录信息！", ResultCode.FAILED);
         }
-        String fileName = "浇注记录" + LocalDateTime.now();
+        String fileName = "浇注记录.xlsx";
         String[] columnHeaders = {"审核状态", "记录编号", "配炉编号", "浇注温度", "炉号", "钢种", "浇注箱/根数", "锭型", "冶炼班组", "浇注工", "浇注时间", "审核人", "审核时间", "备注"};
         String[] fieldNames = {"status", "recordNo", "prechargeFurnaceId", "temperature", "furnaceNo", "typeOfSteel", "pourNum", "ingotCase", "classGroup", "operator", "pourTime", "assessor", "assessorTime", "remark"};
         try {

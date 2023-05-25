@@ -8,6 +8,7 @@ import com.richfit.mes.produce.entity.quality.DisqualificationDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.entity.quality.QueryCheckDto;
 import com.richfit.mes.produce.entity.quality.QueryInspectorDto;
+import javax.servlet.http.HttpServletResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -189,4 +190,11 @@ public interface DisqualificationService extends IService<Disqualification> {
      * @return: DisqualificationItemVo
      **/
     DisqualificationItemVo queryLastTimeDataByCreateBy(String branchCode);
+
+    /**
+     * 不合格导出
+     * @param rsp
+     * @param queryInspectorDto
+     */
+    void exportExcel(HttpServletResponse rsp, QueryInspectorDto queryInspectorDto);
 }

@@ -1,25 +1,22 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.core.api.ResultCode;
-import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CertQueryDto;
 import com.richfit.mes.produce.service.*;
-import com.richfit.mes.produce.utils.Code;
-import com.richfit.mes.produce.utils.Utils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -28,8 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -64,12 +59,9 @@ public class CertificateController {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("template_code", "BOMCO_BY_ZPG1");
         queryWrapper.eq("tenant_id", "12345678901234567890123456789002");
-        queryWrapper.ge("create_time", "2023-04-01 00:00:00");
         queryWrapper.isNull("certificate_no");
         queryWrapper.isNotNull("product_no");
         List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
-        System.out.println("----------------------");
-        System.out.println(trackHeadList.size());
         int i = 0;
         for (TrackHead trackHead : trackHeadList) {
             try {
@@ -189,6 +181,7 @@ public class CertificateController {
                                                     @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                     @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
                                                     @ApiParam(value = "产品编号") @RequestParam(required = false) String productNo,
+                                                    @ApiParam(value = "是否推送") @RequestParam(required = false) Integer isPush,
                                                     @ApiParam(value = "类型") @RequestParam(required = false) String type,
                                                     @ApiParam(value = "来源") @RequestParam(required = false) String origin,
                                                     @ApiParam(value = "排序") @RequestParam(required = false) String order,
@@ -209,6 +202,9 @@ public class CertificateController {
         }
         if (!StringUtils.isNullOrEmpty(origin)) {
             queryWrapper.eq("cert_origin", origin);
+        }
+        if (!ObjectUtil.isEmpty(isPush)) {
+            queryWrapper.eq("is_push", isPush);
         }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
@@ -270,5 +266,17 @@ public class CertificateController {
         List<TrackHead> trackHeadList = certificateService.selectItemTrack(trackHead);
         PageInfo<TrackHead> trackHeadPageInfo = new PageInfo(trackHeadList);
         return CommonResult.success(trackHeadPageInfo, Certificate.SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "合格证推送", notes = "合格证推送")
+    @PostMapping("/push")
+    public CommonResult<Boolean> push(@RequestBody List<String> ids) {
+        if(CollectionUtil.isEmpty(ids)){
+            return CommonResult.success(true, Certificate.SUCCESS_MESSAGE);
+        }
+        UpdateWrapper<Certificate> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.in("id",ids)
+                .set("is_push",1);
+        return CommonResult.success(certificateService.update(updateWrapper), Certificate.SUCCESS_MESSAGE);
     }
 }

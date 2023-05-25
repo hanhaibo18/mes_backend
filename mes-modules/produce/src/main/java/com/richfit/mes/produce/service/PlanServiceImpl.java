@@ -410,9 +410,21 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void autoProjectBom(Plan plan) {
+    public void autoProjectBom(Plan plan) throws Exception {
         if (StrUtil.isBlank(plan.getProjectBom())) {
-            List<ProduceProjectBom> projectBoms = projectBomService.getProjectBomList(plan.getWorkNo(), plan.getDrawNo(), plan.getTenantId(), plan.getBranchCode());
+            String workNo = "";
+            if (StrUtil.isNotBlank(plan.getProjectBomWork())) {
+                workNo = plan.getProjectBomWork();
+            } else {
+                workNo = plan.getWorkNo();
+            }
+            if (StrUtil.isBlank(workNo)) {
+                throw new Exception("工作号不能为空");
+            }
+            if (StrUtil.isBlank(plan.getDrawNo())) {
+                throw new Exception("图号号不能为空");
+            }
+            List<ProduceProjectBom> projectBoms = projectBomService.getProjectBomList(workNo, plan.getDrawNo(), plan.getTenantId(), plan.getBranchCode());
             if (!CollectionUtils.isEmpty(projectBoms)) {
                 ProduceProjectBom projectBom = projectBoms.get(0);
                 plan.setProjectBom(projectBom.getId());

@@ -418,7 +418,7 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "计划自动添加项目BOM", notes = "计划自动添加项目BOM")
     @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
     @PostMapping("/auto/project_bom")
-    public CommonResult autoProjectBom(@RequestBody List<Plan> planList) throws GlobalException {
+    public CommonResult autoProjectBom(@RequestBody List<Plan> planList) throws Exception {
         for (Plan plan : planList) {
             planService.autoProjectBom(plan);
         }
