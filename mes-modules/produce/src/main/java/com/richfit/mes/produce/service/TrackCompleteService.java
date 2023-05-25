@@ -150,11 +150,11 @@ public interface TrackCompleteService extends IService<TrackComplete> {
 
     void knockoutLabel(HttpServletResponse response, String tiId);
 
-    IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit);
+    IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit, String order, String orderCol);
 
     List<TrackItem> getItemList(String prechargeFurnaceAssignId);
 
-    Map<String, List<PrechargeFurnace>> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime);
+    Map<String, Object> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol);
 
     Boolean prechargeFurnaceChange(Long beforeId, Long afterId);
 }

@@ -1214,6 +1214,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
 
+    /**
+     * 描述: 跟单删除
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
     @Override
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
         try {

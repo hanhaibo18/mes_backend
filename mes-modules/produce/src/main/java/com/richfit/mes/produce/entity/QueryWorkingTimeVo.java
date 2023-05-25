@@ -40,4 +40,6 @@ public class QueryWorkingTimeVo {
     private RecordsOfSteelmakingOperations recordsOfSteelmakingOperations;
     @ApiModelProperty(value = "浇注作业记录", dataType = "RecordsOfPourOperations")
     private RecordsOfPourOperations recordsOfPourOperations;
+    @ApiModelProperty(value = "浇注温度", dataType = "String")
+    private String pourTemperature;
 }

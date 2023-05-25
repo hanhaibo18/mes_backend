@@ -26,6 +26,7 @@ import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.OptNameUtil;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -137,6 +138,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
+//        try {
+//            deleteComplete();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         return trackCompleteMapper.queryPage(page, query);
     }
 
@@ -424,6 +430,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 return CommonResult.failed("工序Id不能为空");
             }
             TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
+            trackItem.setPourTemperature(completeDto.getPourTemperature());
             //下工序装炉
             if (completeDto.getNextFurnace() != null && completeDto.getNextFurnace()) {
                 QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
@@ -725,6 +732,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         LayingOff layingOff = new LayingOff();
         ModelingCore modelingCore = new ModelingCore();
         Knockout knockout = new Knockout();
+        TrackItem trackItem = trackItemService.getById(tiId);
         //state=0时从缓存取数据显示
         if (0 == state) {
             completeList = trackCompleteMapper.queryCompleteCache(queryWrapper);
@@ -734,6 +742,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             rawMaterialRecordList = rawMaterialRecordService.queryrawMaterialRecordCacheByItemId(tiId);
             modelingCore = modelingCoreService.queryCacheByItemId(tiId);
             knockout = knockoutService.queryCacheByItemId(tiId);
+            if (!CollectionUtils.isEmpty(completeList)) {
+                queryWorkingTimeVo.setPourTemperature(completeList.get(0).getPourTemperature());
+            }
 
         } else {
             completeList = this.list(queryWrapper);
@@ -753,9 +764,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             QueryWrapper<ModelingCore> modelingCoreQueryWrapper = new QueryWrapper<>();
             modelingCoreQueryWrapper.eq("item_id", tiId);
             modelingCore = modelingCoreService.getOne(modelingCoreQueryWrapper);
+            queryWorkingTimeVo.setPourTemperature(trackItem.getPourTemperature());
         }
 
-        TrackItem trackItem = trackItemService.getById(tiId);
         RecordsOfSteelmakingOperations recordsOfSteelmakingOperations = new RecordsOfSteelmakingOperations();
         RecordsOfPourOperations recordsOfPourOperations = new RecordsOfPourOperations();
         //该工序如果走的预装炉，根据预装炉id找对应的炼钢记录和浇注记录信息
@@ -2049,13 +2060,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit) {
+    public IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit, String order, String orderCol) {
         //获取当前用户分派的预装炉信息
         QueryWrapper<PrechargeFurnaceAssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
         assignPersonQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         List<PrechargeFurnaceAssignPerson> assignList = prechargeFurnaceAssignPersonService.list(assignPersonQueryWrapper);
         if (CollectionUtils.isEmpty(assignList)) {
-            throw new GlobalException("该用户暂无派工信息！", ResultCode.FAILED);
+            return new Page<>();
         }
         Set<String> prechargeFurnaceAssignIdList = assignList.stream().map(PrechargeFurnaceAssignPerson::getPrechargeFurnaceAssignId).collect(Collectors.toSet());
         QueryWrapper<PrechargeFurnaceAssign> assignQueryWrapper = new QueryWrapper<>();
@@ -2066,6 +2077,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
         if (!StringUtils.isNullOrEmpty(texture)) {
             assignQueryWrapper.eq("texture", texture);
+        }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(assignQueryWrapper, orderCol, order);
+        } else {
+            assignQueryWrapper.orderByDesc("modify_time");
         }
         //已报工时间筛选的是报工时间
         if (status.equals("2")) {
@@ -2114,10 +2131,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public Map<String, List<PrechargeFurnace>> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime) {
+    public Map<String, Object> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol) {
         QueryWrapper<PrechargeFurnace> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("workblank_type", workblankType).eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
-                .eq("branch_code", branchCode).eq("status", 0);
+                .eq("branch_code", branchCode).ne("status", 2);
         if (prechargeFurnaceId != null) {
             queryWrapper.eq("id", prechargeFurnaceId);
         }
@@ -2130,11 +2147,20 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
         }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(queryWrapper, orderCol, order);
+        } else {
+            queryWrapper.orderByDesc("modify_time");
+        }
         List<PrechargeFurnace> prechargeFurnaces = prechargeFurnaceService.list(queryWrapper);
-        List<PrechargeFurnace> total = new ArrayList<>(prechargeFurnaces);
+
+        Page<PrechargeFurnace> total = prechargeFurnaceService.page(new Page<>(page, limit), queryWrapper);
+        //原预装炉列表展示已派工的预装炉
         List<PrechargeFurnace> before = prechargeFurnaces.stream().filter(x -> x.getAssignStatus() == 1).collect(Collectors.toList());
+        //变更后的预装炉列表展示未派工的预装炉
         List<PrechargeFurnace> after = prechargeFurnaces.stream().filter(x -> x.getAssignStatus() == 0).collect(Collectors.toList());
-        Map<String, List<PrechargeFurnace>> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
         result.put("total", total);
         result.put("before", before);
         result.put("after", after);
@@ -2147,7 +2173,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //先根据变更前的预装炉id找一条工序的派工信息
         //先找到该预装炉目前的派工信息
         QueryWrapper<PrechargeFurnaceAssign> furnaceAssignQueryWrapper = new QueryWrapper<>();
-        furnaceAssignQueryWrapper.eq("furnace_id", beforeId).eq("is_doing", 0).last("limit 1");
+        furnaceAssignQueryWrapper.eq("furnace_id", beforeId).eq("complete_status", 0).last("limit 1");
         PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getOne(furnaceAssignQueryWrapper);
         if (ObjectUtil.isEmpty(prechargeFurnaceAssign)) {
             throw new GlobalException("原预装炉没有派工信息！", ResultCode.FAILED);
@@ -2162,6 +2188,20 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
         assignQueryWrapper.eq("ti_id", tiId).last("limit 1");
         Assign assign = trackAssignService.getOne(assignQueryWrapper);
+        if ("15".equals(prechargeFurnaceAssign.getOptType())) {
+            //变更炼钢作业记录
+            UpdateWrapper<RecordsOfSteelmakingOperations> steelmakingOperationsUpdateWrapper = new UpdateWrapper<>();
+            steelmakingOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId).set("status", null);
+            recordsOfSteelmakingOperationsService.update(steelmakingOperationsUpdateWrapper);
+        } else if ("16".equals(prechargeFurnaceAssign.getOptType())) {
+            //变更炼浇注作业记录
+            UpdateWrapper<RecordsOfPourOperations> pourOperationsUpdateWrapper = new UpdateWrapper<>();
+            pourOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId).set("status", null);
+            recordsOfPourOperationsService.update(pourOperationsUpdateWrapper);
+        }
+        //设置原记录审核状态为null
+        prechargeFurnaceAssign.setRecordStatus(null);
+        prechargeFurnaceAssignService.updateById(prechargeFurnaceAssign);
         //根据派工信息和变更后预装炉id新建派工信息
         List<Long> ids = new ArrayList<>();
         ids.add(afterId);
@@ -2209,5 +2249,73 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWrapper<TrackComplete> removeComplete = new QueryWrapper<>();
         removeComplete.eq("ti_id", tiId);
         return this.remove(removeComplete);
+    }
+
+    //处理重复报工数据
+    private void deleteComplete() {
+        //错误问题工序20条
+        List<String> trackItemList = trackItemMapper.queryBugTrackItemList();
+        //查询工序所有报工记录
+        QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
+        completeQueryWrapper.in("ti_id", trackItemList);
+        completeQueryWrapper.orderByAsc("complete_time");
+        List<TrackComplete> completeList = this.list(completeQueryWrapper);
+        //查询所有工序信息
+        QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+        itemQueryWrapper.in("id", trackItemList);
+        Map<String, TrackItem> itemMap = trackItemService.list(itemQueryWrapper).stream().collect(Collectors.toMap(TrackItem::getId, item -> item));
+        //查询所有派工信息
+        QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
+        assignQueryWrapper.in("ti_id", trackItemList);
+        Map<String, Assign> assignMap = trackAssignService.list(assignQueryWrapper).stream().collect(Collectors.toMap(Assign::getId, assign -> assign));
+        //根据派工分组报工记录
+        Map<String, List<TrackComplete>> listMap = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getAssignId));
+        //循环派工记录分组
+        int i = 0;
+        for (List<TrackComplete> trackCompleteList : listMap.values()) {
+            System.out.println("---------------------------");
+            System.out.println(i++);
+            //查询派工数量
+            BigDecimal qty = BigDecimal.valueOf(assignMap.get(trackCompleteList.get(0).getAssignId()).getQty());
+            //获取单件工时
+            BigDecimal singlePieceHours = BigDecimal.valueOf(itemMap.get(trackCompleteList.get(0).getTiId()).getSinglePieceHours());
+            //派工合计工时
+            BigDecimal assignHours = singlePieceHours.multiply(qty).setScale(2, BigDecimal.ROUND_DOWN);
+            //报工合计工时
+            BigDecimal completeHours = BigDecimal.ZERO;
+            //是否有合格信息
+            boolean isRetain = false;
+            //报工工序信息
+            List<TrackComplete> isRetainList = new ArrayList<>();
+            for (TrackComplete trackComplete : trackCompleteList) {
+                completeHours = completeHours.add(BigDecimal.valueOf(trackComplete.getReportHours()));
+                if (completeHours.compareTo(assignHours) == 0) {
+                    isRetainList.add(trackComplete);
+                    isRetain = true;
+                    break;
+                } else if (completeHours.compareTo(assignHours) == -1) {
+                    isRetainList.add(trackComplete);
+                } else {
+                    isRetainList.clear();
+                    completeHours = BigDecimal.ZERO;
+                    completeHours = completeHours.add(BigDecimal.valueOf(trackComplete.getReportHours()));
+                    isRetainList.add(trackComplete);
+                }
+            }
+            //处理是否删除数据
+            if (isRetain) {
+                Map<String, TrackComplete> collecMap = isRetainList.stream().collect(Collectors.toMap(TrackComplete::getId, x -> x));
+                for (TrackComplete trackComplete : trackCompleteList) {
+                    if (null == collecMap.get(trackComplete.getId())) {
+                        trackComplete.setIsRetain(2);
+                    } else {
+                        trackComplete.setIsRetain(1);
+                    }
+                }
+            } else {
+                trackCompleteList.forEach(complete -> complete.setIsRetain(3));
+            }
+            trackCompleteService.updateBatchById(trackCompleteList);
+        }
     }
 }
