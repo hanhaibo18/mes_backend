@@ -121,6 +121,9 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         QueryWrapper<ResultsOfSteelmaking> resultsOfSteelmakingQueryWrapper = new QueryWrapper<>();
         resultsOfSteelmakingQueryWrapper.eq("steelmaking_id", recordsOfSteelmakingOperations.getId());
         resultsOfSteelmakingService.remove(resultsOfSteelmakingQueryWrapper);
+        for (ResultsOfSteelmaking resultsOfSteelmaking : recordsOfSteelmakingOperations.getResultsOfSteelmaking()) {
+            resultsOfSteelmaking.setSteelmakingId(recordsOfSteelmakingOperations.getId());
+        }
         resultsOfSteelmakingService.saveBatch(recordsOfSteelmakingOperations.getResultsOfSteelmaking());
         return this.updateById(recordsOfSteelmakingOperations);
     }
@@ -314,7 +317,7 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         if (CollectionUtils.isEmpty(list)) {
             throw new GlobalException("没有找到炼钢记录信息！", ResultCode.FAILED);
         }
-        String fileName = "炼钢记录" + LocalDateTime.now();
+        String fileName = "炼钢记录.xlsx";
         String[] columnHeaders = {"审核状态", "记录编号", "配炉编号", "炉号", "钢种", "冶炼设备", "冶炼班组", "班长", "记录人", "记录时间", "审核人", "审核时间"};
         String[] fieldNames = {"status", "recordNo", "prechargeFurnaceId", "furnaceNo", "typeOfSteel", "smeltingEquipment", "classGroup", "leader", "operator", "operatorTime", "assessor", "assessorTime", "remark"};
         try {

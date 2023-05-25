@@ -454,6 +454,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setModifyBy(currentUser.getUsername());
                 plan.setModifyTime(new Date());
                 plan.setDrawNoName("");//图号名称
+                plan.setMaterialName(hotDemand.getDemandName());//零件名称
                 planService.save(plan);
                 //扩展字段保存
                 this.saveExtend(hotDemand, plan);
@@ -471,7 +472,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         //扩展字段保存
         PlanExtend planExtend = new PlanExtend();
             planExtend.setProjectName(hotDemand.getProjectName());//项目名称
-            planExtend.setProductName(hotDemand.getDemandName());//产品名称
+            planExtend.setProductName(hotDemand.getProductName());//产品名称
             planExtend.setSampleNum(0);//实样数量
             planExtend.setDemandId(hotDemand.getId());//需求表id
             planExtend.setPlanId(plan.getId());//生产计划id

@@ -24,7 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author zhiqiang.lu
@@ -144,9 +147,26 @@ public class PrechargeFurnaceController extends BaseController {
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTexture())) {
             queryWrapper.eq("texture",dispatchingDto.getTexture());
         }
-
-
-        return CommonResult.success(prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper));
+        if (dispatchingDto.getId()!=null) {
+            queryWrapper.eq("id",dispatchingDto.getId());
+        }
+        if (dispatchingDto.getAssignStatus()!=null) {
+            queryWrapper.eq("assign_status",dispatchingDto.getAssignStatus());
+        }
+        Page<PrechargeFurnace> page = prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
+        //根据材质和锭型进行分组
+        Map<String, Map<String, List<PrechargeFurnace>>> collect = page.getRecords().stream().collect(
+                Collectors.groupingBy(e -> Optional.ofNullable(e.getTexture()).orElse("null"),
+                        Collectors.groupingBy(e -> Optional.ofNullable(e.getIngotCase()).orElse("null"))));
+        for (PrechargeFurnace record : page.getRecords()) {
+            //根据材质和锭型获取数量
+            if (!StringUtils.isNullOrEmpty(record.getTexture()) && !StringUtils.isNullOrEmpty(record.getIngotCase())) {
+                record.setNumByTexture(collect.get(record.getTexture()).get(record.getIngotCase()).size());
+            } else {
+                record.setNumByTexture(0);
+            }
+        }
+        return CommonResult.success(page);
     }
 
     @ApiOperation(value = "装炉跟单工序查询", tags = "不分页装炉跟单工序查询")

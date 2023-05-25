@@ -80,6 +80,7 @@ public class PlanController extends BaseController {
     public CommonResult pageMissing(@ApiParam(value = "计划编码") @RequestParam(required = false) String projCode,
                                     @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
                                     @ApiParam(value = "图号") @RequestParam(required = false) String drawNo,
+                                    @ApiParam(value = "零件名称") @RequestParam(required = false) String materialName,
                                     @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
                                     @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
                                     @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
@@ -99,6 +100,9 @@ public class PlanController extends BaseController {
         }
         if (!StringUtils.isNullOrEmpty(projCode)) {
             queryWrapper.eq("proj_code", projCode);
+        }
+        if (!StringUtils.isNullOrEmpty(materialName)) {
+            queryWrapper.eq("material_name", materialName);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             queryWrapper.ge("start_time", startTime + " 00:00:00");
@@ -414,7 +418,7 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "计划自动添加项目BOM", notes = "计划自动添加项目BOM")
     @ApiImplicitParam(name = "planList", value = "计划列表", required = true)
     @PostMapping("/auto/project_bom")
-    public CommonResult autoProjectBom(@RequestBody List<Plan> planList) throws GlobalException {
+    public CommonResult autoProjectBom(@RequestBody List<Plan> planList) throws Exception {
         for (Plan plan : planList) {
             planService.autoProjectBom(plan);
         }

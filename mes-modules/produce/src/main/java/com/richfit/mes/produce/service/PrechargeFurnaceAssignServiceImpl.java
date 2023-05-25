@@ -73,6 +73,11 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                 if (CollectionUtil.isEmpty(itemList)) {
                     throw new GlobalException("未找到可派工的工序", ResultCode.FAILED);
                 }
+                //更新预装炉子信息（已派工）
+                UpdateWrapper<PrechargeFurnace> prechargeFurnaceWrapper = new UpdateWrapper<>();
+                prechargeFurnaceWrapper.eq("id",furnaceId)
+                        .set("assign_status",1);
+                prechargeFurnaceService.update(prechargeFurnaceWrapper);
                 //派工
                 for (TrackItem trackItem : itemList) {
                     TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());

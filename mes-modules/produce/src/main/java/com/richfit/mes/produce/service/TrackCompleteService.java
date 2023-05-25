@@ -154,7 +154,7 @@ public interface TrackCompleteService extends IService<TrackComplete> {
 
     List<TrackItem> getItemList(String prechargeFurnaceAssignId);
 
-    Map<String, List<PrechargeFurnace>> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime);
+    Map<String, Object> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit);
 
     Boolean prechargeFurnaceChange(Long beforeId, Long afterId);
 }
