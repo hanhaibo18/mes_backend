@@ -130,11 +130,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
-//        try {
-//            deleteComplete();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            deleteComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return trackCompleteMapper.queryPage(page, query);
     }
 
@@ -2092,7 +2092,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //根据派工分组报工记录
         Map<String, List<TrackComplete>> listMap = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getAssignId));
         //循环派工记录分组
+        int i = 0;
         for (List<TrackComplete> trackCompleteList : listMap.values()) {
+            System.out.println("---------------------------");
+            System.out.println(i++);
             //查询派工数量
             BigDecimal qty = BigDecimal.valueOf(assignMap.get(trackCompleteList.get(0).getAssignId()).getQty());
             //获取单件工时
