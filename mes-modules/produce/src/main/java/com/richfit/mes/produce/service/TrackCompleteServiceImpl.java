@@ -2092,7 +2092,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //根据派工分组报工记录
         Map<String, List<TrackComplete>> listMap = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getAssignId));
         //循环派工记录分组
+        int i = 0;
         for (List<TrackComplete> trackCompleteList : listMap.values()) {
+            System.out.println("---------------------------");
+            System.out.println(i++);
             //查询派工数量
             BigDecimal qty = BigDecimal.valueOf(assignMap.get(trackCompleteList.get(0).getAssignId()).getQty());
             //获取单件工时
@@ -2100,7 +2103,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //派工合计工时
             BigDecimal assignHours = singlePieceHours.multiply(qty).setScale(2, BigDecimal.ROUND_DOWN);
             //报工合计工时
-            BigDecimal completeHours = null;
+            BigDecimal completeHours = BigDecimal.ZERO;
             //是否有合格信息
             boolean isRetain = false;
             //报工工序信息
@@ -2115,7 +2118,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     isRetainList.add(trackComplete);
                 } else {
                     isRetainList.clear();
-                    completeHours = null;
+                    completeHours = BigDecimal.ZERO;
                     completeHours = completeHours.add(BigDecimal.valueOf(trackComplete.getReportHours()));
                     isRetainList.add(trackComplete);
                 }

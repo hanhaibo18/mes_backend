@@ -99,6 +99,6 @@ public interface TrackItemMapper extends BaseMapper<TrackItem> {
             "        ) a \n" +
             "WHERE\n" +
             "        a.AA > 1\n" +
-            "        GROUP BY ti_id limit 20")
+            "        GROUP BY ti_id")
     List<String> queryBugTrackItemList();
 }
