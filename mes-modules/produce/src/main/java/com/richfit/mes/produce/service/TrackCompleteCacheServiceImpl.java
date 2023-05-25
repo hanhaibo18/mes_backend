@@ -94,6 +94,7 @@ public class TrackCompleteCacheServiceImpl extends ServiceImpl<TrackCompleteCach
                 trackCompleteCache.setSingleAddHours(trackComplete.getSingleAddHours());
                 trackCompleteCache.setAuxiliaryHours(trackComplete.getAuxiliaryHours());
                 trackCompleteCache.setWeightMolten(trackComplete.getWeightMolten());
+                trackCompleteCache.setPourTemperature(completeDto.getPourTemperature());
 
                 trackCompleteCacheList.add(trackCompleteCache);
             }

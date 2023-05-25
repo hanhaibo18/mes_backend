@@ -152,4 +152,6 @@ public class TrackCompleteCache extends BaseEntity<TrackCompleteCache> {
 
     @ApiModelProperty(value = "钢水重量", dataType = "String")
     private String weightMolten;
+    @ApiModelProperty(value = "浇注温度", dataType = "String")
+    private String pourTemperature;
 }

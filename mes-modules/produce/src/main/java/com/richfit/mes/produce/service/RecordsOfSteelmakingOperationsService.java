@@ -23,10 +23,12 @@ public interface RecordsOfSteelmakingOperationsService extends IService<RecordsO
 
     Boolean check(List<String> ids, int state);
 
-    IPage<RecordsOfSteelmakingOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit);
+    IPage<RecordsOfSteelmakingOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit, String order, String orderCol);
 
-    IPage<RecordsOfSteelmakingOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit);
+    IPage<RecordsOfSteelmakingOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit, String order, String orderCol);
 
     void export(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, HttpServletResponse response);
+
+    Boolean delete(List<String> ids);
 }
 
