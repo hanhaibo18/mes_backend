@@ -511,7 +511,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String testBarType;
 
-    @ApiModelProperty(value = "定型")
+    @ApiModelProperty(value = "锭型")
     @TableField(exist = false)
     private String ingotCase;
 
