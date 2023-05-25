@@ -323,4 +323,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     public int compareTo(TrackComplete o) {
         return o.getFinalCompleteTime().compareTo(this.getFinalCompleteTime());
     }
+
+    @ApiModelProperty(value = "表示是否删除 1 = 保留, 2 = 删除, 3=人工判断(这次派工的报工记录没有符合的记录,人工介入)")
+    private int isRetain;
 }
