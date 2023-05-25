@@ -13,6 +13,7 @@ import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.TenantUser;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.RecordsOfSteelmakingOperationsMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -153,7 +154,7 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
     }
 
     @Override
-    public IPage<RecordsOfSteelmakingOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit) {
+    public IPage<RecordsOfSteelmakingOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit, String order, String orderCol) {
         //班组长查询同班员工号
         List<TenantUser> tenantUserList = systemServiceClient.queryClass(SecurityUtils.getCurrentUser().getUsername());
         List<String> userIdList = tenantUserList.stream().map(TenantUser::getUserAccount).collect(Collectors.toList());
@@ -193,12 +194,18 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         if (status != null) {
             recordsOfSteelmakingOperationsQueryWrapper.eq("status", status);
         }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(recordsOfSteelmakingOperationsQueryWrapper, orderCol, order);
+        } else {
+            recordsOfSteelmakingOperationsQueryWrapper.orderByDesc("modify_time");
+        }
 
         return this.page(new Page<>(page, limit), recordsOfSteelmakingOperationsQueryWrapper);
     }
 
     @Override
-    public IPage<RecordsOfSteelmakingOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit) {
+    public IPage<RecordsOfSteelmakingOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit, String order, String orderCol) {
         //根据员工号查询派炉信息
         QueryWrapper<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceAssignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
@@ -234,6 +241,12 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         }
         if (status != null) {
             recordsOfSteelmakingOperationsQueryWrapper.eq("status", status);
+        }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(recordsOfSteelmakingOperationsQueryWrapper, orderCol, order);
+        } else {
+            recordsOfSteelmakingOperationsQueryWrapper.orderByDesc("modify_time");
         }
 
         return this.page(new Page<>(page, limit), recordsOfSteelmakingOperationsQueryWrapper);

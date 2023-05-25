@@ -81,7 +81,7 @@ public class RecordsOfPourOperationsController extends ApiController {
                                                                @ApiParam(value = "锭型") String ingotCase,
                                                                String startTime, String endTime, @ApiParam(value = "审核状态") Integer status,
                                                                @RequestParam(defaultValue = "1") int page,
-                                                               @RequestParam(defaultValue = "10") int limit) {
+                                                               @RequestParam(defaultValue = "10") int limit, String orderCol, String order) {
         //获取登录用户权限
         List<Role> roles = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
         Set<String> rolesCode = roles.stream().map(Role::getRoleCode).collect(Collectors.toSet());
@@ -96,11 +96,11 @@ public class RecordsOfPourOperationsController extends ApiController {
         }
         //班组长查询
         if (isBzz) {
-            return CommonResult.success(recordsOfPourOperationsService.bzzcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, ingotCase, startTime, endTime, status, page, limit));
+            return CommonResult.success(recordsOfPourOperationsService.bzzcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, ingotCase, startTime, endTime, status, page, limit, orderCol, order));
         }
         //普通操作工查询
         else {
-            return CommonResult.success(recordsOfPourOperationsService.czgcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, ingotCase, startTime, endTime, status, page, limit));
+            return CommonResult.success(recordsOfPourOperationsService.czgcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, ingotCase, startTime, endTime, status, page, limit, orderCol, order));
         }
     }
 

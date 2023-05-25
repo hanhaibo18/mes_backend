@@ -26,6 +26,7 @@ import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.OptNameUtil;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -2049,7 +2050,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit) {
+    public IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit, String order, String orderCol) {
         //获取当前用户分派的预装炉信息
         QueryWrapper<PrechargeFurnaceAssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
         assignPersonQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
@@ -2066,6 +2067,12 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
         if (!StringUtils.isNullOrEmpty(texture)) {
             assignQueryWrapper.eq("texture", texture);
+        }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(assignQueryWrapper, orderCol, order);
+        } else {
+            assignQueryWrapper.orderByDesc("modify_time");
         }
         //已报工时间筛选的是报工时间
         if (status.equals("2")) {
@@ -2114,7 +2121,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public Map<String, Object> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit) {
+    public Map<String, Object> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol) {
         QueryWrapper<PrechargeFurnace> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("workblank_type", workblankType).eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
                 .eq("branch_code", branchCode).ne("status", 2);
@@ -2130,7 +2137,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (!StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
         }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(queryWrapper, orderCol, order);
+        } else {
+            queryWrapper.orderByDesc("modify_time");
+        }
         List<PrechargeFurnace> prechargeFurnaces = prechargeFurnaceService.list(queryWrapper);
+
         Page<PrechargeFurnace> total = prechargeFurnaceService.page(new Page<>(page, limit), queryWrapper);
         //原预装炉列表展示已派工的预装炉
         List<PrechargeFurnace> before = prechargeFurnaces.stream().filter(x -> x.getAssignStatus() == 1).collect(Collectors.toList());

@@ -14,6 +14,7 @@ import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.TenantUser;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.RecordsOfPourOperationsMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -173,7 +174,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     }
 
     @Override
-    public IPage<RecordsOfPourOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit) {
+    public IPage<RecordsOfPourOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit, String orderCol, String order) {
         //班组长查询同班员工号
         List<TenantUser> tenantUserList = systemServiceClient.queryClass(SecurityUtils.getCurrentUser().getUsername());
         List<String> userIdList = tenantUserList.stream().map(TenantUser::getUserAccount).collect(Collectors.toList());
@@ -202,11 +203,17 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             recordsOfPourOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
         }
         buildQueryWrapper(ingotCase, startTime, endTime, status, recordsOfPourOperationsQueryWrapper);
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(recordsOfPourOperationsQueryWrapper, orderCol, order);
+        } else {
+            recordsOfPourOperationsQueryWrapper.orderByDesc("modify_time");
+        }
         return this.page(new Page<>(page, limit), recordsOfPourOperationsQueryWrapper);
     }
 
     @Override
-    public IPage<RecordsOfPourOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit) {
+    public IPage<RecordsOfPourOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit, String orderCol, String order) {
         //根据员工号查询派炉信息
         QueryWrapper<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceAssignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
@@ -242,6 +249,12 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         }
         if (status != null) {
             recordsOfPourOperationsQueryWrapper.eq("status", status);
+        }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(recordsOfPourOperationsQueryWrapper, orderCol, order);
+        } else {
+            recordsOfPourOperationsQueryWrapper.orderByDesc("modify_time");
         }
         return this.page(new Page<>(page, limit), recordsOfPourOperationsQueryWrapper);
     }

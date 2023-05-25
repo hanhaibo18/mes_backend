@@ -77,7 +77,7 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
                                                                       @ApiParam(value = "设备") String smeltingEquipment,
                                                                       String startTime, String endTime, Integer status,
                                                                       @RequestParam(defaultValue = "1") int page,
-                                                                      @RequestParam(defaultValue = "10") int limit) {
+                                                                      @RequestParam(defaultValue = "10") int limit, String order, String orderCol) {
         //获取登录用户权限
         List<Role> roles = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
         Set<String> rolesCode = roles.stream().map(Role::getRoleCode).collect(Collectors.toSet());
@@ -92,11 +92,11 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
         }
         //班组长查询
         if (isBzz) {
-            return CommonResult.success(recordsOfSteelmakingOperationsService.bzzcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit));
+            return CommonResult.success(recordsOfSteelmakingOperationsService.bzzcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit, order, orderCol));
         }
         //普通操作工查询
         else {
-            return CommonResult.success(recordsOfSteelmakingOperationsService.czgcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit));
+            return CommonResult.success(recordsOfSteelmakingOperationsService.czgcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit, order, orderCol));
         }
     }
 
