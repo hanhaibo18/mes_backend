@@ -66,8 +66,12 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
      */
     @ApiModelProperty(value = " 加工单位id", dataType = "String")
     private String inchargeOrgId;
+    @ApiModelProperty(value = "加工单位名称")
+    private String inchargeOrgName;
     @ApiModelProperty(value = "加工车间 ", dataType = "String")
     private String inchargeWorkshop;
+    @ApiModelProperty(value = "加工车间名称 ", dataType = "String")
+    private String inchargeWorkshopName;
     /**
      * 加工单位
      */

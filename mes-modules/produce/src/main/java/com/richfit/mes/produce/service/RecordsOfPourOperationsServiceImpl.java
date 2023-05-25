@@ -19,6 +19,7 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.Code;
+import com.richfit.mes.produce.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -142,8 +144,32 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     public Boolean update(RecordsOfPourOperations recordsOfPourOperations) {
         //先保存工序信息
         List<TrackItem> itemList = recordsOfPourOperations.getItemList();
+        //计算保温完成时间
+        for (TrackItem trackItem : itemList) {
+            String pourTime = recordsOfPourOperations.getPourTime();
+            String holdTime = trackItem.getHoldTime();
+            countHoldFinishedTime(trackItem, pourTime, holdTime);
+
+        }
+
+
+
         trackItemService.updateBatchById(itemList);
         return this.updateById(recordsOfPourOperations);
+    }
+
+
+    /**
+     * 计算并设置保温结束时间
+     * @param trackItem
+     * @param pourTime
+     * @param holdTime
+     */
+    private void countHoldFinishedTime(TrackItem trackItem, String pourTime, String holdTime) {
+        if(!StringUtils.isNullOrEmpty(pourTime)&&!StringUtils.isNullOrEmpty(holdTime)){
+            Date date = DateUtils.addDateForHour(DateUtils.stringToDate(pourTime), Integer.valueOf(holdTime));
+            trackItem.setHoldFinishedTime(date);
+        }
     }
 
     @Override

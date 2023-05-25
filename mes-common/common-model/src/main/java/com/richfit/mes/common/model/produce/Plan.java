@@ -173,6 +173,8 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "加工车间 ", dataType = "String")
     private String inchargeWorkshop;
 
+    @ApiModelProperty(value = "加工车间名称 ", dataType = "String")
+    private String inchargeWorkshopName;
     @TableField(exist = false)
     @ApiModelProperty(value = "工艺状态")
     private Integer processStatus;
