@@ -238,7 +238,6 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
             "\tLEFT JOIN produce_track_head th ON th.id = item.track_head_id\n" +
             "\tLEFT JOIN produce_plan p ON p.id = th.work_plan_id\n" +
             "\tLEFT JOIN produce_plan_extend pe ON pe.plan_id = p.id\n" +
-            "\tLEFT JOIN produce_hot_demand hd ON pe.demand_id = hd.id \n" +
             "WHERE\n" +
             "\titem.id = #{id}")
     List<String> getIngotCaseByItemId(@Param("id") String id);
