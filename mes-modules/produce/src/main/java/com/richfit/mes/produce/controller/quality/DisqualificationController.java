@@ -1,12 +1,8 @@
 package com.richfit.mes.produce.controller.quality;
 
-import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.poi.excel.ExcelUtil;
-import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
@@ -17,10 +13,8 @@ import com.richfit.mes.common.model.produce.DisqualificationFinalResult;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
-import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.enmus.TrackTypeEnum;
 import com.richfit.mes.produce.entity.quality.*;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.quality.DisqualificationAttachmentService;
@@ -32,17 +26,12 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName: DisqualificationController.java
@@ -67,15 +56,6 @@ public class DisqualificationController extends BaseController {
 
     @Resource
     private SystemServiceClient systemServiceClient;
-
-    public static final String TENANT_ID = "12345678901234567890123456789100";
-    // 不合格外协单位
-    public static final String UNIT_CODE = "qualityUnqualityUnitW";
-    // 不合格常用工序
-    public static final String PROCESS_CODE = "qualityUnqualityOpt";
-    // 不合格类型
-    public static final String UNQUALIFIED_TYPE= "qualityUnqualityType";
-
 
     @ApiOperation(value = "待处理申请单", notes = "根据查询条件查询待处理申请单")
     @PostMapping("/queryInspector")
@@ -215,280 +195,7 @@ public class DisqualificationController extends BaseController {
     @ApiOperation(value = "不合格导出", notes = "不合格导出")
     @PostMapping("/export")
     public void exportDisqualification(HttpServletResponse rsp,@RequestBody QueryInspectorDto queryInspectorDto) {
-        try {
-            QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
-            getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
-            //只查询本租户创建的不合格品申请单
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-            List<Disqualification> disqualificationList = disqualificationService.list(queryWrapper);
-            if (CollectionUtils.isEmpty(disqualificationList)) {
-                return;
-            }
-            List<String> idList = disqualificationList.stream().map(e -> e.getId()).collect(Collectors.toList());
-            QueryWrapper<DisqualificationFinalResult> objectQueryWrapper = new QueryWrapper<>();
-            objectQueryWrapper.in("id", idList);
-            getDisqualificationByQueryPartDto(objectQueryWrapper, queryInspectorDto);
-            List<DisqualificationFinalResult> list = finalResultService.list(objectQueryWrapper);
-            if (CollectionUtils.isEmpty(list)) {
-                return;
-            }
-            List<Disqualification> disqualifications = disqualificationService.listByIds(list.stream().map(e -> e.getId()).collect(Collectors.toList()));
-            Map<String, DisqualificationFinalResult> resultMap = list.stream().collect(Collectors.toMap(DisqualificationFinalResult::getId, x -> x, (value1, value2) -> value2));
-            // 责任单位内
-            List<String> unitList = list.stream().map(DisqualificationFinalResult::getUnitResponsibilityWithin).collect(Collectors.toList());
-            // 处理单位1
-            List<String> unitOneList = list.stream().map(DisqualificationFinalResult::getUnitTreatmentOne).collect(Collectors.toList());
-            // 处理单位2
-            List<String> unitTwoList = list.stream().map(DisqualificationFinalResult::getUnitTreatmentTwo).collect(Collectors.toList());
-            // 发现车间
-            List<String> branchList = list.stream().map(DisqualificationFinalResult::getDiscoverTenant).collect(Collectors.toList());
-            // 责任单位(外)
-            List<String> unitValueList = list.stream().map(DisqualificationFinalResult::getUnitResponsibilityOutside).collect(Collectors.toList());
-            // 发现工序
-            List<String> processValueList = list.stream().map(DisqualificationFinalResult::getDiscoverItem).collect(Collectors.toList());
-            // 质控工程师
-            List<String> checkByList = disqualifications.stream().map(Disqualification::getQualityCheckBy).collect(Collectors.toList());
-            // 不合格情况类型
-            List<String> typeList = disqualifications.stream().map(Disqualification::getDisqualificationType).collect(Collectors.toList());
-
-            Map<String, ItemParam> typeMap = systemServiceClient.findItemParamByCode(UNQUALIFIED_TYPE, TENANT_ID).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
-            List<String> disqualificationTypeList = convertType(typeList, typeMap);
-            Map<String, Tenant> tenantMap = systemServiceClient.queryTenantAllList().getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
-            List<String> unitResponsibilityWithinList = convertInput(unitList, tenantMap);
-            List<String> unitTreatmentOneList = convertInput(unitOneList, tenantMap);
-            List<String> unitTreatmentTwoList = convertInput(unitTwoList, tenantMap);
-            List<String> discoverBranchList = convertInput(branchList, tenantMap);
-
-            Map<String, ItemParam> unitMap = systemServiceClient.findItemParamByCode(UNIT_CODE, TENANT_ID).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
-            List<String> unitResponsibilityOutsideList = convertItemInput(unitValueList, unitMap);
-            Map<String, ItemParam> processMap = systemServiceClient.findItemParamByCode(PROCESS_CODE, TENANT_ID).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
-            List<String> discoverItemList = convertItemInput(processValueList, processMap);
-
-            Map<String, String> resultUsersAccount = systemServiceClient.usersAccount().getData();
-            List<String> qualityCheckByList = convertName(checkByList, resultUsersAccount);
-            // 读文件
-            ClassPathResource classPathResource = new ClassPathResource("excel/" + "disqualificationTemplate.xlsx");
-            ExcelWriter writer = null;
-            writer = ExcelUtil.getReader(classPathResource.getInputStream()).getWriter();
-            writer.writeCellValue("A1", new StringBuilder().append("共搜索到").append(disqualifications.size()).append("条符合条件的信息"));
-            writer.resetRow();
-            writer.passRows(5);
-
-            for (Disqualification disqualification: disqualifications) {
-                disqualification.setDisqualificationName(resultMap.get(disqualification.getId()).getDisqualificationName());
-                disqualification.setTotalWeight(resultMap.get(disqualification.getId()).getTotalWeight());
-                disqualification.setQualityName(resultMap.get(disqualification.getId()).getQualityName());
-                disqualification.setDiscardTime(resultMap.get(disqualification.getId()).getDiscardTime());
-                disqualification.setReuseTime(resultMap.get(disqualification.getId()).getReuseTime());
-                disqualification.setAcceptDeviation(resultMap.get(disqualification.getId()).getAcceptDeviation());
-                disqualification.setRepairQualified(resultMap.get(disqualification.getId()).getRepairQualified());
-                disqualification.setScrap(resultMap.get(disqualification.getId()).getScrap());
-                disqualification.setSalesReturn(resultMap.get(disqualification.getId()).getSalesReturn());
-                disqualification.setSalesReturnLoss(resultMap.get(disqualification.getId()).getSalesReturnLoss());
-                disqualification.setTreatmentOneName(resultMap.get(disqualification.getId()).getTreatmentOneName());
-                disqualification.setTreatmentTwoName(resultMap.get(disqualification.getId()).getTreatmentTwoName());
-                disqualification.setResponsibilityName(resultMap.get(disqualification.getId()).getResponsibilityName());
-                disqualification.setTechnologyName(resultMap.get(disqualification.getId()).getTechnologyName());
-                disqualification.setDisqualificationCondition(resultMap.get(disqualification.getId()).getDisqualificationCondition());
-                disqualification.setQualityControlOpinion(resultMap.get(disqualification.getId()).getQualityControlOpinion());
-                disqualification.setUnitTreatmentOneOpinion(resultMap.get(disqualification.getId()).getUnitTreatmentOneOpinion());
-                disqualification.setUnitTreatmentTwoOpinion(resultMap.get(disqualification.getId()).getUnitTreatmentTwoOpinion());
-                disqualification.setResponsibilityOpinion(resultMap.get(disqualification.getId()).getResponsibilityOpinion());
-            }
-            int currentRow = writer.getCurrentRow();
-            int number = 0;
-            // 依次写入Excel
-            for (Disqualification disqualification: disqualifications) {
-                writer.writeCellValue(0, currentRow, disqualification.getDisqualificationName());
-                writer.writeCellValue(1, currentRow, disqualification.getCreateTime());
-                writer.writeCellValue(2, currentRow, disqualification.getBranchCode());
-                writer.writeCellValue(3, currentRow, disqualification.getProcessSheetNo());
-                writer.writeCellValue(4, currentRow, disqualification.getTrackNo());
-                writer.writeCellValue(5, currentRow, disqualificationTypeList.get(number));
-                writer.writeCellValue(6, currentRow, discoverBranchList.get(number));
-                writer.writeCellValue(7, currentRow, unitResponsibilityWithinList.get(number));
-                writer.writeCellValue(8, currentRow, unitResponsibilityOutsideList.get(number));
-                writer.writeCellValue(9, currentRow, disqualification.getWorkNo());
-                writer.writeCellValue(10, currentRow, disqualification.getProductName());
-                writer.writeCellValue(11, currentRow, disqualification.getPartName());
-                writer.writeCellValue(12, currentRow, disqualification.getPartDrawingNo());
-                writer.writeCellValue(13, currentRow, disqualification.getProductNo());
-                if (StringUtils.isNotEmpty(disqualification.getTrackHeadType())) {
-                    writer.writeCellValue(14, currentRow, TrackTypeEnum.getMessage(disqualification.getTrackHeadType()));
-                } else {
-                    writer.writeCellValue(14, currentRow, null);
-                }
-                writer.writeCellValue(15, currentRow, disqualification.getPartMaterials());
-                writer.writeCellValue(16, currentRow, disqualification.getHeatNumber());
-                writer.writeCellValue(17, currentRow, disqualification.getNumber());
-                writer.writeCellValue(18, currentRow, disqualification.getTotalWeight());
-                writer.writeCellValue(19, currentRow, disqualification.getDisqualificationCondition());
-                writer.writeCellValue(20, currentRow, disqualification.getQualityControlOpinion());
-                writer.writeCellValue(21, currentRow, disqualification.getUnitTreatmentOneOpinion());
-                writer.writeCellValue(22, currentRow, disqualification.getUnitTreatmentTwoOpinion());
-                writer.writeCellValue(23, currentRow, disqualification.getResponsibilityOpinion());
-                writer.writeCellValue(24, currentRow, qualityCheckByList.get(number));
-                writer.writeCellValue(25, currentRow, unitTreatmentOneList.get(number));
-                writer.writeCellValue(26, currentRow, unitTreatmentTwoList.get(number));
-                writer.writeCellValue(27, currentRow, discoverItemList.get(number));
-                writer.writeCellValue(28, currentRow, disqualification.getDiscardTime());
-                writer.writeCellValue(29, currentRow, disqualification.getReuseTime());
-                writer.writeCellValue(30, currentRow, disqualification.getAcceptDeviation());
-                writer.writeCellValue(31, currentRow, disqualification.getRepairQualified());
-                writer.writeCellValue(32, currentRow, disqualification.getScrap());
-                writer.writeCellValue(33, currentRow, disqualification.getSalesReturn());
-                writer.writeCellValue(34, currentRow, disqualification.getSalesReturnLoss());
-                writer.writeCellValue(35, currentRow, disqualification.getCloseTime());
-                writer.writeCellValue(36, currentRow, disqualification.getTreatmentOneName());
-                writer.writeCellValue(37, currentRow, disqualification.getTreatmentTwoName());
-                writer.writeCellValue(38, currentRow, disqualification.getResponsibilityName());
-                writer.writeCellValue(39, currentRow, disqualification.getTechnologyName());
-                currentRow ++;
-                number ++;
-            }
-            rsp.setContentType("application/octet-stream");
-            rsp.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode("不合格品处理单查询结果.xlsx", "UTF-8"));
-            ServletOutputStream outputStream = rsp.getOutputStream();
-            writer.flush(outputStream, true);
-            IoUtil.close(outputStream);
-            
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void getDisqualificationByQueryInspectorDto(QueryWrapper<Disqualification> queryWrapper, QueryInspectorDto queryInspectorDto) {
-        //图号查询
-        if (StrUtil.isNotBlank(queryInspectorDto.getDrawingNo())) {
-            queryWrapper.like("drawing_no", queryInspectorDto.getDrawingNo());
-        }
-        //产品名称
-        if (StrUtil.isNotBlank(queryInspectorDto.getProductName())) {
-            queryWrapper.like("product_name", queryInspectorDto.getProductName());
-        }
-        //跟单号
-        if (StrUtil.isNotBlank(queryInspectorDto.getTrackNo())) {
-            queryInspectorDto.setTrackNo(queryInspectorDto.getTrackNo().replaceAll(" ", ""));
-            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + queryInspectorDto.getTrackNo() + "%'");
-        }
-        //申请单号
-        if (StrUtil.isNotBlank(queryInspectorDto.getProcessSheetNo())) {
-            queryWrapper.like("process_sheet_no", queryInspectorDto.getProcessSheetNo());
-        }
-        //申请单状态
-        if (StrUtil.isNotBlank(queryInspectorDto.getType())) {
-            queryWrapper.eq("type", queryInspectorDto.getType());
-        }
-        try {
-            //开始时间
-            if (StrUtil.isNotBlank(queryInspectorDto.getStartTime())) {
-                queryWrapper.apply("UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('" + queryInspectorDto.getStartTime() + " 00:00:00')");
-            }
-            //结束时间
-            if (StrUtil.isNotBlank(queryInspectorDto.getEndTime())) {
-                Calendar calendar = new GregorianCalendar();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                calendar.setTime(sdf.parse(queryInspectorDto.getEndTime()));
-                calendar.add(Calendar.DAY_OF_MONTH, 1);
-                queryWrapper.apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + sdf.format(calendar.getTime()) + " 00:00:00')");
-            }
-        } catch (Exception e) {
-            throw new GlobalException("时间格式处理错误", ResultCode.FAILED);
-        }
-    }
-
-    private void getDisqualificationByQueryPartDto(QueryWrapper<DisqualificationFinalResult> objectQueryWrapper, QueryInspectorDto queryInspectorDto) {
-       // 处理单位1
-       if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentOne())) {
-            objectQueryWrapper.like("unit_treatment_one", queryInspectorDto.getUnitTreatmentOne());
-        }
-       // 处理单位2
-        if (StrUtil.isNotBlank(queryInspectorDto.getUnitTreatmentTwo())) {
-            objectQueryWrapper.like("unit_treatment_two", queryInspectorDto.getUnitTreatmentTwo());
-        }
-        // 责任单位为当前租户的数据
-        objectQueryWrapper.eq("unit_responsibility_within",SecurityUtils.getCurrentUser().getTenantId());
-    }
-
-    private static List<String> convertType(List<String> list, Map<String, ItemParam> map) {
-        int init = 0;
-        for(String type: list) {
-            String[] split = type.split(",");
-            StringBuilder stringBuilder = new StringBuilder();
-            for (String s : split) {
-                if (map.containsKey(s)) {
-                    stringBuilder.append(map.get(s).getLabel()).append(",");
-                }
-            }
-            if (stringBuilder.length() > 0) {
-                stringBuilder.deleteCharAt(stringBuilder.length()-1);
-                list.set(init, stringBuilder.toString());
-            }
-            init ++;
-        }
-        return list;
-    }
-
-    /**
-     * 转换
-     * @param list
-     * @param map
-     * @return
-     */
-    private static List<String> convertName(List<String> list, Map<String, String> map) {
-        int init = 0;
-        for (String qualityCheckBy: list) {
-            String[] split = qualityCheckBy.split(",");
-            StringBuilder stringBuilder = new StringBuilder();
-            for (String s : split) {
-                if (map.containsKey(s)) {
-                    stringBuilder.append(map.get(s)).append(",");
-                }
-            }
-            if (stringBuilder.length() > 0) {
-                stringBuilder.deleteCharAt(stringBuilder.length()-1);
-                list.set(init, stringBuilder.toString());
-            }
-            init ++;
-        }
-        return list;
-    }
-
-    /**
-     * 转换
-     * @param list
-     * @param tenantMap
-     * @return
-     */
-    private static List<String> convertInput(List<String> list, Map<String, Tenant> tenantMap) {
-        int init = 0;
-        for (String tenantId: list) {
-            if (tenantMap.containsKey(tenantId)) {
-                list.set(init, tenantMap.get(tenantId).getTenantName());
-            }
-            init ++;
-        }
-        return list;
-    }
-
-    /**
-     * 转换
-     * @param list
-     * @param itemMap
-     * @return
-     */
-    private static List<String> convertItemInput(List<String> list, Map<String, ItemParam> itemMap) {
-        int init = 0;
-        for (String key: list) {
-            if (itemMap.containsKey(key)) {
-                if (StringUtils.isNotEmpty(itemMap.get(key).getLabel())) {
-                    list.set(init, itemMap.get(key).getLabel());
-                }
-            }
-            init ++;
-        }
-        return list;
+        disqualificationService.exportExcel(rsp, queryInspectorDto);
     }
 
 }

@@ -59,12 +59,9 @@ public class CertificateController {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("template_code", "BOMCO_BY_ZPG1");
         queryWrapper.eq("tenant_id", "12345678901234567890123456789002");
-        queryWrapper.ge("create_time", "2023-04-01 00:00:00");
         queryWrapper.isNull("certificate_no");
         queryWrapper.isNotNull("product_no");
         List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
-        System.out.println("----------------------");
-        System.out.println(trackHeadList.size());
         int i = 0;
         for (TrackHead trackHead : trackHeadList) {
             try {
