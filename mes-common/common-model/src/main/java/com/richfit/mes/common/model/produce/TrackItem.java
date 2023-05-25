@@ -497,6 +497,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String pourTimeRouter;
 
+    @ApiModelProperty(value = "保温完成时间 ", dataType = "Date")
+    private Date holdFinishedTime;
+
     @ApiModelProperty(value = "热风机关闭时间")
     private String fanClosedTime;
 
@@ -526,5 +529,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "根据材质和锭型进行分组后的数量")
     @TableField(exist = false)
     private Integer numByTexture;
+
+    @ApiModelProperty(value = "浇注时间点")
+    @TableField(exist = false)
+    private String pourTimeDot;
 
 }

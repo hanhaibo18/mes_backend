@@ -170,9 +170,6 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "零件名称")
     private String materialName;
 
-    @ApiModelProperty(value = "加工车间 ", dataType = "String")
-    private String inchargeWorkshop;
-
     @TableField(exist = false)
     @ApiModelProperty(value = "工艺状态")
     private Integer processStatus;
@@ -240,4 +237,12 @@ public class Plan extends BaseEntity<Plan> {
     @TableField(exist = false)
     @ApiModelProperty(value = "锭型")
     private String ingotCase;
+
+    @ApiModelProperty(value = "加工车间 ", dataType = "String")
+    @TableField(exist = false)
+    private String inchargeWorkshop;
+
+    @ApiModelProperty(value = "加工车间名称 ", dataType = "String")
+    @TableField(exist = false)
+    private String inchargeWorkshopName;
 }
