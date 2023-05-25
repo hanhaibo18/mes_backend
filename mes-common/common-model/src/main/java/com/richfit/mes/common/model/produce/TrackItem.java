@@ -530,4 +530,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private Integer numByTexture;
 
+    @ApiModelProperty(value = "浇注时间点")
+    @TableField(exist = false)
+    private String pourTimeDot;
+
 }

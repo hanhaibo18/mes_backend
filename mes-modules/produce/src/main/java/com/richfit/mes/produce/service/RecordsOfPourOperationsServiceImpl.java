@@ -153,13 +153,12 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         List<TrackItem> itemList = recordsOfPourOperations.getItemList();
         //计算保温完成时间
         for (TrackItem trackItem : itemList) {
+            //浇注时间
             String pourTime = recordsOfPourOperations.getPourTime();
+            //保温时间
             String holdTime = trackItem.getHoldTime();
-            countHoldFinishedTime(trackItem, pourTime, holdTime);
-
+            this.countHoldFinishedTime(trackItem, pourTime, holdTime);
         }
-
-
 
         trackItemService.updateBatchById(itemList);
         return this.updateById(recordsOfPourOperations);
@@ -169,10 +168,11 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     /**
      * 计算并设置保温结束时间
      * @param trackItem
-     * @param pourTime
-     * @param holdTime
+     * @param pourTime  浇注时间
+     * @param holdTime  保温时间
      */
-    private void countHoldFinishedTime(TrackItem trackItem, String pourTime, String holdTime) {
+    @Override
+    public void countHoldFinishedTime(TrackItem trackItem, String pourTime, String holdTime) {
         if(!StringUtils.isNullOrEmpty(pourTime)&&!StringUtils.isNullOrEmpty(holdTime)){
             Date date = DateUtils.addDateForHour(DateUtils.stringToDate(pourTime), Integer.valueOf(holdTime));
             trackItem.setHoldFinishedTime(date);

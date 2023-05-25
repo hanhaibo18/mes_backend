@@ -107,6 +107,8 @@ public class RecordsOfPourOperationsController extends ApiController {
     @ApiOperation(value = "浇注页面修改工序信息", notes = "浇注页面修改工序信息")
     @PutMapping("/item")
     public CommonResult<Boolean> updateItem(@RequestBody TrackItem item) {
+        recordsOfPourOperationsService.countHoldFinishedTime(item,item.getPourTimeDot(),item.getHoldTime());
+
         return CommonResult.success(trackItemService.updateById(item));
     }
 

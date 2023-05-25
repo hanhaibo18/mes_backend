@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.RecordsOfPourOperations;
+import com.richfit.mes.common.model.produce.TrackItem;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -20,6 +21,8 @@ public interface RecordsOfPourOperationsService extends IService<RecordsOfPourOp
     Boolean init(Long prechargeFurnaceId, String branchCode);
 
     Boolean update(RecordsOfPourOperations recordsOfPourOperations);
+
+    void countHoldFinishedTime(TrackItem trackItem, String pourTime, String holdTime);
 
     Boolean check(List<String> ids, int state);
 
