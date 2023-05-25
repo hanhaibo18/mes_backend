@@ -383,8 +383,8 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "导入计划--锻造车间", notes = "根据Excel文档导入计划--锻造车间")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel_DZ")
-    public CommonResult importExcelDZ(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IOException {
-        planService.importPlanDZ(file, request);
+    public CommonResult importExcelDZ(@RequestParam("file") MultipartFile file, HttpServletRequest request,String branchCode) throws IOException {
+        planService.importPlanDZ(file, request,branchCode);
         return CommonResult.success(null);
     }
 

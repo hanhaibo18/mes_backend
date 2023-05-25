@@ -443,11 +443,10 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
     //            plan.setApprovalBy(currentUser.getUsername());//审批人
     //            plan.setApprovalTime(new Date());//审批时间
-                plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
                 plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
                 //--------------------------
                 plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
-                plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
+                plan.setInchargeOrgName(hotDemand.getInchargeOrg());//加工单位
                 plan.setBlank(hotDemand.getWorkblankType());//毛坯
                 plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
                 plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
