@@ -66,7 +66,7 @@ public interface PlanService extends IService<Plan> {
      * @Author: zhiqiang.lu
      * @Date: 2022/7/8 11:37
      **/
-    void autoProjectBom(Plan plan);
+    void autoProjectBom(Plan plan) throws Exception;
 
     /**
      * 拆分计划
@@ -91,7 +91,7 @@ public interface PlanService extends IService<Plan> {
     void importPlanMX(MultipartFile file, HttpServletRequest request) throws IOException;
 
     @Transactional(rollbackFor = Exception.class)
-    void importPlanDZ(MultipartFile file, HttpServletRequest request) throws IOException;
+    void importPlanDZ(MultipartFile file, HttpServletRequest request,String branchCode) throws IOException;
 
     @Transactional(rollbackFor = Exception.class)
     void importPlanZG(MultipartFile file, HttpServletRequest request) throws IOException;

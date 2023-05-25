@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,12 +14,14 @@ import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.TenantUser;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.RecordsOfPourOperationsMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.Code;
+import com.richfit.mes.produce.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,6 +66,8 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     private PrechargeFurnaceAssignPersonService prechargeFurnaceAssignPersonService;
     @Autowired
     private CodeRuleService codeRuleService;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
     @Override
     public RecordsOfPourOperations getByPrechargeFurnaceId(Long prechargeFurnaceId) {
@@ -134,6 +140,9 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         recordsOfPourOperations.setTypeOfSteel(prechargeFurnace.getTypeOfSteel());
         recordsOfPourOperations.setFurnaceNo(steelmakingOperations == null ? "" : steelmakingOperations.getFurnaceNo());
         recordsOfPourOperations.setIngotCase(prechargeFurnace.getIngotCase());
+        UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
+        assignUpdateWrapper.eq("furnace_id", prechargeFurnaceId).eq("opt_type", "16").set("record_status", 2);
+        prechargeFurnaceAssignService.update(assignUpdateWrapper);
         return this.save(recordsOfPourOperations);
     }
 
@@ -142,17 +151,46 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     public Boolean update(RecordsOfPourOperations recordsOfPourOperations) {
         //先保存工序信息
         List<TrackItem> itemList = recordsOfPourOperations.getItemList();
+        //计算保温完成时间
+        for (TrackItem trackItem : itemList) {
+            //浇注时间
+            String pourTime = recordsOfPourOperations.getPourTime();
+            //保温时间
+            String holdTime = trackItem.getHoldTime();
+            this.countHoldFinishedTime(trackItem, pourTime, holdTime);
+        }
+
         trackItemService.updateBatchById(itemList);
         return this.updateById(recordsOfPourOperations);
     }
 
+
+    /**
+     * 计算并设置保温结束时间
+     * @param trackItem
+     * @param pourTime  浇注时间
+     * @param holdTime  保温时间
+     */
     @Override
+    public void countHoldFinishedTime(TrackItem trackItem, String pourTime, String holdTime) {
+        if(!StringUtils.isNullOrEmpty(pourTime)&&!StringUtils.isNullOrEmpty(holdTime)){
+            Date date = DateUtils.addDateForHour(DateUtils.stringToDate(pourTime), Integer.valueOf(holdTime));
+            trackItem.setHoldFinishedTime(date);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean check(List<String> ids, int state) {
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String username = SecurityUtils.getCurrentUser().getUsername();
         QueryWrapper<RecordsOfPourOperations> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", ids);
         List<RecordsOfPourOperations> recordsOfPourOperations = this.list(queryWrapper);
+        Set<Long> furnaceId = recordsOfPourOperations.stream().map(RecordsOfPourOperations::getPrechargeFurnaceId).collect(Collectors.toSet());
+        UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
+        assignUpdateWrapper.in("furnace_id", furnaceId).eq("opt_type", "16").set("record_status", state);
+        prechargeFurnaceAssignService.update(assignUpdateWrapper);
         for (RecordsOfPourOperations recordsOfPourOperation : recordsOfPourOperations) {
             recordsOfPourOperation.setAssessor(username);
             recordsOfPourOperation.setAssessorTime(date);
@@ -162,7 +200,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     }
 
     @Override
-    public IPage<RecordsOfPourOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit) {
+    public IPage<RecordsOfPourOperations> bzzcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit, String orderCol, String order) {
         //班组长查询同班员工号
         List<TenantUser> tenantUserList = systemServiceClient.queryClass(SecurityUtils.getCurrentUser().getUsername());
         List<String> userIdList = tenantUserList.stream().map(TenantUser::getUserAccount).collect(Collectors.toList());
@@ -191,11 +229,17 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             recordsOfPourOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
         }
         buildQueryWrapper(ingotCase, startTime, endTime, status, recordsOfPourOperationsQueryWrapper);
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(recordsOfPourOperationsQueryWrapper, orderCol, order);
+        } else {
+            recordsOfPourOperationsQueryWrapper.orderByDesc("modify_time");
+        }
         return this.page(new Page<>(page, limit), recordsOfPourOperationsQueryWrapper);
     }
 
     @Override
-    public IPage<RecordsOfPourOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit) {
+    public IPage<RecordsOfPourOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, int page, int limit, String orderCol, String order) {
         //根据员工号查询派炉信息
         QueryWrapper<PrechargeFurnaceAssignPerson> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceAssignQueryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
@@ -231,6 +275,12 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         }
         if (status != null) {
             recordsOfPourOperationsQueryWrapper.eq("status", status);
+        }
+        if (!StringUtils.isNullOrEmpty(orderCol)) {
+            //排序
+            OrderUtil.query(recordsOfPourOperationsQueryWrapper, orderCol, order);
+        } else {
+            recordsOfPourOperationsQueryWrapper.orderByDesc("modify_time");
         }
         return this.page(new Page<>(page, limit), recordsOfPourOperationsQueryWrapper);
     }
@@ -311,7 +361,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         if (CollectionUtils.isEmpty(list)) {
             throw new GlobalException("没有找到浇注记录信息！", ResultCode.FAILED);
         }
-        String fileName = "浇注记录" + LocalDateTime.now();
+        String fileName = "浇注记录.xlsx";
         String[] columnHeaders = {"审核状态", "记录编号", "配炉编号", "浇注温度", "炉号", "钢种", "浇注箱/根数", "锭型", "冶炼班组", "浇注工", "浇注时间", "审核人", "审核时间", "备注"};
         String[] fieldNames = {"status", "recordNo", "prechargeFurnaceId", "temperature", "furnaceNo", "typeOfSteel", "pourNum", "ingotCase", "classGroup", "operator", "pourTime", "assessor", "assessorTime", "remark"};
         try {
@@ -352,6 +402,16 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             }
         }
         return isBzz;
+    }
+
+    @Override
+    public Boolean delete(List<String> ids) {
+        List<RecordsOfPourOperations> pourOperationsList = this.listByIds(ids);
+        Set<Long> furnaceId = pourOperationsList.stream().map(RecordsOfPourOperations::getPrechargeFurnaceId).collect(Collectors.toSet());
+        UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
+        assignUpdateWrapper.in("furnace_id", furnaceId).eq("opt_type", "16").set("record_status", null);
+        prechargeFurnaceAssignService.update(assignUpdateWrapper);
+        return this.removeByIds(ids);
     }
 }
 

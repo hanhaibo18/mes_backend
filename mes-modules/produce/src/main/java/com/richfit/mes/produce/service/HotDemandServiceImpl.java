@@ -443,17 +443,17 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
     //            plan.setApprovalBy(currentUser.getUsername());//审批人
     //            plan.setApprovalTime(new Date());//审批时间
-                plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工单位
                 plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
                 //--------------------------
                 plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
-                plan.setInchargeOrg(hotDemand.getInchargeOrg());//加工车间
+                plan.setInchargeOrgName(hotDemand.getInchargeOrg());//加工单位
                 plan.setBlank(hotDemand.getWorkblankType());//毛坯
                 plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
                 plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
                 plan.setModifyBy(currentUser.getUsername());
                 plan.setModifyTime(new Date());
                 plan.setDrawNoName("");//图号名称
+                plan.setMaterialName(hotDemand.getDemandName());//零件名称
                 planService.save(plan);
                 //扩展字段保存
                 this.saveExtend(hotDemand, plan);
@@ -471,7 +471,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         //扩展字段保存
         PlanExtend planExtend = new PlanExtend();
             planExtend.setProjectName(hotDemand.getProjectName());//项目名称
-            planExtend.setProductName(hotDemand.getDemandName());//产品名称
+            planExtend.setProductName(hotDemand.getProductName());//产品名称
             planExtend.setSampleNum(0);//实样数量
             planExtend.setDemandId(hotDemand.getId());//需求表id
             planExtend.setPlanId(plan.getId());//生产计划id

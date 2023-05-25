@@ -122,10 +122,13 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             trackItem.setTexture(trackHead.getTexture());
             trackItem.setWorkNo(trackHead.getWorkNo());
             trackItem.setProductName(trackHead.getProductName());
-            trackItem.setPriority(trackHead.getPriority());
             //查询工艺信息
             Router data = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
             trackItem.setPieceWeight(Objects.nonNull(data) ? data.getPieceWeight() : "");
+            trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
+            //查询锭型信息
+            List<String> ingotCaseByItemId = trackHeadMapper.getIngotCaseByItemId(trackItem.getId());
+            trackItem.setIngotCase(CollectionUtils.isNotEmpty(ingotCaseByItemId) ? ingotCaseByItemId.get(0) : "");
             trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
         }
         return list;
@@ -147,6 +150,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
         prechargeFurnace.setTexture(texture);
         prechargeFurnace.setRecordStatus("0");
+        prechargeFurnace.setBranchCode(SecurityUtils.getCurrentUser().getBelongOrgId());
         this.save(prechargeFurnace);
         for (Assign assign : assignList) {
             //跟单工序添加装炉id

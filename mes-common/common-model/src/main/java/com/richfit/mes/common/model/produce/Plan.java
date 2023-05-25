@@ -103,10 +103,10 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "所属机构")
     private String branchCode;
 
-    @ApiModelProperty(value = "加工车间")
+    @ApiModelProperty(value = "加工单位")
     private String inchargeOrg;
 
-    @ApiModelProperty(value = "加工车间名称")
+    @ApiModelProperty(value = "加工单位名称")
     private String inchargeOrgName;
 
     @ApiModelProperty(value = "状态  -1未发布 0未开始 1进行中 2关闭 3已完成")
@@ -144,7 +144,7 @@ public class Plan extends BaseEntity<Plan> {
     private String prepareBy;
 
     @ApiModelProperty(value = "计划月份")
-    private Date planMonth;
+    private String planMonth;
 
     @ApiModelProperty(value = "批准人")
     private String approvalBy;
@@ -237,4 +237,12 @@ public class Plan extends BaseEntity<Plan> {
     @TableField(exist = false)
     @ApiModelProperty(value = "锭型")
     private String ingotCase;
+
+    @ApiModelProperty(value = "加工车间 ", dataType = "String")
+    @TableField(exist = false)
+    private String inchargeWorkshop;
+
+    @ApiModelProperty(value = "加工车间名称 ", dataType = "String")
+    @TableField(exist = false)
+    private String inchargeWorkshopName;
 }

@@ -621,6 +621,9 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkNo())) {
             queryWrapper.eq("work_no", dispatchingDto.getWorkNo());
         }
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getMaterialName())) {
+            queryWrapper.eq("material_name", dispatchingDto.getMaterialName());
+        }
         if("4".equals(dispatchingDto.getClasses()) || "6".equals(dispatchingDto.getClasses()) || "7".equals(dispatchingDto.getClasses())){
             queryWrapper.ne("opt_type","14")
                     .ne("opt_type","13");

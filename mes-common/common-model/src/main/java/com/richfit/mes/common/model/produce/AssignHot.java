@@ -387,6 +387,8 @@ public class AssignHot {
 
     @ApiModelProperty(value = "派工数量", dataType = "Integer")
     private Integer dispatchingNumber;
+    @ApiModelProperty(value = "零件名称", dataType = "String")
+    private String materialName;
 
     /**
      * 下料规格
@@ -404,4 +406,6 @@ public class AssignHot {
     @TableField(exist = false)
     @ApiModelProperty(value = "派工人", dataType = "List")
     private List<AssignPerson> assignPersons;
+    @ApiModelProperty(value = "毛坯:: 0锻件,1铸件,2钢锭", dataType = "String")
+    private String workblankType;
 }
