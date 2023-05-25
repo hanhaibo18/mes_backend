@@ -432,8 +432,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 itemQueryWrapper.eq("track_head_id", trackItem.getTrackHeadId());
                 itemQueryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
                 TrackItem nextItem = trackItemService.getOne(itemQueryWrapper);
-                nextItem.setPrechargeFurnaceId(trackItem.getPrechargeFurnaceId());
-                trackItemService.updateById(nextItem);
+                if (!ObjectUtil.isEmpty(nextItem)) {
+                    nextItem.setPrechargeFurnaceId(trackItem.getPrechargeFurnaceId());
+                    trackItemService.updateById(nextItem);
+                }
+                //修改预装炉状态为未派工
+                PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                if (!ObjectUtil.isEmpty(prechargeFurnace)) {
+                    prechargeFurnace.setAssignStatus(0);
+                    prechargeFurnaceService.updateById(prechargeFurnace);
+                }
             }
             //检验人
             trackItem.setQualityCheckBy(completeDto.getQcPersonId());
@@ -541,14 +549,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 //派工状态设置为完成
                 assign.setState(2);
                 trackAssignService.updateById(assign);
-                //修改预装炉派工表状态为完工
-                if (!StringUtils.isNullOrEmpty(trackItem.getPrechargeFurnaceAssignId())) {
-                    PrechargeFurnaceAssign assignInfo = prechargeFurnaceAssignService.getById(trackItem.getPrechargeFurnaceAssignId());
-                    assignInfo.setIsDoing(END_START_WORK);
-                    assignInfo.setFinishTime(new Date());
-                    prechargeFurnaceAssignService.updateById(assignInfo);
-                }
 
+            }
+            //修改预装炉派工表状态为完工
+            if (!StringUtils.isNullOrEmpty(trackItem.getPrechargeFurnaceAssignId())) {
+                PrechargeFurnaceAssign assignInfo = prechargeFurnaceAssignService.getById(trackItem.getPrechargeFurnaceAssignId());
+                assignInfo.setIsDoing(END_START_WORK);
+                assignInfo.setFinishTime(new Date());
+                prechargeFurnaceAssignService.updateById(assignInfo);
             }
             log.error(completeDto.getTrackCompleteList().toString());
 
