@@ -144,7 +144,7 @@ public class Plan extends BaseEntity<Plan> {
     private String prepareBy;
 
     @ApiModelProperty(value = "计划月份")
-    private Date planMonth;
+    private String planMonth;
 
     @ApiModelProperty(value = "批准人")
     private String approvalBy;
