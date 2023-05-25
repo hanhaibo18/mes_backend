@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -62,6 +63,8 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     private PrechargeFurnaceAssignPersonService prechargeFurnaceAssignPersonService;
     @Autowired
     private CodeRuleService codeRuleService;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
     @Override
     public RecordsOfPourOperations getByPrechargeFurnaceId(Long prechargeFurnaceId) {
@@ -134,6 +137,9 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         recordsOfPourOperations.setTypeOfSteel(prechargeFurnace.getTypeOfSteel());
         recordsOfPourOperations.setFurnaceNo(steelmakingOperations == null ? "" : steelmakingOperations.getFurnaceNo());
         recordsOfPourOperations.setIngotCase(prechargeFurnace.getIngotCase());
+        UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
+        assignUpdateWrapper.eq("furnace_id", prechargeFurnaceId).eq("opt_type", "16").set("record_status", 2);
+        prechargeFurnaceAssignService.update(assignUpdateWrapper);
         return this.save(recordsOfPourOperations);
     }
 
@@ -147,12 +153,17 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean check(List<String> ids, int state) {
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String username = SecurityUtils.getCurrentUser().getUsername();
         QueryWrapper<RecordsOfPourOperations> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", ids);
         List<RecordsOfPourOperations> recordsOfPourOperations = this.list(queryWrapper);
+        Set<Long> furnaceId = recordsOfPourOperations.stream().map(RecordsOfPourOperations::getPrechargeFurnaceId).collect(Collectors.toSet());
+        UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
+        assignUpdateWrapper.in("furnace_id", furnaceId).eq("opt_type", "16").set("record_status", state);
+        prechargeFurnaceAssignService.update(assignUpdateWrapper);
         for (RecordsOfPourOperations recordsOfPourOperation : recordsOfPourOperations) {
             recordsOfPourOperation.setAssessor(username);
             recordsOfPourOperation.setAssessorTime(date);
@@ -352,6 +363,16 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             }
         }
         return isBzz;
+    }
+
+    @Override
+    public Boolean delete(List<String> ids) {
+        List<RecordsOfPourOperations> pourOperationsList = this.listByIds(ids);
+        Set<Long> furnaceId = pourOperationsList.stream().map(RecordsOfPourOperations::getPrechargeFurnaceId).collect(Collectors.toSet());
+        UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
+        assignUpdateWrapper.in("furnace_id", furnaceId).eq("opt_type", "16").set("record_status", null);
+        prechargeFurnaceAssignService.update(assignUpdateWrapper);
+        return this.removeByIds(ids);
     }
 }
 

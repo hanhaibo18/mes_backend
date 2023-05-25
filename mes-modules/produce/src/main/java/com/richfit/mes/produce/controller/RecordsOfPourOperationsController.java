@@ -63,7 +63,7 @@ public class RecordsOfPourOperationsController extends ApiController {
     @ApiOperation(value = "批量删除浇注记录信息", notes = "批量删除炼钢信息")
     @DeleteMapping
     public CommonResult<Boolean> delete(@RequestBody List<String> ids) {
-        return CommonResult.success(recordsOfPourOperationsService.removeByIds(ids));
+        return CommonResult.success(recordsOfPourOperationsService.delete(ids));
     }
 
     @ApiOperation(value = "记录审核", notes = "记录审核")

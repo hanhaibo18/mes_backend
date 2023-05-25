@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -10,10 +11,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.model.base.Branch;
-import com.richfit.mes.common.model.produce.PrechargeFurnace;
-import com.richfit.mes.common.model.produce.PrechargeFurnaceAssignPerson;
-import com.richfit.mes.common.model.produce.RecordsOfSteelmakingOperations;
-import com.richfit.mes.common.model.produce.ResultsOfSteelmaking;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.RecordsOfSteelmakingOperationsMapper;
@@ -57,7 +55,9 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
     @Autowired
     private CodeRuleService codeRuleService;
     @Autowired
-    public RecordsOfPourOperationsService recordsOfPourOperationsService;
+    private RecordsOfPourOperationsService recordsOfPourOperationsService;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
     @Override
     public RecordsOfSteelmakingOperations getByPrechargeFurnaceId(Long prechargeFurnaceId) {
@@ -78,6 +78,7 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean init(Long prechargeFurnaceId, String branchCode) {
         String recordNo = null;
         try {
@@ -111,6 +112,9 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         }
         recordsOfSteelmakingOperations.setTypeOfSteel(prechargeFurnace.getTypeOfSteel());
         recordsOfSteelmakingOperations.setSmeltingEquipment(prechargeFurnace.getSmeltingEquipment());
+        UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
+        assignUpdateWrapper.eq("furnace_id", prechargeFurnaceId).eq("opt_type", "15").set("record_status", 2);
+        prechargeFurnaceAssignService.update(assignUpdateWrapper);
         return this.save(recordsOfSteelmakingOperations);
     }
 
@@ -129,12 +133,17 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean check(List<String> ids, int state) {
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String username = SecurityUtils.getCurrentUser().getUsername();
         QueryWrapper<RecordsOfSteelmakingOperations> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", ids);
         List<RecordsOfSteelmakingOperations> recordsOfSteelmakingOperations = this.list(queryWrapper);
+        Set<Long> furnaceId = recordsOfSteelmakingOperations.stream().map(RecordsOfSteelmakingOperations::getPrechargeFurnaceId).collect(Collectors.toSet());
+        UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
+        assignUpdateWrapper.in("furnace_id", furnaceId).eq("opt_type", "15").set("record_status", state);
+        prechargeFurnaceAssignService.update(assignUpdateWrapper);
         for (RecordsOfSteelmakingOperations recordsOfSteelmakingOperation : recordsOfSteelmakingOperations) {
             recordsOfSteelmakingOperation.setAssessor(username);
             recordsOfSteelmakingOperation.setAssessorTime(date);
@@ -325,6 +334,17 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean delete(List<String> ids) {
+        List<RecordsOfSteelmakingOperations> steelmakingOperationsList = this.listByIds(ids);
+        Set<Long> furnaceId = steelmakingOperationsList.stream().map(RecordsOfSteelmakingOperations::getPrechargeFurnaceId).collect(Collectors.toSet());
+        UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
+        assignUpdateWrapper.in("furnace_id", furnaceId).eq("opt_type", "15").set("record_status", null);
+        prechargeFurnaceAssignService.update(assignUpdateWrapper);
+        return this.removeByIds(ids);
     }
 }
 

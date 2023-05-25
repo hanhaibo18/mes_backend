@@ -30,5 +30,7 @@ public interface RecordsOfPourOperationsService extends IService<RecordsOfPourOp
     void export(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String ingotCase, String startTime, String endTime, Integer status, HttpServletResponse response);
 
     boolean isBzz();
+
+    Boolean delete(List<String> ids);
 }
 

@@ -315,6 +315,10 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @ApiModelProperty(value = "工序完工时间", dataType = "工序完工时间")
     private String finalCompleteTime;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "浇注温度", dataType = "String")
+    private String pourTemperature;
+
     @Override
     public int compareTo(TrackComplete o) {
         return o.getFinalCompleteTime().compareTo(this.getFinalCompleteTime());

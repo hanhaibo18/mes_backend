@@ -424,6 +424,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 return CommonResult.failed("工序Id不能为空");
             }
             TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
+            trackItem.setPourTemperature(completeDto.getPourTemperature());
             //下工序装炉
             if (completeDto.getNextFurnace() != null && completeDto.getNextFurnace()) {
                 QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
@@ -725,6 +726,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         LayingOff layingOff = new LayingOff();
         ModelingCore modelingCore = new ModelingCore();
         Knockout knockout = new Knockout();
+        TrackItem trackItem = trackItemService.getById(tiId);
         //state=0时从缓存取数据显示
         if (0 == state) {
             completeList = trackCompleteMapper.queryCompleteCache(queryWrapper);
@@ -734,6 +736,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             rawMaterialRecordList = rawMaterialRecordService.queryrawMaterialRecordCacheByItemId(tiId);
             modelingCore = modelingCoreService.queryCacheByItemId(tiId);
             knockout = knockoutService.queryCacheByItemId(tiId);
+            if (!CollectionUtils.isEmpty(completeList)) {
+                queryWorkingTimeVo.setPourTemperature(completeList.get(0).getPourTemperature());
+            }
 
         } else {
             completeList = this.list(queryWrapper);
@@ -753,9 +758,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             QueryWrapper<ModelingCore> modelingCoreQueryWrapper = new QueryWrapper<>();
             modelingCoreQueryWrapper.eq("item_id", tiId);
             modelingCore = modelingCoreService.getOne(modelingCoreQueryWrapper);
+            queryWorkingTimeVo.setPourTemperature(trackItem.getPourTemperature());
         }
 
-        TrackItem trackItem = trackItemService.getById(tiId);
         RecordsOfSteelmakingOperations recordsOfSteelmakingOperations = new RecordsOfSteelmakingOperations();
         RecordsOfPourOperations recordsOfPourOperations = new RecordsOfPourOperations();
         //该工序如果走的预装炉，根据预装炉id找对应的炼钢记录和浇注记录信息
@@ -2159,10 +2164,20 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
         assignQueryWrapper.eq("ti_id", tiId).last("limit 1");
         Assign assign = trackAssignService.getOne(assignQueryWrapper);
-        //变更炼钢作业记录
-        UpdateWrapper<RecordsOfSteelmakingOperations> steelmakingOperationsUpdateWrapper = new UpdateWrapper<>();
-        steelmakingOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId);
-        recordsOfSteelmakingOperationsService.update(steelmakingOperationsUpdateWrapper);
+        if ("15".equals(prechargeFurnaceAssign.getOptType())) {
+            //变更炼钢作业记录
+            UpdateWrapper<RecordsOfSteelmakingOperations> steelmakingOperationsUpdateWrapper = new UpdateWrapper<>();
+            steelmakingOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId).set("status", null);
+            recordsOfSteelmakingOperationsService.update(steelmakingOperationsUpdateWrapper);
+        } else if ("16".equals(prechargeFurnaceAssign.getOptType())) {
+            //变更炼浇注作业记录
+            UpdateWrapper<RecordsOfPourOperations> pourOperationsUpdateWrapper = new UpdateWrapper<>();
+            pourOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId).set("status", null);
+            recordsOfPourOperationsService.update(pourOperationsUpdateWrapper);
+        }
+        //设置原记录审核状态为null
+        prechargeFurnaceAssign.setRecordStatus(null);
+        prechargeFurnaceAssignService.updateById(prechargeFurnaceAssign);
         //根据派工信息和变更后预装炉id新建派工信息
         List<Long> ids = new ArrayList<>();
         ids.add(afterId);

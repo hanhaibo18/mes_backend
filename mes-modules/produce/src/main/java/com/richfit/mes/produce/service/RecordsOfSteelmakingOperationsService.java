@@ -28,5 +28,7 @@ public interface RecordsOfSteelmakingOperationsService extends IService<RecordsO
     IPage<RecordsOfSteelmakingOperations> czgcx(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, int page, int limit);
 
     void export(String recordNo, Long prechargeFurnaceId, String furnaceNo, String typeOfSteel, String smeltingEquipment, String startTime, String endTime, Integer status, HttpServletResponse response);
+
+    Boolean delete(List<String> ids);
 }
 

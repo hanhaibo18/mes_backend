@@ -3,6 +3,7 @@ package com.richfit.mes.common.model.produce;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -57,4 +58,7 @@ public class PrechargeFurnaceAssign extends BaseEntity<PrechargeFurnaceAssign> {
     private String tenantId;
     @ApiModelProperty(value = "数量", dataType = "Integer")
     private Integer num;
+    @ApiModelProperty(value = "记录审核状态", dataType = "Integer")
+    private Integer recordStatus;
+
 }

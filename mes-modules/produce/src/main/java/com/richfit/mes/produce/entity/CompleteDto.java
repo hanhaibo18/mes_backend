@@ -50,4 +50,6 @@ public class CompleteDto {
     private ModelingCore modelingCore;
     @ApiModelProperty(value = "下工序装炉", dataType = "Boolean")
     private Boolean nextFurnace;
+    @ApiModelProperty(value = "浇注温度", dataType = "String")
+    private String pourTemperature;
 }
