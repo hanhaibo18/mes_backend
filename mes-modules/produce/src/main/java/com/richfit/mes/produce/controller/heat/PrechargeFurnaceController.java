@@ -153,6 +153,11 @@ public class PrechargeFurnaceController extends BaseController {
         if (dispatchingDto.getAssignStatus()!=null) {
             queryWrapper.eq("assign_status",dispatchingDto.getAssignStatus());
         }
+        //根据毛坯类型查询
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkblankType())) {
+            queryWrapper.eq("workblank_type", dispatchingDto.getWorkblankType());
+        }
+
         Page<PrechargeFurnace> page = prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
         //根据材质和锭型进行分组
         Map<String, Map<String, List<PrechargeFurnace>>> collect = page.getRecords().stream().collect(

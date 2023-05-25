@@ -114,10 +114,11 @@ public class HeatTrackAssignController extends BaseController {
             @ApiImplicitParam(name = "classes", value = "", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "state", value = "配炉状态", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "status", value = "派工状态", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "workblankType", value = "毛坯类型", dataType = "String", paramType = "query")
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes,String state,String status,String materialName) throws ParseException {
+            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes,String state,String status,String materialName,String workblankType) throws ParseException {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
@@ -162,6 +163,11 @@ public class HeatTrackAssignController extends BaseController {
         if("1".equals(status)){
             queryWrapper.isNotNull("precharge_furnace_assign_id");
         }
+        //根据毛坯类型查询
+        if (!StringUtils.isNullOrEmpty(workblankType)) {
+            queryWrapper.eq("a.workblank_type", workblankType);
+        }
+
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
         for (TrackItem data : pageAssignsHot.getRecords()) {
             //默认未配送
