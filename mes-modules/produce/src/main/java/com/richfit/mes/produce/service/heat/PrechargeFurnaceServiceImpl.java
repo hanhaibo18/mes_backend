@@ -126,6 +126,10 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             Router data = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
             trackItem.setPieceWeight(Objects.nonNull(data) ? data.getPieceWeight() : "");
             trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
+            //查询锭型信息
+            List<String> ingotCaseByItemId = trackHeadMapper.getIngotCaseByItemId(trackItem.getId());
+            trackItem.setIngotCase(CollectionUtils.isNotEmpty(ingotCaseByItemId) ? ingotCaseByItemId.get(0) : "");
+            trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
         }
         return list;
     }

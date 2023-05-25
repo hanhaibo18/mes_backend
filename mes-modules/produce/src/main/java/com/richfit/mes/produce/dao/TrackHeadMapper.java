@@ -230,4 +230,16 @@ public interface TrackHeadMapper extends BaseMapper<TrackHead> {
 
     @Select("SELECT * from produce_track_head h WHERE h.create_time > '2023-05-08 15:06:50' AND h.classes = 2 AND `status` > 0 AND h.id NOT IN (SELECT track_head_id FROM produce_request_note) AND h.production_order <> ' '")
     List<TrackHead> selectFinalTrackHeads();
+
+    @Select("SELECT\n" +
+            "\tpe.ingot_case AS ingot_case \n" +
+            "FROM\n" +
+            "\tproduce_track_item item\n" +
+            "\tLEFT JOIN produce_track_head th ON th.id = item.track_head_id\n" +
+            "\tLEFT JOIN produce_plan p ON p.id = th.work_plan_id\n" +
+            "\tLEFT JOIN produce_plan_extend pe ON pe.plan_id = p.id\n" +
+            "\tLEFT JOIN produce_hot_demand hd ON pe.demand_id = hd.id \n" +
+            "WHERE\n" +
+            "\titem.id = #{id}")
+    List<String> getIngotCaseByItemId(@Param("id") String id);
 }
