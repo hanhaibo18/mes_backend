@@ -131,7 +131,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
 //        try {
-//            deleteComplete();
+//            deleteCompleteW();
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
@@ -2135,6 +2135,31 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 }
             } else {
                 trackCompleteList.forEach(complete -> complete.setIsRetain(3));
+            }
+            trackCompleteService.updateBatchById(trackCompleteList);
+        }
+    }
+
+    private void deleteCompleteW() {
+        //错误问题工序20条
+        List<String> trackItemList = trackItemMapper.queryBugTrackItemList();
+        //查询工序所有报工记录
+        QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
+        completeQueryWrapper.in("ti_id", trackItemList);
+        completeQueryWrapper.orderByAsc("complete_time");
+        List<TrackComplete> completeList = this.list(completeQueryWrapper);
+        //根据工序分组
+        Map<String, List<TrackComplete>> listMap = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
+        int i = 1;
+        for (List<TrackComplete> trackCompleteList : listMap.values()) {
+            System.out.println("---------------------------");
+            System.out.println(i++);
+            for (TrackComplete trackComplete : trackCompleteList) {
+                if (trackComplete.getId().equals(trackCompleteList.get(0).getId())) {
+                    trackComplete.setIsRetain(1);
+                } else {
+                    trackComplete.setIsRetain(2);
+                }
             }
             trackCompleteService.updateBatchById(trackCompleteList);
         }
