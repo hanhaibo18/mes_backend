@@ -1196,7 +1196,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
             }
         } else {
-            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+            //单间并行工序全都是当前工序会出现跳工序执行问题,过滤其中最小工序 仅对最小工序执行
+            int min = result.stream().mapToInt(TrackItem::getOptSequence).min().getAsInt();
+            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && item.getOptSequence() == min && item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
         }
         //获取对应的flow
         List<String> collectFlow = result.stream().map(TrackItem::getFlowId).distinct().collect(Collectors.toList());
@@ -2145,25 +2147,25 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //先根据变更前的预装炉id找一条工序的派工信息
         //先找到该预装炉目前的派工信息
         QueryWrapper<PrechargeFurnaceAssign> furnaceAssignQueryWrapper = new QueryWrapper<>();
-        furnaceAssignQueryWrapper.eq("furnace_id",beforeId).eq("is_doing",0).last("limit 1");
+        furnaceAssignQueryWrapper.eq("furnace_id", beforeId).eq("is_doing", 0).last("limit 1");
         PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getOne(furnaceAssignQueryWrapper);
-        if (ObjectUtil.isEmpty(prechargeFurnaceAssign)){
-            throw new GlobalException("原预装炉没有派工信息！",ResultCode.FAILED);
+        if (ObjectUtil.isEmpty(prechargeFurnaceAssign)) {
+            throw new GlobalException("原预装炉没有派工信息！", ResultCode.FAILED);
         }
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
-        itemQueryWrapper.eq("precharge_furnace_id",beforeId).eq("precharge_furnace_assign_id",prechargeFurnaceAssign.getId());
+        itemQueryWrapper.eq("precharge_furnace_id", beforeId).eq("precharge_furnace_assign_id", prechargeFurnaceAssign.getId());
         List<TrackItem> trackItemList = trackItemService.list(itemQueryWrapper);
-        if (CollectionUtils.isEmpty(trackItemList)){
-            throw new GlobalException("原预装炉没有已派工工序信息！",ResultCode.FAILED);
+        if (CollectionUtils.isEmpty(trackItemList)) {
+            throw new GlobalException("原预装炉没有已派工工序信息！", ResultCode.FAILED);
         }
         String tiId = trackItemList.get(0).getId();
         QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
-        assignQueryWrapper.eq("ti_id",tiId).last("limit 1");
+        assignQueryWrapper.eq("ti_id", tiId).last("limit 1");
         Assign assign = trackAssignService.getOne(assignQueryWrapper);
         //根据派工信息和变更后预装炉id新建派工信息
         List<Long> ids = new ArrayList<>();
         ids.add(afterId);
-        return prechargeFurnaceAssignService.furnaceAssign(assign,ids);
+        return prechargeFurnaceAssignService.furnaceAssign(assign, ids);
     }
 
     private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
