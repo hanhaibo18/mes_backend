@@ -1207,7 +1207,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
             }
         } else {
-            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+            //单间并行工序全都是当前工序会出现跳工序执行问题,过滤其中最小工序 仅对最小工序执行
+            int min = result.stream().mapToInt(TrackItem::getOptSequence).min().getAsInt();
+            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && item.getOptSequence() == min && item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
         }
         //获取对应的flow
         List<String> collectFlow = result.stream().map(TrackItem::getFlowId).distinct().collect(Collectors.toList());
