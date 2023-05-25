@@ -88,6 +88,7 @@ public class CertificateController {
         QueryWrapper<Certificate> queryWrapper = new QueryWrapper<>();
         queryWrapper.ne("is_send_work_hour", "1");
         queryWrapper.eq("next_opt_work", "BOMCO_SC");
+        queryWrapper.eq("type", "1");
         List<Certificate> certificateList = certificateService.list(queryWrapper);
         int i = 0;
         for (Certificate certificate : certificateList) {
