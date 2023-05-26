@@ -80,11 +80,6 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     }
 
     @Override
-    public void pushWorkHour(Certificate certificate) throws Exception {
-
-    }
-
-    @Override
     public void pushWorkHourToBs(Certificate certificate) {
         if (certificate != null) {
             //erp工时推送
