@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Certificate;
 
 /**
- * @author 王瑞
- * @Description 跟单工序
- */
+ * 功能描述:库存管理
+ *
+ * @Author: zhiqiang.lu
+ * @Date: 2023/05/26 16:27
+ **/
 public interface InventoryService extends IService<Certificate> {
     /**
      * 功能描述:上交库存
