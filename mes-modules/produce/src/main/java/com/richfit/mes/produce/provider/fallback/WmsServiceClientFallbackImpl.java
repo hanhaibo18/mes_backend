@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class WmsServiceClientFallbackImpl implements WmsServiceClient {
     @Override
-    public CommonResult<Boolean> sendJkInfo(Certificate certificate) {
+    public CommonResult sendJkInfo(Certificate certificate) {
         return null;
     }
 

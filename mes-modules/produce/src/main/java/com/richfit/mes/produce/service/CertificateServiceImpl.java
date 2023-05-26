@@ -250,7 +250,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
 
     }
 
-    private void additionalBsns(Certificate certificate) {
+    private void additionalBsns(Certificate certificate) throws Exception {
         //完工合格证情况  交库    报工时
         if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
             certAdditionalBsns.doAdditionalBsns(certificate);

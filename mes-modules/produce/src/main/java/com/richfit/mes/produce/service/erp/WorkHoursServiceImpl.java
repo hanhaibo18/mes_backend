@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
@@ -94,9 +95,9 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
             for (TrackCertificate trackCertificate : certificate.getTrackCertificates()) {
                 TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
                 List<TrackItem> trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
-                CommonResult b = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), trackHead.getNumber(), unit);
-                if (b.getStatus() != 200) {
-                    throw new Exception(certificate.getCertificateNo() + ":【" + "跟单号：" + trackHead.getTrackNo() + ":" + b.getMessage() + "】;");
+                CommonResult commonResult = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), trackHead.getNumber(), unit);
+                if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
+                    throw new Exception(certificate.getCertificateNo() + ":【" + "跟单号：" + trackHead.getTrackNo() + ":" + commonResult.getMessage() + "】;");
                 }
             }
         }

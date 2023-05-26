@@ -17,6 +17,8 @@ import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.CertificateService;
 import com.richfit.mes.produce.service.TrackHeadService;
 import com.richfit.mes.produce.service.TrackItemService;
+import com.richfit.mes.produce.service.erp.WorkHoursService;
+import com.richfit.mes.produce.service.wms.InventoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,54 +55,34 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     @Autowired
     SystemServiceClient systemServiceClient;
 
+    @Autowired
+    WorkHoursService workHoursService;
+    @Autowired
+    InventoryService inventoryService;
+
 
     private final String pushSystemFlag = "systemFlag";
 
     @Override
-    public void doAdditionalBsns(Certificate certificate) {
+    public void doAdditionalBsns(Certificate certificate) throws Exception {
         String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
         if (needScjk(certificate)) {
-            wmsServiceClient.sendJkInfo(certificate);
+            inventoryService.handOver(certificate);
             //根据数据字段配置，判断推送哪个系统
             if (Tenant.COMPANYCODE_BEISHI.equals(companyCode)) {
                 //推送北石
                 pushWorkHourToBs(certificate);
             } else {
                 //推送宝石
-//                pushWorkHour(certificate);
+                workHoursService.push(certificate);
             }
         }
     }
 
     @Override
     public void pushWorkHour(Certificate certificate) throws Exception {
-        if (certificate != null) {
-            //erp工时推送
-            String erpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
 
-            List<Product> list = baseServiceClient.selectProduct(certificate.getTenantId(), certificate.getMaterialNo(), certificate.getDrawingNo(), "3").getData();
-            String unit = "";
-            if (list.size() > 0) {
-                unit = list.get(0).getUnit();
-            }
-
-            for (TrackCertificate trackCertificate : certificate.getTrackCertificates()) {
-
-                TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
-
-                List<TrackItem> trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
-
-                CommonResult<Boolean> b = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), certificate.getNumber(), unit);
-
-                log.debug("[{}] query erp push-hour finish , result is [{}]", trackHead.getTrackNo(), b.getData());
-
-            }
-
-            //标记已推送工时状态
-            certificateService.setPushHourComplete(certificate);
-        }
     }
-
 
     @Override
     public void pushWorkHourToBs(Certificate certificate) {
