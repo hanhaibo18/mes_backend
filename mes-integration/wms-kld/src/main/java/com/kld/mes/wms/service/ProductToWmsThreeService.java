@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +24,6 @@ import java.util.Map;
 @Data
 @ConfigurationProperties(prefix = "wms")
 public class ProductToWmsThreeService {
-
-    protected final RestTemplate restTemplate = new RestTemplate();
 
     /**
      * ApiKey
