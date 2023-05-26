@@ -45,7 +45,6 @@ import static java.util.stream.Collectors.toCollection;
 @RequestMapping("/api/produce/certificate")
 public class CertificateController {
 
-
     @Autowired
     private CertificateService certificateService;
 
@@ -54,13 +53,6 @@ public class CertificateController {
 
     @Autowired
     private TrackHeadService trackHeadService;
-    @Autowired
-    public TrackItemService trackItemService;
-    @Autowired
-    public CodeRuleService codeRuleService;
-
-    @Autowired
-    public CertAdditionalBsns certAdditionalBsns;
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @GetMapping("/auto")
@@ -76,38 +68,6 @@ public class CertificateController {
             try {
                 System.out.println("----------------------" + i++);
                 certificateService.autoCertificate(trackHead);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @ApiOperation(value = "自动推送工时", notes = "自动推送工时")
-    @GetMapping("/push/hours")
-    public void pushHours() throws Exception {
-        QueryWrapper<Certificate> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("is_send_work_hour", "1");
-        queryWrapper.eq("next_opt_work", "BOMCO_SC");
-        queryWrapper.eq("type", "1");
-        List<Certificate> certificateList = certificateService.list(queryWrapper);
-        int i = 0;
-        for (Certificate certificate : certificateList) {
-            System.out.println("---------------------------------" + i++);
-            try {
-                QueryWrapper<TrackHead> queryWrapperTrackHead = new QueryWrapper<>();
-                queryWrapperTrackHead.eq("certificate_no", certificate.getCertificateNo());
-                queryWrapperTrackHead.eq("tenant_id", certificate.getCertificateNo());
-                List<TrackHead> trackHeadList = trackHeadService.list(queryWrapperTrackHead);
-                if (CollectionUtils.isNotEmpty(trackHeadList)) {
-                    List<TrackCertificate> trackCertificates = new ArrayList<>();
-                    for (TrackHead trackHead : trackHeadList) {
-                        TrackCertificate trackCertificate = new TrackCertificate();
-                        trackCertificate.setThId(trackHead.getId());
-                        trackCertificates.add(trackCertificate);
-                    }
-                    certificate.setTrackCertificates(trackCertificates);
-                    certAdditionalBsns.pushWorkHour(certificate);
-                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
