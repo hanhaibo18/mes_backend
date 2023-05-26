@@ -10,7 +10,7 @@ public interface CertAdditionalBsns {
 
     void doAdditionalBsns(Certificate certificate);
 
-    void pushWorkHour(Certificate certificate);
+    void pushWorkHour(Certificate certificate) throws Exception;
 
     /**
      * 北石工时推送接口  fengxy

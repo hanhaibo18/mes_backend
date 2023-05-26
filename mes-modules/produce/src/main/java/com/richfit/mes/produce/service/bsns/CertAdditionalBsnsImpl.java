@@ -73,7 +73,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     }
 
     @Override
-    public void pushWorkHour(Certificate certificate) {
+    public void pushWorkHour(Certificate certificate) throws Exception {
         if (certificate != null) {
             //erp工时推送
             String erpCode = SecurityUtils.getCurrentUser().getTenantErpCode();

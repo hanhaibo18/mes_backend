@@ -49,7 +49,11 @@ public class PushWorkHourTask {
         queryWrapper.ge("create_time", taskDate);
         List<Certificate> list = certificateService.list(queryWrapper);
         list.forEach(c -> {
-            certAdditionalBsns.pushWorkHour(c);
+            try {
+                certAdditionalBsns.pushWorkHour(c);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 
