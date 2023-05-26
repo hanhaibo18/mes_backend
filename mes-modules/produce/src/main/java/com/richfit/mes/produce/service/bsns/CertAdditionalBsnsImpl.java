@@ -67,7 +67,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
                 pushWorkHourToBs(certificate);
             } else {
                 //推送宝石
-                pushWorkHour(certificate);
+//                pushWorkHour(certificate);
             }
         }
     }
