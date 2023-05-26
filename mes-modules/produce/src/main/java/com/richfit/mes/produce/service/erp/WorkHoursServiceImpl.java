@@ -96,7 +96,7 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
                 List<TrackItem> trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
                 CommonResult b = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), trackHead.getNumber(), unit);
                 if (b.getStatus() != 200) {
-                    throw new Exception(certificate.getCertificateNo() + ":" + "跟单号：" + trackHead.getTrackNo() + ":" + b.getMessage() + ";");
+                    throw new Exception(certificate.getCertificateNo() + ":【" + "跟单号：" + trackHead.getTrackNo() + ":" + b.getMessage() + "】;");
                 }
             }
         }
