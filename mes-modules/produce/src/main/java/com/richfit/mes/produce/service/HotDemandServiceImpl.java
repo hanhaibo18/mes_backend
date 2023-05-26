@@ -484,6 +484,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
             planExtend.setIngotCase(hotDemand.getIngotCase());//锭 型
             planExtend.setWorkblankType(hotDemand.getWorkblankType());//毛坯类型 0锻件,1铸件,2钢锭
+            planExtend.setInchargeWorkshop(hotDemand.getInchargeWorkshop());//加工单位
+            planExtend.setInchargeWorkshopName(hotDemand.getInchargeWorkshopName());//加工单位名称
+            planExtend.setIsLongPeriod(hotDemand.getIsLongPeriod());//是否长周期
         planExtendService.save(planExtend);
     }
 
