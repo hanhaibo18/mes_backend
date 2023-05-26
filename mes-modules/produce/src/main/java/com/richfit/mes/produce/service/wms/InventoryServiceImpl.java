@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @author 王瑞
- * @Description 操作信息服务
- */
+ * 功能描述:库存管理
+ *
+ * @Author: zhiqiang.lu
+ * @Date: 2023/05/26 16:27
+ **/
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certificate> implements InventoryService {
@@ -26,7 +28,7 @@ public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certifi
         if (!Certificate.NEXT_OPT_WORK_BOMCO_SC.equals(certificate.getNextOptWork())) {
             throw new Exception(certificate.getCertificateNo() + ":非生产入库合格证不进行工时推送;");
         }
-        CommonResult commonResult = wmsServiceClient.sendJkInfo(certificate);
+        CommonResult<Object> commonResult = wmsServiceClient.sendJkInfo(certificate);
         if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
             throw new Exception(certificate.getCertificateNo() + ":" + commonResult.getMessage() + ";");
         }
