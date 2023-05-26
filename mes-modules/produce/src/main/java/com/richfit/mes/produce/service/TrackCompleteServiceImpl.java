@@ -1183,77 +1183,41 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             ).collect(Collectors.toList());
             result.addAll(trackItemList);
         }
-        //先判断是不是最小工序报工
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-        queryWrapper.in("track_head_id", outsource.getTrackHeadId())
-                .eq("opt_type", "3")
-                .eq("is_operation_complete", 0)
-                .eq("is_current", 1)
-                .orderByDesc("next_opt_sequence");
-        List<TrackItem> trackItems = trackItemService.list(queryWrapper);
-        //最小值
-        int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
-        //获取有没有不等于最小值的
-        List<TrackItem> collect = result.stream().filter(item -> item.getOriginalOptSequence() != min).collect(Collectors.toList());
-        //有大于最小值的不是最小工序报工,需要进行连续工序判断,和所有产品同时报工判断
-        if (!collect.isEmpty()) {
-            //先判断报工的是所有产品吗
-            QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
-            flowQueryWrapper.in("track_head_id", outsource.getTrackHeadId());
-            //获取产品数量
-            int count = trackFlowService.count(flowQueryWrapper);
-            //总产品数大于报工产品数,不是只能报工所在产品的当前工序
-            if (count > outsource.getProdNoList().size()) {
-                //过滤出 传入产品的当前工序
-                result = result.stream().filter(item -> item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+        //工序连续性判断
+        boolean nextJudge = nextOptSequenceJudge(result);
+        if (nextJudge) {
+            //先判断是不是最小工序报工
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+            queryWrapper.in("track_head_id", outsource.getTrackHeadId())
+                    .eq("opt_type", "3")
+                    .eq("is_operation_complete", 0)
+                    .eq("is_current", 1)
+                    .orderByDesc("next_opt_sequence");
+            List<TrackItem> trackItems = trackItemService.list(queryWrapper);
+            //最小值
+            int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
+            //获取有没有不等于最小值的
+            List<TrackItem> collect = result.stream().filter(item -> item.getOriginalOptSequence() != min).collect(Collectors.toList());
+            //有大于最小值的不是最小工序报工,需要进行连续工序判断,和所有产品同时报工判断
+            if (!collect.isEmpty()) {
+                //先判断报工的是所有产品吗
+                QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
+                flowQueryWrapper.in("track_head_id", outsource.getTrackHeadId());
+                //获取产品数量
+                int count = trackFlowService.count(flowQueryWrapper);
+                //总产品数大于报工产品数,不是只能报工所在产品的当前工序
+                if (count > outsource.getProdNoList().size()) {
+                    //过滤出 传入产品的当前工序
+                    result = result.stream().filter(item -> item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+                }
             } else {
-                //分组并排序 自认顺序 从小到大
-                Map<String, List<TrackItem>> map = result.stream().sorted(Comparator.comparing(TrackItem::getOptSequence)).collect(Collectors.groupingBy(TrackItem::getFlowId));
-                //校验是否连续工序
-                boolean optNext = false;
-                for (List<TrackItem> trackItem : map.values()) {
-                    //默认赋值第一道工序参数,从第二道工序进行判断
-                    int optSequence = trackItem.get(0).getOptSequence();
-                    int next = trackItem.get(0).getNextOptSequence();
-                    Integer isParallel = trackItem.get(0).getOptParallelType();
-                    for (TrackItem item : trackItem) {
-                        //不判断第一道工序
-                        if (!trackItem.get(0).getId().equals(item.getId())) {
-                            boolean isParallelSequence = optSequence == item.getOptSequence() - 1;
-                            //上一道工序 和 当前工序并行,并且上到工序optSequence = 当前工序optSequence-1
-                            if (isParallel == 1 && item.getOptParallelType() == 1 && isParallelSequence) {
-                                //赋值当前工序参数 下次循环在进行判断
-                                next = item.getNextOptSequence();
-                                isParallel = item.getOptParallelType();
-                                optSequence = item.getOptSequence();
-                                //赋值连续工序
-                                optNext = true;
-                                continue;
-                            }
-                            //不是连续并行工序
-                            if (item.getOriginalOptSequence() == next && isParallelSequence) {
-                                //赋值当前工序参数 下次循环在进行判断
-                                next = item.getNextOptSequence();
-                                isParallel = item.getOptParallelType();
-                                optSequence = item.getOptSequence();
-                                //赋值连续工序
-                                optNext = true;
-                            }
-                        }
-                    }
-                }
-                //连续工序判断
-                if (optNext) {
-                    //result通过工序排序
-                    result = result.stream().sorted(Comparator.comparing(TrackItem::getOptSequence)).collect(Collectors.toList());
-                } else {
-                    //获取当前工序
-                    result = result.stream().filter(item -> item.getIsCurrent() == 1).collect(Collectors.toList());
-                }
+                //过滤掉已报工的数据&&过滤不在传入产品编号的数据
+                result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
             }
         } else {
-            //过滤掉已报工的数据&&过滤不在传入产品编号的数据
-            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+            //单间并行工序全都是当前工序会出现跳工序执行问题,过滤其中最小工序 仅对最小工序执行
+            int min = result.stream().mapToInt(TrackItem::getOptSequence).min().getAsInt();
+            result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && item.getOptSequence() == min && item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
         }
         //获取对应的flow
         List<String> collectFlow = result.stream().map(TrackItem::getFlowId).distinct().collect(Collectors.toList());
@@ -1332,6 +1296,46 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             return CommonResult.failed("操作失败，请重试！");
         }
+    }
+
+
+    private boolean nextOptSequenceJudge(List<TrackItem> result) {
+        //分组并排序 自认顺序 从小到大
+        Map<String, List<TrackItem>> map = result.stream().sorted(Comparator.comparing(TrackItem::getOptSequence)).collect(Collectors.groupingBy(TrackItem::getFlowId));
+        //校验是否连续工序
+        boolean optNext = false;
+        for (List<TrackItem> trackItem : map.values()) {
+            //默认赋值第一道工序参数,从第二道工序进行判断
+            int optSequence = trackItem.get(0).getOptSequence();
+            int next = trackItem.get(0).getNextOptSequence();
+            Integer isParallel = trackItem.get(0).getOptParallelType();
+            for (TrackItem item : trackItem) {
+                //不判断第一道工序
+                if (!trackItem.get(0).getId().equals(item.getId())) {
+                    boolean isParallelSequence = optSequence == item.getOptSequence() - 1;
+                    //上一道工序 和 当前工序并行,并且上到工序optSequence = 当前工序optSequence-1
+                    if (isParallel == 1 && item.getOptParallelType() == 1 && isParallelSequence) {
+                        //赋值当前工序参数 下次循环在进行判断
+                        next = item.getNextOptSequence();
+                        isParallel = item.getOptParallelType();
+                        optSequence = item.getOptSequence();
+                        //赋值连续工序
+                        optNext = true;
+                        continue;
+                    }
+                    //不是连续并行工序
+                    if (item.getOriginalOptSequence() == next && isParallelSequence) {
+                        //赋值当前工序参数 下次循环在进行判断
+                        next = item.getNextOptSequence();
+                        isParallel = item.getOptParallelType();
+                        optSequence = item.getOptSequence();
+                        //赋值连续工序
+                        optNext = true;
+                    }
+                }
+            }
+        }
+        return optNext;
     }
 
     /**
