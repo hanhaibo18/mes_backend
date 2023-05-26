@@ -271,7 +271,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 //                                                purchase.Desc = dt.Rows[0]["Desc"].ToString();
 //                                            }
                                             purchase.setLgort(itemNext.elementTextTrim("LGORT"));
-                                            CommonResult<List<Product>> productList = baseServiceClient.selectProduct(purchase.getMaterialNo(), "", "");
+                                            CommonResult<List<Product>> productList = baseServiceClient.selectProduct(purchase.getTenantId(),purchase.getMaterialNo(), "", "");
                                             if (null != productList.getData()) {
                                                 for (Product product : productList.getData()) {
                                                     purchase.setMaterialRemark(product.getMaterialDesc());

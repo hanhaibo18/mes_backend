@@ -27,14 +27,9 @@ public class WmsController {
 
     @ApiOperation(value = "生产交库", notes = "根据合格证将产品信息推送给仓储条码接口")
     @PostMapping("/send_scjk")
-    public CommonResult<Boolean> sendJkInfo(@ApiParam(value = "合格证") @RequestBody Certificate cert) {
-
+    public CommonResult sendJkInfo(@ApiParam(value = "合格证") @RequestBody Certificate cert) {
         log.debug("receive send Scjk request [{}]", cert);
-        boolean b = productToWmsService.sendRequest(cert);
-        log.debug("after send Scjk request,send result:[{}]", b);
-
-        return new CommonResult(b);
-
+        return productToWmsService.sendRequest(cert);
     }
 
     @ApiOperation(value = "查询仓储信息", notes = "根据物料编号参数查询仓储信息接口")

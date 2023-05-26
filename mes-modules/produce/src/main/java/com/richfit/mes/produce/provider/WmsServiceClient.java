@@ -23,7 +23,7 @@ import java.util.List;
 public interface WmsServiceClient {
 
     @PostMapping("/api/integration/wms/send_scjk")
-    public CommonResult<Boolean> sendJkInfo(@RequestBody Certificate certificate);
+    public CommonResult sendJkInfo(@RequestBody Certificate certificate);
 
     @GetMapping("/api/integration/wms/queryMaterialCount")
     public CommonResult<Integer> queryMaterialCount(@RequestParam("materialNo") String materialNo);

@@ -8,9 +8,9 @@ import com.richfit.mes.common.model.produce.Certificate;
  */
 public interface CertAdditionalBsns {
 
-    void doAdditionalBsns(Certificate certificate);
+    void doAdditionalBsns(Certificate certificate) throws Exception;
 
-    void pushWorkHour(Certificate certificate);
+    void pushWorkHour(Certificate certificate) throws Exception;
 
     /**
      * 北石工时推送接口  fengxy

@@ -96,6 +96,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     @Autowired
     private DisqualificationUserOpinionService disqualificationUserOpinionService;
 
+    // 质量检测部
     public static final String TENANT_ID = "12345678901234567890123456789100";
     // 不合格外协单位
     public static final String UNIT_CODE = "qualityUnqualityUnitW";
@@ -788,7 +789,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
     }
 
     /**
-     * 按逗号分隔的属性转换 不合格外协
+     * 按逗号分隔的属性转换 不合格类型
      *
      * @param target
      * @param map
@@ -855,7 +856,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
         QueryWrapper<Disqualification> queryWrapper = new QueryWrapper<>();
         getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
         //只查询本租户创建的不合格品申请单
-        if (!tenantId.equals("12345678901234567890123456789100")) {
+        if (!tenantId.equals(TENANT_ID)) {
             queryWrapper.and(wrapper -> wrapper.eq("unit_treatment_one", tenantId).or().eq("unit_responsibility_within", tenantId).or().eq("unit_treatment_two", tenantId).or().eq("dis.tenant_id", tenantId));
         }
         // 不合格品信息
@@ -869,7 +870,7 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
             QueryWrapper<DisqualificationResultVo> queryWrapper = new QueryWrapper<>();
             getDisqualificationByQueryInspectorDto(queryWrapper, queryInspectorDto);
             //只查询本租户创建的不合格品申请单
-            if (!tenantId.equals("12345678901234567890123456789100")) {
+            if (!tenantId.equals(TENANT_ID)) {
                 queryWrapper.and(wrapper -> wrapper.eq("unit_treatment_one", tenantId).or().eq("unit_responsibility_within", tenantId).or().eq("unit_treatment_two", tenantId).or().eq("dis.tenant_id", tenantId));
             }
             List<DisqualificationResultVo> list = disqualificationMapper.queryDisqualificationResult(queryWrapper);
@@ -884,34 +885,27 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                 Map<String, ItemParam> processMap = systemServiceClient.findItemParamByCode(PROCESS_CODE, TENANT_ID).getData().stream().collect(Collectors.toMap(ItemParam::getCode, x -> x, (value1, value2) -> value2));
                 // 获取用户和姓名键值对
                 Map<String, String> usersAccountMap = systemServiceClient.usersAccount().getData();
-
                 for (DisqualificationResultVo disqualificationResultVo : list) {
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getDisqualificationType())) {
                         // 不合格类型
                         disqualificationResultVo.setDisqualificationType(convertType(disqualificationResultVo.getDisqualificationType(), typeMap));
                     }
-
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getUnitResponsibilityWithin())) {
                         // 责任单位内
                         disqualificationResultVo.setUnitResponsibilityWithin(tenantMap.get(disqualificationResultVo.getUnitResponsibilityWithin()).getTenantName());
-
                     }
-
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getUnitTreatmentOne())) {
                         // 处理单位1
                         disqualificationResultVo.setUnitTreatmentOne(tenantMap.get(disqualificationResultVo.getUnitTreatmentOne()).getTenantName());
                     }
-
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getUnitTreatmentTwo())) {
                         // 处理单位2
                         disqualificationResultVo.setUnitTreatmentTwo(tenantMap.get(disqualificationResultVo.getUnitTreatmentTwo()).getTenantName());
                     }
-
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getDiscoverTenant())) {
                         // 发现单位
                         disqualificationResultVo.setDiscoverTenant(tenantMap.get(disqualificationResultVo.getDiscoverTenant()).getTenantName());
                     }
-
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getUnitResponsibilityOutside())) {
                         // 责任单位(外)
                         ItemParam itemParam = unitMap.get(disqualificationResultVo.getUnitResponsibilityOutside());
@@ -921,14 +915,12 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
                             disqualificationResultVo.setUnitResponsibilityOutside(disqualificationResultVo.getUnitResponsibilityOutside());
                         }
                     }
-
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getDiscoverItem())) {
                         // 发现工序
                         if (ObjectUtils.isNotEmpty(processMap.get(disqualificationResultVo.getDiscoverItem()))) {
                             disqualificationResultVo.setDiscoverItem(processMap.get(disqualificationResultVo.getDiscoverItem()).getLabel());
                         }
                     }
-
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getQualityCheckBy())) {
                         // 质控工程师
                         disqualificationResultVo.setQualityCheckBy(convertName(disqualificationResultVo.getQualityCheckBy(), usersAccountMap));
