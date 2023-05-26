@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class ErpServiceClientFallbackImpl implements ErpServiceClient {
     @Override
-    public CommonResult<Boolean> certWorkHourPush(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
+    public CommonResult certWorkHourPush(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
         return CommonResult.success(null);
     }
 

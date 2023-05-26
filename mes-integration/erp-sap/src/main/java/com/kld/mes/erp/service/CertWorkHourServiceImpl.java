@@ -5,6 +5,7 @@ import com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024Response;
 import com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024S1;
 import com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024T1;
 import com.kld.mes.erp.utils.WsTemplateFactory;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.TrackItem;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
     private final String packageName = "com.kld.mes.erp.entity.certWorkHour";
 
     @Override
-    public boolean sendWorkHour(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
+    public CommonResult sendWorkHour(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
 
         //生成报文主体
         Zc80Ppif024 zc80Ppif024 = generateRequestBody(trackItemList, erpCode, orderNo, qty, unit);
@@ -49,8 +50,11 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
         //发起接口调用
         Zc80Ppif024Response zc80Ppif024Response = (Zc80Ppif024Response) webServiceTemplate
                 .marshalSendAndReceive(URL, zc80Ppif024);
-
-        return zc80Ppif024Response.getEMes().contains("完成");
+        if (zc80Ppif024Response.getEMes().contains("完成")) {
+            return CommonResult.success(zc80Ppif024Response, zc80Ppif024Response.getEMes());
+        } else {
+            return CommonResult.failed(zc80Ppif024Response.getEMes());
+        }
     }
 
 
