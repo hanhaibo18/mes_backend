@@ -33,7 +33,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType) {
+    public CommonResult<List<Product>> selectProduct(String tenantId, String materialNo, String drawingNo, String materialType) {
         return CommonResult.success(null);
     }
 

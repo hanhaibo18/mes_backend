@@ -8,6 +8,7 @@ import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.kld.mes.wms.provider.SystemServiceClient;
 import com.kld.mes.wms.utils.AESUtil;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
@@ -58,7 +59,7 @@ public class ProductToWmsService {
     }
 
     //接口格式，详见条码-mes接口文档
-    public Boolean sendRequest(Certificate cert) {
+    public CommonResult sendRequest(Certificate cert) {
         init();
         String sqd = cert.getCertificateNo() + DateUtil.format(new Date(), "MMddHHmmss");
         String gc = SecurityUtils.getCurrentUser().getTenantErpCode();
@@ -84,7 +85,11 @@ public class ProductToWmsService {
             log.debug("retMsg is [{}]", resp.getBody().get("retMsg").asText());
         }
 
-        return "Y".equals(retStatus);
+        if ("Y".equals(retStatus)) {
+            return CommonResult.success(resp.getBody(), resp.getBody().get("retMsg").asText());
+        } else {
+            return CommonResult.failed(resp.getBody().get("retMsg").asText());
+        }
     }
 
     //泵业查询接口

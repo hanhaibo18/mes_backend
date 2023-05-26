@@ -22,7 +22,7 @@ import java.util.List;
 public interface ErpServiceClient {
 
     @PostMapping("/api/integration/erp/work-hour/push")
-    public CommonResult<Boolean> certWorkHourPush(@RequestBody List<TrackItem> trackItemList,
+    public CommonResult certWorkHourPush(@RequestBody List<TrackItem> trackItemList,
                                                   @RequestParam String erpCode,
                                                   @RequestParam String orderNo,
                                                   @RequestParam int qty,
