@@ -25,7 +25,7 @@ import java.util.*;
 @Slf4j
 @Api(value = "合格证管理", tags = {"合格证管理"})
 @RestController
-@RequestMapping("/api/produce/work/hours")
+@RequestMapping("/api/produce/erp/work/hours")
 public class WorkHoursController {
 
     @Autowired
