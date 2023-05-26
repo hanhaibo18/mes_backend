@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service.erp;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -52,9 +53,9 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
         if (!Certificate.NEXT_OPT_WORK_BOMCO_SC.equals(certificate.getNextOptWork())) {
             throw new Exception(certificate.getCertificateNo() + ":非生产入库合格证不进行工时推送;");
         }
-//        if (Certificate.IS_SENG_WORK_HOUR_1.equals(certificate.getIsSendWorkHour())) {
-//            throw new Exception(certificate.getCertificateNo() + ":已经推送过工时的不进行工时推送;");
-//        }
+        if (Certificate.IS_SENG_WORK_HOUR_1.equals(certificate.getIsSendWorkHour())) {
+            throw new Exception(certificate.getCertificateNo() + ":已经推送过工时的不进行工时推送;");
+        }
         QueryWrapper<TrackHead> queryWrapperTrackHead = new QueryWrapper<>();
         queryWrapperTrackHead.eq("certificate_no", certificate.getCertificateNo());
         queryWrapperTrackHead.eq("tenant_id", certificate.getTenantId());
@@ -86,6 +87,9 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
                 unit = list.get(0).getUnit();
             } else {
                 throw new Exception(certificate.getCertificateNo() + ":物料中没有找到成品信息;");
+            }
+            if (StrUtil.isBlank(unit)) {
+                throw new Exception(certificate.getCertificateNo() + ":物料中没有找到成品的单位信息;");
             }
             for (TrackCertificate trackCertificate : certificate.getTrackCertificates()) {
                 TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
