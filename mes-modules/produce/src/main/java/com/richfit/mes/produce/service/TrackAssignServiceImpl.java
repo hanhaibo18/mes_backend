@@ -26,6 +26,7 @@ import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.forg.ForgHourService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
+import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -308,24 +309,38 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 assign.setDispatchingNumber(trackItem.getAssignableQty());
                 assign.setWorkPlanNo(trackHead.getWorkPlanNo());
                 assign.setPartsName(trackHead.getMaterialName());
-
-                Long prechargeFurnaceId = trackItem.getPrechargeFurnaceId();
-                if (ObjectUtil.isNotEmpty(prechargeFurnaceId)){
-                    QueryWrapper<RecordsOfPourOperations> wrapper=new QueryWrapper<>();
-                    wrapper.eq("precharge_furnace_id",prechargeFurnaceId);
-                    List<RecordsOfPourOperations> recordsOfPourOperations = recordsOfPourOperationsMapper.selectList(wrapper);
-                    if(CollectionUtils.isNotEmpty(recordsOfPourOperations)){
-                        //浇注时间赋值
-                        assign.setPourTime(recordsOfPourOperations.get(0).getPourTime());
-                    }
-                }
-
-
+                this.disposeHoldFinishedTime(assign, trackItem);
                 assign.setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId())));
 
             }
         }
         return queryPage;
+    }
+
+    /**
+     * 处理保温状态
+     * @param assign
+     * @param trackItem
+     */
+    private void disposeHoldFinishedTime(Assign assign, TrackItem trackItem) {
+        Long prechargeFurnaceId = trackItem.getPrechargeFurnaceId();
+        if (ObjectUtil.isNotEmpty(prechargeFurnaceId)){
+            QueryWrapper<RecordsOfPourOperations> wrapper=new QueryWrapper<>();
+            wrapper.eq("precharge_furnace_id",prechargeFurnaceId);
+            List<RecordsOfPourOperations> recordsOfPourOperations = recordsOfPourOperationsMapper.selectList(wrapper);
+            if(CollectionUtils.isNotEmpty(recordsOfPourOperations)){
+                //浇注时间赋值
+                assign.setPourTime(recordsOfPourOperations.get(0).getPourTime());
+            }
+        }
+        if(!StringUtils.isNullOrEmpty(assign.getHoldFinishedTime())){
+            int i = DateUtils.compareDateTime(DateUtils.parseDate(assign.getHoldFinishedTime(), "yyyy-MM-dd HH:mm:ss"), new Date());
+            if(i<0){
+                assign.setHoldFinishedTime("保温结束");
+            }else if(i>0){
+                assign.setHoldFinishedTime("保温中");
+            }
+        }
     }
 
     @Override
