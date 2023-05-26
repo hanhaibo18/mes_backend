@@ -174,7 +174,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     @Override
     public void countHoldFinishedTime(TrackItem trackItem, String pourTime, String holdTime) {
         if(!StringUtils.isNullOrEmpty(pourTime)&&!StringUtils.isNullOrEmpty(holdTime)){
-            Date date = DateUtils.addDateForHour(DateUtils.stringToDate(pourTime), Integer.valueOf(holdTime));
+            Date date = DateUtils.addDateForHour(DateUtils.parseDate(pourTime,"yyyy-MM-dd HH:mm:ss"), Integer.valueOf(holdTime));
             trackItem.setHoldFinishedTime(date);
         }
     }
