@@ -95,7 +95,7 @@ public interface TrackItemMapper extends BaseMapper<TrackItem> {
             "                LEFT JOIN produce_track_head h ON i.track_head_id = h.id and th.track_id = h.id \n" +
             "        WHERE 1 = 1 \n" +
             "                and th.create_time>'2023-04-01 12:35:05' " +
-            "                and i.opt_type <> 3 " +
+            "                and i.opt_type = 3 " +
             "        ) a \n" +
             "WHERE\n" +
             "        a.AA > 1\n" +
