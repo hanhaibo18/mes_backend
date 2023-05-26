@@ -65,9 +65,9 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
             if (Tenant.COMPANYCODE_BEISHI.equals(companyCode)) {
                 //推送北石
                 pushWorkHourToBs(certificate);
-            } else if (sendEnabled() && Tenant.COMPANYCODE_BAOSHI.equals(companyCode)) {
+            } else {
                 //推送宝石
-                pushWorkHour(certificate);
+//                pushWorkHour(certificate);
             }
         }
     }

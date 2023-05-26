@@ -18,6 +18,7 @@ import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CertQueryDto;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.service.bsns.CertAdditionalBsns;
 import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.Utils;
 import io.swagger.annotations.Api;
@@ -44,7 +45,6 @@ import static java.util.stream.Collectors.toCollection;
 @RequestMapping("/api/produce/certificate")
 public class CertificateController {
 
-
     @Autowired
     private CertificateService certificateService;
 
@@ -53,10 +53,6 @@ public class CertificateController {
 
     @Autowired
     private TrackHeadService trackHeadService;
-    @Autowired
-    public TrackItemService trackItemService;
-    @Autowired
-    public CodeRuleService codeRuleService;
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @GetMapping("/auto")
