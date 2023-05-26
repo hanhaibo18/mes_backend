@@ -34,7 +34,7 @@ public interface BaseServiceClient {
     public CommonResult<Branch> selectBranchByCodeAndTenantId(@RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
 
     @GetMapping("/api/base/product/product/listByNo")
-    public CommonResult<List<Product>> selectProduct(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
+    public CommonResult<List<Product>> selectProduct(@RequestParam("tenantId") String tenantId, @RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
 
     @GetMapping(value = "/api/base/device/find_one")
     public CommonResult<Device> getDeviceById(@RequestParam("id") String id);

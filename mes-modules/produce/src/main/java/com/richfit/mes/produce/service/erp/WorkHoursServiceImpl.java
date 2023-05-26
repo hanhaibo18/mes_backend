@@ -81,7 +81,7 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
         //erp工时推送
         if (certificate != null) {
             String erpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
-            List<Product> list = baseServiceClient.selectProduct(certificate.getMaterialNo(), certificate.getDrawingNo(), "3").getData();
+            List<Product> list = baseServiceClient.selectProduct(certificate.getTenantId(), certificate.getMaterialNo(), certificate.getDrawingNo(), "3").getData();
             String unit = "";
             if (CollectionUtils.isNotEmpty(list)) {
                 unit = list.get(0).getUnit();

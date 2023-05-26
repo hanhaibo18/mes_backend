@@ -78,7 +78,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
             //erp工时推送
             String erpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
 
-            List<Product> list = baseServiceClient.selectProduct(certificate.getMaterialNo(), certificate.getDrawingNo(), "3").getData();
+            List<Product> list = baseServiceClient.selectProduct(certificate.getTenantId(), certificate.getMaterialNo(), certificate.getDrawingNo(), "3").getData();
             String unit = "";
             if (list.size() > 0) {
                 unit = list.get(0).getUnit();
@@ -108,7 +108,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
             //erp工时推送
             String erpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
 
-            List<Product> list = baseServiceClient.selectProduct(certificate.getMaterialNo(), certificate.getDrawingNo(), "3").getData();
+            List<Product> list = baseServiceClient.selectProduct(certificate.getTenantId(), certificate.getMaterialNo(), certificate.getDrawingNo(), "3").getData();
             String unit = "";
             if (list.size() > 0) {
                 unit = list.get(0).getUnit();
