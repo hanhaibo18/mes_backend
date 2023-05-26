@@ -2,12 +2,13 @@ package com.richfit.mes.produce.service.erp;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.*;
-import com.richfit.mes.produce.entity.TrackHeadPublicDto;
 
 /**
- * @author 王瑞
- * @Description 跟单工序
- */
+ * 功能描述:工时管理
+ *
+ * @Author: zhiqiang.lu
+ * @Date: 2023/05/26 16:27
+ **/
 public interface WorkHoursService extends IService<Certificate> {
     /**
      * 功能描述:工时推送
