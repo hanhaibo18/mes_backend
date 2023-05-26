@@ -1,6 +1,7 @@
 package com.richfit.mes.common.model.produce.store;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -64,4 +65,9 @@ public class PlanExtend {
     private String ingotCase;
     @ApiModelProperty(value = "毛坯类型 0锻件,1铸件,2钢锭")
     private String workblankType;
+    @ApiModelProperty(value = "加工车间 ", dataType = "String")
+    private String inchargeWorkshop;
+
+    @ApiModelProperty(value = "加工车间名称 ", dataType = "String")
+    private String inchargeWorkshopName;
 }

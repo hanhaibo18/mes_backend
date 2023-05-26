@@ -914,7 +914,12 @@ public class DisqualificationServiceImpl extends ServiceImpl<DisqualificationMap
 
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getUnitResponsibilityOutside())) {
                         // 责任单位(外)
-                        disqualificationResultVo.setUnitResponsibilityOutside(unitMap.get(disqualificationResultVo.getUnitResponsibilityOutside()).getLabel());
+                        ItemParam itemParam = unitMap.get(disqualificationResultVo.getUnitResponsibilityOutside());
+                        if (null != itemParam) {
+                            disqualificationResultVo.setUnitResponsibilityOutside(itemParam.getLabel());
+                        } else {
+                            disqualificationResultVo.setUnitResponsibilityOutside(disqualificationResultVo.getUnitResponsibilityOutside());
+                        }
                     }
 
                     if (StringUtils.isNotEmpty(disqualificationResultVo.getDiscoverItem())) {
