@@ -93,7 +93,6 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             e.printStackTrace();
         }
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        ArrayList<HotDemand> demandList = new ArrayList<>();
         for (DemandExcel hemandExcel : list) {
             //丰富基础数据
             HotDemand hotDemand = new HotDemand();
@@ -122,16 +121,39 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
                 }
             }
+            this.disposeBranchCode(hotDemand);
+
             //查重
             //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             this.save(hotDemand);
-            //demandList.add(hotDemand);
         }
 
-        //this.saveBatch(demandList);
         return CommonResult.success("");
     }
 
+
+    /**
+     * 处理车间编码
+     * @param hotDemand
+     */
+    private void disposeBranchCode(HotDemand hotDemand) {
+        List<Branch> org = baseServiceClient.selectOrgInner().getData();
+        List<Branch> banch = baseServiceClient.selectBranchesInner(null, hotDemand.getInchargeWorkshopName()).getData();
+        Map<String, Branch> orgMap = org.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        Map<String, Branch> banchMap = banch.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(orgMap)){
+            Branch branch = orgMap.get(hotDemand.getInchargeOrgName());
+            if(ObjectUtils.isNotEmpty(branch)){
+                hotDemand.setInchargeOrg(branch.getBranchCode());
+            }
+        }
+        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(banchMap)){
+            Branch branch = banchMap.get(hotDemand.getInchargeWorkshopName());
+            if(ObjectUtils.isNotEmpty(branch)){
+                hotDemand.setInchargeWorkshop(branch.getBranchCode());
+            }
+        }
+    }
     /**
      * 导入需求提报数据(冶炼车间)
      * @param file

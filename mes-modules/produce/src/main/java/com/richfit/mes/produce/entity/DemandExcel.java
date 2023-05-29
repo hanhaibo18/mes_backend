@@ -57,9 +57,13 @@ public class DemandExcel {
      * 加工单位
      */
     @ApiModelProperty(value = "加工单位 ", dataType = "String")
-    private String inchargeOrg;
+    private String inchargeOrgName;
 
-
+    /**
+     * 加工单位
+     */
+    @ApiModelProperty(value = "加工单位 ", dataType = "String")
+    private String inchargeWorkshopName;
     /**
      * 需求日期
      */
