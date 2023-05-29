@@ -102,6 +102,16 @@ public class TrackHead extends BaseEntity<TrackHead> {
      */
     public static final String TRACK_TYPE_1 = "1";
 
+    /**
+     * 非试棒/实验跟单
+     */
+    public static final String IS_TEST_BAR_0 = "0";
+
+    /**
+     * 试棒/实验跟单
+     */
+    public static final String IS_TEST_BAR_1 = "1";
+
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
 
