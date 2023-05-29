@@ -196,6 +196,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         assign.setTenantId(trackItem.getTenantId());
         assign.setState(0);
         if (StringUtils.isNullOrEmpty(assign.getTrackId())) {
+            assign.setTrackNo(trackHead.getTrackNo());
             assign.setTrackId(trackHead.getId());
         }
         if (StringUtils.isNullOrEmpty(assign.getTenantId())) {
