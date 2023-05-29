@@ -157,4 +157,6 @@ public interface TrackAssignService extends IService<Assign> {
      * @param trackItem
      */
     void calculationSinglePieceHours(TrackHead trackHead,TrackItem trackItem);
+
+    boolean deleteAssignYl(String[] ids);
 }

@@ -223,7 +223,7 @@ public class TrackHead extends BaseEntity<TrackHead> {
     private String replaceMaterial;
 
     @ApiModelProperty(value = "重量", dataType = "Float")
-    private float weight;
+    private Float weight;
 
     @ApiModelProperty(value = "材质", dataType = "String")
     private String texture;

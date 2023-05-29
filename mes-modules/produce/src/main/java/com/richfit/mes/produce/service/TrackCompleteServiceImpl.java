@@ -564,6 +564,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 PrechargeFurnaceAssign assignInfo = prechargeFurnaceAssignService.getById(trackItem.getPrechargeFurnaceAssignId());
                 assignInfo.setIsDoing(END_START_WORK);
                 assignInfo.setFinishTime(new Date());
+                assignInfo.setCompleteStatus("1");
+                assignInfo.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
                 prechargeFurnaceAssignService.updateById(assignInfo);
             }
             //修改预装炉表状态为完工
@@ -942,10 +944,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             //跟新工序完成数量
             trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
-            trackItemService.updateById(trackItem);
         }
-        log.error(completeDto.getTrackCompleteList().toString());
-
+//        log.error(completeDto.getTrackCompleteList().toString());
+        trackItemService.updateById(trackItem);
+        //修改工序浇注温度
+        if (completeDto.getPourTemperature() != null && completeDto.getPrechargeFurnaceAssignId() != null) {
+            UpdateWrapper<TrackItem> itemUpdateWrapper = new UpdateWrapper<>();
+            itemUpdateWrapper.eq("precharge_furnace_assign_id", completeDto.getPrechargeFurnaceAssignId()).set("pour_temperature", completeDto.getPourTemperature());
+            trackItemService.update(itemUpdateWrapper);
+        }
         //保存下料信息和锻造信息
         saveLayingOffAndForgControlRecord(completeDto);
         //保存原材料消耗信息
@@ -2204,6 +2211,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
         assignQueryWrapper.eq("ti_id", tiId).last("limit 1");
         Assign assign = trackAssignService.getOne(assignQueryWrapper);
+        if (!ObjectUtil.isEmpty(assign)) {
+            throw new GlobalException("原预装炉没有派工信息！", ResultCode.FAILED);
+        }
         if ("15".equals(prechargeFurnaceAssign.getOptType())) {
             //变更炼钢作业记录
             UpdateWrapper<RecordsOfSteelmakingOperations> steelmakingOperationsUpdateWrapper = new UpdateWrapper<>();

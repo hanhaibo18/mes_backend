@@ -35,5 +35,11 @@ public interface RecordsOfPourOperationsService extends IService<RecordsOfPourOp
     boolean isBzz();
 
     Boolean delete(List<String> ids);
+
+    IPage<TrackItem> getItemByPrechargeFurnaceId(Long prechargeFurnaceId, int page, int limit);
+
+    Boolean addItem(Long prechargeFurnaceId, List<String> itemIds);
+
+    Boolean deleteItem(List<String> itemIds);
 }
 
