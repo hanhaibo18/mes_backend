@@ -31,7 +31,7 @@ import java.util.List;
  * @since 2023-05-19 10:36:13
  */
 @RestController
-@RequestMapping("prechargeFurnaceAssign")
+@RequestMapping("/api/produce/prechargeFurnaceAssign")
 public class PrechargeFurnaceAssignController extends ApiController {
     /**
      * 服务对象
