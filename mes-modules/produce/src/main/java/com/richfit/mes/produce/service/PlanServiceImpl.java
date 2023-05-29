@@ -330,6 +330,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 //跟单完成数量
                 int trackHeadFinish = 0;
                 for (TrackHead trackHead : trackHeadList) {
+                    if (TrackHead.IS_TEST_BAR_1.equals(trackHead.getIsTestBar())) {
+                        //试棒实验跟单不进行计划数量的消耗
+                        continue;
+                    }
                     QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
                     queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                     List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
