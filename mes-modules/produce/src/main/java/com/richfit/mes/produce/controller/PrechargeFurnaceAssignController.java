@@ -13,6 +13,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.PrechargeFurnaceAssignService;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.ApiOperation;
@@ -60,7 +61,8 @@ public class PrechargeFurnaceAssignController extends ApiController {
                 .eq(!StringUtils.isNullOrEmpty(texture),"texture",texture)
                 .ge(!StringUtils.isNullOrEmpty(startTime),"date_format(assign_time, '%Y-%m-%d')", startTime)
                 .le(!StringUtils.isNullOrEmpty(endTime),"date_format(assign_time, '%Y-%m-%d')", endTime)
-                .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType);
+                .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType)
+                .eq("assign_by", SecurityUtils.getCurrentUser().getUsername());
         return CommonResult.success(prechargeFurnaceAssignService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper));
     }
 

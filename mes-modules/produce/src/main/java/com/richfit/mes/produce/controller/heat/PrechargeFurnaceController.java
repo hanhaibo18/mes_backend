@@ -43,9 +43,6 @@ public class PrechargeFurnaceController extends BaseController {
 
     @Autowired
     private TrackItemService trackItemService;
-
-
-
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
 
@@ -130,13 +127,13 @@ public class PrechargeFurnaceController extends BaseController {
         if ("0,1".equals(dispatchingDto.getState())) {
             //查询本部门未开工的 和  自己开工的
             queryWrapper.and(wrapper3 -> wrapper3.and(wrapper4 -> wrapper4.eq("step_status", "0").apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',site_id)"))
-                    .or(wrapper -> wrapper.eq("step_status", "1").and(wrapper2 -> wrapper2.eq("start_work_by", SecurityUtils.getCurrentUser().getUserId()))));
+                    .or(wrapper -> wrapper.eq("step_status", "1").and(wrapper2 -> wrapper2.eq("start_work_by", SecurityUtils.getCurrentUser().getUsername()))));
             queryWrapper.in("status", 0, 1);
         }
 
 
         if ("2".equals(dispatchingDto.getState())) {
-            queryWrapper.eq("start_work_by", SecurityUtils.getCurrentUser().getUserId());
+            queryWrapper.eq("start_work_by", SecurityUtils.getCurrentUser().getUsername());
             queryWrapper.in("status", 2);
         }
         if (StringUtils.isNullOrEmpty(dispatchingDto.getOrderCol())) {
@@ -215,20 +212,7 @@ public class PrechargeFurnaceController extends BaseController {
         return CommonResult.success(prechargeFurnaceService.queryAssignByTexture(texture,branchCode));
     }
 
-    @ApiOperation(value = "配炉未派工列表查询")
-    @GetMapping("/assign_furnace_page_list")
-    public CommonResult<Page> assignFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType){
-        QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
-        prechargeFurnaceQueryWrapper.eq("branch_code",branchCode)
-                .eq(!ObjectUtil.isEmpty(id),"id",id)
-                .eq(!StringUtils.isNullOrEmpty(texture),"texture",texture)
-                .ge(!StringUtils.isNullOrEmpty(startTime),"date_format(create_time, '%Y-%m-%d')", startTime)
-                .le(!StringUtils.isNullOrEmpty(endTime),"date_format(create_time, '%Y-%m-%d')", endTime)
-                .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType);
-        return CommonResult.success(prechargeFurnaceService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper));
-    }
-
-    @ApiOperation(value = "配炉工序列表查询")
+    @ApiOperation(value = "未派工配炉工序列表查询（冶炼）")
     @GetMapping("/furnace_item_list")
     public CommonResult<List> furnaceItemList(Long id){
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
