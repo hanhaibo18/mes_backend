@@ -152,6 +152,8 @@ public class PrechargeFurnaceController extends BaseController {
         }
         if (dispatchingDto.getAssignStatus()!=null) {
             queryWrapper.eq("assign_status",dispatchingDto.getAssignStatus());
+        }else {
+            queryWrapper.eq("assign_status",0).or().eq("assign_status",1);
         }
         //根据毛坯类型查询
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkblankType())) {
