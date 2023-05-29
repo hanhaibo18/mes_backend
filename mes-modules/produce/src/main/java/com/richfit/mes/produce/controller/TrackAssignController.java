@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -369,12 +370,12 @@ public class TrackAssignController extends BaseController {
                     boolean assembly = "2".equals(trackHead.getClasses());
                     //是否进行齐套并发送申请单 true = 发送 false = 不发送
                     boolean switchOff = "true".equals(off);
-                    if (assembly && sendWMSA(trackItem) && switchOff && bom) {
+                    if (assembly && sendWMSA(trackItem) != 0 && switchOff && bom) {
                         //无生产订单编号不允许发送申请单
                         if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
-                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
+                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode(), sendWMSA(trackItem));
                         requestNoteService.saveRequestNoteNew(ingredient, trackHead, trackHead.getBranchCode());
                         ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
 //                        ApplyListUpload ingredient = collect(trackItem, trackHead, trackHead.getBranchCode());
@@ -410,7 +411,7 @@ public class TrackAssignController extends BaseController {
         }
     }
 
-    private boolean sendWMSA(TrackItem trackItem) {
+    private int sendWMSA(TrackItem trackItem) {
         //判断是否开工
         boolean isDoing = 0 == trackItem.getIsDoing();
         //判断当前工序
@@ -422,10 +423,25 @@ public class TrackAssignController extends BaseController {
         List<TrackItem> list = trackItemService.list(queryWrapper);
         //过滤外协工序后,获取最小工序
         TrackItem minTrackItem = list.stream().filter(item -> !item.getOptType().equals("3")).min(Comparator.comparing(TrackItem::getOptSequence)).get();
-        if (isDoing && isCurrent && trackItem.getOptSequence().equals(minTrackItem.getOptSequence())) {
-            return true;
+        //根据传入工序查询是否是配料工序
+        QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
+        assemblyQueryWrapper.eq("flow_id", trackItem.getFlowId());
+        assemblyQueryWrapper.eq("opt_name", trackItem.getOptName());
+        int count = trackAssemblyService.count(assemblyQueryWrapper);
+        boolean min = isDoing && isCurrent && trackItem.getOptSequence().equals(minTrackItem.getOptSequence());
+        //第一道非外协工序并且还是配料工序
+        if (min && count > 1) {
+            return 3;
+        } else if (min) {
+            //第一道非外协工序
+            return 2;
+        } else if (count > 1) {
+            //配料工序
+            return 1;
+        } else {
+            //不发送
+            return 0;
         }
-        return false;
     }
 
     /**
@@ -511,10 +527,39 @@ public class TrackAssignController extends BaseController {
     }
 
 
-    private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
+    private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode, int sendState) {
+        //获取所有关键件
         QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
         assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
-        List<TrackAssembly> assemblyList = trackAssemblyService.list(assemblyQueryWrapper);
+        assemblyQueryWrapper.eq("is_key_part", 1);
+        assemblyQueryWrapper.orderByAsc("create_time");
+        List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(assemblyQueryWrapper);
+        //处理后数据
+        List<TrackAssembly> assemblyList = new ArrayList<>();
+        //所有非配料工序关键件+当前工序是配料工序
+        if (sendState == 3) {
+            //先获取到所有非配料 关键件
+            assemblyList.addAll(trackAssemblyList.stream().filter(assembly -> StrUtil.isBlank(assembly.getOptName())).collect(Collectors.toList()));
+            //筛选配料工序绑定数量为0的
+            List<TrackAssembly> optName = trackAssemblyList.stream().filter(assembly -> assembly.getOptName().equals(trackItem.getOptName()) && assembly.getNumberInstall() == 0).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(optName)) {
+                throw new GlobalException("未查询到当前工序可配料的工序", ResultCode.FAILED);
+            }
+            assemblyList.add(optName.get(0));
+        } else if (sendState == 2) {
+            //先获取到所有非配料 关键件
+            assemblyList.addAll(trackAssemblyList.stream().filter(assembly -> StrUtil.isBlank(assembly.getOptName())).collect(Collectors.toList()));
+        } else {
+            //筛选配料工序绑定数量为0的
+            List<TrackAssembly> optName = trackAssemblyList.stream().filter(assembly -> assembly.getOptName().equals(trackItem.getOptName()) && assembly.getNumberInstall() == 0).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(optName)) {
+                throw new GlobalException("未查询到当前工序可配料的工序", ResultCode.FAILED);
+            }
+            assemblyList.add(optName.get(0));
+        }
+        if (CollectionUtils.isEmpty(assemblyList)) {
+            throw new GlobalException("未查询到可配料信息", ResultCode.FAILED);
+        }
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("ti_id", trackItem.getId());
         //查询派工工位信息
@@ -593,7 +638,7 @@ public class TrackAssignController extends BaseController {
             if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                 throw new GlobalException("无生产订单编号", ResultCode.FAILED);
             }
-            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
+            IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode(), 0);
             requestNoteService.saveRequestNote(ingredient, ingredient.getLineList(), trackHead.getBranchCode());
             ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
             //请勿重复上传！
