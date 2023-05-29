@@ -158,8 +158,10 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             //跟单工序添加装炉id
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
             trackItem.setPrechargeFurnaceId(prechargeFurnace.getId());
+            prechargeFurnace.setOptType(trackItem.getOptType());
             trackItemService.updateById(trackItem);
         }
+        this.updateById(prechargeFurnace);
     }
 
 
