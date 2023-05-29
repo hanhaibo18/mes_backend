@@ -531,14 +531,14 @@ public class TrackAssignController extends BaseController {
         //获取所有关键件
         QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
         assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
-        assemblyQueryWrapper.eq("is_key_part", 1);
+        assemblyQueryWrapper.eq("is_need_picking", 1);
         assemblyQueryWrapper.orderByAsc("create_time");
         List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(assemblyQueryWrapper);
         //处理后数据
         List<TrackAssembly> assemblyList = new ArrayList<>();
         //所有非配料工序关键件+当前工序是配料工序
         if (sendState == 3) {
-            //先获取到所有非配料 关键件
+            //获取所有非配料工序的领料件
             assemblyList.addAll(trackAssemblyList.stream().filter(assembly -> StrUtil.isBlank(assembly.getOptName())).collect(Collectors.toList()));
             //筛选配料工序绑定数量为0的
             List<TrackAssembly> optName = trackAssemblyList.stream().filter(assembly -> assembly.getOptName().equals(trackItem.getOptName()) && assembly.getNumberInstall() == 0).collect(Collectors.toList());
@@ -547,7 +547,7 @@ public class TrackAssignController extends BaseController {
             }
             assemblyList.add(optName.get(0));
         } else if (sendState == 2) {
-            //先获取到所有非配料 关键件
+            //获取所有非配料工序的领料件
             assemblyList.addAll(trackAssemblyList.stream().filter(assembly -> StrUtil.isBlank(assembly.getOptName())).collect(Collectors.toList()));
         } else {
             //筛选配料工序绑定数量为0的
