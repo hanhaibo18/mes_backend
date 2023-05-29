@@ -919,7 +919,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setProductSourceName(trackHead.getProductSourceName());
             if (StrUtil.isNotBlank(productsNo)) {
                 //试棒类型拼接S
-                if ("1".equals(trackHead.getIsTestBar())) {
+                if ("1".equals(trackHead.getIsTestBar()) || "21".equals(trackHead.getIsTestBar())) {
                     productsNo = productsNo + "S";
                 }
                 if (!StrUtil.isBlank(productsNo)) {
