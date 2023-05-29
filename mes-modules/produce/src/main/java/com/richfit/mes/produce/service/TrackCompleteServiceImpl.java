@@ -561,13 +561,16 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             //修改预装炉派工表状态为完工
             if (!StringUtils.isNullOrEmpty(trackItem.getPrechargeFurnaceAssignId())) {
-                PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
-                prechargeFurnace.setStatus(END_START_WORK);
-                prechargeFurnaceService.updateById(prechargeFurnace);
                 PrechargeFurnaceAssign assignInfo = prechargeFurnaceAssignService.getById(trackItem.getPrechargeFurnaceAssignId());
                 assignInfo.setIsDoing(END_START_WORK);
                 assignInfo.setFinishTime(new Date());
                 prechargeFurnaceAssignService.updateById(assignInfo);
+            }
+            //修改预装炉表状态为完工
+            if(!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())){
+                PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                prechargeFurnace.setStatus(END_START_WORK);
+                prechargeFurnaceService.updateById(prechargeFurnace);
             }
             log.error(completeDto.getTrackCompleteList().toString());
 
