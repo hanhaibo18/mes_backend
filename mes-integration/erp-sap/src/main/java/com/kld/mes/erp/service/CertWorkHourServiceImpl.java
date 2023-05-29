@@ -60,13 +60,10 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
 
 
     private Zc80Ppif024 generateRequestBody(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
-
         List<Zc80Ppif024S1> zc80Ppif024S1List = new ArrayList<>();
         for (int i = 0; i < trackItemList.size(); i++) {
             Zc80Ppif024S1 zc80Ppif024S1 = getZc80Ppif024S1(trackItemList.get(i), erpCode, orderNo, qty, unit, i);
-
             zc80Ppif024S1List.add(zc80Ppif024S1);
-
         }
 
         Zc80Ppif024 zc80Ppif024 = new Zc80Ppif024();
@@ -103,16 +100,12 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
      * @return
      */
     private String getVornr(TrackItem item, int i) {
-
         Assert.notNull(item, "item 不应该为null");
-
         String s;
-
-        int optSequence = item.getOptSequence();
-
+        int optSequence = item.getOptSequence() * 10;
         if (optSequence > 0) {
             s = "000" + optSequence;
-            s = s.substring(s.length() - 4, 4);
+            s = s.substring(s.length() - 4, s.length());
         } else {
             if (i < 9) {
                 s = "00" + (i + 1) + "0";
@@ -120,7 +113,6 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
                 s = "0" + (i + 1) + "0";
             }
         }
-
         return s;
     }
 
@@ -133,9 +125,6 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
     private Double getHourToMinutes(TrackItem item) {
         Double singlePieceHours = item.getSinglePieceHours() == null ? 0.0 : item.getSinglePieceHours();
         Double prepareEndHours = item.getPrepareEndHours() == null ? 0.0 : item.getPrepareEndHours();
-
         return (singlePieceHours + prepareEndHours) * 60;
     }
-
-
 }
