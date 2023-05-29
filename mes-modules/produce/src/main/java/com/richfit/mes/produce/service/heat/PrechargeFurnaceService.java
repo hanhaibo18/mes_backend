@@ -64,5 +64,7 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
 
     List<TrackItem> getItemsByPrechargeFurnace(Long id);
 
+   boolean furnaceRollBack(Long id);
+
 
 }

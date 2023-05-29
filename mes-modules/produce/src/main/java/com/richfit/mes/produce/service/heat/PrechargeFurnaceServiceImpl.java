@@ -10,22 +10,22 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
-import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.PrechargeFurnace;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.TrackCompleteService;
 import com.richfit.mes.produce.service.TrackItemService;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,6 +53,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
 
     @Autowired
     private PrechargeFurnaceMapper prechargeFurnaceMapper;
+
+    @Autowired
+    private TrackCompleteService trackCompleteService;
 
     @Override
     public void furnaceCharging(List<Assign> assignList, String tempWork) {
@@ -158,8 +161,10 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             //跟单工序添加装炉id
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
             trackItem.setPrechargeFurnaceId(prechargeFurnace.getId());
+            prechargeFurnace.setOptType(trackItem.getOptType());
             trackItemService.updateById(trackItem);
         }
+        this.updateById(prechargeFurnace);
     }
 
 
@@ -334,6 +339,27 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         }else {
             return false;
         }
+    }
+
+    /**
+     * 预装炉报工回滚接口(锻造)
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean furnaceRollBack(Long id) {
+        QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
+        trackCompleteQueryWrapper.eq("precharge_furnace_id",id);
+        List<TrackComplete> trackCompletes = trackCompleteService.list(trackCompleteQueryWrapper);
+        //回滚报工信息
+        for (TrackComplete trackComplete : trackCompletes) {
+            trackCompleteService.rollBack(trackComplete.getId());
+        }
+        //预装炉信息回滚
+        PrechargeFurnace prechargeFurnace = this.getById(id);
+        prechargeFurnace.setStatus("1");
+        prechargeFurnace.setAssignStatus(0);
+        return this.updateById(prechargeFurnace);
     }
 
 

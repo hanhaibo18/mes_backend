@@ -16,6 +16,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -59,8 +60,8 @@ public class PrechargeFurnaceController extends BaseController {
     @ApiOperation(value = "装炉(热工)")
     @PostMapping("/furnace_charging_hot")
     public CommonResult furnaceChargingHot(@ApiParam(value = "保存信息", required = true) @RequestBody List<Assign> assignList,
-                                           @ApiParam(value = "材质", required = false) @RequestParam String texture,
-                                           @ApiParam(value = "车间编码", required = false) @RequestParam String branchCode) {
+                                           @ApiParam(value = "材质") @RequestParam(required = false) String texture,
+                                           @ApiParam(value = "车间编码") @RequestParam(required = false) String branchCode) {
         prechargeFurnaceService.furnaceChargingHot(assignList, texture, branchCode);
         return CommonResult.success("装炉成功");
     }
@@ -153,6 +154,8 @@ public class PrechargeFurnaceController extends BaseController {
         }
         if (dispatchingDto.getAssignStatus()!=null) {
             queryWrapper.eq("assign_status",dispatchingDto.getAssignStatus());
+        }else {
+            queryWrapper.eq("assign_status",0).or().eq("assign_status",1);
         }
         //根据毛坯类型查询
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkblankType())) {
@@ -237,5 +240,11 @@ public class PrechargeFurnaceController extends BaseController {
     @GetMapping("/furnace_item_list_YL")
     public CommonResult<List<TrackItem>> furnaceItemListYl(Long id) {
         return CommonResult.success(prechargeFurnaceService.getItemsByPrechargeFurnace(id));
+    }
+
+    @ApiOperation(value = "预装炉报工回滚接口(锻造)")
+    @GetMapping("/furnace_roll_back")
+    public CommonResult<Boolean> furnaceRollBack(Long id) {
+        return CommonResult.success(prechargeFurnaceService.furnaceRollBack(id));
     }
 }
