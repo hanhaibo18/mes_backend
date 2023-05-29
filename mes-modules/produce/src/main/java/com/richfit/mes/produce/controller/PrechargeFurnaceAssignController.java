@@ -3,8 +3,8 @@ package com.richfit.mes.produce.controller;
 
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.json.JSONObject;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -48,7 +48,7 @@ public class PrechargeFurnaceAssignController extends ApiController {
         //预装炉ids
         List<Long> furnaceIds = JSON.parseArray(com.alibaba.fastjson.JSONObject.toJSONString(jsonObject.get("furnaceIds")), Long.class);
         //派工信息
-        Assign assign = (Assign) jsonObject.get("assign");
+        Assign assign = JSONObject.toJavaObject(JSONObject.parseObject(JSONObject.toJSONString(jsonObject.get("assign"))),Assign.class);
         return CommonResult.success(prechargeFurnaceAssignService.furnaceAssign(assign,furnaceIds));
     }
 
