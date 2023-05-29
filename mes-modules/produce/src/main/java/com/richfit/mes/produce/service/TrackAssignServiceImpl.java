@@ -794,6 +794,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 .orderByDesc("modify_time");
         List<ForgHour> list = forgHourService.list(forgHourQueryWrapper);
         //跟单重量
+        trackHead.setWeight(ObjectUtil.isEmpty(trackHead.getWeight())?0:trackHead.getWeight());
         List<ForgHour> hours = list.stream().filter(item ->
                 (item.getWeightUp() > trackHead.getWeight() || item.getWeightUp() == trackHead.getWeight())
                         && (item.getWeightDown() < trackHead.getWeight() || item.getWeightDown() == trackHead.getWeight())
