@@ -681,6 +681,7 @@ public class TrackAssignController extends BaseController {
             @ApiImplicitParam(name = "trackNo", value = "跟单号", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "routerNo", value = "图号", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "workNo", value = "工作号", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "optName", value = "工序名称", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "startTime", value = "开始时间", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "endTime", value = "结束时间", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
@@ -689,7 +690,7 @@ public class TrackAssignController extends BaseController {
     })
     @GetMapping("/getPageAssignsByStatus")
     public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            routerNo, String workNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol, String productNo) throws ParseException {
+            routerNo, String workNo, String startTime, String endTime, String optType, String branchCode, String order, String orderCol, String productNo, String optName) throws ParseException {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
@@ -729,8 +730,8 @@ public class TrackAssignController extends BaseController {
         if (!StringUtils.isNullOrEmpty(workNo)) {
             queryWrapper.inSql("a.id", "select id from produce_track_item where track_head_id in (select id from produce_track_head where tenant_id = '" + SecurityUtils.getCurrentUser().getTenantId() + "' and work_no = '" + workNo + "')");
         }
-
-
+        //工序名称查询
+        queryWrapper.eq(StrUtil.isNotBlank(optName), "opt_name", optName);
         queryWrapper.ne("is_schedule", 1);
 
         //过滤排序（list中的字段不在此处排序，后边步骤再排序）
