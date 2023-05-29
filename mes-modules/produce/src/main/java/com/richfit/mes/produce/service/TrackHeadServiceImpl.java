@@ -939,7 +939,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             } else {
                 trackFlow.setProductNo(null);
             }
-            if (!"2".equals(trackHead.getClasses()) && trackFlow.getProductNo() == null) {
+            if ("1".equals(trackHead.getClasses()) && trackFlow.getProductNo() == null) {
                 throw new GlobalException("机加产品编号不能为空", ResultCode.FAILED);
             }
             trackHeadFlowService.save(trackFlow);
