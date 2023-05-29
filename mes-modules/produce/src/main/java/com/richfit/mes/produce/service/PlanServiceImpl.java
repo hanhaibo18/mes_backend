@@ -930,6 +930,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setSubmitOrderTime(new Date());//提单时间
                 plan.setSource(2);//导入默认为车间计划
                 plan.setBranchCode(branchCode);
+                plan.setPriority(this.disposePriority(plan.getPriority()));
+
                 this.disposeBranchCode(plan);
                 //保存计划
                 this.savePlanHot(plan);
@@ -939,6 +941,27 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
+
+    /**
+     * 处理优先级编码
+     * @param priority
+     * @return
+     */
+    @Override
+    public String disposePriority(String priority) {
+        switch (priority) {
+            case "低":
+                return "0";
+            case "一般":
+                return "1";
+            case "中":
+                return "2";
+            case "高":
+                return "3";
+
+            default:return "3";
         }
     }
 
