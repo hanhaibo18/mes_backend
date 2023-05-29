@@ -159,6 +159,8 @@ public class PrechargeFurnaceController extends BaseController {
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkblankType())) {
             queryWrapper.eq("workblank_type", dispatchingDto.getWorkblankType());
         }
+        queryWrapper.eq("branch_code", dispatchingDto.getBranchCode());
+        queryWrapper.eq("tenant_id", dispatchingDto.getTenantId());
 
         Page<PrechargeFurnace> page = prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
         //根据材质和锭型进行分组
