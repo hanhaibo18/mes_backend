@@ -3,8 +3,8 @@ package com.richfit.mes.produce.controller;
 
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.json.JSONObject;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -13,6 +13,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.service.PrechargeFurnaceAssignService;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.ApiOperation;
@@ -30,7 +31,7 @@ import java.util.List;
  * @since 2023-05-19 10:36:13
  */
 @RestController
-@RequestMapping("prechargeFurnaceAssign")
+@RequestMapping("/api/produce/prechargeFurnaceAssign")
 public class PrechargeFurnaceAssignController extends ApiController {
     /**
      * 服务对象
@@ -47,7 +48,7 @@ public class PrechargeFurnaceAssignController extends ApiController {
         //预装炉ids
         List<Long> furnaceIds = JSON.parseArray(com.alibaba.fastjson.JSONObject.toJSONString(jsonObject.get("furnaceIds")), Long.class);
         //派工信息
-        Assign assign = (Assign) jsonObject.get("assign");
+        Assign assign = JSONObject.toJavaObject(JSONObject.parseObject(JSONObject.toJSONString(jsonObject.get("assign"))),Assign.class);
         return CommonResult.success(prechargeFurnaceAssignService.furnaceAssign(assign,furnaceIds));
     }
 
@@ -60,7 +61,8 @@ public class PrechargeFurnaceAssignController extends ApiController {
                 .eq(!StringUtils.isNullOrEmpty(texture),"texture",texture)
                 .ge(!StringUtils.isNullOrEmpty(startTime),"date_format(assign_time, '%Y-%m-%d')", startTime)
                 .le(!StringUtils.isNullOrEmpty(endTime),"date_format(assign_time, '%Y-%m-%d')", endTime)
-                .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType);
+                .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType)
+                .eq("assign_by", SecurityUtils.getCurrentUser().getUsername());
         return CommonResult.success(prechargeFurnaceAssignService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper));
     }
 

@@ -661,10 +661,6 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getMaterialName())) {
             queryWrapper.eq("material_name", dispatchingDto.getMaterialName());
         }
-        if("4".equals(dispatchingDto.getClasses()) || "6".equals(dispatchingDto.getClasses()) || "7".equals(dispatchingDto.getClasses())){
-            queryWrapper.ne("opt_type","14")
-                    .ne("opt_type","13");
-        }
         //增加工序过滤
         ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
         queryWrapper.eq("classes", dispatchingDto.getClasses());
@@ -798,6 +794,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 .orderByDesc("modify_time");
         List<ForgHour> list = forgHourService.list(forgHourQueryWrapper);
         //跟单重量
+        trackHead.setWeight(ObjectUtil.isEmpty(trackHead.getWeight())?0:trackHead.getWeight());
         List<ForgHour> hours = list.stream().filter(item ->
                 (item.getWeightUp() > trackHead.getWeight() || item.getWeightUp() == trackHead.getWeight())
                         && (item.getWeightDown() < trackHead.getWeight() || item.getWeightDown() == trackHead.getWeight())
