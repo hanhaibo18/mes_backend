@@ -34,7 +34,7 @@ public interface BaseServiceClient {
     public CommonResult<Branch> selectBranchByCodeAndTenantId(@RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
 
     @GetMapping("/api/base/product/product/listByNo")
-    public CommonResult<List<Product>> selectProduct(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
+    public CommonResult<List<Product>> selectProduct(@RequestParam("tenantId") String tenantId, @RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
 
     @GetMapping(value = "/api/base/device/find_one")
     public CommonResult<Device> getDeviceById(@RequestParam("id") String id);
@@ -255,4 +255,10 @@ public interface BaseServiceClient {
     @GetMapping("/api/base/branch/query_all_branch_inner")
     public List<Branch> queryAllBranchInner(@RequestHeader(value = SecurityConstants.FROM) String header);
 
+    @ApiOperation(value = "查询组织机构inner", notes = "查询组织机构inner")
+    @GetMapping("/api/base/branch/select_org_inner")
+    public CommonResult<List<Branch>> selectOrgInner();
+    @ApiOperation(value = "查询分公司inner", notes = "查询分公司inner")
+    @GetMapping("/api/base/branch/select_branches_inner")
+    CommonResult<List<Branch>> selectBranchesInner( @RequestParam("branchCode") String branchCode,@RequestParam("branchName")  String branchName);
 }

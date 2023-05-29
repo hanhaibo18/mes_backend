@@ -214,6 +214,12 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "分流Id")
     private String flowId;
 
+    @ApiModelProperty(value = "保温结束时间")
+    @TableField(exist = false)
+    private String holdFinishedTime;
+    @ApiModelProperty(value = "浇注时间", dataType = "Date")
+    @TableField(exist = false)
+    private String pourTime;
     /**
      * 探伤委托单id
      */

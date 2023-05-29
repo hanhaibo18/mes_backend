@@ -407,19 +407,20 @@ public class HotDemandController extends BaseController {
         queryWrapper.apply("(is_exist_repertory=0 or is_exist_repertory is null)");
         //查询出没有库存的数据
         List<HotDemand> list = hotDemandService.list(queryWrapper);
-        for (HotDemand hotDemand : list) {
-            if (StringUtils.isNotEmpty(hotDemand.getErpProductCode())) {
-                //库存数量
-                Integer count = wmsServiceClient.queryMaterialCount(hotDemand.getErpProductCode()).getData();
-                if (count > 0) {
-                    UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
-                    updateWrapper.set("repertory_num", count);//设置库存数量
-                    updateWrapper.set("is_exist_repertory", 1);//设置为已有库存
-                    updateWrapper.in("id", hotDemand.getId());
-                    hotDemandService.update(updateWrapper);
-                }
-            }
-        }
+        //TODO  核对库存需要更新接口
+//        for (HotDemand hotDemand : list) {
+//            if (StringUtils.isNotEmpty(hotDemand.getErpProductCode())) {
+//                //库存数量
+//                Integer count = wmsServiceClient.queryMaterialCount(hotDemand.getErpProductCode()).getData();
+//                if (count > 0) {
+//                    UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
+//                    updateWrapper.set("repertory_num", count);//设置库存数量
+//                    updateWrapper.set("is_exist_repertory", 1);//设置为已有库存
+//                    updateWrapper.in("id", hotDemand.getId());
+//                    hotDemandService.update(updateWrapper);
+//                }
+//            }
+//        }
         return CommonResult.success("操作成功");
     }
 

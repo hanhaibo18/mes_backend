@@ -446,7 +446,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
                 //--------------------------
                 plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
-                plan.setInchargeOrgName(hotDemand.getInchargeOrg());//加工单位
+                plan.setInchargeOrgName(hotDemand.getInchargeOrgName());//加工单位
+                plan.setInchargeOrg(hotDemand.getInchargeOrg());
                 plan.setBlank(hotDemand.getWorkblankType());//毛坯
                 plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
                 plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
@@ -454,6 +455,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setModifyTime(new Date());
                 plan.setDrawNoName("");//图号名称
                 plan.setMaterialName(hotDemand.getDemandName());//零件名称
+                plan.setInchargeWorkshopName(hotDemand.getInchargeWorkshopName());
+                plan.setInchargeWorkshop(hotDemand.getInchargeWorkshop());
                 planService.save(plan);
                 //扩展字段保存
                 this.saveExtend(hotDemand, plan);
@@ -484,6 +487,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
             planExtend.setIngotCase(hotDemand.getIngotCase());//锭 型
             planExtend.setWorkblankType(hotDemand.getWorkblankType());//毛坯类型 0锻件,1铸件,2钢锭
+            planExtend.setInchargeWorkshop(hotDemand.getInchargeWorkshop());//加工单位
+            planExtend.setInchargeWorkshopName(hotDemand.getInchargeWorkshopName());//加工单位名称
+            planExtend.setIsLongPeriod(hotDemand.getIsLongPeriod());//是否长周期
         planExtendService.save(planExtend);
     }
 

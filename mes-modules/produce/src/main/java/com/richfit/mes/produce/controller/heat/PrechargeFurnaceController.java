@@ -59,8 +59,9 @@ public class PrechargeFurnaceController extends BaseController {
     @ApiOperation(value = "装炉(热工)")
     @PostMapping("/furnace_charging_hot")
     public CommonResult furnaceChargingHot(@ApiParam(value = "保存信息", required = true) @RequestBody List<Assign> assignList,
-                                        @ApiParam(value = "材质", required = false) @RequestParam String texture) {
-        prechargeFurnaceService.furnaceChargingHot(assignList,texture);
+                                           @ApiParam(value = "材质", required = false) @RequestParam String texture,
+                                           @ApiParam(value = "车间编码", required = false) @RequestParam String branchCode) {
+        prechargeFurnaceService.furnaceChargingHot(assignList, texture, branchCode);
         return CommonResult.success("装炉成功");
     }
 

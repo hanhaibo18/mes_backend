@@ -36,6 +36,7 @@ import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
@@ -829,7 +830,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     public void importPlanDZ(MultipartFile file, HttpServletRequest request,String branchCode) throws IOException {
         //sheet计划列表
         String[] fieldNames3 = {"productName","materialName","drawNo", "texture", "priority", "workNo", "pieceWeight", "projectName", "orderNo",
-                "projNum",  "inchargeOrg", "inchargeWorkshop", "endTime", "planMonth"};
+                "projNum",  "inchargeOrgName", "inchargeWorkshopName", "endTime", "planMonth"};
         this.importPlanDZ(file, request, fieldNames3, branchCode);
     }
 
@@ -884,9 +885,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             FileUtils.delete(excelFile);
             //sheet1过滤要导入的数据
             List<Plan> sheetList = list3.stream().filter(t -> {
-                return !StringUtils.isEmpty(t.getInchargeWorkshop()) ; //加工车间必填
+                return !StringUtils.isEmpty(t.getInchargeWorkshopName()) ; //加工车间必填
             }).collect(Collectors.toList());
             TenantUserDetails user = SecurityUtils.getCurrentUser();
+
             for (Plan plan : sheetList) {
                 plan.setTenantId(user.getTenantId());
 
@@ -924,10 +926,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setDeliveryNum(0);
                 plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
-                plan.setSubmitOrderOrg(plan.getBranchCode());//提单单位
+                plan.setSubmitOrderOrg(branchCode);//提单单位
                 plan.setSubmitOrderTime(new Date());//提单时间
                 plan.setSource(2);//导入默认为车间计划
                 plan.setBranchCode(branchCode);
+                this.disposeBranchCode(plan);
                 //保存计划
                 this.savePlanHot(plan);
                 actionService.saveAction(ActionUtil.buildAction
@@ -939,6 +942,28 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         }
     }
 
+    /**
+     * 处理车间码
+     * @param plan
+     */
+    private void disposeBranchCode(Plan plan) {
+        List<Branch> org = baseServiceClient.selectOrgInner().getData();
+        List<Branch> banch = baseServiceClient.selectBranchesInner(null, plan.getInchargeWorkshopName()).getData();
+        Map<String, Branch> orgMap = org.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        Map<String, Branch> banchMap = banch.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(orgMap)){
+            Branch branch = orgMap.get(plan.getInchargeOrgName());
+            if(ObjectUtils.isNotEmpty(branch)){
+                plan.setInchargeOrg(branch.getBranchCode());
+            }
+        }
+        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(banchMap)){
+            Branch branch = banchMap.get(plan.getInchargeWorkshopName());
+            if(ObjectUtils.isNotEmpty(branch)){
+                plan.setInchargeWorkshop(branch.getBranchCode());
+            }
+        }
+    }
     /**
      * 导入计划(热工个性化)
      *

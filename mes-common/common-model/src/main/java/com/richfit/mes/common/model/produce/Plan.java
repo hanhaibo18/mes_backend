@@ -245,4 +245,8 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "加工车间名称 ", dataType = "String")
     @TableField(exist = false)
     private String inchargeWorkshopName;
+    @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ", dataType = "String")
+    @TableField(exist = false)
+    private String isLongPeriod;
+
 }

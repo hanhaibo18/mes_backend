@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
@@ -16,10 +17,7 @@ import com.richfit.mes.common.model.produce.forg.ForgHour;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.dao.LineStoreMapper;
-import com.richfit.mes.produce.dao.TrackAssignMapper;
-import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
-import com.richfit.mes.produce.dao.TrackCompleteMapper;
+import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
@@ -28,6 +26,7 @@ import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.forg.ForgHourService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
+import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.ProcessFiltrationUtil;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +80,10 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
     @Resource
     private TrackHeadFlowService trackFlowService;
+
+    @Autowired
+    private RecordsOfPourOperationsMapper recordsOfPourOperationsMapper;
+
 
     @Override
     public IPage<TrackItem> getPageAssignsByStatus(Page page, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols) {
@@ -223,7 +226,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
 
     @Override
-    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol) throws ParseException {
+    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol,String holdStatus) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
@@ -237,6 +240,13 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("u.product_no", productNo);
+        }
+        if (!StringUtils.isNullOrEmpty(holdStatus)) {
+            if(holdStatus.equals("1")){
+                queryWrapper.le("u.hold_finished_time",new Date());
+            }else if(holdStatus.equals("2")){
+                queryWrapper.ge("u.hold_finished_time",new Date());
+            }
         }
         if (StrUtil.isNotBlank(userId)) {
             queryWrapper.and(wrapper -> wrapper.like("u.user_id", userId).or().or(wrapper1 -> wrapper1.like("u.user_id", "/")));
@@ -299,11 +309,38 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 assign.setDispatchingNumber(trackItem.getAssignableQty());
                 assign.setWorkPlanNo(trackHead.getWorkPlanNo());
                 assign.setPartsName(trackHead.getMaterialName());
+                this.disposeHoldFinishedTime(assign, trackItem);
                 assign.setAssignPersons(trackAssignPersonMapper.selectList(new QueryWrapper<AssignPerson>().eq("assign_id", assign.getId())));
 
             }
         }
         return queryPage;
+    }
+
+    /**
+     * 处理保温状态
+     * @param assign
+     * @param trackItem
+     */
+    private void disposeHoldFinishedTime(Assign assign, TrackItem trackItem) {
+        Long prechargeFurnaceId = trackItem.getPrechargeFurnaceId();
+        if (ObjectUtil.isNotEmpty(prechargeFurnaceId)){
+            QueryWrapper<RecordsOfPourOperations> wrapper=new QueryWrapper<>();
+            wrapper.eq("precharge_furnace_id",prechargeFurnaceId);
+            List<RecordsOfPourOperations> recordsOfPourOperations = recordsOfPourOperationsMapper.selectList(wrapper);
+            if(CollectionUtils.isNotEmpty(recordsOfPourOperations)){
+                //浇注时间赋值
+                assign.setPourTime(recordsOfPourOperations.get(0).getPourTime());
+            }
+        }
+        if(!StringUtils.isNullOrEmpty(assign.getHoldFinishedTime())){
+            int i = DateUtils.compareDateTime(DateUtils.parseDate(assign.getHoldFinishedTime(), "yyyy-MM-dd HH:mm:ss"), new Date());
+            if(i<0){
+                assign.setHoldFinishedTime("保温结束");
+            }else if(i>0){
+                assign.setHoldFinishedTime("保温中");
+            }
+        }
     }
 
     @Override

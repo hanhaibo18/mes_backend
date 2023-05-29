@@ -70,4 +70,6 @@ public class PlanExtend {
 
     @ApiModelProperty(value = "加工车间名称 ", dataType = "String")
     private String inchargeWorkshopName;
+    @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ", dataType = "String")
+    private Integer isLongPeriod;
 }
