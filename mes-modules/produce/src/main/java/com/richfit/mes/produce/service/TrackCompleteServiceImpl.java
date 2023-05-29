@@ -473,6 +473,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackComplete.setCompleteTime(new Date());
                 trackComplete.setDetectionResult("-");
                 trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                if(!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())){
+                    trackComplete.setPrechargeFurnaceId(String.valueOf(trackItem.getPrechargeFurnaceId()));
+                }
                 number += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
                 time = time.add(new BigDecimal(trackComplete.getReportHours() == null ? 0.00 : trackComplete.getReportHours()));
             }

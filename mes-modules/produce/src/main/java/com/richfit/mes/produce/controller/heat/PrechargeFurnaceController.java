@@ -16,6 +16,7 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -239,5 +240,11 @@ public class PrechargeFurnaceController extends BaseController {
     @GetMapping("/furnace_item_list_YL")
     public CommonResult<List<TrackItem>> furnaceItemListYl(Long id) {
         return CommonResult.success(prechargeFurnaceService.getItemsByPrechargeFurnace(id));
+    }
+
+    @ApiOperation(value = "预装炉报工回滚接口(锻造)")
+    @GetMapping("/furnace_roll_back")
+    public CommonResult<Boolean> furnaceRollBack(Long id) {
+        return CommonResult.success(prechargeFurnaceService.furnaceRollBack(id));
     }
 }
