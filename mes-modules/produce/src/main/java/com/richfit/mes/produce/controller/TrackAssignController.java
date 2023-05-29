@@ -727,7 +727,7 @@ public class TrackAssignController extends BaseController {
             queryWrapper.like("product_no", productNo);
         }
         if (!StringUtils.isNullOrEmpty(workNo)) {
-            queryWrapper.inSql("a.id", "select id from produce_track_item where track_head_id in (select id from produce_track_head where tenant_id = '" + SecurityUtils.getCurrentUser().getTenantId() + "' and work_no = '" + workNo + "')");
+            queryWrapper.inSql("a.id", "select id from produce_track_item where track_head_id in (select id from produce_track_head where tenant_id = '" + SecurityUtils.getCurrentUser().getTenantId() + "' and work_no like '%" + workNo + "%')");
         }
 
 
