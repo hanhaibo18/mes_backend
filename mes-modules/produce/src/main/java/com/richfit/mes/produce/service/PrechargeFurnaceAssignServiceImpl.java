@@ -79,6 +79,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                         .set("assign_status",1);
                 prechargeFurnaceService.update(prechargeFurnaceWrapper);
                 //派工
+                String furnaceAssignId = UUID.randomUUID().toString().replaceAll("-", "");
                 for (TrackItem trackItem : itemList) {
                     TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                     //派工数量校验
@@ -115,7 +116,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                         trackAssignPersonMapper.insert(person);
                     }
                     //保存预装炉派工信息
-                    constructFurnaceAssignInfo(assign, furnaceId, trackItem, trackHead);
+                    constructFurnaceAssignInfo(assign, furnaceId, trackItem, trackHead,furnaceAssignId);
                     //保存工序信息
                     trackItemService.updateById(trackItem);
 
@@ -139,7 +140,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         }
     }
 
-    private void constructFurnaceAssignInfo(@RequestBody Assign assign, Long furnaceId, TrackItem trackItem, TrackHead trackHead) {
+    private void constructFurnaceAssignInfo(@RequestBody Assign assign, Long furnaceId, TrackItem trackItem, TrackHead trackHead,String furnaceAssignId) {
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(furnaceId);
         //预装炉派工表
         PrechargeFurnaceAssign prechargeFurnaceAssign = new PrechargeFurnaceAssign();
@@ -158,7 +159,8 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         prechargeFurnaceAssign.setSmeltingEquipment(assign.getDeviceName());
         prechargeFurnaceAssign.setBranchCode(trackItem.getBranchCode());
         prechargeFurnaceAssign.setTenantId(trackItem.getTenantId());
-        prechargeFurnaceAssignService.save(prechargeFurnaceAssign);
+        prechargeFurnaceAssign.setId(furnaceAssignId);
+        prechargeFurnaceAssignService.saveOrUpdate(prechargeFurnaceAssign);
         //预装炉派工id
         trackItem.setPrechargeFurnaceAssignId(prechargeFurnaceAssign.getId());
         //预装炉派工人员信息
