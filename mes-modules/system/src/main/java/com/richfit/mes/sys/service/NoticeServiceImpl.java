@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * @ClassName: NoticeServiceImpl.java
@@ -54,9 +55,9 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     }
 
     @Override
-    public Boolean acceptanceNotice(String id) {
+    public Boolean acceptanceNotice(List<String> idList) {
         UpdateWrapper<Notice> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("id", id);
+        updateWrapper.in("id", idList);
         updateWrapper.set("notification_status", 1);
         return this.update(updateWrapper);
     }

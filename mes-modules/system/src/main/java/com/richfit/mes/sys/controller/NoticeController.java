@@ -7,9 +7,13 @@ import com.richfit.mes.sys.entity.dto.SalesSchedulingDto;
 import com.richfit.mes.sys.service.NoticeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @ClassName: NoticeController.java
@@ -49,8 +53,8 @@ public class NoticeController {
      * @return: Boolean
      **/
     @ApiOperation(value = "接受通知", notes = "根据ID修改通知状态")
-    @GetMapping("/acceptance_notice")
-    public CommonResult<Boolean> acceptanceNotice(String id) {
-        return CommonResult.success(noticeService.acceptanceNotice(id));
+    @PostMapping("/acceptance_notice")
+    public CommonResult<Boolean> acceptanceNotice(@RequestBody List<String> idList) {
+        return CommonResult.success(noticeService.acceptanceNotice(idList));
     }
 }

@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.sys.Notice;
 import com.richfit.mes.sys.entity.dto.SalesSchedulingDto;
 
+import java.util.List;
+
 /**
  * @ClassName: NoticeService.java
  * @Author: Hou XinYu
@@ -31,7 +33,7 @@ public interface NoticeService extends IService<Notice> {
      * @Date: 2023/5/29 19:08
      * @return: Boolean
      **/
-    Boolean acceptanceNotice(String id);
+    Boolean acceptanceNotice(List<String> idList);
 
     /**
      * 功能描述: 通知退回
