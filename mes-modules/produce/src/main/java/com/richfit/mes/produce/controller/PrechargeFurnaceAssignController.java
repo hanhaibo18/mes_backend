@@ -80,6 +80,7 @@ public class PrechargeFurnaceAssignController extends ApiController {
 
     @ApiOperation(value = "修改报工(锻造)")
     @PostMapping("/updateComplete")
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> updateComplete(@RequestBody List<CompleteDto> completeDtos) {
         for (CompleteDto completeDto : completeDtos) {
             trackCompleteService.updateComplete(completeDto);
