@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
+import com.richfit.mes.produce.entity.CompleteDto;
 
 import java.util.List;
 
@@ -16,6 +17,9 @@ import java.util.List;
 public interface PrechargeFurnaceAssignService extends IService<PrechargeFurnaceAssign> {
 
     boolean furnaceAssign(Assign assign, List<Long> furnaceIds);
+
+
+    public Boolean updateComplete(CompleteDto completeDto);
 
 }
 

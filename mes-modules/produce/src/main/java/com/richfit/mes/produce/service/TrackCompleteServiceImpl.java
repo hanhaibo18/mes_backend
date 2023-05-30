@@ -632,7 +632,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         forgControlRecordCacheService.remove(queryWrapperForgControlRecordCache);
     }
 
-    private void saveKnockout(CompleteDto completeDto) {
+    void saveKnockout(CompleteDto completeDto) {
         if (!ObjectUtil.isEmpty(completeDto.getKnockout())) {
             //先删除该已保存过的
             QueryWrapper<Knockout> queryWrapperKnockout = new QueryWrapper<>();
@@ -643,7 +643,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
-    private void saveModelingAndCore(CompleteDto completeDto) {
+    void saveModelingAndCore(CompleteDto completeDto) {
         if (!ObjectUtil.isEmpty(completeDto.getModelingCore())) {
             //先删除该已保存过的
             QueryWrapper<ModelingCore> queryWrapperModelingCore = new QueryWrapper<>();
@@ -654,7 +654,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
-    private void saveRawMaterialRecord(CompleteDto completeDto) {
+    void saveRawMaterialRecord(CompleteDto completeDto) {
         if (!CollectionUtils.isEmpty(completeDto.getRawMaterialRecordList())) {
             //现根据item_id删除原有记录
             QueryWrapper<RawMaterialRecord> queryWrapperRawMaterialRecord = new QueryWrapper<>();
@@ -667,7 +667,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
-    private void saveLayingOffAndForgControlRecord(CompleteDto completeDto) {
+    void saveLayingOffAndForgControlRecord(CompleteDto completeDto) {
         //记录下料信息
         if (!ObjectUtil.isEmpty(completeDto.getLayingOff())) {
             //先删除该已保存过的
