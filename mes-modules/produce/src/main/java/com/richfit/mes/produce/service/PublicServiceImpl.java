@@ -422,12 +422,12 @@ public class PublicServiceImpl implements PublicService {
         //激活前校验当前跟单多产品是否全部完成 全部完成 获取所有循环执行下工序激活
         QueryWrapper<TrackItem> queryWrapperItemList = new QueryWrapper();
         queryWrapperItemList.eq("track_head_id", trackItem.getTrackHeadId());
-        queryWrapperItemList.eq("opt_sequence", trackItem.getOptSequence());
+        queryWrapperItemList.eq("original_opt_sequence", trackItem.getOriginalOptSequence());
         List<TrackItem> itemList = trackItemService.list(queryWrapperItemList);
         //不查询传入工序,查询相同optSequence的其他工序 并且没最终完成的
-        List<TrackItem> NotIsFinalCompleteList = itemList.stream().filter(item -> item.getOptSequence().equals(trackItem.getOptSequence()) && !item.getId().equals(trackItem.getId()) && item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
+        List<TrackItem> notIsFinalCompleteList = itemList.stream().filter(item -> item.getOriginalOptSequence().equals(trackItem.getOriginalOptSequence()) && !item.getId().equals(trackItem.getId()) && item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
         //有其他工序没有最终完成 终止流程
-        if (!CollectionUtils.isEmpty(NotIsFinalCompleteList)) {
+        if (!CollectionUtils.isEmpty(notIsFinalCompleteList)) {
             return true;
         }
         for (TrackItem item : itemList) {
