@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.NormalizeDehydroRecord;
+import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 
 import java.util.List;
 
@@ -19,5 +20,7 @@ public interface NormalizeDehydroRecordService extends IService<NormalizeDehydro
     boolean updateNormalizeDehydroRecord(NormalizeDehydroRecord normalizeDehydroRecord);
 
     NormalizeDehydroRecord getById(String id);
+
+    boolean isBzz(TenantUserDetails currentUser);
 }
 

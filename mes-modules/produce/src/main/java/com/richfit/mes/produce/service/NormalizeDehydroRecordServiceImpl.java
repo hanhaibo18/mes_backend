@@ -9,10 +9,12 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.NormalizeDehydroExecuteRecord;
 import com.richfit.mes.common.model.produce.NormalizeDehydroRecord;
+import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.NormalizeDehydroRecordExecuteMapper;
 import com.richfit.mes.produce.dao.NormalizeDehydroRecordMapper;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +46,8 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
     private NormalizeDehydroExecuteRecordService normalizeDehydroExecuteRecordService;
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
+    @Autowired
+    private SystemServiceClient systemServiceClient;
     /**
      * 添加正火去氢记录
      * @param record
@@ -90,20 +95,27 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
 
     @Override
     public boolean updateNormalizeDehydroRecord(NormalizeDehydroRecord normalizeDehydroRecord) {
-        if (CollectionUtils.isNotEmpty(normalizeDehydroRecord.getExecuteRecord())){
-            QueryWrapper<NormalizeDehydroExecuteRecord> queryWrapper=new QueryWrapper();
-            queryWrapper.in("record_id",normalizeDehydroRecord.getId());
-            //删除工艺执行记录
-            normalizeDehydroExecuteRecordService.remove(queryWrapper);
-            //添加工艺执行记录
-            normalizeDehydroExecuteRecordService.saveBatch(normalizeDehydroRecord.getExecuteRecord());
-        }
-        int i = normalizeDehydroRecordMapper.updateById(normalizeDehydroRecord);
-        if(i>0){
-            return true;
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        //只有班组长或者自己创建的记录能够执行修改
+        if(this.isBzz(currentUser)||currentUser.getUsername().equals(normalizeDehydroRecord.getCreateBy())){
+            if (CollectionUtils.isNotEmpty(normalizeDehydroRecord.getExecuteRecord())){
+                QueryWrapper<NormalizeDehydroExecuteRecord> queryWrapper=new QueryWrapper();
+                queryWrapper.in("record_id",normalizeDehydroRecord.getId());
+                //删除工艺执行记录
+                normalizeDehydroExecuteRecordService.remove(queryWrapper);
+                //添加工艺执行记录
+                normalizeDehydroExecuteRecordService.saveBatch(normalizeDehydroRecord.getExecuteRecord());
+            }
+            int i = normalizeDehydroRecordMapper.updateById(normalizeDehydroRecord);
+            if(i>0){
+                return true;
+            }else {
+                return false;
+            }
         }else {
-            return false;
+            throw new GlobalException("修改失败!无班组长权限",ResultCode.FAILED);
         }
+
     }
 
 
@@ -124,6 +136,26 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
         return normalizeDehydroRecord;
     }
 
+    /**
+     * 是否为班组长
+     * @return
+     */
+    @Override
+    public boolean isBzz(TenantUserDetails currentUser) {
+        //获取登录用户权限
+        List<Role> roles = systemServiceClient.queryRolesByUserId(currentUser.getUserId());
+        Set<String> rolesCode = roles.stream().map(Role::getRoleCode).collect(Collectors.toSet());
+        //班组长标识
+        String bzzBs = "JMAQ_BZZZ";
+        boolean isBzz = false;
+        for (String code : rolesCode) {
+            if (code.endsWith(bzzBs)) {
+                isBzz = true;
+                break;
+            }
+        }
+        return isBzz;
+    }
 
 
 }
