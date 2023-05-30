@@ -233,26 +233,5 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
             assign.setEmplName("/");
         }
     }
-
-
-    /**
-     * 修改报工(锻造)
-     * @param completeDto
-     * @return
-     */
-    @Override
-    public Boolean updateComplete(CompleteDto completeDto) {
-        List<TrackItem> trackItems = trackItemMapper.getTrackItemList(new QueryWrapper<TrackItem>().eq("precharge_furnace_assign_id", completeDto.getPrechargeFurnaceAssignId()));
-        for (TrackItem trackItem : trackItems) {
-            completeDto.setAssignId(trackItem.getAssignId());
-            completeDto.setTrackId(trackItem.getTrackHeadId());
-            completeDto.setTiId(trackItem.getId());
-            completeDto.setClasses(trackItem.getClasses());
-            completeDto.setProdNo(trackItem.getProductNo());
-            completeDto.setTrackNo(trackItem.getTrackNo());
-            trackCompleteService.updateComplete(completeDto);
-        }
-        return true;
-    }
 }
 

@@ -16,6 +16,7 @@ import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.service.PrechargeFurnaceAssignService;
+import com.richfit.mes.produce.service.TrackCompleteService;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class PrechargeFurnaceAssignController extends ApiController {
     private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
     @Autowired
     private TrackItemService trackItemService;
+    @Autowired
+    private TrackCompleteService trackCompleteService;
 
     @ApiOperation(value = "批量新增预装炉派工", notes = "批量新增预装炉派工")
     @PostMapping("/furnaceAssign")
@@ -77,8 +80,11 @@ public class PrechargeFurnaceAssignController extends ApiController {
 
     @ApiOperation(value = "修改报工(锻造)")
     @PostMapping("/updateComplete")
-    public CommonResult<Boolean> updateComplete(@RequestBody CompleteDto completeDto) {
-        return CommonResult.success(prechargeFurnaceAssignService.updateComplete(completeDto));
+    public CommonResult<Boolean> updateComplete(@RequestBody List<CompleteDto> completeDtos) {
+        for (CompleteDto completeDto : completeDtos) {
+            trackCompleteService.updateComplete(completeDto);
+        }
+        return CommonResult.success(true);
     }
 }
 
