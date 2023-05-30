@@ -167,6 +167,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     @OperationLog(actionType = "1", actionItem = "0", argType = TRACK_HEAD)
     public void orderDataTrackHead(TrackHead trackHead) {
+        if (TrackHead.IS_TEST_BAR_1.equals(trackHead.getIsTestBar())) {
+            //试棒实验跟单不进行订单数量的消耗
+            return;
+        }
         String orderNo = trackHead.getProductionOrder();
         if (StrUtil.isNotBlank(orderNo)) {
             Map map = new HashMap();
