@@ -196,8 +196,7 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
         if("4".equals(dispatchingDto.getClasses()) || "6".equals(dispatchingDto.getClasses()) || "7".equals(dispatchingDto.getClasses())){
             queryWrapper.and(wrapper1->wrapper1.eq("u.opt_type","13").or().eq("u.opt_type","14"));
         }
-
-        queryWrapper.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getUsername()+"',u.user_id)");
+        queryWrapper.and(wrapper->wrapper.eq("u.user_id","/").or(wrapper2->wrapper2.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getUsername()+"',u.user_id)")));
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());
