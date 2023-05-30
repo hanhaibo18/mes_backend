@@ -107,7 +107,7 @@ public class RecordsOfPourOperationsController extends ApiController {
     @ApiOperation(value = "浇注页面修改工序信息", notes = "浇注页面修改工序信息")
     @PutMapping("/item")
     public CommonResult<Boolean> updateItem(@RequestBody TrackItem item) {
-        recordsOfPourOperationsService.countHoldFinishedTime(item,item.getPourTimeDot(),item.getHoldTime());
+        recordsOfPourOperationsService.countHoldFinishedTime(item, item.getPourTimeDot(), item.getHoldTime());
 
         return CommonResult.success(trackItemService.updateById(item));
     }
@@ -121,6 +121,24 @@ public class RecordsOfPourOperationsController extends ApiController {
                        @ApiParam(value = "锭型") String ingotCase,
                        String startTime, String endTime, @ApiParam(value = "审核状态") Integer status, HttpServletResponse response) {
         recordsOfPourOperationsService.export(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, ingotCase, startTime, endTime, status, response);
+    }
+
+    @ApiOperation(value = "根据预装炉Id获取可以装炉的工序列表", notes = "根据预装炉Id获取可以装炉的工序列表")
+    @GetMapping("/item")
+    public CommonResult<IPage<TrackItem>> getItemByPrechargeFurnaceId(Long prechargeFurnaceId, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
+        return CommonResult.success(recordsOfPourOperationsService.getItemByPrechargeFurnaceId(prechargeFurnaceId, page, limit));
+    }
+
+    @ApiOperation(value = "根据工序id列表和预装炉id往炉中新增工序", notes = "根据工序id列表和预装炉id往炉中新增工序")
+    @PostMapping("/add_item")
+    public CommonResult<Boolean> addItem(@RequestParam Long prechargeFurnaceId, @RequestBody List<String> itemIds) {
+        return CommonResult.success(recordsOfPourOperationsService.addItem(prechargeFurnaceId, itemIds));
+    }
+
+    @ApiOperation(value = "根据工序id列表移除预装炉", notes = "根据工序id列表移除预装炉")
+    @DeleteMapping("delete_item")
+    public CommonResult<Boolean> deleteItem(@RequestBody List<String> itemIds){
+        return CommonResult.success(recordsOfPourOperationsService.deleteItem(itemIds));
     }
 
 

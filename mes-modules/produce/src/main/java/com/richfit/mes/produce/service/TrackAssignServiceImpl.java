@@ -804,4 +804,58 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             trackItem.setSinglePieceHours(hours.get(0).getHour());
         }
     }
+
+    @Override
+    public boolean deleteAssignYl(String[] ids) {
+        for (int i = 0; i < ids.length; i++) {
+            Assign assign = this.getById(ids[i]);
+            TrackItem trackItem = trackItemService.getById(assign.getTiId());
+            if (null == trackItem) {
+                this.removeById(ids[i]);
+            } else {
+                if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
+                    throw new GlobalException("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！", ResultCode.FAILED);
+                }
+                if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
+                    throw new GlobalException("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！", ResultCode.FAILED);
+                }
+                List<Assign> ca = this.find(null, null, null, null, null, trackItem.getFlowId());
+                for (int j = 0; j < ca.size(); j++) {
+                    TrackItem cstrackItem = trackItemService.getById(ca.get(j).getTiId());
+                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                        throw new GlobalException("无法回滚，需要先取消后序工序【" + cstrackItem.getOptName() + "】的派工", ResultCode.FAILED);
+                    }
+                }
+                QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+                queryWrapper.eq("ti_id", assign.getTiId());
+                List<TrackComplete> cs = trackCompleteService.list(queryWrapper);
+                if (cs.size() > 0) {
+                    throw new GlobalException("无法回滚，已有报工提交，需要先取消工序【" + trackItem.getOptName() + "】的报工！", ResultCode.FAILED);
+                }
+                //将前置工序状态改为待派工
+                List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("flow_id", trackItem.getFlowId()).orderByAsc("opt_sequence"));
+                for (int j = 0; j < items.size(); j++) {
+                    TrackItem cstrackItem = items.get(j);
+                    if (cstrackItem.getOptSequence() > trackItem.getOptSequence()) {
+                        cstrackItem.setIsCurrent(0);
+                        cstrackItem.setIsDoing(0);
+                        trackItemService.updateById(cstrackItem);
+                    }
+                }
+                trackItem.setIsCurrent(1);
+                trackItem.setIsDoing(0);
+                trackItem.setIsSchedule(0);
+                trackItem.setAssignableQty(trackItem.getNumber());
+                trackItemService.updateById(trackItem);
+                this.removeById(ids[i]);
+                //如果是探伤工序，删除探伤委托任务
+                if ("6".equals(trackItem.getOptType())) {
+                    QueryWrapper<InspectionPower> inspectionPowerQueryWrapper = new QueryWrapper<>();
+                    inspectionPowerQueryWrapper.eq("item_id", assign.getTiId());
+                    inspectionPowerService.remove(inspectionPowerQueryWrapper);
+                }
+            }
+        }
+        return true;
+    }
 }

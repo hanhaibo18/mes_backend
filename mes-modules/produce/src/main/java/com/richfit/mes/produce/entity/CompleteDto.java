@@ -22,6 +22,8 @@ public class CompleteDto {
     private String tiId;
     @ApiModelProperty(value = "工序Id", dataType = "String")
     private String assignId;
+    @ApiModelProperty(value = "预装炉报工id", dataType = "String")
+    private String prechargeFurnaceAssignId;
     @ApiModelProperty(value = "跟单ID", dataType = "String")
     private String trackId;
     @ApiModelProperty(value = "跟单号", dataType = "String")
