@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.sys.Notice;
 import com.richfit.mes.sys.entity.dto.SalesSchedulingDto;
+import com.richfit.mes.sys.entity.dto.SendBackDto;
 
 import java.util.List;
 
@@ -38,11 +39,10 @@ public interface NoticeService extends IService<Notice> {
     /**
      * 功能描述: 通知退回
      *
-     * @param id
-     * @param reasonReturn
+     * @param sendBackDto
      * @Author: xinYu.hou
      * @Date: 2023/5/29 19:09
      * @return: Boolean
      **/
-    Boolean noticeReturn(String id, String reasonReturn);
+    Boolean noticeReturn(SendBackDto sendBackDto);
 }
