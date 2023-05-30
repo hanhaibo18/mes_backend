@@ -632,7 +632,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         QueryWrapper<AssignHot> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTrackNo())) {
             dispatchingDto.setTrackNo(dispatchingDto.getTrackNo().replaceAll(" ", ""));
-            queryWrapper.apply("replace(replace(replace(track_n, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
+            queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + dispatchingDto.getTrackNo() + "%'");
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getRouterNo())) {
             DrawingNoUtil.queryLike(queryWrapper, "drawing_no", dispatchingDto.getRouterNo());
