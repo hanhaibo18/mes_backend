@@ -11,6 +11,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.sys.Notice;
 import com.richfit.mes.sys.dao.NoticeMapper;
 import com.richfit.mes.sys.entity.dto.SalesSchedulingDto;
+import com.richfit.mes.sys.entity.dto.SendBackDto;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -63,7 +64,11 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     }
 
     @Override
-    public Boolean noticeReturn(String id, String reasonReturn) {
-        return null;
+    public Boolean noticeReturn(SendBackDto sendBackDto) {
+        UpdateWrapper<Notice> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.in("id", sendBackDto.getIdList());
+        updateWrapper.set("reason_return", sendBackDto.getReasonReturn());
+        updateWrapper.set("notification_status", 2);
+        return this.update(updateWrapper);
     }
 }
