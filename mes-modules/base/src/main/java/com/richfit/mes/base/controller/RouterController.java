@@ -216,7 +216,7 @@ public class RouterController extends BaseController {
             router.setModifyTime(new Date());
             //禁止或激活状态无法直接修改为历史状态;历史状态修改为禁止或启动状态，要把其他的工艺状态设置为历史
             if (router.getStatus().equals("2")) {
-                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1","","");
+                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1", "", "");
                 if (result.getData().size() == 0) {
                     return CommonResult.failed("启用状态不能直接修改为历史状态！");
                 }
@@ -259,7 +259,7 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "texture", value = "材质", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/find")
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status,String testBar,String texture) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -318,6 +318,7 @@ public class RouterController extends BaseController {
         }
 
     }
+
     @ApiOperation(value = "根据idList获得工艺", notes = "根据idList获得工艺")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "根据idList获得工艺", required = true, dataType = "idList", paramType = "query")
@@ -335,6 +336,7 @@ public class RouterController extends BaseController {
             return CommonResult.success(null, "操作成功！");
         }
     }
+
     @ApiOperation(value = "查询工艺", notes = "根据ID获得工艺")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "routerNo", value = "图号", required = true, dataType = "String", paramType = "query"),
@@ -731,7 +733,7 @@ public class RouterController extends BaseController {
     }
 
     @ApiOperation(value = "修改工艺工序派工", notes = "修改工艺工序派工")
-    @PostMapping("router/opt/update")
+    @PutMapping("router/opt/update")
     public CommonResult<Boolean> assignUpdate(@RequestBody RouterOptAssign assign) {
         StringBuilder userId = new StringBuilder();
         StringBuilder userName = new StringBuilder();
