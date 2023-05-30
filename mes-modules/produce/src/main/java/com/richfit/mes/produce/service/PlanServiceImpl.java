@@ -878,6 +878,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @param fieldNames3
      */
     private void importPlanDZ(MultipartFile file, HttpServletRequest request, String[] fieldNames3,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -937,7 +938,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setMissingNum(plan.getProjNum());
                 plan.setPriority(this.disposePriority(plan.getPriority()));
 
-                this.disposeBranchCode(plan);
+                this.disposeBranchCode(plan,currentUser);
                 //保存计划
                 this.savePlanHot(plan);
                 actionService.saveAction(ActionUtil.buildAction
@@ -974,9 +975,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * 处理车间码
      * @param plan
      */
-    private void disposeBranchCode(Plan plan) {
-        List<Branch> org = baseServiceClient.selectOrgInner().getData();
-        List<Branch> banch = baseServiceClient.selectBranchesInner(null, plan.getInchargeWorkshopName()).getData();
+    private void disposeBranchCode(Plan plan,TenantUserDetails currentUser) {
+        List<Branch> org = baseServiceClient.selectOrgInner(currentUser.getTenantId()).getData();
+        List<Branch> banch = baseServiceClient.selectBranchesInner(null, plan.getInchargeWorkshopName(),currentUser.getTenantId()).getData();
         Map<String, Branch> orgMap = org.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
         Map<String, Branch> banchMap = banch.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
         if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(orgMap)){

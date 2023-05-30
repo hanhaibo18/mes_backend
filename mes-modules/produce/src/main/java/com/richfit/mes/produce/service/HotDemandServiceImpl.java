@@ -121,7 +121,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
                 }
             }
-            this.disposeBranchCode(hotDemand);
+            this.disposeBranchCode(hotDemand,currentUser);
 
             //查重
             //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
@@ -136,9 +136,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
      * 处理车间编码
      * @param hotDemand
      */
-    private void disposeBranchCode(HotDemand hotDemand) {
-        List<Branch> org = baseServiceClient.selectOrgInner().getData();
-        List<Branch> banch = baseServiceClient.selectBranchesInner(null, hotDemand.getInchargeWorkshopName()).getData();
+    private void disposeBranchCode(HotDemand hotDemand,TenantUserDetails currentUser) {
+        List<Branch> org = baseServiceClient.selectOrgInner(currentUser.getTenantId()).getData();
+        List<Branch> banch = baseServiceClient.selectBranchesInner(null, hotDemand.getInchargeWorkshopName(),currentUser.getTenantId()).getData();
         Map<String, Branch> orgMap = org.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
         Map<String, Branch> banchMap = banch.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
         if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(orgMap)){

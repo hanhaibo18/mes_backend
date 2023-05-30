@@ -253,12 +253,12 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Branch>> selectOrgInner() {
+    public CommonResult<List<Branch>> selectOrgInner(String tenantId) {
         return null;
     }
 
     @Override
-    public CommonResult<List<Branch>> selectBranchesInner(String branchCode, String branchName) {
+    public CommonResult<List<Branch>> selectBranchesInner(String branchCode, String branchName,String tenantId) {
         return null;
     }
 

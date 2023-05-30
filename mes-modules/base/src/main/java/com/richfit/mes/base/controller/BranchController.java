@@ -354,17 +354,18 @@ public class BranchController extends BaseController {
 
     @ApiOperation(value = "查询分公司inner", notes = "查询分公司inner")
     @GetMapping("/select_org_inner")
-    public CommonResult<List<Branch>> selectOrgInner() {
+    public CommonResult<List<Branch>> selectOrgInner(String tenantId) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
         queryWrapper.isNull("main_branch_code");
         queryWrapper.orderByAsc("order_no");
+        queryWrapper.eq("tenant_id",tenantId);
         List<Branch> result = branchService.list(queryWrapper);
         return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
     }
 
     @ApiOperation(value = "查询分公司inner", notes = "查询分公司inner")
     @GetMapping("/select_branches_inner")
-    public CommonResult<List<Branch>> selectBranchesInner(  String branchCode,  String branchName) {
+    public CommonResult<List<Branch>> selectBranchesInner( String branchCode,  String branchName,String tenantId) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
         if (!StringUtils.isNullOrEmpty(branchName)) {
             queryWrapper.like("branch_name", branchName);
@@ -372,6 +373,7 @@ public class BranchController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("main_branch_code", branchCode);
         }
+        queryWrapper.eq("tenant_id",tenantId);
         queryWrapper.orderByAsc("order_no");
         List<Branch> result = branchService.list(queryWrapper);
         return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);

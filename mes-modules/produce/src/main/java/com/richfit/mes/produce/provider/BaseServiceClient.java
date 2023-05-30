@@ -257,8 +257,8 @@ public interface BaseServiceClient {
 
     @ApiOperation(value = "查询组织机构inner", notes = "查询组织机构inner")
     @GetMapping("/api/base/branch/select_org_inner")
-    public CommonResult<List<Branch>> selectOrgInner();
+    public CommonResult<List<Branch>> selectOrgInner(@RequestParam("tenantId") String tenantId);
     @ApiOperation(value = "查询分公司inner", notes = "查询分公司inner")
     @GetMapping("/api/base/branch/select_branches_inner")
-    CommonResult<List<Branch>> selectBranchesInner( @RequestParam("branchCode") String branchCode,@RequestParam("branchName")  String branchName);
+    CommonResult<List<Branch>> selectBranchesInner( @RequestParam("branchCode") String branchCode,@RequestParam("branchName")  String branchName,@RequestParam("tenantId")String tenantId);
 }
