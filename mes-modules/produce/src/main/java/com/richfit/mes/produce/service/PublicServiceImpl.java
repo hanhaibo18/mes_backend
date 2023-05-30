@@ -418,6 +418,7 @@ public class PublicServiceImpl implements PublicService {
      **/
     @Transactional(rollbackFor = Exception.class)
     public boolean activation(TrackItem trackItem) {
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
         //激活前校验当前跟单多产品是否全部完成 全部完成 获取所有循环执行下工序激活
         QueryWrapper<TrackItem> queryWrapperItemList = new QueryWrapper();
         queryWrapperItemList.eq("track_head_id", trackItem.getTrackHeadId());
@@ -436,6 +437,10 @@ public class PublicServiceImpl implements PublicService {
             queryWrapper.eq("original_opt_sequence", item.getNextOptSequence());
             List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
             for (TrackItem trackItemEntity : trackItemList) {
+                //冶炼车间下工序装炉
+                if ("7".equals(trackHead.getClasses())){
+                    trackItemEntity.setPrechargeFurnaceId(item.getPrechargeFurnaceId());
+                }
                 trackItemEntity.setIsCurrent(1);
                 trackItemEntity.setModifyTime(new Date());
                 trackItemService.updateById(trackItemEntity);

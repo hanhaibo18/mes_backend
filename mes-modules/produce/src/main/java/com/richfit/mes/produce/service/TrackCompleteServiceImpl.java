@@ -431,20 +431,32 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
             trackItem.setPourTemperature(completeDto.getPourTemperature());
-            //下工序装炉
+            //冶炼车间预装炉重复利用，特有字段下工序装炉，若该字段不为空则修改预装炉状态为未派工
             if (completeDto.getNextFurnace() != null && completeDto.getNextFurnace()) {
                 QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
                 itemQueryWrapper.eq("track_head_id", trackItem.getTrackHeadId());
                 itemQueryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
                 TrackItem nextItem = trackItemService.getOne(itemQueryWrapper);
                 if (!ObjectUtil.isEmpty(nextItem)) {
-                    nextItem.setPrechargeFurnaceId(trackItem.getPrechargeFurnaceId());
-                    trackItemService.updateById(nextItem);
+                    //有下工序则修改预装炉状态为未派工
+                    PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                    if (!ObjectUtil.isEmpty(prechargeFurnace)) {
+                        prechargeFurnace.setAssignStatus(0);
+                        prechargeFurnaceService.updateById(prechargeFurnace);
+                    }
+                } else {
+                    //修改预装炉表状态为完工
+                    if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
+                        PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                        prechargeFurnace.setStatus(END_START_WORK);
+                        prechargeFurnaceService.updateById(prechargeFurnace);
+                    }
                 }
-                //修改预装炉状态为未派工
-                PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
-                if (!ObjectUtil.isEmpty(prechargeFurnace)) {
-                    prechargeFurnace.setAssignStatus(0);
+            } else {
+                //修改预装炉表状态为完工
+                if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
+                    PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                    prechargeFurnace.setStatus(END_START_WORK);
                     prechargeFurnaceService.updateById(prechargeFurnace);
                 }
             }
@@ -473,7 +485,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackComplete.setCompleteTime(new Date());
                 trackComplete.setDetectionResult("-");
                 trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
-                if(!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())){
+                if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
                     trackComplete.setPrechargeFurnaceId(String.valueOf(trackItem.getPrechargeFurnaceId()));
                 }
                 number += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
@@ -568,12 +580,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 assignInfo.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
                 prechargeFurnaceAssignService.updateById(assignInfo);
             }
-            //修改预装炉表状态为完工
-            if(!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())){
-                PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
-                prechargeFurnace.setStatus(END_START_WORK);
-                prechargeFurnaceService.updateById(prechargeFurnace);
-            }
+
             log.error(completeDto.getTrackCompleteList().toString());
 
             this.saveBatch(completeDto.getTrackCompleteList());

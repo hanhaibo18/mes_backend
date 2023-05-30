@@ -83,6 +83,8 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
     @Autowired
     private RecordsOfPourOperationsMapper recordsOfPourOperationsMapper;
+    @Autowired
+    private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
 
 
     @Override
@@ -226,7 +228,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
 
     @Override
-    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol,String holdStatus) throws ParseException {
+    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol, String holdStatus) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
@@ -242,10 +244,10 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.like("u.product_no", productNo);
         }
         if (!StringUtils.isNullOrEmpty(holdStatus)) {
-            if(holdStatus.equals("1")){
-                queryWrapper.le("u.hold_finished_time",new Date());
-            }else if(holdStatus.equals("2")){
-                queryWrapper.ge("u.hold_finished_time",new Date());
+            if (holdStatus.equals("1")) {
+                queryWrapper.le("u.hold_finished_time", new Date());
+            } else if (holdStatus.equals("2")) {
+                queryWrapper.ge("u.hold_finished_time", new Date());
             }
         }
         if (StrUtil.isNotBlank(userId)) {
@@ -276,9 +278,9 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         //queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());
         //queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
         //根据classes判断  对下料、锻造、去氢、正火进行查询控制
-        if("4".equals(classes) || "6".equals(classes) || "7".equals(classes)){
-            queryWrapper.ne("opt_type","14")
-                    .ne("opt_type","13");
+        if ("4".equals(classes) || "6".equals(classes) || "7".equals(classes)) {
+            queryWrapper.ne("opt_type", "14")
+                    .ne("opt_type", "13");
         }
         if (!StringUtils.isNullOrEmpty(orderCol)) {
             if (!StringUtils.isNullOrEmpty(order)) {
@@ -319,25 +321,26 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
     /**
      * 处理保温状态
+     *
      * @param assign
      * @param trackItem
      */
     private void disposeHoldFinishedTime(Assign assign, TrackItem trackItem) {
         Long prechargeFurnaceId = trackItem.getPrechargeFurnaceId();
-        if (ObjectUtil.isNotEmpty(prechargeFurnaceId)){
-            QueryWrapper<RecordsOfPourOperations> wrapper=new QueryWrapper<>();
-            wrapper.eq("precharge_furnace_id",prechargeFurnaceId);
+        if (ObjectUtil.isNotEmpty(prechargeFurnaceId)) {
+            QueryWrapper<RecordsOfPourOperations> wrapper = new QueryWrapper<>();
+            wrapper.eq("precharge_furnace_id", prechargeFurnaceId);
             List<RecordsOfPourOperations> recordsOfPourOperations = recordsOfPourOperationsMapper.selectList(wrapper);
-            if(CollectionUtils.isNotEmpty(recordsOfPourOperations)){
+            if (CollectionUtils.isNotEmpty(recordsOfPourOperations)) {
                 //浇注时间赋值
                 assign.setPourTime(recordsOfPourOperations.get(0).getPourTime());
             }
         }
-        if(!StringUtils.isNullOrEmpty(assign.getHoldFinishedTime())){
+        if (!StringUtils.isNullOrEmpty(assign.getHoldFinishedTime())) {
             int i = DateUtils.compareDateTime(DateUtils.parseDate(assign.getHoldFinishedTime(), "yyyy-MM-dd HH:mm:ss"), new Date());
-            if(i<0){
+            if (i < 0) {
                 assign.setHoldFinishedTime("保温结束");
-            }else if(i>0){
+            } else if (i > 0) {
                 assign.setHoldFinishedTime("保温中");
             }
         }
@@ -623,6 +626,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
     /**
      * 铸钢已派工列表查询
+     *
      * @param dispatchingDto
      * @return
      * @throws ParseException
@@ -794,7 +798,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 .orderByDesc("modify_time");
         List<ForgHour> list = forgHourService.list(forgHourQueryWrapper);
         //跟单重量
-        trackHead.setWeight(ObjectUtil.isEmpty(trackHead.getWeight())?0:trackHead.getWeight());
+        trackHead.setWeight(ObjectUtil.isEmpty(trackHead.getWeight()) ? 0 : trackHead.getWeight());
         List<ForgHour> hours = list.stream().filter(item ->
                 (item.getWeightUp() > trackHead.getWeight() || item.getWeightUp() == trackHead.getWeight())
                         && (item.getWeightDown() < trackHead.getWeight() || item.getWeightDown() == trackHead.getWeight())
@@ -854,6 +858,20 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                     inspectionPowerQueryWrapper.eq("item_id", assign.getTiId());
                     inspectionPowerService.remove(inspectionPowerQueryWrapper);
                 }
+            }
+            //热工预装炉处理
+            if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
+                QueryWrapper<TrackItem> wrapper = new QueryWrapper<>();
+                wrapper.eq("precharge_furnace_id", trackItem.getPrechargeFurnaceId());
+                List<TrackItem> list = trackItemService.list(wrapper);
+                if (list.size() == 1) {
+                    //预装炉只有当前派工工序  提示不可移除
+                    throw new GlobalException("不能移除预装炉中所有工序！",ResultCode.FAILED);
+                }
+                UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+                trackItemUpdateWrapper.eq("id", trackItem.getId())
+                        .set("precharge_furnace_id", null).set("precharge_furnace_assign_id",null);
+                trackItemService.update(trackItemUpdateWrapper);
             }
         }
         return true;
