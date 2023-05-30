@@ -14,6 +14,7 @@ import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.service.PrechargeFurnaceAssignService;
 import com.richfit.mes.produce.service.TrackItemService;
 import io.swagger.annotations.ApiOperation;
@@ -72,6 +73,12 @@ public class PrechargeFurnaceAssignController extends ApiController {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("precharge_furnace_assign_id",id);
         return CommonResult.success(trackItemService.list(queryWrapper));
+    }
+
+    @ApiOperation(value = "修改报工(锻造)")
+    @PostMapping("/updateComplete")
+    public CommonResult<Boolean> updateComplete(@RequestBody CompleteDto completeDto) {
+        return CommonResult.success(prechargeFurnaceAssignService.updateComplete(completeDto));
     }
 }
 

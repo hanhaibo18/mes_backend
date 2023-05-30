@@ -534,4 +534,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String pourTimeDot;
 
+    @TableField(exist = false)
+    private String classes;
+
 }

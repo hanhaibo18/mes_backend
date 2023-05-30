@@ -16,6 +16,8 @@ import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.PrechargeFurnaceAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
+import com.richfit.mes.produce.dao.TrackItemMapper;
+import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,8 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
     @Autowired
     private TrackItemService trackItemService;
     @Autowired
+    private TrackItemMapper trackItemMapper;
+    @Autowired
     private TrackHeadService trackHeadService;
     @Autowired
     private TrackAssignService trackAssignService;
@@ -58,6 +62,10 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
     private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
     @Autowired
     private PrechargeFurnaceAssignPersonService prechargeFurnaceAssignPersonService;
+    @Autowired
+    private TrackCompleteService trackCompleteService;
+    @Autowired
+    private TrackCompleteServiceImpl trackCompleteServiceImpl;
 
 
     @Override
@@ -224,6 +232,27 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
             assign.setUserId("/");
             assign.setEmplName("/");
         }
+    }
+
+
+    /**
+     * 修改报工(锻造)
+     * @param completeDto
+     * @return
+     */
+    @Override
+    public Boolean updateComplete(CompleteDto completeDto) {
+        List<TrackItem> trackItems = trackItemMapper.getTrackItemList(new QueryWrapper<TrackItem>().eq("precharge_furnace_assign_id", completeDto.getPrechargeFurnaceAssignId()));
+        for (TrackItem trackItem : trackItems) {
+            completeDto.setAssignId(trackItem.getAssignId());
+            completeDto.setTrackId(trackItem.getTrackHeadId());
+            completeDto.setTiId(trackItem.getId());
+            completeDto.setClasses(trackItem.getClasses());
+            completeDto.setProdNo(trackItem.getProductNo());
+            completeDto.setTrackNo(trackItem.getTrackNo());
+            trackCompleteService.updateComplete(completeDto);
+        }
+        return true;
     }
 }
 
