@@ -306,6 +306,10 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "是否更新", dataType = "Integer")
     private Integer isUpdate;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否当前工序 1是  0 否")
+    private Integer isCurrent;
+
     public String getUserId() {
         return userId;
     }
