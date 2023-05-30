@@ -93,10 +93,10 @@ public class PrechargeFurnaceController extends BaseController {
             queryWrapper.ge("temp_work", tempWorkQ);
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getStartTime())) {
-            queryWrapper.ge("create_time",dispatchingDto.getStartTime());
+            queryWrapper.ge("create_time",dispatchingDto.getStartTime()+ " 00:00:00");
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getEndTime())) {
-            queryWrapper.le("create_time",dispatchingDto.getEndTime());
+            queryWrapper.le("create_time",dispatchingDto.getEndTime()+ " 23:59:59");
         }
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getTexture())) {
             queryWrapper.eq("texture",dispatchingDto.getTexture());
