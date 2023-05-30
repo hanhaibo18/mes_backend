@@ -122,6 +122,7 @@ public class PlanController extends BaseController {
         queryWrapper.orderByDesc("modify_time");
         PageHelper.startPage(page, limit);
         List<Plan> planList = planService.list(queryWrapper);
+        planService.planPackageExtend(planList);//完善扩展表信息
         PageInfo<Plan> planPageInfo = new PageInfo(planList);
         log.debug("plan page_missing return is [{}]", planPageInfo);
         return CommonResult.success(planPageInfo);
