@@ -934,6 +934,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setSubmitOrderTime(new Date());//提单时间
                 plan.setSource(2);//导入默认为车间计划
                 plan.setBranchCode(branchCode);
+                plan.setMissingNum(plan.getProjNum());
                 plan.setPriority(this.disposePriority(plan.getPriority()));
 
                 this.disposeBranchCode(plan);
@@ -1065,6 +1066,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setSubmitOrderOrg(plan.getBranchCode());//提单单位
                 plan.setSubmitOrderTime(new Date());//提单时间
                 plan.setSource(2);//导入默认为车间计划
+                plan.setMissingNum(plan.getProjNum());
                 //保存计划
                 this.savePlanHot(plan);
                 actionService.saveAction(ActionUtil.buildAction
