@@ -3,6 +3,8 @@ package com.richfit.mes.sys.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.sys.Notice;
+import com.richfit.mes.sys.entity.dto.IssueNoticeDto;
+import com.richfit.mes.sys.entity.dto.ProductionSchedulingDto;
 import com.richfit.mes.sys.entity.dto.SalesSchedulingDto;
 import com.richfit.mes.sys.entity.dto.SendBackDto;
 import com.richfit.mes.sys.service.NoticeService;
@@ -47,5 +49,30 @@ public class NoticeController {
     @PostMapping("/notice_return")
     public CommonResult<Boolean> noticeReturn(@RequestBody SendBackDto sendBackDto) {
         return CommonResult.success(noticeService.noticeReturn(sendBackDto));
+    }
+
+    @ApiOperation(value = "生产排产接口", notes = "根据查询条件查询生产排产数据")
+    @PostMapping("/query_production_scheduling_page")
+    public CommonResult<IPage<Notice>> queryProductionSchedulingPage(@RequestBody ProductionSchedulingDto productionSchedulingDto) {
+        return CommonResult.success(noticeService.queryProductionSchedulingPage(productionSchedulingDto));
+    }
+
+
+    @ApiOperation(value = "通知编辑", notes = "进行排产")
+    @PostMapping("/update_production_scheduling")
+    public CommonResult<Boolean> updateProductionScheduling(@RequestBody Notice notice) {
+        return CommonResult.success(noticeService.updateProductionScheduling(notice));
+    }
+
+    @ApiOperation(value = "通知下发", notes = "通知下发")
+    @PostMapping("/issue_notice")
+    public CommonResult<Boolean> issueNotice(@RequestBody IssueNoticeDto issueNotice) {
+        return CommonResult.success(noticeService.issueNotice(issueNotice));
+    }
+
+    @ApiOperation(value = "取消排产", notes = "取消排产")
+    @PostMapping("/cancel_production_scheduling")
+    public CommonResult<Boolean> cancelProductionScheduling(List<String> idList) {
+        return CommonResult.success(noticeService.cancelProductionScheduling(idList));
     }
 }
