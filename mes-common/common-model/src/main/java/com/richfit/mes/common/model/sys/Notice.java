@@ -20,7 +20,7 @@ public class Notice extends BaseEntity<Announcement> {
     /**
      * 通知状态 0 = 未接收, 1 = 已接收, 2 = 退回
      */
-    private String notificationStatus;
+    private String notificationState;
     /**
      * 排产状态 0 = 待排产, 1= 已排产, 2 = 已下发 ,3 = 已取消
      */

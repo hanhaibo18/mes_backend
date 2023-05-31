@@ -3,6 +3,8 @@ package com.richfit.mes.sys.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.sys.Notice;
+import com.richfit.mes.sys.entity.dto.IssueNoticeDto;
+import com.richfit.mes.sys.entity.dto.ProductionSchedulingDto;
 import com.richfit.mes.sys.entity.dto.SalesSchedulingDto;
 import com.richfit.mes.sys.entity.dto.SendBackDto;
 
@@ -29,7 +31,7 @@ public interface NoticeService extends IService<Notice> {
     /**
      * 功能描述: 接受通知
      *
-     * @param id
+     * @param idList
      * @Author: xinYu.hou
      * @Date: 2023/5/29 19:08
      * @return: Boolean
@@ -45,4 +47,46 @@ public interface NoticeService extends IService<Notice> {
      * @return: Boolean
      **/
     Boolean noticeReturn(SendBackDto sendBackDto);
+
+    /**
+     * 功能描述: 生产排产接口
+     *
+     * @param productionSchedulingDto
+     * @Author: xinYu.hou
+     * @Date: 2023/5/30 16:58
+     * @return: IPage<Notice>
+     **/
+    IPage<Notice> queryProductionSchedulingPage(ProductionSchedulingDto productionSchedulingDto);
+
+    /**
+     * 功能描述:
+     *
+     * @param notice
+     * @Author: xinYu.hou
+     * @Date: 2023/5/30 17:20
+     * @return: Boolean
+     **/
+    Boolean updateProductionScheduling(Notice notice);
+
+    /**
+     * 功能描述: 通知下发
+     *
+     * @param issueNoticeDto
+     * @Author: xinYu.hou
+     * @Date: 2023/5/30 17:33
+     * @return: Boolean
+     **/
+    Boolean issueNotice(IssueNoticeDto issueNoticeDto);
+
+
+    /**
+     * 功能描述: 取消排产
+     *
+     * @param idList
+     * @Author: xinYu.hou
+     * @Date: 2023/5/30 17:36
+     * @return: Boolean
+     **/
+    Boolean cancelProductionScheduling(List<String> idList);
+
 }
