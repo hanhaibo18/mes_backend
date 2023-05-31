@@ -930,6 +930,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
                 return CommonResult.failed(s);
             }
+            trackComplete.setId(null);
             trackComplete.setAssignId(completeDto.getAssignId());
             trackComplete.setTiId(completeDto.getTiId());
             trackComplete.setTrackId(completeDto.getTrackId());
@@ -937,6 +938,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackComplete.setProdNo(completeDto.getProdNo());
             trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
             trackComplete.setCompleteTime(new Date());
+            trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             numDouble += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
         }
         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
@@ -969,7 +971,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //保存造型/制芯工序报工信息
         saveModelingAndCore(completeDto);
 
-        return CommonResult.success(this.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
+        return CommonResult.success(this.saveBatch(completeDto.getTrackCompleteList()));
     }
 
     /**
