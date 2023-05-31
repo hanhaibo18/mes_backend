@@ -208,7 +208,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @PostMapping("/api/base/sequence/query_by_routerIds")
     @Override
-    public List<Sequence> querySequenceByRouterIds(List<String> routerIds) {
+    public List<Sequence> querySequenceByRouterIds(List<String> routerIds,String branchCode) {
         return null;
     }
 

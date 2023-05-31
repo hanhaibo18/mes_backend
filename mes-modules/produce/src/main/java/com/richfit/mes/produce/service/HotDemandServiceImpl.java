@@ -567,15 +567,18 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion(), x -> x.getId()));
 
         //根据工艺id查出工序信息
-        List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList);
+        List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList,branchCode);
         if (CollectionUtils.isEmpty(sequences)) {
             return CommonResult.failed("工艺没有工序信息");
         }
         //根据工艺id分组
+        //数据转换为
         Map<String, List<Sequence>> sequencesMap = sequences.stream().collect(Collectors.groupingBy(Sequence::getRouterId));
         //根据工序id查询工序字典(拿到关键工序字段)
         List<String> optIdList = sequences.stream().map(x -> x.getOptId()).collect(Collectors.toList());//工序字典id
+        //获取工序字典信息
         List<Operatipon> operatipons = baseServiceClient.queryOptByIds(optIdList);
+        //工序的工序字典map
         Map<String, Operatipon> optMap = operatipons.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
 
         ArrayList<HotPlanNode> planNodes = new ArrayList<>();
@@ -612,7 +615,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         }
         planNodeService.saveBatch(planNodes);
         //更新关键计划节点生成状态
+        if(CollectionUtils.isNotEmpty(demandIdList)){
         this.updateDemand(demandIdList);
+        }
         return CommonResult.success("操作成功");
     }
 

@@ -218,7 +218,7 @@ public interface BaseServiceClient {
 
 
     @PostMapping("/api/base/sequence/query_by_routerIds")
-    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds);
+    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds,@RequestParam String branchCode);
 
     /**
      * 功能描述:根据id查询工序字典列表

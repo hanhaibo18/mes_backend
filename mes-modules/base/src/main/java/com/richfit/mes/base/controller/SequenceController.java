@@ -877,10 +877,11 @@ public class SequenceController extends BaseController {
 
     @ApiOperation(value = "根据工艺id查询工序列表", notes = "根据工艺id查询工序列表")
     @PostMapping("/query_by_routerIds")
-    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds) {
+    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds,@RequestParam("branchCode") String branchCode) {
         try {
             QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
             queryWrapper.in("router_id", routerIds);
+            queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<Sequence> sequences = sequenceService.list(queryWrapper);
             return sequences;
