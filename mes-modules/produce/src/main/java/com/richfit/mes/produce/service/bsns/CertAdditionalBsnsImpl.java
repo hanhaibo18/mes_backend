@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service.bsns;
 
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackCertificate;
@@ -52,17 +53,32 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     InventoryService inventoryService;
 
     @Override
-    public void doAdditionalBsns(Certificate certificate) throws Exception {
+    public void doAdditionalBsns(Certificate certificate) {
         if (needScjk(certificate)) {
-            inventoryService.handOver(certificate);
+            CommonResult<Object> commonResultJK = inventoryService.handOver(certificate);
+            //推送宝石
+            if (commonResultJK.getStatus() == ResultCode.SUCCESS.getCode()) {
+                certificate.setIsDeliveryToWarehouse("1");
+                certificate.setDeliveryToWarehouseMessage("操作成功");
+            } else {
+                certificate.setIsDeliveryToWarehouse("2");
+                certificate.setDeliveryToWarehouseMessage(commonResultJK.getMessage());
+            }
             String companyCode = Objects.requireNonNull(SecurityUtils.getCurrentUser()).getCompanyCode();
             //根据数据字段配置，判断推送哪个系统
             if (Tenant.COMPANYCODE_BEISHI.equals(companyCode)) {
                 //推送北石
                 pushWorkHourToBs(certificate);
             } else {
+                CommonResult<Object> commonResultGS = workHoursService.push(certificate);
                 //推送宝石
-                workHoursService.push(certificate);
+                if (commonResultGS.getStatus() == ResultCode.SUCCESS.getCode()) {
+                    certificate.setIsSendWorkHour("1");
+                    certificate.setSendWorkHourMessage("操作成功");
+                } else {
+                    certificate.setIsSendWorkHour("2");
+                    certificate.setSendWorkHourMessage(commonResultGS.getMessage());
+                }
             }
         }
     }

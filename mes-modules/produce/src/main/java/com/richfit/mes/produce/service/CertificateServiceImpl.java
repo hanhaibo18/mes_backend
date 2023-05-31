@@ -198,7 +198,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
 
     @Override
     public boolean saveCertificate(Certificate certificate) throws Exception {
-        //合格证开具校验
+        //1 合格证开具校验
         this.certificateCheck(certificate);
         //重写拼接产品编号
         certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
@@ -206,34 +206,32 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setIsPush("0");
         //合格证来源 0：开出合格证 1：接收合格证
         certificate.setCertOrigin("0");
-        //1 保存合格证
-        boolean bool = this.save(certificate);
-        if (bool) {
-            //2 更新跟单或工序对应的合格证编号
-            certificate.getTrackCertificates().stream().forEach(track -> {
-                if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
-                    //工序合格证
-                    trackItemService.linkToCertNew(track.getThId(), certificate);
-                } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
-                    //完工合格证
-                    trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
-                    //更新跟单状态到 9 "已交"
-                    trackHeadService.trackHeadDelivery(track.getThId());
-                    //半成品 成品更新状态及合格证号
-                    TrackHead th = trackHeadService.getById(track.getThId());
-                    lineStoreService.updateCertNoByCertTrack(th);
-                }
-            });
-            //3 保存关联关系
-            if (certificate.getTrackCertificates().size() > 0) {
-                trackCertificateService.save(certificate);
+
+        //2 更新跟单或工序对应的合格证编号
+        certificate.getTrackCertificates().stream().forEach(track -> {
+            if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
+                //工序合格证
+                trackItemService.linkToCertNew(track.getThId(), certificate);
+            } else if (certificate.getType().equals(CertTypeEnum.FINISH_CERT.getCode())) {
+                //完工合格证
+                trackHeadService.linkToCert(track.getThId(), certificate.getCertificateNo());
+                //更新跟单状态到 9 "已交"
+                trackHeadService.trackHeadDelivery(track.getThId());
+                //半成品 成品更新状态及合格证号
+                TrackHead th = trackHeadService.getById(track.getThId());
+                lineStoreService.updateCertNoByCertTrack(th);
             }
-            //4 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
-            additionalBsns(certificate);
-            return true;
-        } else {
-            return false;
+        });
+        //3 保存关联关系
+        if (certificate.getTrackCertificates().size() > 0) {
+            trackCertificateService.save(certificate);
         }
+        //4 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
+        additionalBsns(certificate);
+        //5 保存合格证
+        this.save(certificate);
+        return true;
+
     }
 
     @Override
