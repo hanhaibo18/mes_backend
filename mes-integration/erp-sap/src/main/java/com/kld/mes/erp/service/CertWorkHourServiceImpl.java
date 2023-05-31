@@ -47,7 +47,6 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
 
         //获取调用服务接口类实例
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
-
         //发起接口调用
         Zc80Ppif024Response zc80Ppif024Response = (Zc80Ppif024Response) webServiceTemplate
                 .marshalSendAndReceive(URL, zc80Ppif024);
@@ -85,7 +84,7 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
         zc80Ppif024S1.setMeinh(unit);
         zc80Ppif024S1.setIle01("MIN");
 
-        zc80Ppif024S1.setIsm01(BigDecimal.valueOf(getHourToMinutes(trackItem)));
+        zc80Ppif024S1.setIsm01(BigDecimal.valueOf(getHourToMinutes(trackItem)).setScale(1, BigDecimal.ROUND_UP));
         zc80Ppif024S1.setFinConf("P");
         zc80Ppif024S1.setBudat(sdf.format(new Date()));
         zc80Ppif024S1.setZflag("Y");
