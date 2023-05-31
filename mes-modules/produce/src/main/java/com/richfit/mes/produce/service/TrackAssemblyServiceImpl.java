@@ -525,6 +525,9 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     @Transactional(rollbackFor = Exception.class)
     public Boolean changeProductNo(String id, String productNo, String branchCode) {
         try {
+            if (StrUtil.isBlank(productNo)) {
+                throw new GlobalException("产品编码不能为空", ResultCode.FAILED);
+            }
             Assign assign = trackAssignService.getById(id);
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
@@ -561,10 +564,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
 
             //修改跟单数据
             UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
-            trackHeadUpdateWrapper.set("product_no", produceNo)
-                    .set("product_no_desc", produceNoDesc)
-                    .set("product_no_continuous", produceNo)
-                    .eq("id", trackItem.getTrackHeadId());
+            trackHeadUpdateWrapper.set("product_no", produceNo).set("product_no_desc", produceNoDesc).set("product_no_continuous", produceNo).eq("id", trackItem.getTrackHeadId());
             trackHeadService.update(trackHeadUpdateWrapper);
             //修改跟单工序item数据
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
