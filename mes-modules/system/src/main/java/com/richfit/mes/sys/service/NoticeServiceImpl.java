@@ -34,8 +34,8 @@ import java.util.List;
 @Service
 public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> implements NoticeService {
 
-    @Resource
-    private NoticeTenantService noticeTenantService;
+//    @Resource
+//    private NoticeTenantService noticeTenantService;
 
     @Override
     public IPage<Notice> queryPage(SalesSchedulingDto salesSchedulingDto) {
@@ -135,7 +135,8 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
                 noticeTenants.add(noticeTenant);
             }
         }
-        return noticeTenantService.saveBatch(noticeTenants);
+//        return noticeTenantService.saveBatch(noticeTenants);
+        return false;
     }
 
     @Override
