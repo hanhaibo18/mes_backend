@@ -33,6 +33,8 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     private String problemProcessing;
     @ApiModelProperty(value = "审核人", dataType = "String")
     private String auditBy;
+    @ApiModelProperty(value = "审核人名", dataType = "String")
+    private String auditName;
     @ApiModelProperty(value = "审核时间", dataType = "Date")
     protected Date auditTime;
     @ApiModelProperty(value = "记录时间", dataType = "Date")
