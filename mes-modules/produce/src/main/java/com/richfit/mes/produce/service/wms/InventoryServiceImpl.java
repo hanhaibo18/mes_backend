@@ -24,13 +24,14 @@ public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certifi
     public WmsServiceClient wmsServiceClient;
 
     @Override
-    public void handOver(Certificate certificate) throws Exception {
+    public CommonResult<Object> handOver(Certificate certificate) {
         if (!Certificate.NEXT_OPT_WORK_BOMCO_SC.equals(certificate.getNextOptWork())) {
-            throw new Exception(certificate.getCertificateNo() + ":非生产入库合格证不进行工时推送;");
+            return CommonResult.failed(certificate.getCertificateNo() + ":非生产入库合格证不进行工时推送;");
         }
         CommonResult<Object> commonResult = wmsServiceClient.sendJkInfo(certificate);
         if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
-            throw new Exception(certificate.getCertificateNo() + ":" + commonResult.getMessage() + ";");
+            return CommonResult.failed(certificate.getCertificateNo() + ":" + commonResult.getMessage() + ";");
         }
+        return CommonResult.success("操作成功");
     }
 }
