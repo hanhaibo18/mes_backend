@@ -824,7 +824,7 @@ public class SequenceController extends BaseController {
         //1、处理派工人员信息  机加userid和username前端拼接好了，所以可以直接用
         //2、热工前端没拼接，所以后端得处理 从assignPerson里边取值
         //3、热处理车间分配到车间  不涉及人员
-        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())) {
+        if (!ObjectUtil.isEmpty(assign.getAssignPersons())) {
             StringBuilder userId = new StringBuilder();
             StringBuilder userName = new StringBuilder();
             for (AssignPerson assignPerson : assign.getAssignPersons()) {
