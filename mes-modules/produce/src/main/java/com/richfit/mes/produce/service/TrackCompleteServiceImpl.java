@@ -1217,7 +1217,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
             trackComplete.setCompletedQty(Double.valueOf(trackItem.getNumber()));
-            trackComplete.setTrackNo(trackHead.getProductNo());
+            trackComplete.setTrackNo(trackHead.getTrackNo());
 
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsOperationComplete(1);
