@@ -167,14 +167,14 @@ public class NormalizeDehydroRecordController extends BaseController {
             if(CollectionUtils.isNotEmpty(list)){
                 for (NormalizeDehydroRecord normalizeDehydroRecord : list) {
                     //根据装炉记录同步装炉中是记录状态  审核通过
-                    prechargeFurnaceService.updateRecordStatus(Long.valueOf(normalizeDehydroRecord.getFurnaceId()),"1");
+                    normalizeDehydroRecordService.synchronizationRecordStatus(normalizeDehydroRecord.getFurnaceId(),"1");
                 }
             }
         }else if(status==2){
             if(CollectionUtils.isNotEmpty(list)){
                 for (NormalizeDehydroRecord normalizeDehydroRecord : list) {
                     //根据装炉记录同步装炉中是记录状态  审核通过
-                    prechargeFurnaceService.updateRecordStatus(Long.valueOf(normalizeDehydroRecord.getFurnaceId()),"2");
+                    normalizeDehydroRecordService.synchronizationRecordStatus(normalizeDehydroRecord.getFurnaceId(),"2");
                 }
             }
         }

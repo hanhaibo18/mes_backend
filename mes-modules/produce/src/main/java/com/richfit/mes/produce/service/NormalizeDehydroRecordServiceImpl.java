@@ -76,7 +76,7 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
             //修改装炉为已生成记录 record_status 记录状态  0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过
             //同步装炉记录状态
             if(StringUtils.isNotEmpty(record.getFurnaceId())){
-                prechargeFurnaceService.updateRecordStatus(Long.valueOf(record.getFurnaceId()),"3");
+                this.synchronizationRecordStatus(record.getFurnaceId(),"3");
             }else {
                 throw new GlobalException("缺少预装炉id", ResultCode.FAILED);
             }
@@ -85,6 +85,18 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
             return false;
         }
 
+    }
+
+
+
+    /**
+     *设置装炉中的正火去氢记录审核状态
+     * @param furnaceId  炉号
+     * @param status  record_status 记录状态  0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过
+     */
+    @Override
+    public void synchronizationRecordStatus(String furnaceId, String status) {
+        prechargeFurnaceService.updateRecordStatus(Long.valueOf(furnaceId),status);
     }
 
     /**
@@ -106,8 +118,15 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
                 //添加工艺执行记录
                 normalizeDehydroExecuteRecordService.saveBatch(normalizeDehydroRecord.getExecuteRecord());
             }
+            //每次修改需要把状态改为未审核(需要重新审核)
+            normalizeDehydroRecord.setAuditStatus(0);
             int i = normalizeDehydroRecordMapper.updateById(normalizeDehydroRecord);
             if(i>0){
+                //修改装炉为已生成记录 record_status 记录状态  0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过
+                //同步装炉记录状态
+                if(StringUtils.isNotEmpty(normalizeDehydroRecord.getFurnaceId())){
+                    this.synchronizationRecordStatus(normalizeDehydroRecord.getFurnaceId(),"3");
+                }
                 return true;
             }else {
                 return false;
