@@ -65,7 +65,7 @@ public class ProductToWmsService {
         String gc = SecurityUtils.getCurrentUser().getTenantErpCode();
 
         //如果产品编号是图号+“ ”+序列号形式，需要截取“ ”之后的部分
-        String prodNo = "";
+        String prodNo = cert.getProductNo();
         String spitStr = " ";
         if (!"".equals(cert.getProductNo()) && cert.getProductNo().split(spitStr).length > 1) {
             prodNo = cert.getProductNo().split(spitStr)[1];
