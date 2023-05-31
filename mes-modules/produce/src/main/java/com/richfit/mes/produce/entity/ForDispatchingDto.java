@@ -59,4 +59,6 @@ public class ForDispatchingDto extends QueryPageDto {
     private Integer assignStatus;
     @ApiModelProperty(value = "毛坯:: 0锻件,1铸件,2钢锭", dataType = "String")
     private String workblankType;
+    @ApiModelProperty(value = "记录状态 0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过", dataType = "String")
+    private String recordStatus;
 }
