@@ -72,7 +72,7 @@ public class NoticeController {
 
     @ApiOperation(value = "取消排产", notes = "取消排产")
     @PostMapping("/cancel_production_scheduling")
-    public CommonResult<Boolean> cancelProductionScheduling(List<String> idList) {
+    public CommonResult<Boolean> cancelProductionScheduling(@RequestBody List<String> idList) {
         return CommonResult.success(noticeService.cancelProductionScheduling(idList));
     }
 }
