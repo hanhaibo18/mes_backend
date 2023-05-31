@@ -12,9 +12,6 @@ import java.util.List;
 
 /**
  * 正火去氢工序控制记录(ProduceNormalizeDehydroRecord)表实体类
- *
- * @author makejava
- * @since 2023-03-23 14:13:03
  */
 @Data
 @TableName("produce_normalize_dehydro_record")
@@ -63,7 +60,6 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     @TableField(exist = false)
     private int limit;
     @ApiModelProperty(value = "所属机构", dataType = "String")
-    @TableField(exist = false)
     private String branchCode;
 }
 

@@ -79,6 +79,9 @@ public class NormalizeDehydroRecordController extends BaseController {
         if (!StringUtils.isNullOrEmpty(normalizeDehydroRecord.getEndTime())) {
             queryWrapper.le("create_time", normalizeDehydroRecord.getEndTime() + " 23:59:59");
         }
+        if (!StringUtils.isNullOrEmpty(normalizeDehydroRecord.getBranchCode())) {
+            queryWrapper.le("branch_code", normalizeDehydroRecord.getBranchCode());
+        }
         boolean isBzz = normalizeDehydroRecordService.isBzz(currentUser);
         //班组长查询
         if (isBzz) {
