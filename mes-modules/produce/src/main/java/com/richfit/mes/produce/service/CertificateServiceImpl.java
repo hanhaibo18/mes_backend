@@ -200,7 +200,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     public boolean saveCertificate(Certificate certificate) throws Exception {
         //合格证开具校验
         this.certificateCheck(certificate);
-
         //重写拼接产品编号
         certificate.setProductNoContinuous(Utils.productNoContinuous(certificate.getProductNo()));
         certificate.setTenantId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getTenantId());
@@ -209,10 +208,8 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setCertOrigin("0");
         //1 保存合格证
         boolean bool = this.save(certificate);
-        //2 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
-        additionalBsns(certificate);
         if (bool) {
-            //3 更新跟单或工序对应的合格证编号
+            //2 更新跟单或工序对应的合格证编号
             certificate.getTrackCertificates().stream().forEach(track -> {
                 if (certificate.getType().equals(CertTypeEnum.ITEM_CERT.getCode())) {
                     //工序合格证
@@ -227,10 +224,12 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                     lineStoreService.updateCertNoByCertTrack(th);
                 }
             });
-            //4 保存关联关系
+            //3 保存关联关系
             if (certificate.getTrackCertificates().size() > 0) {
                 trackCertificateService.save(certificate);
             }
+            //4 根据合格证类型 执行交库、ERP工时推送、合格证交互池处理(不增加交互池了，都从合格证表查询即可)
+            additionalBsns(certificate);
             return true;
         } else {
             return false;
