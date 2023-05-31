@@ -44,6 +44,8 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     private String fileId;
     @ApiModelProperty(value = "最大壁厚", dataType = "String")
     private String maxThickness;
+    @ApiModelProperty(value = "班组id", dataType = "String")
+    private String siteId;
     @ApiModelProperty(value = "开始时间", dataType = "String")
     @TableField(exist = false)
     private String startTime;
