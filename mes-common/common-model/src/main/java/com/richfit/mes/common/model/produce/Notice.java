@@ -1,6 +1,7 @@
-package com.richfit.mes.common.model.sys;
+package com.richfit.mes.common.model.produce;
 
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.sys.Announcement;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;

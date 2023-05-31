@@ -1,4 +1,4 @@
-package com.richfit.mes.common.model.sys;
+package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

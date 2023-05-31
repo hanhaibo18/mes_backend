@@ -1,13 +1,10 @@
-package com.richfit.mes.sys.controller;
+package com.richfit.mes.produce.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.sys.Notice;
-import com.richfit.mes.sys.entity.dto.IssueNoticeDto;
-import com.richfit.mes.sys.entity.dto.ProductionSchedulingDto;
-import com.richfit.mes.sys.entity.dto.SalesSchedulingDto;
-import com.richfit.mes.sys.entity.dto.SendBackDto;
-import com.richfit.mes.sys.service.NoticeService;
+import com.richfit.mes.common.model.produce.Notice;
+import com.richfit.mes.produce.entity.*;
+import com.richfit.mes.produce.service.NoticeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +24,7 @@ import java.util.List;
 
 @Api("排产通知")
 @RestController
-@RequestMapping("/api/sys/notice")
+@RequestMapping("/api/produce/notice")
 public class NoticeController {
 
     @Resource
@@ -51,12 +48,12 @@ public class NoticeController {
         return CommonResult.success(noticeService.noticeReturn(sendBackDto));
     }
 
+
     @ApiOperation(value = "生产排产接口", notes = "根据查询条件查询生产排产数据")
     @PostMapping("/query_production_scheduling_page")
     public CommonResult<IPage<Notice>> queryProductionSchedulingPage(@RequestBody ProductionSchedulingDto productionSchedulingDto) {
         return CommonResult.success(noticeService.queryProductionSchedulingPage(productionSchedulingDto));
     }
-
 
     @ApiOperation(value = "通知编辑", notes = "进行排产")
     @PostMapping("/update_production_scheduling")
@@ -74,5 +71,21 @@ public class NoticeController {
     @PostMapping("/cancel_production_scheduling")
     public CommonResult<Boolean> cancelProductionScheduling(@RequestBody List<String> idList) {
         return CommonResult.success(noticeService.cancelProductionScheduling(idList));
+    }
+
+    /**
+     *
+     **/
+
+    @ApiOperation(value = "接受生产排产通知", notes = "接受生产排产通知")
+    @PostMapping("/query_accepting_page")
+    public CommonResult<IPage<Notice>> queryAcceptingPage(@RequestBody AcceptingDto acceptingDto) {
+        return CommonResult.success(noticeService.queryAcceptingPage(acceptingDto));
+    }
+
+    @ApiOperation(value = "修改接受状态 确认/取消", notes = "修改接受状态 确认/取消")
+    @PostMapping("/update_accepting_state")
+    public CommonResult<Boolean> updateAcceptingState(@RequestBody UpdateAcceptingStateDto updateAcceptingState) {
+        return CommonResult.success(noticeService.updateAcceptingState(updateAcceptingState));
     }
 }
