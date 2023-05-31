@@ -68,7 +68,7 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
                 certificate.setTrackCertificates(trackCertificates);
                 CommonResult<Object> commonResult = this.toErp(certificate);
                 if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
-                    return CommonResult.failed(certificate.getCertificateNo() + ":" + commonResult.getMessage() + ";");
+                    return CommonResult.failed(commonResult.getMessage());
                 }
             } else {
                 return CommonResult.failed(certificate.getCertificateNo() + ":没有找到该合格证的跟单信息;");
