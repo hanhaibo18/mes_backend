@@ -47,30 +47,32 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
 
     @Override
     public CommonResult<Object> push(Certificate certificate) {
-        if (!Certificate.NEXT_OPT_WORK_BOMCO_SC.equals(certificate.getNextOptWork())) {
-            return CommonResult.failed(certificate.getCertificateNo() + ":非生产入库合格证不进行工时推送;");
-        }
-        if (Certificate.IS_SENG_WORK_HOUR_1.equals(certificate.getIsSendWorkHour())) {
-            return CommonResult.failed(certificate.getCertificateNo() + ":已经推送过工时的不进行工时推送;");
-        }
-        QueryWrapper<TrackHead> queryWrapperTrackHead = new QueryWrapper<>();
-        queryWrapperTrackHead.eq("certificate_no", certificate.getCertificateNo());
-        queryWrapperTrackHead.eq("tenant_id", certificate.getTenantId());
-        List<TrackHead> trackHeadList = trackHeadService.list(queryWrapperTrackHead);
-        if (CollectionUtils.isNotEmpty(trackHeadList)) {
-            List<TrackCertificate> trackCertificates = new ArrayList<>();
-            for (TrackHead trackHead : trackHeadList) {
-                TrackCertificate trackCertificate = new TrackCertificate();
-                trackCertificate.setThId(trackHead.getId());
-                trackCertificates.add(trackCertificate);
+        if (!Certificate.IS_SENG_WORK_HOUR_1.equals(certificate.getIsSendWorkHour())) {
+            if (!Certificate.NEXT_OPT_WORK_BOMCO_SC.equals(certificate.getNextOptWork())) {
+                return CommonResult.failed(certificate.getCertificateNo() + ":非生产入库合格证不进行工时推送;");
             }
-            certificate.setTrackCertificates(trackCertificates);
-            CommonResult<Object> commonResult = this.toErp(certificate);
-            if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
-                return CommonResult.failed(certificate.getCertificateNo() + ":" + commonResult.getMessage() + ";");
+            if (Certificate.IS_SENG_WORK_HOUR_1.equals(certificate.getIsSendWorkHour())) {
+                return CommonResult.failed(certificate.getCertificateNo() + ":已经推送过工时的不进行工时推送;");
             }
-        } else {
-            return CommonResult.failed(certificate.getCertificateNo() + ":没有找到该合格证的跟单信息;");
+            QueryWrapper<TrackHead> queryWrapperTrackHead = new QueryWrapper<>();
+            queryWrapperTrackHead.eq("certificate_no", certificate.getCertificateNo());
+            queryWrapperTrackHead.eq("tenant_id", certificate.getTenantId());
+            List<TrackHead> trackHeadList = trackHeadService.list(queryWrapperTrackHead);
+            if (CollectionUtils.isNotEmpty(trackHeadList)) {
+                List<TrackCertificate> trackCertificates = new ArrayList<>();
+                for (TrackHead trackHead : trackHeadList) {
+                    TrackCertificate trackCertificate = new TrackCertificate();
+                    trackCertificate.setThId(trackHead.getId());
+                    trackCertificates.add(trackCertificate);
+                }
+                certificate.setTrackCertificates(trackCertificates);
+                CommonResult<Object> commonResult = this.toErp(certificate);
+                if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
+                    return CommonResult.failed(certificate.getCertificateNo() + ":" + commonResult.getMessage() + ";");
+                }
+            } else {
+                return CommonResult.failed(certificate.getCertificateNo() + ":没有找到该合格证的跟单信息;");
+            }
         }
         return CommonResult.success("操作成功");
     }
