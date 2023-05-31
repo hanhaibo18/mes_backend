@@ -26,8 +26,18 @@ public class Certificate extends BaseEntity<Certificate> {
     public static String TRACK_NO_NULL_MESSAGE = "请选择跟单!";
 
     public static String SUCCESS_MESSAGE = "操作成功！";
+
     public static String FAILED_MESSAGE = "操作失败！";
+
     public static String FAILED_ON_COMPLETE = "工序未完成，不允许开具合格证";
+    //下工序车间、生产入库
+    public static String NEXT_OPT_WORK_BOMCO_SC = "BOMCO_SC";
+
+    //未推送工时
+    public static String IS_SENG_WORK_HOUR_0 = "0";
+
+    //已推送工时
+    public static String IS_SENG_WORK_HOUR_1 = "1";
 
     @ApiModelProperty(value = "租户ID")
     private String tenantId;

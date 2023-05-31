@@ -1,7 +1,6 @@
 package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.LineStore;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackItem;
@@ -15,7 +14,7 @@ import java.util.List;
  */
 public class ErpServiceClientFallbackImpl implements ErpServiceClient {
     @Override
-    public CommonResult<Boolean> certWorkHourPush(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
+    public CommonResult<Object> certWorkHourPush(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
         return CommonResult.success(null);
     }
 
@@ -31,11 +30,6 @@ public class ErpServiceClientFallbackImpl implements ErpServiceClient {
 
     @Override
     public CommonResult<List<Order>> getErpOrderInner(String erpCode, String selectDate, String orderNo, String controller, String from) {
-        return CommonResult.success(null);
-    }
-
-    @Override
-    public CommonResult<List<Product>> getStorage(String materialNos, String erpCode) {
         return CommonResult.success(null);
     }
 

@@ -776,7 +776,7 @@ public class LineStoreController extends BaseController {
 
                 List<LineStore> l = lineStoreService.list(queryWrapper);
                 if (l == null || l.size() == 0) {
-                    CommonResult<List<Product>> commonResult = baseServiceClient.selectProduct(item.getMaterialNo(), item.getDrawingNo(), item.getMaterialType());
+                    CommonResult<List<Product>> commonResult = baseServiceClient.selectProduct(item.getTenantId(), item.getMaterialNo(), item.getDrawingNo(), item.getMaterialType());
                     List<Product> pList = commonResult.getData();
                     if (pList != null && pList.size() > 0) {
                         lineStores.add(item);
@@ -888,8 +888,7 @@ public class LineStoreController extends BaseController {
      * 校验物料号是否在物料表中存在
      */
     private boolean isMaterialNoExist(String materialNo) {
-        CommonResult<List<Product>> result = baseServiceClient.selectProduct(materialNo, null, null);
-
+        CommonResult<List<Product>> result = baseServiceClient.selectProduct(null, materialNo, null, null);
         return result.getData().size() > 0;
     }
 
@@ -900,7 +899,7 @@ public class LineStoreController extends BaseController {
      */
     private boolean isMaterialTypeMatch(String materialNo, String materialType) {
 
-        CommonResult<List<Product>> result = baseServiceClient.selectProduct(materialNo, null, null);
+        CommonResult<List<Product>> result = baseServiceClient.selectProduct(null, materialNo, null, null);
         boolean isMatch = false;
         if (!result.getData().isEmpty()) {
             Product product = result.getData().get(0);
