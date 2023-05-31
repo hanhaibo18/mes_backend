@@ -188,6 +188,7 @@ public class CertificateController {
                                                     @ApiParam(value = "来源") @RequestParam(required = false) String origin,
                                                     @ApiParam(value = "排序") @RequestParam(required = false) String order,
                                                     @ApiParam(value = "排序字段") @RequestParam(required = false) String orderCol,
+                                                    @ApiParam(value = "是否推送") @RequestParam(required = false) String isPush,
                                                     @ApiParam(value = "分公司") String branchCode,
                                                     @ApiParam(value = "页码") int page,
                                                     @ApiParam(value = "每页条数") int limit) {
@@ -213,6 +214,9 @@ public class CertificateController {
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("product_no", productNo);
+        }
+        if (!StringUtils.isNullOrEmpty(isPush)) {
+            queryWrapper.eq("is_push", isPush);
         }
         OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());

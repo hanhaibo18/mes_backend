@@ -77,6 +77,8 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     private TrackHeadFlowService trackHeadFlowService;
     @Autowired
     private TrackAssignPersonMapper trackAssignPersonMapper;
+    @Autowired
+    private TrackAssignPersonService trackAssignPersonService;
 
     @Override
     public RecordsOfPourOperations getByPrechargeFurnaceId(Long prechargeFurnaceId) {
@@ -458,6 +460,10 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
         assignQueryWrapper.eq("ti_id", items.get(0).getId()).last("limit 1");
         Assign assign = trackAssignService.getOne(assignQueryWrapper);
+        QueryWrapper<AssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
+        assignPersonQueryWrapper.eq("assign_id",assign.getId());
+        List<AssignPerson> assignPeople = trackAssignPersonService.list(assignPersonQueryWrapper);
+        assign.setAssignPersons(assignPeople);
 
         List<TrackItem> trackItemList = trackItemService.listByIds(itemIds);
         //派工
@@ -548,13 +554,17 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteItem(List<String> itemIds) {
         //根据工序id找到派工信息
         QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
         assignQueryWrapper.in("ti_id", itemIds);
         List<Assign> assignList = trackAssignService.list(assignQueryWrapper);
+        if (CollectionUtils.isEmpty(assignList)){
+            throw new GlobalException("没有找到该工序的派工信息！",ResultCode.FAILED);
+        }
         Set<String> assignIds = assignList.stream().map(Assign::getId).collect(Collectors.toSet());
-        String[] ids = (String[]) assignIds.toArray();
+        String[] ids = (String[]) assignIds.toArray(new String[assignIds.size()]);
         trackAssignService.deleteAssignYl(ids);
         return true;
     }

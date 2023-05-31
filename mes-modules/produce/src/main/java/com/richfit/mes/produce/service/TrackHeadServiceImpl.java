@@ -848,7 +848,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             List<TrackFlow> trackFlowList = new ArrayList<>();
             List<TrackHead> trackHeadList = TrackHeadUtil.flowInfo(trackHeadPublicDto);
             for (TrackHead th : trackHeadList) {
-                TrackFlow trackFlow = trackHeadFlow(th, th.getTrackItems(), th.getProductNo(), th.getNumber());
+                TrackFlow trackFlow = trackHeadFlow(th, th.getTrackItems(), th.getProductNo(), th.getNumber(),trackHeadPublicDto.getPriority());
                 trackFlowList.add(trackFlow);
             }
 
@@ -903,7 +903,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
+    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number,String priority) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
 
@@ -945,7 +945,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.save(trackFlow);
 
             //跟单工序添加
-            trackItemService.addItemByTrackHead(trackHead, trackItems, trackFlow.getProductNo(), number, flowId);
+            trackItemService.addItemByTrackHead(trackHead, trackItems, trackFlow.getProductNo(), number, flowId,priority);
             return trackFlow;
         } catch (Exception e) {
             e.printStackTrace();

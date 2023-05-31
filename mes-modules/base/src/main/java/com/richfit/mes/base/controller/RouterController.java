@@ -729,7 +729,7 @@ public class RouterController extends BaseController {
     }
 
     @ApiOperation(value = "修改工艺工序派工", notes = "修改工艺工序派工")
-    @PostMapping("router/opt/update")
+    @PutMapping("router/opt/update")
     public CommonResult<Boolean> assignUpdate(@RequestBody RouterOptAssign assign) {
         StringBuilder userId = new StringBuilder();
         StringBuilder userName = new StringBuilder();

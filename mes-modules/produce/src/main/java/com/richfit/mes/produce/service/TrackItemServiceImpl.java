@@ -588,7 +588,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
 
     @Override
-    public void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId) {
+    public void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId,String priority) {
         if (trackItems != null && trackItems.size() > 0) {
             int i = 1;
             for (TrackItem item : trackItems) {
@@ -607,6 +607,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 item.setIsDoing(0);
                 item.setIsScheduleCompleteShow(1);
                 item.setOptSequence(i++);
+                item.setPriority(priority);
                 //需要调度审核时展示
                 if (1 == item.getIsExistScheduleCheck()) {
                     item.setIsScheduleCompleteShow(1);
