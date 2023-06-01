@@ -1220,9 +1220,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     .orderByDesc("next_opt_sequence");
             List<TrackItem> trackItems = trackItemService.list(queryWrapper);
             //最小值
-            int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
-            //获取有没有不等于最小值的
-            List<TrackItem> collect = result.stream().filter(item -> item.getOriginalOptSequence() != min).collect(Collectors.toList());
+            int min = trackItems.stream().mapToInt(TrackItem::getOptSequence).min().getAsInt();
+            //查询需要报工数据有最小当前工序
+            List<TrackItem> collect = result.stream().filter(item -> item.getOptSequence() == min).collect(Collectors.toList());
             //有大于最小值的不是最小工序报工,需要进行连续工序判断,和所有产品同时报工判断
             if (!collect.isEmpty()) {
                 //先判断报工的是所有产品吗
@@ -1236,8 +1236,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     result = result.stream().filter(item -> item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
                 }
             } else {
-                //过滤掉已报工的数据&&过滤不在传入产品编号的数据
-                result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+//                //过滤掉已报工的数据&&过滤不在传入产品编号的数据
+//                result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+                //没有最小当前工序 表示跳工序执行 抛出错误
+                throw new GlobalException("未选中最小当前工序,请按照工序顺序选择工序", ResultCode.FAILED);
             }
         } else {
             //单间并行工序全都是当前工序会出现跳工序执行问题,过滤其中最小工序 仅对最小工序执行
