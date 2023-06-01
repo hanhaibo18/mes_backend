@@ -853,9 +853,6 @@ public class TrackHeadController extends BaseController {
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("certificate_no", certificate.getCertificateNo());
             queryWrapper.eq("branch_code", certificate.getBranchCode());
-            System.out.println("-------------------");
-            System.out.println(certificate.getCertificateNo());
-            System.out.println(certificate.getBranchCode());
             trackHeadList = trackHeadService.list(queryWrapper);
             if (CollectionUtils.isEmpty(trackHeadList)) {
                 return CommonResult.failed("合格证号没有找到跟单信息，数据问题，联系维护人员进行处理");

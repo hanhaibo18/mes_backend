@@ -2120,8 +2120,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //循环派工记录分组
         int i = 0;
         for (List<TrackComplete> trackCompleteList : listMap.values()) {
-            System.out.println("---------------------------");
-            System.out.println(i++);
             //查询派工数量
             BigDecimal qty = BigDecimal.valueOf(assignMap.get(trackCompleteList.get(0).getAssignId()).getQty());
             //获取单件工时
@@ -2178,8 +2176,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         Map<String, List<TrackComplete>> listMap = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
         int i = 1;
         for (List<TrackComplete> trackCompleteList : listMap.values()) {
-            System.out.println("---------------------------");
-            System.out.println(i++);
             for (TrackComplete trackComplete : trackCompleteList) {
                 if (trackComplete.getId().equals(trackCompleteList.get(0).getId())) {
                     trackComplete.setIsRetain(1);

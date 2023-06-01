@@ -400,10 +400,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         try {
             CommonResult<Attachment> atta = systemServiceClient.attachment(id);
             CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
-            System.out.println(id);
-            System.out.println(JSON.toJSONString(data));
             if (data.getStatus() == 200) {
-                System.out.println(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
@@ -556,20 +553,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     public void updateItem() {
-//        List<String> trackIdList = trackHeadMapper.queryTrackId();
         List<String> trackFlows = trackFlowMapper.queryBugItemFlow();
         for (String track : trackFlows) {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("flow_id", track);
             List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
-            trackItemList.forEach(trackItem -> {
-                System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());
-            });
-            System.out.println("----------------------------------");
             beforeSaveItemDeal(trackItemList);
-            trackItemList.forEach(trackItem -> {
-                System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());
-            });
             trackItemService.updateBatchById(trackItemList);
         }
     }
@@ -2047,8 +2036,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.update(updateWrapperTrackFlow);
 
             //更新跟单状态动作
-            System.out.println("-------------------");
-            System.out.println(id);
             TrackHead trackHead = trackHeadMapper.selectById(id);
             trackHead.setStatus("9");
             trackHeadMapper.updateById(trackHead);

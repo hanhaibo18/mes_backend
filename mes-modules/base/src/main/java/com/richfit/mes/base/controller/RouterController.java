@@ -161,7 +161,6 @@ public class RouterController extends BaseController {
                 return CommonResult.failed("工艺重复，无法新增！");
             }
             if ("1".equals(router.getStatus())) {
-                System.out.println("-------------------");
                 //更新老工艺状态模块
                 Router routerOlds = new Router();
                 routerOlds.setIsActive("0");
@@ -217,7 +216,7 @@ public class RouterController extends BaseController {
             router.setModifyTime(new Date());
             //禁止或激活状态无法直接修改为历史状态;历史状态修改为禁止或启动状态，要把其他的工艺状态设置为历史
             if (router.getStatus().equals("2")) {
-                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1","","");
+                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1", "", "");
                 if (result.getData().size() == 0) {
                     return CommonResult.failed("启用状态不能直接修改为历史状态！");
                 }
@@ -260,7 +259,7 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "texture", value = "材质", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/find")
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status,String testBar,String texture) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -383,11 +382,11 @@ public class RouterController extends BaseController {
     @ApiImplicitParam(name = "routerIds", value = "工艺ids", required = true, dataType = "String", paramType = "query")
     @PostMapping("/getRouterByIdAndBranchCode")
     public CommonResult<List<Router>> getRouterByIds(@RequestBody List<String> routerIdAndBranchCodes) {
-        if(CollectionUtil.isEmpty(routerIdAndBranchCodes)){
+        if (CollectionUtil.isEmpty(routerIdAndBranchCodes)) {
             return CommonResult.success(null, "操作成功！");
         }
         QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
-        routerQueryWrapper.in("CONCAT_WS( '_', id, branch_code )",routerIdAndBranchCodes);
+        routerQueryWrapper.in("CONCAT_WS( '_', id, branch_code )", routerIdAndBranchCodes);
         return CommonResult.success(routerService.list(routerQueryWrapper), "操作成功！");
     }
 
