@@ -7,15 +7,18 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Notice;
 import com.richfit.mes.common.model.produce.NoticeTenant;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.NoticeMapper;
 import com.richfit.mes.produce.entity.*;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,6 +41,9 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
 
     @Resource
     private NoticeMapper noticeMapper;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
 
     @Override
     public IPage<Notice> queryPage(SalesSchedulingDto salesSchedulingDto) {
@@ -185,6 +191,13 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
         List<NoticeTenant> tenantList = noticeTenantService.list(tenantQueryWrapper);
         //根据排产单分组
         Map<String, List<NoticeTenant>> collect = tenantList.stream().collect(Collectors.groupingBy(NoticeTenant::getNoticeId));
+        //获取所有租户
+        CommonResult<List<Tenant>> tenantAllList = systemServiceClient.queryTenantAllList();
+        Map<String, Tenant> tenantMap = tenantAllList.getData().stream().collect(Collectors.toMap(Tenant::getId, v -> v));
+        //处理所有排产单租户数据转换为租户名称
+        for (NoticeTenant tenantTenant : tenantList) {
+            tenantTenant.setUnit(tenantMap.get(tenantTenant.getUnit()).getTenantName());
+        }
         //循环所有排产单数据 获取对应的车间信息
         for (Notice notice : noticeList) {
             if (CollectionUtils.isNotEmpty(collect.get(notice.getId()))) {
