@@ -411,20 +411,20 @@ public class HotDemandController extends BaseController {
             if (StringUtils.isNotEmpty(hotDemand.getErpProductCode())) {
                 //库存数量
                 //Integer count = wmsServiceClient.queryMaterialCount(hotDemand.getErpProductCode()).getData();
-                InventoryQuery inventoryQuery=new InventoryQuery();
-                inventoryQuery.setMaterialNum(hotDemand.getErpProductCode());
-                inventoryQuery.setWorkCode(currentUser.getTenantErpCode());
-                List<InventoryReturn> listCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery).getData();
-                if (CollectionUtils.isNotEmpty(listCommonResult)) {
-                    InventoryReturn inventoryReturn = listCommonResult.get(0);
-                    if(inventoryReturn.getQuantity()>0){
-                        UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
-                        updateWrapper.set("repertory_num", inventoryReturn.getQuantity());//设置库存数量
-                        updateWrapper.set("is_exist_repertory", 1);//设置为已有库存
-                        updateWrapper.in("id", hotDemand.getId());
-                        hotDemandService.update(updateWrapper);
-                    }
-                }
+//                InventoryQuery inventoryQuery=new InventoryQuery();
+//                inventoryQuery.setMaterialNum(hotDemand.getErpProductCode());
+//                inventoryQuery.setWorkCode(currentUser.getTenantErpCode());
+//                List<InventoryReturn> listCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery).getData();
+//                if (CollectionUtils.isNotEmpty(listCommonResult)) {
+//                    InventoryReturn inventoryReturn = listCommonResult.get(0);
+//                    if(inventoryReturn.getQuantity()>0){
+//                        UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
+//                        updateWrapper.set("repertory_num", inventoryReturn.getQuantity());//设置库存数量
+//                        updateWrapper.set("is_exist_repertory", 1);//设置为已有库存
+//                        updateWrapper.in("id", hotDemand.getId());
+//                        hotDemandService.update(updateWrapper);
+//                    }
+//                }
             }else{
                 throw new GlobalException("核对库存失败 "+hotDemand.getDemandName()+" 无ERP物料编码",ResultCode.FAILED);
             }
