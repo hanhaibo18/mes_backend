@@ -13,6 +13,8 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.OrderUtil;
+import com.richfit.mes.common.model.wms.InventoryQuery;
+import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.HotDemandUpdateLogMapper;
@@ -405,19 +407,28 @@ public class HotDemandController extends BaseController {
         //查询出没有库存的数据
         List<HotDemand> list = hotDemandService.list(queryWrapper);
         //TODO  核对库存需要更新接口
-//        for (HotDemand hotDemand : list) {
-//            if (StringUtils.isNotEmpty(hotDemand.getErpProductCode())) {
-//                //库存数量
-//                Integer count = wmsServiceClient.queryMaterialCount(hotDemand.getErpProductCode()).getData();
-//                if (count > 0) {
-//                    UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
-//                    updateWrapper.set("repertory_num", count);//设置库存数量
-//                    updateWrapper.set("is_exist_repertory", 1);//设置为已有库存
-//                    updateWrapper.in("id", hotDemand.getId());
-//                    hotDemandService.update(updateWrapper);
-//                }
-//            }
-//        }
+        for (HotDemand hotDemand : list) {
+            if (StringUtils.isNotEmpty(hotDemand.getErpProductCode())) {
+                //库存数量
+                //Integer count = wmsServiceClient.queryMaterialCount(hotDemand.getErpProductCode()).getData();
+                InventoryQuery inventoryQuery=new InventoryQuery();
+                inventoryQuery.setMaterialNum(hotDemand.getErpProductCode());
+                inventoryQuery.setWorkCode(currentUser.getTenantErpCode());
+                List<InventoryReturn> listCommonResult = wmsServiceClient.inventoryQuery(inventoryQuery).getData();
+                if (CollectionUtils.isNotEmpty(listCommonResult)) {
+                    InventoryReturn inventoryReturn = listCommonResult.get(0);
+                    if(inventoryReturn.getQuantity()>0){
+                        UpdateWrapper<HotDemand> updateWrapper = new UpdateWrapper();
+                        updateWrapper.set("repertory_num", inventoryReturn.getQuantity());//设置库存数量
+                        updateWrapper.set("is_exist_repertory", 1);//设置为已有库存
+                        updateWrapper.in("id", hotDemand.getId());
+                        hotDemandService.update(updateWrapper);
+                    }
+                }
+            }else{
+                throw new GlobalException("核对库存失败 "+hotDemand.getDemandName()+" 无ERP物料编码",ResultCode.FAILED);
+            }
+        }
         return CommonResult.success("操作成功");
     }
 

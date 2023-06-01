@@ -5,6 +5,8 @@ import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
 import com.richfit.mes.common.model.wms.ApplyListUpload;
+import com.richfit.mes.common.model.wms.InventoryQuery;
+import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.produce.provider.fallback.WmsServiceClientFallbackImpl;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -58,4 +60,14 @@ public interface WmsServiceClient {
     @ApiOperation(value = "MES申请单上传WMS（已上线）", notes = "将MES系统满足条件申请单上传WMS。提供上传WMS按钮，用户点击按钮可手动将申请单上传WMS系统")
     @PostMapping("/api/integration/wms/three/apply_list_upload")
     CommonResult<ApplicationResult> applyListUpload(@RequestBody List<ApplyListUpload> applyListUpload);
+
+    /**
+     * MES实时查询WMS库存
+     *
+     * @param inventoryQuery
+     * @return
+     */
+    @PostMapping("/api/integration/wms/three/inventory_query")
+    public CommonResult<List<InventoryReturn>> inventoryQuery(@RequestBody InventoryQuery inventoryQuery);
+
 }
