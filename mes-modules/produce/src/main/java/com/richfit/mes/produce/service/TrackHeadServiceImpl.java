@@ -69,6 +69,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Resource
     private TrackAssemblyService trackAssemblyService;
 
+    @Resource
+    private TrackAssemblyBindingService trackAssemblyBindingService;
+
     @Autowired
     private LineStoreMapper lineStoreMapper;
 
@@ -1616,26 +1619,31 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public List<TrackHead> queryTrackAssemblyByTrackNo(String flowId) {
-        QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
-        wrapper.eq("flow_Id", flowId);
-        wrapper.isNotNull("product_no");
-        List<TrackAssembly> list = trackAssemblyService.list(wrapper);
+        QueryWrapper<TrackAssembly> wrapperTrackAssembly = new QueryWrapper();
+        wrapperTrackAssembly.eq("flow_Id", flowId);
+        List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(wrapperTrackAssembly);
         List<TrackHead> trackHeads = new ArrayList<>();
-        list.forEach(i -> {
-            String productNo = i.getProductNo();
-            if (StrUtil.isNotBlank(productNo)) {
-                QueryWrapper<TrackFlow> tWrapper = new QueryWrapper<>();
-                if (productNo.indexOf(" ") != -1) {
-                    productNo = productNo.split(" ")[1];
+        trackAssemblyList.forEach(trackAssembly -> {
+            QueryWrapper<TrackAssemblyBinding> wrapperTrackAssemblyBinding = new QueryWrapper();
+            wrapperTrackAssemblyBinding.eq("assembly_id", trackAssembly.getId());
+            wrapperTrackAssemblyBinding.isNotNull("number");
+            List<TrackAssemblyBinding> trackAssemblyBindingList = trackAssemblyBindingService.list(wrapperTrackAssemblyBinding);
+            trackAssemblyBindingList.forEach(trackAssemblyBinding -> {
+                String productNo = trackAssemblyBinding.getNumber();
+                if (StrUtil.isNotBlank(productNo)) {
+                    QueryWrapper<TrackFlow> wrapperTrackFlow = new QueryWrapper<>();
+                    if (productNo.indexOf(" ") != -1) {
+                        productNo = productNo.split(" ")[1];
+                    }
+                    wrapperTrackFlow.eq("product_no", trackAssembly.getDrawingNo() + " " + productNo);
+                    wrapperTrackFlow.eq("tenant_id", trackAssembly.getTenantId());
+                    List<TrackFlow> trackFlows = trackHeadFlowService.list(wrapperTrackFlow);
+                    if (ObjectUtils.isNotNull(trackFlows)) {
+                        TrackHead trackHead = this.getById(trackFlows.get(0).getTrackHeadId());
+                        trackHeads.add(trackHead);
+                    }
                 }
-                tWrapper.eq("product_no", i.getDrawingNo() + " " + productNo);
-                tWrapper.eq("tenant_id", i.getTenantId());
-                List<TrackFlow> trackFlows = trackHeadFlowService.list(tWrapper);
-                if (ObjectUtils.isNotNull(trackFlows)) {
-                    TrackHead trackHead = this.getById(trackFlows.get(0).getTrackHeadId());
-                    trackHeads.add(trackHead);
-                }
-            }
+            });
         });
         Map<String, TrackHead> collect = trackHeads.stream().collect(Collectors.toMap(TrackHead::getProductNo, v -> v, (a, b) -> a));
         return new ArrayList<>(collect.values());

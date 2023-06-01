@@ -24,6 +24,11 @@ public class NoticeTenant implements Serializable {
     /**
      * 执行单位
      */
-    private String executableUnit;
+    private String unit;
+
+    /**
+     * 单位类型
+     */
+    private String unitType;
 
 }
