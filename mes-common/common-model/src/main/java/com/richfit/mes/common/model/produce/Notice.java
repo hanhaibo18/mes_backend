@@ -1,6 +1,8 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
@@ -81,10 +83,7 @@ public class Notice extends BaseEntity<Notice> {
      * 交货日期
      */
     private Date deliveryDate;
-    /**
-     * 落成单位
-     */
-    private String designatedUnit;
+
     /**
      * 销售排产日期
      */
@@ -102,4 +101,12 @@ public class Notice extends BaseEntity<Notice> {
      */
     private String issuingUnit;
     private String tenantId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "执行单位")
+    private String executableUnit;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "落成单位")
+    private String designatedUnit;
 }

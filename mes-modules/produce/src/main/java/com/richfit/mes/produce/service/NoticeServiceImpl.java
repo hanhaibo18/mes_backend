@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: NoticeServiceImpl.java
@@ -101,7 +103,13 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
             for (String executableUnit : issueNoticeDto.getExecutableUnitList()) {
                 NoticeTenant noticeTenant = new NoticeTenant();
                 noticeTenant.setNoticeId(id);
-                noticeTenant.setExecutableUnit(executableUnit);
+                noticeTenant.setUnit(executableUnit);
+                noticeTenants.add(noticeTenant);
+            }
+            for (String designatedUnit : issueNoticeDto.getDesignatedUnit()) {
+                NoticeTenant noticeTenant = new NoticeTenant();
+                noticeTenant.setNoticeId(id);
+                noticeTenant.setUnit(designatedUnit);
                 noticeTenants.add(noticeTenant);
             }
         }
@@ -131,11 +139,28 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
         //查询排产状态为已下发的
         queryWrapper.eq("scheduling_state", "2");
         //查询落成单位 或 执行单位是本公司的数据
-        queryWrapper.and(wrapper -> wrapper.eq("designated_unit", tenantId).or().eq("executable_unit", tenantId));
+        queryWrapper.eq("unit", tenantId);
         TimeUtil.queryStartTime(queryWrapper, acceptingDto.getSalesSchedulingDateStart());
         TimeUtil.queryEndTime(queryWrapper, acceptingDto.getSalesSchedulingDateEnd());
         OrderUtil.query(queryWrapper, acceptingDto.getOrder(), acceptingDto.getOrderCol());
-        return noticeMapper.queryAcceptingPage(new Page<>(acceptingDto.getPage(), acceptingDto.getSize()), queryWrapper);
+        IPage<Notice> noticePage = noticeMapper.queryAcceptingPage(new Page<>(acceptingDto.getPage(), acceptingDto.getSize()), queryWrapper);
+        //获取所有排产单 车间数据
+        List<String> idList = noticePage.getRecords().stream().map(Notice::getId).collect(Collectors.toList());
+        QueryWrapper<NoticeTenant> tenantQueryWrapper = new QueryWrapper<>();
+        tenantQueryWrapper.in("notice_id", idList);
+        List<NoticeTenant> tenantList = noticeTenantService.list(tenantQueryWrapper);
+        //根据排产单分组
+        Map<String, List<NoticeTenant>> collect = tenantList.stream().collect(Collectors.groupingBy(NoticeTenant::getNoticeId));
+        //循环所有排产单数据 获取对应的车间信息
+        for (Notice notice : noticePage.getRecords()) {
+            //获取执行单位数据
+            String executableUnit = collect.get(notice.getId()).stream().filter(tenant -> tenant.getUnitType().equals("1")).map(NoticeTenant::getUnit).collect(Collectors.joining(","));
+            //获取落成单位数据
+            String designatedUnit = collect.get(notice.getId()).stream().filter(tenant -> tenant.getUnitType().equals("2")).map(NoticeTenant::getUnit).collect(Collectors.joining(","));
+            notice.setExecutableUnit(executableUnit);
+            notice.setDesignatedUnit(designatedUnit);
+        }
+        return noticePage;
 
     }
 
