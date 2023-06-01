@@ -3,6 +3,7 @@ package com.richfit.mes.produce.service.heat;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -211,6 +212,19 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             setRouter(assigns);
         }
         return assigns;
+    }
+
+    @Override
+    public void updateItemInfo(Long id) {
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("precharge_furnace_id", id);
+        List<TrackItem> list = trackItemService.list(trackItemQueryWrapper);
+        for (TrackItem trackItem : list) {
+            LambdaUpdateWrapper<TrackItem> trackItemLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            trackItemLambdaUpdateWrapper.eq(TrackItem::getId, trackItem.getId());
+            trackItemLambdaUpdateWrapper.set(TrackItem::getPrechargeFurnaceId, null);
+            trackItemService.update(trackItemLambdaUpdateWrapper);
+        }
     }
 
     /**

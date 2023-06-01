@@ -35,6 +35,13 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
     public List<Assign> queryTrackItem(Long id);
 
     /**
+     * 更新工序信息
+     *
+     * @param id
+     */
+    void updateItemInfo(Long id);
+
+    /**
      * 功能描述:装炉跟单工序添加
      *
      * @param assignList

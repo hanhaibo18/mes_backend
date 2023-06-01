@@ -74,6 +74,8 @@ public class PrechargeFurnaceController extends BaseController {
         List<Assign> assignList = prechargeFurnaceService.queryTrackItem(id);
         if (assignList.isEmpty()) {
             prechargeFurnaceService.removeById(id);
+            //工序信息更新
+            prechargeFurnaceService.updateItemInfo(id);
             return CommonResult.success("删除成功");
         } else {
             return CommonResult.failed("当前炉内还有生产数据，不能删除！");
