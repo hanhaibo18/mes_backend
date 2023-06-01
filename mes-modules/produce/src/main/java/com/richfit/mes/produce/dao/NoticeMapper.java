@@ -29,7 +29,7 @@ public interface NoticeMapper extends BaseMapper<Notice> {
      * @Date: 2023/5/31 10:20
      * @return: IPage<Notice>
      **/
-    @Select("SELECT n.*,t.executable_unit FROM sys_notice n,sys_notice_tenant t WHERE n.id = t.notice_id ${ew.customSqlSegment} ")
+    @Select("SELECT n.*,t.executable_unit FROM produce_notice n,produce_notice_tenant t ${ew.customSqlSegment} ")
     IPage<Notice> queryAcceptingPage(@Param("page") Page<Notice> page, @Param(Constants.WRAPPER) Wrapper<Notice> wrapper);
 
 }

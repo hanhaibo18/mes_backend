@@ -83,6 +83,7 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
 
     @Override
     public Boolean updateProductionScheduling(Notice notice) {
+        notice.setSchedulingState("1");
         return this.updateById(notice);
     }
 
@@ -119,6 +120,7 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     public IPage<Notice> queryAcceptingPage(AcceptingDto acceptingDto) {
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
         QueryWrapper<Notice> queryWrapper = new QueryWrapper<>();
+        queryWrapper.apply("n.id = t.notice_id ");
         queryWrapper.eq(StrUtil.isNotBlank(acceptingDto.getProductionOrder()), "production_order", acceptingDto.getProductionOrder());
         queryWrapper.eq(StrUtil.isNotBlank(acceptingDto.getWorkNo()), "work_no", acceptingDto.getWorkNo());
         queryWrapper.eq(StrUtil.isNotBlank(acceptingDto.getProduceType()), "produce_type", acceptingDto.getProduceType());

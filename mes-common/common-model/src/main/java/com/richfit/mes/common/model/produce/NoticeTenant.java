@@ -7,7 +7,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * sys_notice_tenant
+ * produce_notice_tenant
  *
  * @author
  */
