@@ -911,9 +911,8 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "查询BOM信息", notes = "根据装配信息查询BOM信息")
-    @GetMapping("/query_bom/{flowId}")
-    public CommonResult<List<TrackHead>> queryBomByTrackAssembly(@PathVariable String flowId) {
-        flowId = flowId.replaceAll("%20", " ");
+    @GetMapping("/query_bom")
+    public CommonResult<List<TrackHead>> queryBomByTrackAssembly(@RequestParam String flowId) {
         return CommonResult.success(trackHeadService.queryTrackAssemblyByTrackNo(flowId));
     }
 

@@ -1622,13 +1622,19 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         List<TrackAssembly> list = trackAssemblyService.list(wrapper);
         List<TrackHead> trackHeads = new ArrayList<>();
         list.forEach(i -> {
-            QueryWrapper<TrackFlow> tWrapper = new QueryWrapper<>();
-            tWrapper.eq("product_no", i.getDrawingNo() + " " + i.getProductNo());
-            tWrapper.eq("tenant_id", i.getTenantId());
-            List<TrackFlow> trackFlows = trackHeadFlowService.list(tWrapper);
-            if (ObjectUtils.isNotNull(trackFlows)) {
-                TrackHead trackHead = this.getById(trackFlows.get(0).getTrackHeadId());
-                trackHeads.add(trackHead);
+            String productNo = i.getProductNo();
+            if (StrUtil.isNotBlank(productNo)) {
+                QueryWrapper<TrackFlow> tWrapper = new QueryWrapper<>();
+                if (productNo.indexOf(" ") != -1) {
+                    productNo = productNo.split(" ")[1];
+                }
+                tWrapper.eq("product_no", i.getDrawingNo() + " " + productNo);
+                tWrapper.eq("tenant_id", i.getTenantId());
+                List<TrackFlow> trackFlows = trackHeadFlowService.list(tWrapper);
+                if (ObjectUtils.isNotNull(trackFlows)) {
+                    TrackHead trackHead = this.getById(trackFlows.get(0).getTrackHeadId());
+                    trackHeads.add(trackHead);
+                }
             }
         });
         Map<String, TrackHead> collect = trackHeads.stream().collect(Collectors.toMap(TrackHead::getProductNo, v -> v, (a, b) -> a));
