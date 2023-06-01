@@ -80,7 +80,7 @@ public class NormalizeDehydroRecordController extends BaseController {
             queryWrapper.le("create_time", normalizeDehydroRecord.getEndTime() + " 23:59:59");
         }
         if (!StringUtils.isNullOrEmpty(normalizeDehydroRecord.getBranchCode())) {
-            queryWrapper.le("branch_code", normalizeDehydroRecord.getBranchCode());
+            queryWrapper.eq("branch_code", normalizeDehydroRecord.getBranchCode());
         }
         boolean isBzz = normalizeDehydroRecordService.isBzz(currentUser);
         //班组长查询
@@ -89,12 +89,12 @@ public class NormalizeDehydroRecordController extends BaseController {
             List<TenantUser> tenantUserList = systemServiceClient.queryClass(currentUser.getUsername());
             if(CollectionUtils.isNotEmpty(tenantUserList)){
                 List<String> userIdList = tenantUserList.stream().map(TenantUser::getUserAccount).collect(Collectors.toList());
-                userIdList.add(currentUser.getUsername());
+                //userIdList.add(currentUser.getUsername());
                 queryWrapper.in("create_by",userIdList);
             }
         }
-        //普通操作工查询
         else {
+            //普通操作工查询
             queryWrapper.eq("create_by",currentUser.getUsername());
         }
         return CommonResult.success(normalizeDehydroRecordService.page(new Page<>(normalizeDehydroRecord.getPage(),normalizeDehydroRecord.getLimit()), queryWrapper));
