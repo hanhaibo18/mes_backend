@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.Notice;
@@ -93,7 +94,7 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     public Boolean issueNotice(IssueNoticeDto issueNoticeDto) {
         UpdateWrapper<Notice> updateWrapper = new UpdateWrapper<>();
         updateWrapper.in("id", issueNoticeDto.getIdList());
-        updateWrapper.set("designated_unit", issueNoticeDto.getDesignatedUnit());
+        updateWrapper.set("designated_unit", issueNoticeDto.getDesignatedUnitList());
         updateWrapper.set("scheduling_state", 2);
         this.update(updateWrapper);
         List<NoticeTenant> noticeTenants = new ArrayList<>();
@@ -106,7 +107,7 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
                 noticeTenant.setUnit(executableUnit);
                 noticeTenants.add(noticeTenant);
             }
-            for (String designatedUnit : issueNoticeDto.getDesignatedUnit()) {
+            for (String designatedUnit : issueNoticeDto.getDesignatedUnitList()) {
                 NoticeTenant noticeTenant = new NoticeTenant();
                 noticeTenant.setNoticeId(id);
                 noticeTenant.setUnit(designatedUnit);
@@ -144,6 +145,9 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
         TimeUtil.queryEndTime(queryWrapper, acceptingDto.getSalesSchedulingDateEnd());
         OrderUtil.query(queryWrapper, acceptingDto.getOrder(), acceptingDto.getOrderCol());
         IPage<Notice> noticePage = noticeMapper.queryAcceptingPage(new Page<>(acceptingDto.getPage(), acceptingDto.getSize()), queryWrapper);
+        if (CollectionUtils.isEmpty(noticePage.getRecords())) {
+            return new Page<>();
+        }
         //获取所有排产单 车间数据
         List<String> idList = noticePage.getRecords().stream().map(Notice::getId).collect(Collectors.toList());
         QueryWrapper<NoticeTenant> tenantQueryWrapper = new QueryWrapper<>();
