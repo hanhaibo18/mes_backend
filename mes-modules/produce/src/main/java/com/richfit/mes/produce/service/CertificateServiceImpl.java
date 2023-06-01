@@ -206,6 +206,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         certificate.setIsPush("0");
         //合格证来源 0：开出合格证 1：接收合格证
         certificate.setCertOrigin("0");
+        certificate.setId(UUID.randomUUID().toString().replaceAll("-", ""));
 
         //2 更新跟单或工序对应的合格证编号
         certificate.getTrackCertificates().stream().forEach(track -> {
