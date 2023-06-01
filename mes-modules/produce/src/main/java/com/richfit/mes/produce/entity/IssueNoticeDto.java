@@ -1,4 +1,4 @@
-package com.richfit.mes.sys.entity.dto;
+package com.richfit.mes.produce.entity;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

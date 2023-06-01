@@ -68,7 +68,6 @@ public class ProductToBsWmsServiceImpl implements ProductToBsWmsService {
         params.put("i_data", ingredientApplicationDtoEncrpy);
         //调用上传接口
         String s = HttpRequest.post(mesScddUploadApi).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        System.out.println(s);
         ApplicationResult applicationResult = JSONUtil.toBean(s, ApplicationResult.class);
         return applicationResult;
     }
@@ -82,7 +81,6 @@ public class ProductToBsWmsServiceImpl implements ProductToBsWmsService {
         params.put("page", 1);
         params.put("token", mesUrlToken);
         //调用接口
-        System.out.println(mesUrlQueryMaterialCountApi);
         String number = HttpUtil.get(mesUrlQueryMaterialCountApi, params);
         if (StrUtil.isBlank(number)) {
             return 0;

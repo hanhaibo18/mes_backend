@@ -233,6 +233,8 @@ public class TrackItemController extends BaseController {
         int max = isCurrentList.stream().mapToInt(TrackItem::getOriginalOptSequence).max().getAsInt();
         //最小值
         int min = isCurrentList.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
+        //查询产品编号
+        String trackNo = trackHeadService.getById(headIds.get(0)).getTrackNo();
         //过滤出所有最小的工序||产品数量大于1 并且 产品总数 大于未完成数量
         if (max != min || (count > 1 && count > size)) {
             //过滤出所有最小的工序
@@ -267,7 +269,7 @@ public class TrackItemController extends BaseController {
             }
             if (!trackItemList.isEmpty()) {
                 for (TrackItem trackItem : trackItemList) {
-                    trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
+                    trackItem.setTrackNo(trackNo);
                 }
             }
         }

@@ -80,8 +80,6 @@ public class ProductToWmsService {
 
         ResponseEntity<JsonNode> resp = restTemplate.getForEntity(url, JsonNode.class);
         log.debug("resp status is [{}],body is [{}]", resp.getStatusCode(), resp.getBody());
-        System.out.println(resp.getStatusCode());
-        System.out.println(resp.getBody());
         String retCode = "";
         if (resp.getBody() != null && resp.getBody().get("retCode") != null) {
             retCode = resp.getBody().get("retCode").asText();
@@ -90,8 +88,6 @@ public class ProductToWmsService {
         if ("Y".equals(retCode)) {
             return CommonResult.success(resp.getBody(), resp.getBody().get("retMsg").asText());
         } else {
-            System.out.println(resp.getBody().asInt());
-            System.out.println(resp.getBody().get("retMsg").asText());
             return CommonResult.failed(resp.getBody().get("retMsg").asText());
         }
     }
@@ -105,7 +101,6 @@ public class ProductToWmsService {
         params.put("page", 1);
         params.put("token", mesUrlToken);
         //调用接口
-        System.out.println(mesUrlQueryMaterialCountApi);
         String number = HttpUtil.get(mesUrlQueryMaterialCountApi, params);
         if (StrUtil.isBlank(number)) {
             return 0;

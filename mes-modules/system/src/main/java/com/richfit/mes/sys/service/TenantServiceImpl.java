@@ -175,8 +175,6 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
                     classes.add(itemClass);
                 }
             }
-            System.out.println("--------");
-            System.out.println(params.size());
 
             if (classes.size() > 0) {
                 result = itemClassService.saveBatch(classes);

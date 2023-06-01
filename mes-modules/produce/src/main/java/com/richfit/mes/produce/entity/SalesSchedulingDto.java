@@ -1,4 +1,4 @@
-package com.richfit.mes.sys.entity.dto;
+package com.richfit.mes.produce.entity;
 
 import com.richfit.mes.common.model.util.PageDto;
 import io.swagger.annotations.ApiModelProperty;

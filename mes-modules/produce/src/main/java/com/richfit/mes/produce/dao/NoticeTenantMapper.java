@@ -1,8 +1,8 @@
-package com.richfit.mes.sys.dao;
+package com.richfit.mes.produce.dao;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.richfit.mes.common.model.sys.NoticeTenant;
+import com.richfit.mes.common.model.produce.NoticeTenant;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

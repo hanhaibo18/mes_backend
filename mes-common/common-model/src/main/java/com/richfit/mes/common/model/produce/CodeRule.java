@@ -185,8 +185,6 @@ public class CodeRule extends BaseEntity<CodeRule> {
     public String ruleNo;
 
     public String getRoleId() {
-        System.out.println("getRoleId"+roleId);
-        System.out.println("getRoleId"+roleIdList);
         StringBuilder stringBuilder = new StringBuilder();
         if(!ObjectUtil.isEmpty(this.roleIdList)){
             for (String siteId : this.roleIdList) {
@@ -201,8 +199,6 @@ public class CodeRule extends BaseEntity<CodeRule> {
     }
 
     public List<String> getRoleIdList() {
-        System.out.println("getRoleIdList"+roleId);
-        System.out.println("getRoleIdList"+roleIdList);
         if(!StringUtils.isEmpty(roleId) && (ObjectUtil.isEmpty(roleIdList) || roleIdList.size()==0)){
             roleIdList = Arrays.asList(roleId.split(","));
         }

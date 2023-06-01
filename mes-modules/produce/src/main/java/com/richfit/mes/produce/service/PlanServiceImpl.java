@@ -338,8 +338,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                     queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                     List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
                     optNumber += trackItemList.size();
-                    System.out.println("---");
-                    System.out.println(trackHead.getStatus());
                     switch (trackHead.getStatus()) {
                         case "0":
                         case "1":
@@ -369,8 +367,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                             break;
                         case "8":
                         case "9":
-                            System.out.println("------------------");
-                            System.out.println("已交");
                             //已交
                             //生成完工资料
                             trackHeadFinish++;
