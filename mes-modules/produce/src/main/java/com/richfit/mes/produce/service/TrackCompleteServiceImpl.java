@@ -2220,9 +2220,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
         assignQueryWrapper.eq("ti_id", tiId).last("limit 1");
         Assign assign = trackAssignService.getOne(assignQueryWrapper);
-        if (!ObjectUtil.isEmpty(assign)) {
+        if (ObjectUtil.isEmpty(assign)) {
             throw new GlobalException("原预装炉没有派工信息！", ResultCode.FAILED);
         }
+        QueryWrapper<AssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
+        assignPersonQueryWrapper.eq("assign_id",assign.getId());
+        List<AssignPerson> assignPeople = trackAssignPersonMapper.selectList(assignPersonQueryWrapper);
+        assign.setAssignPersons(assignPeople);
         if ("15".equals(prechargeFurnaceAssign.getOptType())) {
             //变更炼钢作业记录
             UpdateWrapper<RecordsOfSteelmakingOperations> steelmakingOperationsUpdateWrapper = new UpdateWrapper<>();

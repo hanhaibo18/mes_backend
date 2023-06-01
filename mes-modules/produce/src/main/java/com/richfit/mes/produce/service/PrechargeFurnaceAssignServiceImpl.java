@@ -70,21 +70,22 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
 
     @Override
     public boolean furnaceAssign(@RequestBody Assign assign, List<Long> furnaceIds) {
+        assign.setId(null);
         //获取request
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         try {
             for (Long furnaceId : furnaceIds) {
                 //要派工的工序
                 QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
-                trackItemQueryWrapper.eq("precharge_furnace_id",furnaceId);
+                trackItemQueryWrapper.eq("precharge_furnace_id", furnaceId);
                 List<TrackItem> itemList = trackAssignMapper.getPageAssignsHot(trackItemQueryWrapper);
                 if (CollectionUtil.isEmpty(itemList)) {
                     throw new GlobalException("未找到可派工的工序", ResultCode.FAILED);
                 }
                 //更新预装炉子信息（已派工）
                 UpdateWrapper<PrechargeFurnace> prechargeFurnaceWrapper = new UpdateWrapper<>();
-                prechargeFurnaceWrapper.eq("id",furnaceId)
-                        .set("assign_status",1);
+                prechargeFurnaceWrapper.eq("id", furnaceId)
+                        .set("assign_status", 1);
                 prechargeFurnaceService.update(prechargeFurnaceWrapper);
                 //派工
                 String furnaceAssignId = UUID.randomUUID().toString().replaceAll("-", "");
@@ -92,7 +93,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                     TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                     //派工数量校验
                     if (trackItem.getAssignableQty() < assign.getQty()) {
-                        throw new GlobalException(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty(),ResultCode.FAILED);
+                        throw new GlobalException(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty(), ResultCode.FAILED);
                     }
                     trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
                     //可派工数量为0时 工序变为已派工状态
@@ -124,7 +125,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                         trackAssignPersonMapper.insert(person);
                     }
                     //保存预装炉派工信息
-                    constructFurnaceAssignInfo(assign, furnaceId, trackItem, trackHead,furnaceAssignId);
+                    constructFurnaceAssignInfo(assign, furnaceId, trackItem, trackHead, furnaceAssignId);
                     //保存工序信息
                     trackItemService.updateById(trackItem);
 
@@ -148,7 +149,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         }
     }
 
-    private void constructFurnaceAssignInfo(@RequestBody Assign assign, Long furnaceId, TrackItem trackItem, TrackHead trackHead,String furnaceAssignId) {
+    private void constructFurnaceAssignInfo(@RequestBody Assign assign, Long furnaceId, TrackItem trackItem, TrackHead trackHead, String furnaceAssignId) {
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(furnaceId);
         //预装炉派工表
         PrechargeFurnaceAssign prechargeFurnaceAssign = new PrechargeFurnaceAssign();
@@ -183,6 +184,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
 
     /**
      * 派工构造派工信息
+     *
      * @param assign
      * @param trackItem
      * @param trackHead
