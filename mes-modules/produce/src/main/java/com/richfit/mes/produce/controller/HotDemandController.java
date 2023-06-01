@@ -34,10 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -443,15 +440,17 @@ public class HotDemandController extends BaseController {
         if (CollectionUtils.isEmpty(hotDemands)) {
             return CommonResult.success("所有均已校验完成");
         }
-        List<String> drawNos = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        //根据需求图号查询工艺库
-        CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNos, branchCode);
+        //准备查询工艺库参数
+        HashMap<String, List<String>> drawNoAndBranchCode = hotDemandService.getStringListHashMap(hotDemands);
+        //根据需求图号和车间码查询工艺库
+        //   map的 可以为固定值   drawNos,branchCodes
+        CommonResult<List<Router>> byDrawNo = baseServiceClient.getByDrawNo(drawNoAndBranchCode);
         //工艺库数据
-        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion(), x -> x));
+        Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion()+x.getBranchCode(), x -> x));
 
         //遍历毛坯需求数据,根据图号在工艺map中获取,不为空则有工艺
         for (HotDemand hotDemand : hotDemands) {
-            Router router = routerMap.get(hotDemand.getDrawNo()+hotDemand.getVersionNum());
+            Router router = routerMap.get(hotDemand.getDrawNo()+hotDemand.getVersionNum()+hotDemandService.workblankTypeToBranchCode(hotDemand.getWorkblankType()));
             if (ObjectUtils.isNotEmpty(router)) {
                 //把有工艺的需求数据状态进行修改
                 UpdateWrapper updateWrapper = new UpdateWrapper();

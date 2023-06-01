@@ -19,7 +19,9 @@ import com.richfit.mes.base.service.RouterOptAssignService;
 import com.richfit.mes.base.service.RouterService;
 import com.richfit.mes.base.service.SequenceService;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.core.utils.ExcelUtils;
 import com.richfit.mes.common.core.utils.FileUtils;
 import com.richfit.mes.common.model.base.OperationAssign;
@@ -640,19 +642,26 @@ public class RouterController extends BaseController {
         return CommonResult.success(routerService.queryProcessRecords(routerId));
     }
 
-    @ApiOperation(value = "根据图号查询工艺", notes = "根据图号查询工艺")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "drawNos", value = "图号集合", required = true, paramType = "query", dataType = "list"),
-            @ApiImplicitParam(name = "branchCode", value = "车间代码", required = true, paramType = "query", dataType = "string")
-    })
-    @PostMapping("/get_by_drawNo")
-    public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode) {
+    /**
+     *
+     * @param param  map的 可以为固定值   drawNos,branchCodes
+     * @return
+     */
+    @ApiOperation(value = "根据图号和查询工车间码艺", notes = "根据图号和查询工车间码艺")
+    @PostMapping("/get_by_drawNo_branchCode")
+    public CommonResult<List<Router>> getByDrawNo(@RequestBody Map<String,List<String>> param) {
         try {
+            if(CollectionUtils.isEmpty(param.get("drawNos"))){
+                throw new GlobalException("工艺库查询图号为空", ResultCode.FAILED);
+            }
+            if(CollectionUtils.isEmpty(param.get("branchCodes"))){
+                throw new GlobalException("工艺库查车间码为空", ResultCode.FAILED);
+            }
             QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
-            DrawingNoUtil.queryIn(queryWrapper, "router_no", drawNos);
+            DrawingNoUtil.queryIn(queryWrapper, "router_no", param.get("drawNos"));
 //            queryWrapper.in("draw_no", drawNos);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-            queryWrapper.eq("branch_code", branchCode);
+            queryWrapper.in("branch_code",param.get("branchCodes"));
             queryWrapper.eq("status", 1);
             List<Router> routers = routerService.list(queryWrapper);
             return CommonResult.success(routers);

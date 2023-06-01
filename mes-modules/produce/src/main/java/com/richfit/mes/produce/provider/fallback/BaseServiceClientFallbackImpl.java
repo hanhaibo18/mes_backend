@@ -202,7 +202,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @PostMapping("/api/base/router/get_by_drawNo")
     @Override
-    public CommonResult<List<Router>> getByDrawNo(List<String> drawNos, String branchCode) {
+    public CommonResult<List<Router>> getByDrawNo(Map<String,List<String>> param) {
         return null;
     }
 

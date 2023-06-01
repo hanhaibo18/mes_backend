@@ -212,9 +212,13 @@ public interface BaseServiceClient {
     @GetMapping("/api/base/opt/queryOptByOptNames")
     List<Operatipon> queryOptByOptNames(@ApiParam(value = "工序字典名称") @RequestBody List<String> optNams,
                                         @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode);
-
-    @PostMapping("/api/base/router/get_by_drawNo")
-    public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode);
+    /**
+     *
+     * @param param  map的 可以为固定值   drawNos,branchCodes
+     * @return
+     */
+    @PostMapping("/api/base/router/get_by_drawNo_branchCode")
+    public CommonResult<List<Router>> getByDrawNo(@RequestBody Map<String,List<String>> param);
 
 
     @PostMapping("/api/base/sequence/query_by_routerIds")

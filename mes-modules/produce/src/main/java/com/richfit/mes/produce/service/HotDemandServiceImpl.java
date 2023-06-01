@@ -527,17 +527,27 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             plan.setBranchCode("BOMCO_RG_MX");//车间码(模型排产自动派发到模型车间)
         }else {
             //0锻件,1铸件,2钢锭
-            switch (hotDemand.getWorkblankType()){
-                case "0":  plan.setBranchCode("BOMCO_RG_DZ");//锻造车间
-                    break;
-                case "1":  plan.setBranchCode("BOMCO_RG_ZG");//铸造
-                    break;
-                case "2":  plan.setBranchCode("BOMCO_RG_YL");//冶炼
-                    break;
-                default: throw new GlobalException("毛坯类型超出范围", ResultCode.FAILED);
-            }
+            String branchCode = this.workblankTypeToBranchCode(hotDemand.getWorkblankType());
+
+            plan.setBranchCode(branchCode);
         }
     }
+
+    /**
+     * 根据毛坯类型返回车间码
+     * @param workblankType
+     * @return
+     */
+    @Override
+    public String workblankTypeToBranchCode(String workblankType) {
+        switch (workblankType){
+            case "0":  return "BOMCO_RG_DZ";//锻造车间
+            case "1":  return "BOMCO_RG_ZG";//铸造
+            case "2":  return "BOMCO_RG_YL";//冶炼
+            default: throw new GlobalException("毛坯类型超出范围", ResultCode.FAILED);
+        }
+    }
+
 
     /**
      * 自动生成工序计划
@@ -557,14 +567,16 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         if (CollectionUtils.isEmpty(hotDemands)){
             return CommonResult.failed("工序计划已生成");
         }
-        List<String> drawNoList = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        //根据图号查出工艺信息
-        List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoList, branchCode).getData();
+        //准备查询工艺库参数
+        HashMap<String, List<String>> drawNoAndBranchCode = this.getStringListHashMap(hotDemands);
+        //根据需求图号和车间码查询工艺库
+        //   map的 可以为固定值   drawNos,branchCodes
+        List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoAndBranchCode).getData();
         if (CollectionUtils.isEmpty(byDrawNo)) {
             return CommonResult.failed("没有工艺信息");
         }
         List<String> routerIdList = byDrawNo.stream().map(x -> x.getId()).collect(Collectors.toList());
-        Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion(), x -> x.getId()));
+        Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion()+x.getBranchCode(), x -> x.getId()));
 
         //根据工艺id查出工序信息
         List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList,branchCode);
@@ -585,7 +597,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         ArrayList<String> demandIdList = new ArrayList<>();
         //根据需求信息自动生成生产计划数据
         for (HotDemand hotDemand : hotDemands) {
-            String s = routerIdMap.get(hotDemand.getDrawNo()+hotDemand.getVersionNum());
+            String s = routerIdMap.get(hotDemand.getDrawNo()+hotDemand.getVersionNum()+this.workblankTypeToBranchCode(hotDemand.getWorkblankType()));
             //有工艺的情况下
             if (StringUtils.isNotEmpty(s)) {
                 List<Sequence> sequencesList = sequencesMap.get(s);
@@ -619,6 +631,26 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         this.updateDemand(demandIdList);
         }
         return CommonResult.success("操作成功");
+    }
+
+    /**
+     * 准备查询工艺库参数
+     * @param hotDemands
+     * @return
+     */
+    @Override
+    public HashMap<String, List<String>> getStringListHashMap(List<HotDemand> hotDemands) {
+        List<String> drawNoList = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
+        //根据毛坯类型得到的车间编码
+        HashSet<String> branchCodes=new HashSet<>();
+        for (HotDemand hotDemand : hotDemands) {
+            branchCodes.add(hotDemandService.workblankTypeToBranchCode(hotDemand.getWorkblankType()));
+        }
+        //准备查询工艺参数
+        HashMap<String,List<String>> drawNoAndBranchCode=new HashMap<>();
+        drawNoAndBranchCode.put("branchCodes",new ArrayList<>(branchCodes));
+        drawNoAndBranchCode.put("drawNos",drawNoList);
+        return drawNoAndBranchCode;
     }
 
     /**

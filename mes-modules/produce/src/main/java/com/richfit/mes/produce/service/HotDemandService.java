@@ -7,6 +7,7 @@ import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 
 public interface HotDemandService extends IService<HotDemand> {
@@ -25,7 +26,11 @@ public interface HotDemandService extends IService<HotDemand> {
 
     CommonResult modelProductionScheduling(List<String> idList, String branchCode);
 
+    String workblankTypeToBranchCode(String workblankType);
+
     CommonResult<?> initPlanNode(List<String> idList, String branchCode);
+
+    HashMap<String, List<String>> getStringListHashMap(List<HotDemand> hotDemands);
 
     String getSubmitOrderOrg(String branchCode, TenantUserDetails currentUser);
 
