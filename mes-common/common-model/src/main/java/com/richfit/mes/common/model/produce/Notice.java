@@ -1,7 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
 import com.richfit.mes.common.core.base.BaseEntity;
-import com.richfit.mes.common.model.sys.Announcement;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
@@ -9,14 +8,14 @@ import lombok.experimental.Accessors;
 import java.util.Date;
 
 /**
- * sys_notice
+ * produce_notice
  *
  * @author
  */
 @Data
 @Accessors(chain = true)
 @NoArgsConstructor
-public class Notice extends BaseEntity<Announcement> {
+public class Notice extends BaseEntity<Notice> {
     private static final long serialVersionUID = 1L;
     /**
      * 通知状态 0 = 未接收, 1 = 已接收, 2 = 退回
