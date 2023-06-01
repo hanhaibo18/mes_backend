@@ -1,4 +1,4 @@
-package com.richfit.mes.sys.entity.dto;
+package com.richfit.mes.produce.entity;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -17,5 +17,5 @@ public class IssueNoticeDto {
     @ApiModelProperty(value = "执行单位")
     private List<String> executableUnitList;
     @ApiModelProperty(value = "落成单位")
-    private String designatedUnit;
+    private List<String> designatedUnitList;
 }

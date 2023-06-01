@@ -54,25 +54,25 @@ public class CertificateController {
     @Autowired
     private TrackHeadService trackHeadService;
 
-    @ApiOperation(value = "生成合格证", notes = "生成合格证")
-    @GetMapping("/auto")
-    public void addCertificate() throws Exception {
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("template_code", "BOMCO_BY_ZPG1");
-        queryWrapper.eq("tenant_id", "12345678901234567890123456789002");
-        queryWrapper.isNull("certificate_no");
-        queryWrapper.isNotNull("product_no");
-        List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
-        int i = 0;
-        for (TrackHead trackHead : trackHeadList) {
-            try {
-                System.out.println("----------------------" + i++);
-                certificateService.autoCertificate(trackHead);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    @ApiOperation(value = "生成合格证", notes = "生成合格证")
+//    @GetMapping("/auto")
+//    public void addCertificate() throws Exception {
+//        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("template_code", "BOMCO_BY_ZPG1");
+//        queryWrapper.eq("tenant_id", "12345678901234567890123456789002");
+//        queryWrapper.isNull("certificate_no");
+//        queryWrapper.isNotNull("product_no");
+//        List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
+//        int i = 0;
+//        for (TrackHead trackHead : trackHeadList) {
+//            try {
+//                System.out.println("----------------------" + i++);
+//                certificateService.autoCertificate(trackHead);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")

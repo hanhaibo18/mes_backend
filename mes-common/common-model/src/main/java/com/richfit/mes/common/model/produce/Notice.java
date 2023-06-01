@@ -1,6 +1,8 @@
-package com.richfit.mes.common.model.sys;
+package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
@@ -8,14 +10,14 @@ import lombok.experimental.Accessors;
 import java.util.Date;
 
 /**
- * sys_notice
+ * produce_notice
  *
  * @author
  */
 @Data
 @Accessors(chain = true)
 @NoArgsConstructor
-public class Notice extends BaseEntity<Announcement> {
+public class Notice extends BaseEntity<Notice> {
     private static final long serialVersionUID = 1L;
     /**
      * 通知状态 0 = 未接收, 1 = 已接收, 2 = 退回
@@ -81,10 +83,7 @@ public class Notice extends BaseEntity<Announcement> {
      * 交货日期
      */
     private Date deliveryDate;
-    /**
-     * 落成单位
-     */
-    private String designatedUnit;
+
     /**
      * 销售排产日期
      */
@@ -102,4 +101,12 @@ public class Notice extends BaseEntity<Announcement> {
      */
     private String issuingUnit;
     private String tenantId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "执行单位")
+    private String executableUnit;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "落成单位")
+    private String designatedUnit;
 }

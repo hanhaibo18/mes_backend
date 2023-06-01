@@ -78,8 +78,6 @@ public class createOrder {
             List<Zc80Ppif032SO> list = new ArrayList<>();
             Zc80Ppif032Response o = (Zc80Ppif032Response) webServiceTemplate.marshalSendAndReceive("http://10.30.47.134:8001/ZBZZ/HTXT/XS/ZC80_PPIF032/service/PS/PS_ZC80_PPIF032", zc80Ppif032);
             list = o.getTOut().getItem();
-            System.out.println(JSON.toJSONString(list));
-
         } catch (DatatypeConfigurationException e) {
             e.printStackTrace();
         }
@@ -203,6 +201,5 @@ public class createOrder {
         int msgStart = tmpStr.indexOf("<E_RETURN_MSG>");
         int msgEnd = tmpStr.indexOf("</E_RETURN_MSG>");
         String msg = tmpStr.substring(msgStart + "<E_RETURN_TYPE>".length(), msgEnd);
-        System.out.println("返回信息:" + code + "信息" + msg);
     }
 }

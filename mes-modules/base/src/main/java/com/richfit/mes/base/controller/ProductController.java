@@ -673,7 +673,6 @@ public class ProductController extends BaseController {
                 int index = i == 0 ? i : 1000 * i;
                 //结尾下标
                 int toIndex = i == 0 ? 999 : 1000 * i + 999;
-                System.out.println(index + "  index-----------------  toindex" + toIndex);
                 List<Object> objects = null;
                 if (i < oldPage) {
                     objects = idList.subList(index, toIndex);

@@ -1,12 +1,9 @@
-package com.richfit.mes.sys.service;
+package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.richfit.mes.common.model.sys.Notice;
-import com.richfit.mes.sys.entity.dto.IssueNoticeDto;
-import com.richfit.mes.sys.entity.dto.ProductionSchedulingDto;
-import com.richfit.mes.sys.entity.dto.SalesSchedulingDto;
-import com.richfit.mes.sys.entity.dto.SendBackDto;
+import com.richfit.mes.common.model.produce.Notice;
+import com.richfit.mes.produce.entity.*;
 
 import java.util.List;
 
@@ -89,4 +86,23 @@ public interface NoticeService extends IService<Notice> {
      **/
     Boolean cancelProductionScheduling(List<String> idList);
 
+    /**
+     * 功能描述: 接受生产排产通知
+     *
+     * @param acceptingDto
+     * @Author: xinYu.hou
+     * @Date: 2023/5/30 19:01
+     * @return: IPage<Notice>
+     **/
+    IPage<Notice> queryAcceptingPage(AcceptingDto acceptingDto);
+
+    /**
+     * 功能描述: 修改接受状态 确认/取消
+     *
+     * @param updateAcceptingState
+     * @Author: xinYu.hou
+     * @Date: 2023/5/30 19:03
+     * @return: Boolean
+     **/
+    Boolean updateAcceptingState(UpdateAcceptingStateDto updateAcceptingState);
 }

@@ -1,7 +1,7 @@
-package com.richfit.mes.sys.service;
+package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.richfit.mes.common.model.sys.NoticeTenant;
+import com.richfit.mes.common.model.produce.NoticeTenant;
 
 /**
  * @ClassName: NoticeService.java

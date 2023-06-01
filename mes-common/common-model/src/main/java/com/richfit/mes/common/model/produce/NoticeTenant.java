@@ -1,4 +1,4 @@
-package com.richfit.mes.common.model.sys;
+package com.richfit.mes.common.model.produce;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -7,7 +7,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * sys_notice_tenant
+ * produce_notice_tenant
  *
  * @author
  */
@@ -24,6 +24,11 @@ public class NoticeTenant implements Serializable {
     /**
      * 执行单位
      */
-    private String executableUnit;
+    private String unit;
+
+    /**
+     * 单位类型
+     */
+    private String unitType;
 
 }
