@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Notice;
 import com.richfit.mes.common.model.produce.NoticeTenant;
 import com.richfit.mes.common.model.util.OrderUtil;
@@ -92,9 +94,11 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
 
     @Override
     public Boolean issueNotice(IssueNoticeDto issueNoticeDto) {
+        if (CollectionUtils.isEmpty(issueNoticeDto.getExecutableUnitList()) || CollectionUtils.isEmpty(issueNoticeDto.getDesignatedUnitList())) {
+            throw new GlobalException("落成单位或执行单位不允许为空", ResultCode.FAILED);
+        }
         UpdateWrapper<Notice> updateWrapper = new UpdateWrapper<>();
         updateWrapper.in("id", issueNoticeDto.getIdList());
-        updateWrapper.set("designated_unit", issueNoticeDto.getDesignatedUnitList());
         updateWrapper.set("scheduling_state", 2);
         this.update(updateWrapper);
         List<NoticeTenant> noticeTenants = new ArrayList<>();
