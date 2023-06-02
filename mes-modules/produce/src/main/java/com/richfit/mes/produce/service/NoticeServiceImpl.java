@@ -7,15 +7,18 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Notice;
 import com.richfit.mes.common.model.produce.NoticeTenant;
+import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.model.util.TimeUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.NoticeMapper;
 import com.richfit.mes.produce.entity.*;
+import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,6 +41,9 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
 
     @Resource
     private NoticeMapper noticeMapper;
+
+    @Resource
+    private SystemServiceClient systemServiceClient;
 
     @Override
     public IPage<Notice> queryPage(SalesSchedulingDto salesSchedulingDto) {
@@ -83,7 +89,12 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
         TimeUtil.queryStartTime(queryWrapper, productionSchedulingDto.getSalesSchedulingDateStart());
         TimeUtil.queryEndTime(queryWrapper, productionSchedulingDto.getSalesSchedulingDateEnd());
         OrderUtil.query(queryWrapper, productionSchedulingDto.getOrder(), productionSchedulingDto.getOrderCol());
-        return this.page(new Page<>(productionSchedulingDto.getPage(), productionSchedulingDto.getSize()), queryWrapper);
+        Page<Notice> noticePage = this.page(new Page<>(productionSchedulingDto.getPage(), productionSchedulingDto.getSize()), queryWrapper);
+        if (CollectionUtils.isNotEmpty(noticePage.getRecords())) {
+            //处理车间数据
+            unitData(noticePage.getRecords());
+        }
+        return noticePage;
     }
 
     @Override
@@ -102,6 +113,10 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
         updateWrapper.set("scheduling_state", 2);
         this.update(updateWrapper);
         List<NoticeTenant> noticeTenants = new ArrayList<>();
+        //新增之前删除所有的单位信息
+        QueryWrapper<NoticeTenant> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("notice_id", issueNoticeDto.getIdList());
+        noticeTenantService.remove(queryWrapper);
         //循环所有通知下发的ID
         for (String id : issueNoticeDto.getIdList()) {
             //循环执行单位
@@ -109,12 +124,14 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
                 NoticeTenant noticeTenant = new NoticeTenant();
                 noticeTenant.setNoticeId(id);
                 noticeTenant.setUnit(executableUnit);
+                noticeTenant.setUnitType("1");
                 noticeTenants.add(noticeTenant);
             }
             for (String designatedUnit : issueNoticeDto.getDesignatedUnitList()) {
                 NoticeTenant noticeTenant = new NoticeTenant();
                 noticeTenant.setNoticeId(id);
                 noticeTenant.setUnit(designatedUnit);
+                noticeTenant.setUnitType("2");
                 noticeTenants.add(noticeTenant);
             }
         }
@@ -145,31 +162,16 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
         queryWrapper.eq("scheduling_state", "2");
         //查询落成单位 或 执行单位是本公司的数据
         queryWrapper.eq("unit", tenantId);
+        queryWrapper.groupBy("id");
         TimeUtil.queryStartTime(queryWrapper, acceptingDto.getSalesSchedulingDateStart());
         TimeUtil.queryEndTime(queryWrapper, acceptingDto.getSalesSchedulingDateEnd());
         OrderUtil.query(queryWrapper, acceptingDto.getOrder(), acceptingDto.getOrderCol());
         IPage<Notice> noticePage = noticeMapper.queryAcceptingPage(new Page<>(acceptingDto.getPage(), acceptingDto.getSize()), queryWrapper);
-        if (CollectionUtils.isEmpty(noticePage.getRecords())) {
-            return new Page<>();
-        }
-        //获取所有排产单 车间数据
-        List<String> idList = noticePage.getRecords().stream().map(Notice::getId).collect(Collectors.toList());
-        QueryWrapper<NoticeTenant> tenantQueryWrapper = new QueryWrapper<>();
-        tenantQueryWrapper.in("notice_id", idList);
-        List<NoticeTenant> tenantList = noticeTenantService.list(tenantQueryWrapper);
-        //根据排产单分组
-        Map<String, List<NoticeTenant>> collect = tenantList.stream().collect(Collectors.groupingBy(NoticeTenant::getNoticeId));
-        //循环所有排产单数据 获取对应的车间信息
-        for (Notice notice : noticePage.getRecords()) {
-            //获取执行单位数据
-            String executableUnit = collect.get(notice.getId()).stream().filter(tenant -> tenant.getUnitType().equals("1")).map(NoticeTenant::getUnit).collect(Collectors.joining(","));
-            //获取落成单位数据
-            String designatedUnit = collect.get(notice.getId()).stream().filter(tenant -> tenant.getUnitType().equals("2")).map(NoticeTenant::getUnit).collect(Collectors.joining(","));
-            notice.setExecutableUnit(executableUnit);
-            notice.setDesignatedUnit(designatedUnit);
+        if (CollectionUtils.isNotEmpty(noticePage.getRecords())) {
+            //处理车间数据
+            unitData(noticePage.getRecords());
         }
         return noticePage;
-
     }
 
     @Override
@@ -178,5 +180,34 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
         updateWrapper.in("id", updateAcceptingState.getIdList());
         updateWrapper.set("accepting_state", updateAcceptingState.getState());
         return this.update(updateWrapper);
+    }
+
+    //处理车间数据
+    private void unitData(List<Notice> noticeList) {
+        //获取所有排产单 车间数据
+        List<String> idList = noticeList.stream().map(Notice::getId).collect(Collectors.toList());
+        QueryWrapper<NoticeTenant> tenantQueryWrapper = new QueryWrapper<>();
+        tenantQueryWrapper.in("notice_id", idList);
+        List<NoticeTenant> tenantList = noticeTenantService.list(tenantQueryWrapper);
+        //根据排产单分组
+        Map<String, List<NoticeTenant>> collect = tenantList.stream().collect(Collectors.groupingBy(NoticeTenant::getNoticeId));
+        //获取所有租户
+        CommonResult<List<Tenant>> tenantAllList = systemServiceClient.queryTenantAllList();
+        Map<String, Tenant> tenantMap = tenantAllList.getData().stream().collect(Collectors.toMap(Tenant::getId, v -> v));
+        //处理所有排产单租户数据转换为租户名称
+        for (NoticeTenant tenantTenant : tenantList) {
+            tenantTenant.setUnit(tenantMap.get(tenantTenant.getUnit()).getTenantName());
+        }
+        //循环所有排产单数据 获取对应的车间信息
+        for (Notice notice : noticeList) {
+            if (CollectionUtils.isNotEmpty(collect.get(notice.getId()))) {
+                //获取执行单位数据
+                String executableUnit = collect.get(notice.getId()).stream().filter(tenant -> tenant.getUnitType().equals("1")).map(NoticeTenant::getUnit).collect(Collectors.joining(","));
+                notice.setExecutableUnit(executableUnit);
+                //获取落成单位数据
+                String designatedUnit = collect.get(notice.getId()).stream().filter(tenant -> tenant.getUnitType().equals("2")).map(NoticeTenant::getUnit).collect(Collectors.joining(","));
+                notice.setDesignatedUnit(designatedUnit);
+            }
+        }
     }
 }

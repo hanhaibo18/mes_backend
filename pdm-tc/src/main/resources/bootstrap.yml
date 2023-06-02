@@ -2,7 +2,7 @@ server:
   port: 8019
 spring:
   application:
-    name: plmtc
+    name: pdmtc
   cloud:
     nacos:
       username: nacos_user01
