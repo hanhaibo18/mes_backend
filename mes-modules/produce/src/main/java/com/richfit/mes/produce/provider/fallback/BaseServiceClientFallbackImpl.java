@@ -238,7 +238,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture, String routerType) {
         return null;
     }
 
@@ -259,6 +259,11 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @Override
     public CommonResult<List<Branch>> selectBranchesInner(String branchCode, String branchName,String tenantId) {
+        return null;
+    }
+
+    @Override
+    public List<Sequence> listByBranchCodeAndRouterId(String routerId, String branchCode) {
         return null;
     }
 

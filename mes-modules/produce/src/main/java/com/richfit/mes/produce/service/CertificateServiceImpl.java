@@ -2,6 +2,7 @@ package com.richfit.mes.produce.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -9,28 +10,31 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
-import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Router;
+import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.code.CertTypeEnum;
-import com.richfit.mes.common.model.produce.Certificate;
-import com.richfit.mes.common.model.produce.TrackCertificate;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.ItemParam;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.CertificateMapper;
+import com.richfit.mes.produce.enmus.OptTypeEnum;
 import com.richfit.mes.produce.entity.CertQueryDto;
+import com.richfit.mes.produce.entity.TrackHeadPublicDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.bsns.CertAdditionalBsns;
 import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,9 +61,6 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     private LineStoreService lineStoreService;
 
     @Autowired
-    private StockRecordService stockRecordService;
-
-    @Autowired
     private TrackCertificateService trackCertificateService;
 
     @Autowired
@@ -70,6 +71,10 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
 
     @Autowired
     private SystemServiceClient systemServiceClient;
+    @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
     @Override
     public IPage<Certificate> selectCertificate(Page<Certificate> page, QueryWrapper<Certificate> query) {
@@ -146,15 +151,29 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     }
 
     /**
+     * 跟单流转方法
+     */
+    @Override
+    public void headMoveToNextBranch(String thId,String nextOptWork,TrackItem trackItem){
+        try {
+            //开出工序合格证
+            Certificate certificate = heatAutoCertificate(thId, nextOptWork, trackItem);
+            //根据合格证在下车间开跟单
+            autoCreateTrackHeadByCertificate(certificate);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * 热工根据跟单开工序合格证
      * @param thId
      * @param nextOptWork 下车间编码
-     * @param flowId
+     * @param trackItem
      * @return
      * @throws Exception
      */
-    @Override
-    public boolean heatAutoCertificate(String thId,String nextOptWork,String flowId) throws Exception {
+    public Certificate heatAutoCertificate(String thId,String nextOptWork,TrackItem trackItem) throws Exception {
         //开具合格证的跟单
         TrackHead trackHead = trackHeadService.getById(thId);
         //登陆人信息
@@ -163,14 +182,9 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         //跟单属性赋值
         BeanUtil.copyProperties(trackHead, certificate, new String[]{"id", "createTime", "modifyTime", "modifyBy"});
         //根据分流id查询当前工序
-        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
-        trackItemQueryWrapper.eq("flow_id",flowId)
-                .eq("is_current",1)
-                .orderByAsc("opt_sequence");
-        List<TrackItem> trackItems = trackItemService.list(trackItemQueryWrapper);
-        if(!CollectionUtil.isEmpty(trackItems)){
+        if(!ObjectUtil.isEmpty(trackItem)){
             //本工序（开合格证的工序）
-            TrackItem cretificateItem = trackItems.get(0);
+            TrackItem cretificateItem = trackItem;
             //根据工序顺序查询下工序
             QueryWrapper<TrackItem> trackItemQw = new QueryWrapper<>();
             trackItemQw.eq("opt_sequence",cretificateItem.getNextOptSequence())
@@ -194,10 +208,9 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             trackCertificates.add(trackCertificate);
             certificate.setTrackCertificates(trackCertificates);
             certificate.setType("0");
-
-            return saveCertificate(certificate);
+            saveCertificate(certificate);
         }
-        return true;
+        return certificate;
     }
 
     //合格证前面的工序是否完工校验
@@ -291,6 +304,140 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         this.save(certificate);
         return true;
 
+    }
+
+
+    /**
+     * 根据工序合格证在对应车间开具跟单
+     * @param certificate ,trackItem
+     */
+    public void autoCreateTrackHeadByCertificate(Certificate certificate){
+        //查询合格证
+        QueryWrapper<TrackCertificate> trackCertificateQueryWrapper = new QueryWrapper<>();
+        trackCertificateQueryWrapper.eq("certificate_id",certificate.getId());
+        List<TrackCertificate> list = trackCertificateService.list(trackCertificateQueryWrapper);
+        //对应的跟单id
+        String thId = list.get(0).getThId();
+        //对应的跟单工序id
+        String tiId = list.get(0).getTiId();
+        //下车间branchCode
+        String branchCode = certificate.getNextOptWork();
+        //下车间tenantId
+        String tenantId = baseServiceClient.queryTenantIdByBranchCode(branchCode).getTenantId();
+        //创建跟单信息
+        TrackHead trackHead = trackHeadService.getById(thId);
+        TrackHead newTrackHead = new TrackHead();
+        BeanUtil.copyProperties(trackHead,newTrackHead,new String[]{"id","modifyTime","modifyBy","routerId","classes"});
+        newTrackHead.setBranchCode(branchCode);
+        newTrackHead.setTenantId(tenantId);
+        newTrackHead.setStatus("0"); //初始状态
+        newTrackHead.setClasses("7"); //冶炼车间
+        trackHeadService.save(newTrackHead);
+        //创建跟单产品信息flow
+        List<TrackFlow> trackFlows = trackHeadFlowService.list(new QueryWrapper<TrackFlow>().eq("track_head_id", trackHead.getId()));
+        for (TrackFlow trackFlow : trackFlows) {
+            trackFlow.setId(null);
+            trackFlow.setBranchCode(branchCode);
+            trackFlow.setTenantId(tenantId);
+            trackFlow.setTrackHeadId(newTrackHead.getId());
+            trackFlow.setStatus("0");
+        }
+        trackHeadFlowService.saveBatch(trackFlows);
+        //开工序合格证的工序信息
+        TrackItem trackItem = trackItemService.getById(tiId);
+        //根据开合格证的工序  判断新跟单要绑定的工艺
+        Router router = getRouterByLastOptType(certificate, trackItem);
+        //构造绑定工艺的跟单工序
+        List<TrackItem> newTrackItems = new ArrayList<>();
+        List<Sequence> sequences = baseServiceClient.listByBranchCodeAndRouterId(router.getId(), branchCode);
+        for (int i = 0; i < sequences.size(); i++){
+            Sequence sequence = sequences.get(i);
+            TrackItem newTrackItem = new TrackItem();
+            newTrackItem.setOperatiponId(sequence.getOptId());
+            newTrackItem.setOptId(sequence.getId());
+            newTrackItem.setOptNo(sequence.getOpNo());
+            newTrackItem.setOptSequence(sequence.getOptOrder());
+            newTrackItem.setSequenceOrderBy(i+1);
+            newTrackItem.setOptVer(sequence.getVersionCode());
+            newTrackItem.setOptName(sequence.getOptName());
+            newTrackItem.setOptType(sequence.getOptType());
+            newTrackItem.setIsAutoSchedule(Integer.parseInt(sequence.getIsAutoAssign()));
+            newTrackItem.setOptParallelType(Integer.parseInt(sequence.getIsParallel()));
+            newTrackItem.setIsExistQualityCheck(Integer.parseInt(sequence.getIsQualityCheck()));
+            newTrackItem.setIsExistScheduleCheck(Integer.parseInt(sequence.getIsScheduleCheck()));
+            newTrackItem.setIsDoing(0);
+            newTrackItem.setIsCurrent(i == 0 ? 1 : 0);
+            newTrackItem.setIsSchedule(0);
+            newTrackItem.setBranchCode(branchCode);
+            newTrackItem.setTenantId(tenantId);
+            newTrackItems.add(newTrackItem);
+        }
+        //绑定工艺
+        this.bindRouterInfo(newTrackHead,trackFlows,newTrackItems,router.getId(),router.getVersion());
+
+    }
+
+    /**
+     * 根据开完工合格证的工序的工序类型，来选择新开出的跟单需要绑定的工艺
+     * @param certificate
+     * @param trackItem
+     * @return
+     */
+    private Router getRouterByLastOptType(Certificate certificate, TrackItem trackItem) {
+        if(OptTypeEnum.KX_OPERATION.getStateId().equals(trackItem.getOptType())){
+            List<Router> routers = baseServiceClient.find(null, null, null, "01", certificate.getNextOptWork(), null, null, null, null, Router.COMMON_ROUTER_TYPE).getData();
+            if(ObjectUtil.isEmpty(routers)){
+                throw new GlobalException("冶炼车间没有铸件工艺，无法通过合格证进行推送！", ResultCode.FAILED);
+            }
+           return routers.get(0);
+        }
+        return null;
+    }
+
+    /**
+     * 描述: 跟单绑定工艺
+     *
+     * @Author: renzewen
+     * @Date: 2023/5/31 10:25
+     **/
+    public boolean bindRouterInfo(TrackHead trackHead,List<TrackFlow> flows, List<TrackItem> trackItems, String routerId, String routerVer) {
+        //对工序数据处理
+        trackHeadService.beforeSaveItemDeal(trackItems);
+        //绑定
+        if (!CollectionUtil.isEmpty(flows)) {
+            for (TrackFlow flow : flows) {
+                if (trackItems != null && trackItems.size() > 0) {
+                    for (TrackItem item : trackItems) {
+                        item.setId(UUID.randomUUID().toString().replace("-", ""));
+                        item.setTrackHeadId(trackHead.getId());
+                        item.setDrawingNo(trackHead.getDrawingNo());
+                        item.setFlowId(flow.getId());
+                        item.setProductNo(flow.getProductNo());
+                        //可分配数量
+                        item.setAssignableQty(flow.getNumber());
+                        item.setNumber(flow.getNumber());
+                        item.setIsSchedule(0);
+                        item.setIsPrepare(0);
+                        item.setIsNotarize(0);
+                        //需要调度审核时展示
+                        if (1 == item.getIsExistScheduleCheck()) {
+                            item.setIsScheduleCompleteShow(1);
+                        } else {
+                            item.setIsScheduleCompleteShow(0);
+                        }
+                        if (trackHead.getStatus().equals("4")) {
+                            item.setIsCurrent(0);
+                        }
+                    }
+                    trackItemService.saveOrUpdateBatch(trackItems);
+                }
+            }
+        }
+        //跟单工艺属性赋值
+        trackHead.setRouterId(routerId);
+        trackHead.setRouterVer(routerVer);
+        trackHeadService.updateById(trackHead);
+        return true;
     }
 
     @Override

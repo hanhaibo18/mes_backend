@@ -95,6 +95,22 @@ public class SequenceController extends BaseController {
     }
 
     /**
+     * 功能描述: 根据branchCode和工艺id查询工序
+     *
+     * @Author: renzewen
+     * @Date: 2023/6/1 11:37
+     **/
+    @ApiOperation(value = "根据branchCode和工艺id查询工序", notes = "根据branchCode和工艺id查询工序")
+    @GetMapping("/listByBranchCodeAndRouterId")
+    public List<Sequence> listByBranchCodeAndRouterId(@RequestParam String routerId,@RequestParam String branchCode) {
+        QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
+        queryWrapper.eq("router_id", routerId);
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.orderByAsc("opt_order");
+        return sequenceService.list(queryWrapper);
+    }
+
+    /**
      * ***
      * 分页查询
      *

@@ -218,7 +218,7 @@ public class RouterController extends BaseController {
             router.setModifyTime(new Date());
             //禁止或激活状态无法直接修改为历史状态;历史状态修改为禁止或启动状态，要把其他的工艺状态设置为历史
             if (router.getStatus().equals("2")) {
-                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1", "", "");
+                CommonResult<List<Router>> result = this.find("", router.getRouterNo(), "", "", router.getBranchCode(), router.getTenantId(), "0,1","","","");
                 if (result.getData().size() == 0) {
                     return CommonResult.failed("启用状态不能直接修改为历史状态！");
                 }
@@ -258,10 +258,11 @@ public class RouterController extends BaseController {
             @ApiImplicitParam(name = "branchCode", value = "机构", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "status", value = "状态", required = true, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "testBar", value = "试棒型号", required = true, dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "texture", value = "材质", required = true, dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "texture", value = "材质", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "routerType", value = "工艺类型", required = true, dataType = "String", paramType = "query")
     })
     @GetMapping("/find")
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status,String testBar,String texture,String routerType) {
         QueryWrapper<Router> queryWrapper = new QueryWrapper<Router>();
         if (!StringUtils.isNullOrEmpty(id)) {
             queryWrapper.eq("id", id);
@@ -291,6 +292,10 @@ public class RouterController extends BaseController {
         if (!StringUtils.isNullOrEmpty(texture)) {
             queryWrapper.eq("texture", texture);
         }
+        if (!StringUtils.isNullOrEmpty(routerType)) {
+            queryWrapper.eq("router_type", routerType);
+        }
+
         /**
          * 描述: 加入版本号降序排序
          *
@@ -299,6 +304,18 @@ public class RouterController extends BaseController {
          **/
         queryWrapper.orderByAsc("status").orderByDesc("version");
         List<Router> result = routerService.list(queryWrapper);
+        //加入通用的工艺
+        if(!StringUtils.isNullOrEmpty(branchCode)){
+            QueryWrapper<Router> routerQueryWrapper = new QueryWrapper<>();
+            routerQueryWrapper.eq("router_type",Router. COMMON_ROUTER_TYPE)
+                    .eq("branch_code",branchCode)
+                    .orderByAsc("status").orderByDesc("version");
+            List<Router> commonRouters = routerService.list(routerQueryWrapper);
+            if(!CollectionUtil.isEmpty(commonRouters)){
+                result.addAll(commonRouters);
+            }
+        }
+
         return CommonResult.success(result, "操作成功！");
     }
 

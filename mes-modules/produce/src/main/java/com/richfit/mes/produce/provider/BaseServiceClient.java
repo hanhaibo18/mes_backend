@@ -249,7 +249,7 @@ public interface BaseServiceClient {
 
     @ApiOperation(value = "查询工艺")
     @GetMapping("/api/base/router/find")
-    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status, @RequestParam String testBar, @RequestParam String texture);
+    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status, @RequestParam String testBar, @RequestParam String texture, @RequestParam String routerType);
 
     @ApiOperation(value = "获取所有车间")
     @GetMapping("/api/base/branch/query_all_branch")
@@ -265,4 +265,9 @@ public interface BaseServiceClient {
     @ApiOperation(value = "查询分公司inner", notes = "查询分公司inner")
     @GetMapping("/api/base/branch/select_branches_inner")
     CommonResult<List<Branch>> selectBranchesInner( @RequestParam("branchCode") String branchCode,@RequestParam("branchName")  String branchName,@RequestParam("tenantId")String tenantId);
+
+    @ApiOperation(value = "根据branchCode和工艺id查询工序", notes = "根据branchCode和工艺id查询工序")
+    @GetMapping("/api/base/sequence/listByBranchCodeAndRouterId")
+    public List<Sequence> listByBranchCodeAndRouterId(@RequestParam String routerId, @RequestParam String branchCode);
+
 }

@@ -566,7 +566,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         }
     }
 
-    private void beforeSaveItemDeal(List<TrackItem> trackItems) {
+    /**
+     * 跟单绑定工艺工序前的处理
+     * @param trackItems
+     */
+    @Override
+    public void beforeSaveItemDeal(List<TrackItem> trackItems) {
         //工序校验，避免空工序
         if (trackItems == null || trackItems.size() == 0) {
             return;
@@ -850,13 +855,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             newTrackHead.setProductNoContinuous(Utils.productNoContinuous(newTrackHead.getProductNo()));
             trackHeadMapper.insert(newTrackHead);
             trackHeadPublicDto.setId(newTrackHead.getId());
-            //跟单创建模型
+            //模型
             if (trackHeadPublicDto.getClasses().equals("3")) {
                 TrackHeadMold trackHeadMold = new TrackHeadMold();
                 BeanUtils.copyProperties(trackHeadPublicDto, trackHeadMold);
                 trackHeadMoldService.save(trackHeadMold);
             }
-            //跟单创建铸造
+            //铸造
             if (trackHeadPublicDto.getClasses().equals("6")) {
                 TrackHeadCast trackHeadCast = new TrackHeadCast();
                 BeanUtils.copyProperties(trackHeadPublicDto, trackHeadCast);
@@ -2090,7 +2095,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      */
     @Override
     public List<TrackHead> getTestBarNo(String texture, String testBar, String branchCode,String testBarNo){
-        List<Router> routerList = baseServiceClient.find("", "", "", "", branchCode, SecurityUtils.getCurrentUser().getTenantId(), "", testBar, texture).getData();
+        List<Router> routerList = baseServiceClient.find("", "", "", "", branchCode, SecurityUtils.getCurrentUser().getTenantId(), "", testBar, texture,"").getData();
         List<String> routerIds = routerList.stream().map(Router::getId).collect(Collectors.toList());
         if(!CollectionUtil.isEmpty(routerIds)){
             QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();

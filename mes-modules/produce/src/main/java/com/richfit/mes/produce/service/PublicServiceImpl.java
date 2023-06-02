@@ -14,9 +14,11 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.TrackAssignController;
+import com.richfit.mes.produce.enmus.OptTypeEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -239,6 +241,9 @@ public class PublicServiceImpl implements PublicService {
         return true;
     }
 
+    @Autowired
+    private CertificateService certificateService;
+
     /**
      * 功能描述: 激活工序
      *
@@ -247,7 +252,7 @@ public class PublicServiceImpl implements PublicService {
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean activationProcess(Map<String, String> map) {
+    public Boolean activationProcess(Map<String, String> map){
         //倒序获取工序列表
         QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
         currentTrackItem.eq("flow_id", map.get("flowId"));
@@ -430,6 +435,7 @@ public class PublicServiceImpl implements PublicService {
         if (!CollectionUtils.isEmpty(notIsFinalCompleteList)) {
             return true;
         }
+
         for (TrackItem item : itemList) {
             //激活下工序
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
@@ -451,6 +457,13 @@ public class PublicServiceImpl implements PublicService {
                     automaticProcess(map);
                 }
             }
+        }
+
+        //特殊工序流转下车间
+        String nextOptWork = "";
+        if(OptTypeEnum.KX_OPERATION.getStateId().equals(trackItem.getOptType())){
+            nextOptWork = "BOMCO_RG_YL";
+            certificateService.headMoveToNextBranch(trackItem.getTrackHeadId(),nextOptWork,trackItem);
         }
         return true;
     }

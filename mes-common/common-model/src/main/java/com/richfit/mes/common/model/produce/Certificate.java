@@ -173,6 +173,9 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "金额")
     private Double money;
 
+    @ApiModelProperty(value = "工序类型", dataType = "String")
+    private String optType;
+
     @ApiModelProperty(value = "本车间名称")
     @TableField(exist = false)
     private String branchCodeName;

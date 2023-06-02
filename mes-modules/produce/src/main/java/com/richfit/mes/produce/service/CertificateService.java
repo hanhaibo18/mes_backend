@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.TrackHead;
+import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.CertQueryDto;
 
 import java.util.List;
@@ -54,13 +55,13 @@ public interface CertificateService extends IService<Certificate> {
      */
     void setPushHourComplete(Certificate certificate);
 
+
     /**
-     * 根据跟单信息 开具工序合格证
+     * 跟单流转下车间接口
      * @param thId
-     * @param nextOptWork 下车间编码
-     * @param flowId
-     * @return
+     * @param nextOptWork
+     * @param trackItem
      * @throws Exception
      */
-    boolean heatAutoCertificate(String thId,String nextOptWork,String flowId) throws Exception;
+    void headMoveToNextBranch(String thId, String nextOptWork, TrackItem trackItem);
 }
