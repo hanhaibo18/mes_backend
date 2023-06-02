@@ -164,14 +164,14 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteBom(String drawingNo, String tenantId, String branchCode) {
-        QueryWrapper<ProjectBom> query = new QueryWrapper<>();
-        DrawingNoUtil.queryEq(query, "drawing_no", drawingNo);
-        query.eq("branch_code", branchCode);
-        query.eq("grade", "H");
-        int count = projectBomService.count(query);
-        if (count > 0) {
-            throw new GlobalException("该BOM已被发布,删除失败!", ResultCode.FAILED);
-        }
+//        QueryWrapper<ProjectBom> query = new QueryWrapper<>();
+//        DrawingNoUtil.queryEq(query, "drawing_no", drawingNo);
+//        query.eq("branch_code", branchCode);
+//        query.eq("grade", "H");
+//        int count = projectBomService.count(query);
+//        if (count > 0) {
+//            throw new GlobalException("该BOM已被发布,删除失败!", ResultCode.FAILED);
+//        }
         QueryWrapper<ProductionBom> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", tenantId);
         queryWrapper.eq("branch_code", branchCode);
@@ -615,7 +615,7 @@ public class ProductionBomServiceImpl extends ServiceImpl<ProductionBomMapper, P
         List<Product> materials = new ArrayList<>();
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        if(drawNoList.size()>0){
+        if (drawNoList.size() > 0) {
             DrawingNoUtil.queryIn(queryWrapper, "drawing_no", drawNoList);
             materials = productService.list(queryWrapper);
         }
