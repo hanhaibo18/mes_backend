@@ -147,14 +147,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 product.setTenantId(tenantId);
                 product.setMaterialNo(product.getMaterialNo().trim());
                 product.setDrawingNo(product.getDrawingNo().trim());
-                product.setProductName(product.getProductName());
-                product.setMaterialDate(product.getMaterialDate());
                 product.setMaterialType(MaterialTypeEnum.getCode(product.getMaterialType()));
-                product.setObjectType(product.getObjectType());
-                product.setMaterialDesc(product.getMaterialDesc());
-                product.setTexture(product.getTexture());
-                product.setWeight(product.getWeight());
-                product.setUnit(product.getUnit());
                 product.setTrackType(TrackTypeEnum.getCode(product.getTrackType()));
                 if (StringUtils.isNullOrEmpty(product.getIsKeyPart())) {
                     product.setIsKeyPart("0");
@@ -227,17 +220,14 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         if (CollectionUtils.isEmpty(productList)) {
             return CommonResult.failed("未勾选中物料数据");
         }
-        List<String> tenantIdList = productList.stream().map(Product::getTenantId).collect(Collectors.toList());
         // 查询所有的租户信息
         Map<String, Tenant> tenantMap = systemServiceClient.queryTenantAllList().getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
-        List<String> erpCodeList = convertInput(tenantIdList, tenantMap);
         Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(e -> e.getId(), product -> product, (value1, value2) -> value2));
-        if (CollectionUtils.isNotEmpty(erpCodeList)) {
-            int init = 0;
+        if (CollectionUtils.isNotEmpty(productList)) {
             List<MaterialBasis> materialBasisList = new ArrayList<>();
             MaterialBasis materialBasis = new MaterialBasis();
             for (Product product : productList) {
-                materialBasis.setWorkCode(erpCodeList.get(init));
+                materialBasis.setWorkCode(tenantMap.get(product.getTenantId()).getTenantErpCode());
                 materialBasis.setMaterialNum(productMap.get(product.getId()).getMaterialNo());
                 materialBasis.setMaterialDesc(productMap.get(product.getId()).getMaterialDesc());
                 materialBasis.setUnit(productMap.get(product.getId()).getUnit());
@@ -254,33 +244,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 materialBasis.setMaterialType(MaterialTypeEnum.getName(productMap.get(product.getId()).getMaterialType()));
                 materialBasis.setWorkshop(productMap.get(product.getId()).getBranchCode());
                 materialBasisList.add(materialBasis);
-                init++;
             }
             // 同步到wms中
             wmsServiceClient.materialBasis(materialBasisList);
-
             return CommonResult.success(true, "操作成功");
         }
         return CommonResult.failed("操作失败");
     }
-
-    /**
-     * 转换
-     * @param list
-     * @param tenantMap
-     * @return
-     */
-    private static List<String> convertInput(List<String> list, Map<String, Tenant> tenantMap) {
-        int init = 0;
-        for (String tenantId: list) {
-            if (tenantMap.containsKey(tenantId)) {
-                list.set(init, tenantMap.get(tenantId).getTenantErpCode());
-            }
-            init ++;
-        }
-        return list;
-    }
-
 
     /**
      * 查询库存
