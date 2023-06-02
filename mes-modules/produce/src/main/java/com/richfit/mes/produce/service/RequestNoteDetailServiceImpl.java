@@ -33,7 +33,7 @@ public class RequestNoteDetailServiceImpl extends ServiceImpl<RequestNoteDetailM
     }
 
     @Override
-    public List<RequestNoteDetail> queryRequestNoteDetailDetails(List<String> materialNo, List<String> requestNoteNo) {
+    public List<RequestNoteDetail> queryDetailList(List<String> materialNo, List<String> requestNoteNo) {
         QueryWrapper<RequestNoteDetail> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("material_no", materialNo);
         queryWrapper.in("request_note_number", requestNoteNo);
