@@ -95,8 +95,9 @@ secure:
       - /api/sys/tenant/getTenantById/inner
       - /api/sys/tenant/query/tenant/list/inner
       - /api/sys/tenant/query/tenant/list/inner
-      - /api/sys/qualityInspectionRules/queryQualityInspectionRulesListInner
+      - /api/sys/qualityInspectionRules/allQualityInspectionRulesListInner
       - /api/sys/user/queryByUserAccountListInner
+      - /api/sys/user/queryByUserAccountInner
 logging:
   level:
     root: INFO

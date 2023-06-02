@@ -2,12 +2,9 @@ package com.richfit.mes.produce.provider;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
-import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.produce.provider.fallback.BaseServiceClientFallbackImpl;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -37,7 +34,7 @@ public interface BaseServiceClient {
     public CommonResult<Branch> selectBranchByCodeAndTenantId(@RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
 
     @GetMapping("/api/base/product/product/listByNo")
-    public CommonResult<List<Product>> selectProduct(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
+    public CommonResult<List<Product>> selectProduct(@RequestParam("tenantId") String tenantId, @RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
 
     @GetMapping(value = "/api/base/device/find_one")
     public CommonResult<Device> getDeviceById(@RequestParam("id") String id);
@@ -71,6 +68,7 @@ public interface BaseServiceClient {
 
     /**
      * 根据idList获得工艺
+     *
      * @param idList
      * @return
      */
@@ -246,16 +244,20 @@ public interface BaseServiceClient {
     @PostMapping("/api/base/project_bom/getBomListByMainBomId")
     public List<ProjectBom> getBomListByMainBomId(@RequestParam String id);
 
-    @ApiOperation(value = "通过条件查询物料信息")
-    @PostMapping("/api/base/product/select_condition_product")
-    public CommonResult<List<Product>> selectConditionProduct(@RequestBody ProductTypeDto productTypeDto);
-
     @ApiOperation(value = "根据branchCode获取机构信息")
     @GetMapping("/api/base/branch/getBranchInfoByBranchCode")
     public Branch getBranchInfoByBranchCode(@RequestParam String branchCode);
 
     @ApiOperation(value = "查询工艺")
     @GetMapping("/api/base/router/find")
-    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status,@RequestParam String testBar,@RequestParam String texture);
+    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status, @RequestParam String testBar, @RequestParam String texture);
+
+    @ApiOperation(value = "获取所有车间")
+    @GetMapping("/api/base/branch/query_all_branch")
+    public List<Branch> queryAllBranch();
+
+    @ApiOperation(value = "获取所有车间Inner")
+    @GetMapping("/api/base/branch/query_all_branch_inner")
+    public List<Branch> queryAllBranchInner(@RequestHeader(value = SecurityConstants.FROM) String header);
 
 }

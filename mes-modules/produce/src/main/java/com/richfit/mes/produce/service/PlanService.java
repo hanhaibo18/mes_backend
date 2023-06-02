@@ -66,7 +66,7 @@ public interface PlanService extends IService<Plan> {
      * @Author: zhiqiang.lu
      * @Date: 2022/7/8 11:37
      **/
-    void autoProjectBom(Plan plan);
+    void autoProjectBom(Plan plan) throws Exception;
 
     /**
      * 拆分计划

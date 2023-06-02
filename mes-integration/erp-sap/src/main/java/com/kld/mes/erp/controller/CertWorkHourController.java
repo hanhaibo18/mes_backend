@@ -27,20 +27,12 @@ public class CertWorkHourController {
 
     @ApiOperation(value = "工时推送", notes = "根据跟单工序推送工时数据到ERP")
     @PostMapping("/push")
-    public CommonResult<Boolean> certWorkHourPush(@ApiParam(value = "工序列表") @RequestBody List<TrackItem> trackItemList,
-                                                  @ApiParam(value = "erp代号") @RequestParam String erpCode,
-                                                  @ApiParam(value = "订单号") @RequestParam String orderNo,
-                                                  @ApiParam(value = "数量") @RequestParam int qty,
-                                                  @ApiParam(value = "单位") @RequestParam String unit) {
+    public CommonResult certWorkHourPush(@ApiParam(value = "工序列表") @RequestBody List<TrackItem> trackItemList,
+                                         @ApiParam(value = "erp代号") @RequestParam String erpCode,
+                                         @ApiParam(value = "订单号") @RequestParam String orderNo,
+                                         @ApiParam(value = "数量") @RequestParam int qty,
+                                         @ApiParam(value = "单位") @RequestParam String unit) {
 
-        boolean b = certWorkHourService.sendWorkHour(trackItemList, erpCode, orderNo, qty, unit);
-
-        if (b) {
-            return CommonResult.success(b);
-        } else {
-            return CommonResult.failed("报工失败");
-        }
-
+        return certWorkHourService.sendWorkHour(trackItemList, erpCode, orderNo, qty, unit);
     }
-
 }

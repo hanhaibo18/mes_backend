@@ -6,8 +6,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.Product;
-import com.richfit.mes.common.model.produce.ProductTypeDto;
-import com.richfit.mes.common.model.sys.DataDictionaryParam;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.InventoryReturn;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,9 +49,4 @@ public interface ProductService extends IService<Product> {
 
     Page<InventoryReturn> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture);
 
-    /**
-     * 通过条件查询物料
-     * @return
-     */
-    List<Product> selectConditionProduct(ProductTypeDto productTypeDto);
 }

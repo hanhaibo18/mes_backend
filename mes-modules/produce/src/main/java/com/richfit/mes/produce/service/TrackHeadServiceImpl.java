@@ -69,6 +69,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Resource
     private TrackAssemblyService trackAssemblyService;
 
+    @Resource
+    private TrackAssemblyBindingService trackAssemblyBindingService;
+
     @Autowired
     private LineStoreMapper lineStoreMapper;
 
@@ -400,10 +403,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         try {
             CommonResult<Attachment> atta = systemServiceClient.attachment(id);
             CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
-            System.out.println(id);
-            System.out.println(JSON.toJSONString(data));
             if (data.getStatus() == 200) {
-                System.out.println(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
@@ -556,20 +556,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     public void updateItem() {
-//        List<String> trackIdList = trackHeadMapper.queryTrackId();
         List<String> trackFlows = trackFlowMapper.queryBugItemFlow();
         for (String track : trackFlows) {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("flow_id", track);
             List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
-            trackItemList.forEach(trackItem -> {
-                System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());
-            });
-            System.out.println("----------------------------------");
             beforeSaveItemDeal(trackItemList);
-            trackItemList.forEach(trackItem -> {
-                System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());
-            });
             trackItemService.updateBatchById(trackItemList);
         }
     }
@@ -919,7 +911,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setProductSourceName(trackHead.getProductSourceName());
             if (StrUtil.isNotBlank(productsNo)) {
                 //试棒类型拼接S
-                if ("1".equals(trackHead.getIsTestBar())) {
+                if ("1".equals(trackHead.getIsTestBar()) || "21".equals(trackHead.getIsTestBar())) {
                     productsNo = productsNo + "S";
                 }
                 if (!StrUtil.isBlank(productsNo)) {
@@ -939,7 +931,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             } else {
                 trackFlow.setProductNo(null);
             }
-            if (!"2".equals(trackHead.getClasses()) && trackFlow.getProductNo() == null) {
+            if ("1".equals(trackHead.getClasses()) && trackFlow.getProductNo() == null) {
                 throw new GlobalException("机加产品编号不能为空", ResultCode.FAILED);
             }
             trackHeadFlowService.save(trackFlow);
@@ -1214,6 +1206,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
 
+    /**
+     * 描述: 跟单删除
+     *
+     * @Author: zhiqiang.lu
+     * @Date: 2022/6/21 10:25
+     **/
     @Override
     public boolean deleteTrackHead(List<TrackHead> trackHeads) {
         try {
@@ -1386,8 +1384,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             }
             //更新跟单动作
             trackHeadMapper.updateById(trackHead);
-            //合格证
-            certificateService.autoCertificate(trackHead);
+            if (StrUtil.isBlank(trackHead.getCertificateNo())) {
+                //合格证
+                certificateService.autoCertificate(trackHead);
+            }
             //计划数据更新
             planService.planData(trackHead.getWorkPlanId());
             //订单数据更新
@@ -1619,17 +1619,31 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public List<TrackHead> queryTrackAssemblyByTrackNo(String flowId) {
-        QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
-        wrapper.eq("flow_Id", flowId);
-        List<TrackAssembly> list = trackAssemblyService.list(wrapper);
+        QueryWrapper<TrackAssembly> wrapperTrackAssembly = new QueryWrapper();
+        wrapperTrackAssembly.eq("flow_Id", flowId);
+        List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(wrapperTrackAssembly);
         List<TrackHead> trackHeads = new ArrayList<>();
-        list.forEach(i -> {
-            QueryWrapper<TrackHead> tWrapper = new QueryWrapper<>();
-            tWrapper.eq("product_no", i.getProductNo());
-            TrackHead one = this.getOne(tWrapper);
-            if (ObjectUtils.isNotNull(one)) {
-                trackHeads.add(one);
-            }
+        trackAssemblyList.forEach(trackAssembly -> {
+            QueryWrapper<TrackAssemblyBinding> wrapperTrackAssemblyBinding = new QueryWrapper();
+            wrapperTrackAssemblyBinding.eq("assembly_id", trackAssembly.getId());
+            wrapperTrackAssemblyBinding.isNotNull("number");
+            List<TrackAssemblyBinding> trackAssemblyBindingList = trackAssemblyBindingService.list(wrapperTrackAssemblyBinding);
+            trackAssemblyBindingList.forEach(trackAssemblyBinding -> {
+                String productNo = trackAssemblyBinding.getNumber();
+                if (StrUtil.isNotBlank(productNo)) {
+                    QueryWrapper<TrackFlow> wrapperTrackFlow = new QueryWrapper<>();
+                    if (productNo.indexOf(" ") != -1) {
+                        productNo = productNo.split(" ")[1];
+                    }
+                    wrapperTrackFlow.eq("product_no", trackAssembly.getDrawingNo() + " " + productNo);
+                    wrapperTrackFlow.eq("tenant_id", trackAssembly.getTenantId());
+                    List<TrackFlow> trackFlows = trackHeadFlowService.list(wrapperTrackFlow);
+                    if (ObjectUtils.isNotNull(trackFlows)) {
+                        TrackHead trackHead = this.getById(trackFlows.get(0).getTrackHeadId());
+                        trackHeads.add(trackHead);
+                    }
+                }
+            });
         });
         Map<String, TrackHead> collect = trackHeads.stream().collect(Collectors.toMap(TrackHead::getProductNo, v -> v, (a, b) -> a));
         return new ArrayList<>(collect.values());
@@ -2039,8 +2053,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.update(updateWrapperTrackFlow);
 
             //更新跟单状态动作
-            System.out.println("-------------------");
-            System.out.println(id);
             TrackHead trackHead = trackHeadMapper.selectById(id);
             trackHead.setStatus("9");
             trackHeadMapper.updateById(trackHead);
@@ -2072,42 +2084,44 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     /**
      * 获取试棒型号(相同试棒型号 相同材质 的上一个跟单的试棒型号)
+     *
      * @param texture
      * @param testBar
      * @return
      */
     @Override
-    public String getTestBarNo(String texture, String testBar, String branchCode){
+    public String getTestBarNo(String texture, String testBar, String branchCode) {
         List<Router> routerList = baseServiceClient.find("", "", "", "", branchCode, SecurityUtils.getCurrentUser().getTenantId(), "", testBar, texture).getData();
         List<String> routerIds = routerList.stream().map(Router::getId).collect(Collectors.toList());
-        if(!CollectionUtil.isEmpty(routerIds)){
+        if (!CollectionUtil.isEmpty(routerIds)) {
             QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
-            trackHeadQueryWrapper.in("router_id",routerIds)
-                    .eq("branch_code",branchCode)
-                    .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+            trackHeadQueryWrapper.in("router_id", routerIds)
+                    .eq("branch_code", branchCode)
+                    .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
                     .orderByDesc("create_time");
             List<TrackHead> list = this.list(trackHeadQueryWrapper);
-            return CollectionUtil.isEmpty(list)?"":list.get(0).getTestBarNo();
+            return CollectionUtil.isEmpty(list) ? "" : list.get(0).getTestBarNo();
         }
         return null;
     }
 
     /**
      * 铸钢开跟单获取铸件编号(相同图号 的上一个跟单的产品编号)
+     *
      * @param drawingNo
      * @param branchCode
      * @return
      */
     @Override
-    public String getProductNo(String drawingNo, String branchCode){
+    public String getProductNo(String drawingNo, String branchCode) {
         QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
         trackHeadQueryWrapper
-                .eq("branch_code",branchCode)
-                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+                .eq("branch_code", branchCode)
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
                 .orderByDesc("create_time");
-        DrawingNoUtil.queryEq(trackHeadQueryWrapper,"drawing_no",drawingNo);
+        DrawingNoUtil.queryEq(trackHeadQueryWrapper, "drawing_no", drawingNo);
         List<TrackHead> list = this.list(trackHeadQueryWrapper);
-        return CollectionUtil.isEmpty(list)?"":list.get(0).getProductNo();
+        return CollectionUtil.isEmpty(list) ? "" : list.get(0).getProductNo();
     }
 
 

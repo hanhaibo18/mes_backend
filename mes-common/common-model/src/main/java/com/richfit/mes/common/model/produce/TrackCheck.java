@@ -123,6 +123,13 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     private int number;
 
     @TableField(exist = false)
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String workNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工序Id", dataType = "String")
+    private String optNo;
+    @TableField(exist = false)
     @ApiModelProperty(value = "工序名称", dataType = "String")
     private String optName;
     @TableField(exist = false)
@@ -146,6 +153,9 @@ public class TrackCheck extends BaseEntity<TrackCheck> {
     @TableField(exist = false)
     @ApiModelProperty(value = "跟单号", dataType = "String")
     private String trackNo;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "零部件名称", dataType = "String")
+    private String materialName;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "下工序绑定", dataType = "String")

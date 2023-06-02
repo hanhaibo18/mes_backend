@@ -144,7 +144,6 @@ public class RouterServiceImpl implements RouterService {
     public static void main(String[] args) {
         String url = "http://emaip.erp.cnpc:80/ZBZZ/MES/ZC80_PPIF026/service/PS/PS_ZC80_PPIF026";
         String s = "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:soap:functions:mc-style\"><SOAP-ENV:Header/><SOAP-ENV:Body><urn:Zc80Ppif026><IInput><item><Werk>BOMCO_ZS_JJCJ</Werk><Matnr>909001356</Matnr><Ktext>护罩-下料工艺规程复制</Ktext><Verwe>1</Verwe><Statu>4</Statu><Datuv>2023-04-07</Datuv><Vornr>0001</Vornr><Steus>ZP01</Steus><Ltxa1>下料</Ltxa1><Bmsch>1</Bmsch><Meins/><Vgw01>0.0</Vgw01><Vge01>MIN</Vge01><Vgw03>0</Vgw03><Vge03>MIN</Vge03><Vgw04>0</Vgw04><Vge04>MIN</Vge04></item><item><Werk>BOMCO_ZS_JJCJ</Werk><Matnr>909001356</Matnr><Ktext>护罩-下料工艺规程复制</Ktext><Verwe>1</Verwe><Statu>4</Statu><Datuv>2023-04-07</Datuv><Vornr>0002</Vornr><Steus>ZP01</Steus><Ltxa1>煨弯</Ltxa1><Bmsch>1</Bmsch><Meins/><Vgw01>0.0</Vgw01><Vge01>MIN</Vge01><Vgw03>0</Vgw03><Vge03>MIN</Vge03><Vgw04>0</Vgw04><Vge04>MIN</Vge04></item></IInput></urn:Zc80Ppif026></SOAP-ENV:Body></SOAP-ENV:Envelope>";
-        System.out.println(postForObject(url, s));
     }
 
     /**

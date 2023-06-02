@@ -50,4 +50,55 @@ public interface TrackItemMapper extends BaseMapper<TrackItem> {
     //查询跟单最大完工的工序
     @Select("SELECT *,(select product_no from produce_track_head_flow f where f.id = s.flow_id) as product_no_flow FROM produce_track_item item,(SELECT i.flow_id,max( i.opt_sequence ) AS opt_sequence FROM produce_track_item i WHERE i.is_final_complete = '1' and i.track_head_id = #{trackHeadId} GROUP BY i.flow_id   ORDER BY opt_sequence LIMIT 1) s WHERE item.track_head_id = #{trackHeadId} AND item.opt_sequence = s.opt_sequence ORDER BY item.opt_sequence;")
     List<TrackItem> getFinalTrackItems(@Param("trackHeadId") String trackHeadId);
+
+
+    @Select("SELECT \n" +
+            " ti_id\n" +
+            "FROM\n" +
+            "        (\n" +
+            "        SELECT DISTINCT\n" +
+            "                ROW_NUMBER() OVER (\n" +
+            "                        PARTITION BY th.create_by,\n" +
+            "                        th.modify_by,\n" +
+            "                        th.complete_by,\n" +
+            "                        th.ti_id,\n" +
+            "                        th.assign_id,\n" +
+            "                        th.track_id,\n" +
+            "                        th.user_id,\n" +
+            "                        th.device_id,\n" +
+            "                        th.prod_no,\n" +
+            "                        th.reject_qty,\n" +
+            "                        th.completed_hours,\n" +
+            "                        th.branch_code,\n" +
+            "                        th.tenant_id \n" +
+            "                ORDER BY\n" +
+            "                        th.create_time asc \n" +
+            "                ) AA,\n" +
+            "                th.create_by,\n" +
+            "                th.modify_by,\n" +
+            "                th.complete_by,\n" +
+            "                th.ti_id,\n" +
+            "                th.assign_id,\n" +
+            "                th.track_id,\n" +
+            "                th.user_id,\n" +
+            "                th.device_id,\n" +
+            "                th.prod_no,\n" +
+            "                th.reject_qty,\n" +
+            "                th.completed_hours,\n" +
+            "                th.branch_code,\n" +
+            "                th.tenant_id,\n" +
+            "                h.track_no  track_no,\n" +
+            "                i.sequence_order_by sequence_order_by\n" +
+            "        FROM\n" +
+            "                produce_track_complete th\n" +
+            "                LEFT JOIN produce_track_item i ON th.ti_id = i.id and th.track_id=i.track_head_id\n" +
+            "                LEFT JOIN produce_track_head h ON i.track_head_id = h.id and th.track_id = h.id \n" +
+            "        WHERE 1 = 1 \n" +
+            "                and th.create_time>'2023-04-01 12:35:05' " +
+            "                and i.opt_type = 3 " +
+            "        ) a \n" +
+            "WHERE\n" +
+            "        a.AA > 1\n" +
+            "        GROUP BY ti_id")
+    List<String> queryBugTrackItemList();
 }

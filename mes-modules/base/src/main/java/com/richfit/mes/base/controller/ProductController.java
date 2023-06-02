@@ -22,7 +22,6 @@ import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.base.ProductionBom;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Order;
-import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
@@ -437,7 +436,7 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "查询物料", notes = "根据物料号图号查询物料")
     @GetMapping("/product/listByNo")
-    public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType) {
+    public CommonResult<List<Product>> selectProduct(String tenantId, String materialNo, String drawingNo, String materialType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.eq("material_no", materialNo);
@@ -450,8 +449,12 @@ public class ProductController extends BaseController {
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             DrawingNoUtil.queryEq(queryWrapper, "drawing_no", drawingNo);
         }
-        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        } else {
+            if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            }
         }
         queryWrapper.orderByDesc("create_time");
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
@@ -670,7 +673,6 @@ public class ProductController extends BaseController {
                 int index = i == 0 ? i : 1000 * i;
                 //结尾下标
                 int toIndex = i == 0 ? 999 : 1000 * i + 999;
-                System.out.println(index + "  index-----------------  toindex" + toIndex);
                 List<Object> objects = null;
                 if (i < oldPage) {
                     objects = idList.subList(index, toIndex);
@@ -729,12 +731,5 @@ public class ProductController extends BaseController {
     public CommonResult<Page<InventoryReturn>> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture) {
         return CommonResult.success(productService.selectMaterial(branchCode, limit, page, materialNo, materialName, invType, texture));
     }
-
-    @ApiOperation(value = "通过条件查询物料信息")
-    @PostMapping("/select_condition_product")
-    public CommonResult<List<Product>> selectConditionProduct(@RequestBody ProductTypeDto productTypeDto) {
-        return CommonResult.success(productService.selectConditionProduct(productTypeDto));
-    }
-
 
 }

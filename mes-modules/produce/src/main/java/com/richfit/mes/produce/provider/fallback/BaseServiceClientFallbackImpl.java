@@ -2,7 +2,6 @@ package com.richfit.mes.produce.provider.fallback;
 
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.*;
-import com.richfit.mes.common.model.produce.ProductTypeDto;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import org.springframework.stereotype.Component;
@@ -34,7 +33,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType) {
+    public CommonResult<List<Product>> selectProduct(String tenantId, String materialNo, String drawingNo, String materialType) {
         return CommonResult.success(null);
     }
 
@@ -231,17 +230,22 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Product>> selectConditionProduct(ProductTypeDto productTypeDto) {
-        return null;
-    }
-
-    @Override
     public Branch getBranchInfoByBranchCode(String branchCode) {
         return null;
     }
 
     @Override
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar,String texture) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture) {
+        return null;
+    }
+
+    @Override
+    public List<Branch> queryAllBranch() {
+        return null;
+    }
+
+    @Override
+    public List<Branch> queryAllBranchInner(String header) {
         return null;
     }
 

@@ -170,11 +170,6 @@ public class BaseProjectBom {
 
     @Transactional(rollbackFor = Exception.class)
     public void projectBomUpdate(List trackHeadIds, int i) {
-        System.out.println("-------------------------------------");
-        System.out.println("-------------------------------------");
-        System.out.println("-------------------------------------");
-        System.out.println("-------------------------------------");
-        System.out.println("-------------------------------------i=" + i);
         if (trackHeadIds != null) {
             //根据ids获取图号工作号信息
             List<TrackHead> trackHeads = trackHeadMapper.selectByIds(trackHeadIds);

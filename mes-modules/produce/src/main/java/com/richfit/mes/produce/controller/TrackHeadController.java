@@ -374,29 +374,7 @@ public class TrackHeadController extends BaseController {
         }
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
-        IPage<TrackHeadPublicVo> trackHeadPublicVoIPage = trackHeadService.queryPage(new Page<TrackHead>(page, limit), queryWrapper);
-        //capp属性赋值
-        for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
-            Router router = baseServiceClient.getRouter(record.getRouterId()).getData();
-            //锻造材料规格
-            record.setBlankSpecifi(router.getBlankSpecifi());
-            //锻造下料重量
-            record.setBlankWeight(router.getBlankWeight());
-            //材质
-            record.setTexture(router.getTexture());
-            //单重
-            record.setWeight(router.getWeight());
-            //钢水重量
-            record.setWeightMolten(router.getWeightMolten());
-            //工艺保温时间
-            record.setProcessHoldTime(router.getWeightMolten());
-            //浇筑温度
-            record.setPourTemp(router.getPourTemp());
-            //浇筑时间
-            record.setPourTime(router.getPourTime());
-            //试棒型号
-            record.setTestBar(router.getTestBar());
-        }
+        IPage<TrackHeadPublicVo> trackHeadPublicVoIPage = trackHeadService.queryPage(new Page<>(page, limit), queryWrapper);
         return CommonResult.success(trackHeadPublicVoIPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
 
@@ -875,9 +853,6 @@ public class TrackHeadController extends BaseController {
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("certificate_no", certificate.getCertificateNo());
             queryWrapper.eq("branch_code", certificate.getBranchCode());
-            System.out.println("-------------------");
-            System.out.println(certificate.getCertificateNo());
-            System.out.println(certificate.getBranchCode());
             trackHeadList = trackHeadService.list(queryWrapper);
             if (CollectionUtils.isEmpty(trackHeadList)) {
                 return CommonResult.failed("合格证号没有找到跟单信息，数据问题，联系维护人员进行处理");
@@ -936,9 +911,8 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "查询BOM信息", notes = "根据装配信息查询BOM信息")
-    @GetMapping("/query_bom/{flowId}")
-    public CommonResult<List<TrackHead>> queryBomByTrackAssembly(@PathVariable String flowId) {
-        flowId = flowId.replaceAll("%20", " ");
+    @GetMapping("/query_bom")
+    public CommonResult<List<TrackHead>> queryBomByTrackAssembly(@RequestParam String flowId) {
         return CommonResult.success(trackHeadService.queryTrackAssemblyByTrackNo(flowId));
     }
 
@@ -1145,14 +1119,14 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "根据图号 获取上次填写的跟单的产品号")
     @GetMapping("/getProductNoByDrawingNo")
-    public CommonResult<String>  getProductNoByDrawingNo(String drawingNo,String branchCode) {
-        return CommonResult.success(trackHeadService.getProductNo(drawingNo,branchCode));
+    public CommonResult<String> getProductNoByDrawingNo(String drawingNo, String branchCode) {
+        return CommonResult.success(trackHeadService.getProductNo(drawingNo, branchCode));
     }
 
     @ApiOperation(value = "根据材质 试棒型号获取上次填写跟单的试棒编号")
     @GetMapping("/getTestBarNoByTextureAndTestBarNo")
-    public CommonResult<String>  getTestBarNoByTextureAndTestBarNo(String texture,String testBarNo,String branchCode) {
-        return CommonResult.success(trackHeadService.getTestBarNo(texture,testBarNo,branchCode));
+    public CommonResult<String> getTestBarNoByTextureAndTestBarNo(String texture, String testBarNo, String branchCode) {
+        return CommonResult.success(trackHeadService.getTestBarNo(texture, testBarNo, branchCode));
     }
 
 

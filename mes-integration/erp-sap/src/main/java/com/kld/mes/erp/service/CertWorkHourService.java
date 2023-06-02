@@ -1,5 +1,6 @@
 package com.kld.mes.erp.service;
 
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.TrackItem;
 
 import java.util.List;
@@ -12,6 +13,6 @@ import java.util.List;
  */
 public interface CertWorkHourService {
 
-    public boolean sendWorkHour(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit);
+    public CommonResult sendWorkHour(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit);
 
 }

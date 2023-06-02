@@ -329,12 +329,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 //跟单完成数量
                 int trackHeadFinish = 0;
                 for (TrackHead trackHead : trackHeadList) {
+                    if (TrackHead.IS_TEST_BAR_1.equals(trackHead.getIsTestBar())) {
+                        //试棒实验跟单不进行计划数量的消耗
+                        continue;
+                    }
                     QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
                     queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                     List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
                     optNumber += trackItemList.size();
-                    System.out.println("---");
-                    System.out.println(trackHead.getStatus());
                     switch (trackHead.getStatus()) {
                         case "0":
                         case "1":
@@ -364,8 +366,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                             break;
                         case "8":
                         case "9":
-                            System.out.println("------------------");
-                            System.out.println("已交");
                             //已交
                             //生成完工资料
                             trackHeadFinish++;
@@ -410,9 +410,21 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void autoProjectBom(Plan plan) {
+    public void autoProjectBom(Plan plan) throws Exception {
         if (StrUtil.isBlank(plan.getProjectBom())) {
-            List<ProduceProjectBom> projectBoms = projectBomService.getProjectBomList(plan.getWorkNo(), plan.getDrawNo(), plan.getTenantId(), plan.getBranchCode());
+            String workNo = "";
+            if (StrUtil.isNotBlank(plan.getProjectBomWork())) {
+                workNo = plan.getProjectBomWork();
+            } else {
+                workNo = plan.getWorkNo();
+            }
+            if (StrUtil.isBlank(workNo)) {
+                throw new Exception("工作号不能为空");
+            }
+            if (StrUtil.isBlank(plan.getDrawNo())) {
+                throw new Exception("图号号不能为空");
+            }
+            List<ProduceProjectBom> projectBoms = projectBomService.getProjectBomList(workNo, plan.getDrawNo(), plan.getTenantId(), plan.getBranchCode());
             if (!CollectionUtils.isEmpty(projectBoms)) {
                 ProduceProjectBom projectBom = projectBoms.get(0);
                 plan.setProjectBom(projectBom.getId());

@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.OrderSyncLog;
 import com.richfit.mes.common.model.sys.ItemParam;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -135,8 +137,6 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                     for (Order order : orderList) {
                         //order.setBranchCode(itemParam.getLabel());
                         order.setTenantId(itemParam.getTenantId());
-                        order.setCreateBy("system");
-                        order.setModifyBy("system");
                         order.setCreateTime(DateUtil.yesterday());
                         order.setModifyTime(DateUtil.yesterday());
                         order.setOrderDate(order.getStartTime());
@@ -173,6 +173,27 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
         List<Order> orderList = erpServiceClient.getErpOrder(orderSyncLog.getErpCode(), orderSyncLog.getOrderSyncTime(), orderSyncLog.getOrderSn(), orderSyncLog.getController()).getData();
         //调用同步接口
         return this.saveOrderSync(orderList, orderSyncLog.getOrderSyncTime(), orderSyncLog.getController(), orderSyncLog.getErpCode(), orderSyncLog.getBranchCode());
+    }
+
+    private String getBranchCode(String userName) {
+        if (null == SecurityUtils.getCurrentUser()) {
+            CommonResult<TenantUserVo> userAccountInner = systemServiceClient.queryByUserAccountInner(userName, SecurityConstants.FROM_INNER);
+            List<Branch> branchList = baseServiceClient.queryAllBranchInner(SecurityConstants.FROM_INNER);
+            for (Branch branch : branchList) {
+                if (userAccountInner.getData().getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
+                    return branch.getBranchCode();
+                }
+            }
+        } else {
+            CommonResult<TenantUserVo> userAccount = systemServiceClient.queryByUserAccount(userName);
+            List<Branch> branchList = baseServiceClient.queryAllBranch();
+            for (Branch branch : branchList) {
+                if (userAccount.getData().getBelongOrgId().replaceAll("_", "").startsWith(branch.getBranchCode().replaceAll("_", ""))) {
+                    return branch.getBranchCode();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -241,6 +262,15 @@ public class OrderSyncServiceImpl extends ServiceImpl<OrderMapper, Order> implem
                 log.setOpinion("订单已存在不进行同步");
                 orderLogService.save(log);
                 return false;
+            }
+        }
+        //泵业额外增加判断
+        if (order.getTenantId().equals("12345678901234567890123456789002")) {
+            String branchCode = getBranchCode(order.getCreateBy());
+            if (StrUtil.isBlank(branchCode)) {
+                order.setBranchCode("BOMCO_BF_BY");
+            } else {
+                order.setBranchCode(branchCode);
             }
         }
         //通过判断同步状态为1

@@ -5,9 +5,11 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.kld.mes.wms.provider.SystemServiceClient;
 import com.kld.mes.wms.utils.AESUtil;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
@@ -58,13 +60,13 @@ public class ProductToWmsService {
     }
 
     //接口格式，详见条码-mes接口文档
-    public Boolean sendRequest(Certificate cert) {
+    public CommonResult sendRequest(Certificate cert) {
         init();
         String sqd = cert.getCertificateNo() + DateUtil.format(new Date(), "MMddHHmmss");
         String gc = SecurityUtils.getCurrentUser().getTenantErpCode();
 
         //如果产品编号是图号+“ ”+序列号形式，需要截取“ ”之后的部分
-        String prodNo = "";
+        String prodNo = cert.getProductNo();
         String spitStr = " ";
         if (!"".equals(cert.getProductNo()) && cert.getProductNo().split(spitStr).length > 1) {
             prodNo = cert.getProductNo().split(spitStr)[1];
@@ -78,13 +80,16 @@ public class ProductToWmsService {
 
         ResponseEntity<JsonNode> resp = restTemplate.getForEntity(url, JsonNode.class);
         log.debug("resp status is [{}],body is [{}]", resp.getStatusCode(), resp.getBody());
-        String retStatus = "";
-        if (resp.getBody() != null && resp.getBody().get("retStatus") != null) {
-            retStatus = resp.getBody().get("retStatus").asText();
+        String retCode = "";
+        if (resp.getBody() != null && resp.getBody().get("retCode") != null) {
+            retCode = resp.getBody().get("retCode").asText();
             log.debug("retMsg is [{}]", resp.getBody().get("retMsg").asText());
         }
-
-        return "Y".equals(retStatus);
+        if ("Y".equals(retCode)) {
+            return CommonResult.success(resp.getBody(), resp.getBody().get("retMsg").asText());
+        } else {
+            return CommonResult.failed(resp.getBody().get("retMsg").asText());
+        }
     }
 
     //泵业查询接口
@@ -96,7 +101,6 @@ public class ProductToWmsService {
         params.put("page", 1);
         params.put("token", mesUrlToken);
         //调用接口
-        System.out.println(mesUrlQueryMaterialCountApi);
         String number = HttpUtil.get(mesUrlQueryMaterialCountApi, params);
         if (StrUtil.isBlank(number)) {
             return 0;

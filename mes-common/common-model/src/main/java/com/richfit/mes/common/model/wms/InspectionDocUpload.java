@@ -5,7 +5,6 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -103,10 +102,10 @@ public class InspectionDocUpload implements Serializable {
     /**
      * 同步日期
      */
-    private Date inspectionDate;
+    private String inspectionDate;
 
     /**
-     * 产品编号列表
+     * 产品编号 明细列表
      */
     @TableField(exist = false)
     private List<ProductNoList> lineList;

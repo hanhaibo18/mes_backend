@@ -285,12 +285,15 @@ public class TrackCheckController extends BaseController {
                     check.setDrawingNo(trackHead.getDrawingNo());
                     check.setTrackNo(trackHead.getTrackNo());
                     check.setProductName(trackHead.getProductName());
+                    check.setWorkNo(trackHead.getWorkNo());
+                    check.setMaterialName(trackHead.getMaterialName());
                 }
                 if (null != trackItem) {
                     check.setNumber(trackItem.getNumber());
                     check.setProductNo(trackItem.getProductNo());
                     check.setOptId(trackItem.getOptId());
                     check.setOptName(trackItem.getOptName());
+                    check.setOptNo(trackItem.getOptNo());
                     check.setOptType(trackItem.getOptType());
                     check.setIsCurrent(trackItem.getIsCurrent());
                 }
@@ -935,7 +938,7 @@ public class TrackCheckController extends BaseController {
 
     @ApiOperation(value = "质检待审核查询(新)", notes = "质检待审核查询(新)")
     @GetMapping("/query_quality_page")
-    public CommonResult<IPage<TrackItem>> queryQualityPage(int page, int limit, String isExistQualityCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol, String branchCode) {
+    public CommonResult<IPage<TrackItem>> queryQualityPage(int page, int limit, int isExistQualityCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String tenantId, Boolean isRecheck, String drawingNo, String order, String orderCol, String branchCode) {
         return trackCheckService.queryQualityPage(page, limit, branchCode, isExistQualityCheck, isScheduleComplete, startTime, endTime, trackNo, productNo, tenantId, isRecheck, drawingNo, order, orderCol);
     }
 

@@ -3,7 +3,9 @@ package com.richfit.mes.produce.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -205,43 +207,70 @@ public class TrackItemController extends BaseController {
         }
         List<TrackItem> trackItems = new ArrayList<>();
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
+        //定位当前工序
         if (!headIds.isEmpty()) {
             queryWrapper.in("track_head_id", headIds)
                     .eq("opt_type", "3")
                     .eq("is_operation_complete", 0)
-                    .eq("is_current", 1)
-                    .orderByDesc("next_opt_sequence");
+                    .orderByAsc("opt_sequence");
             trackItems = trackItemService.list(queryWrapper);
         }
+        if (CollectionUtils.isEmpty(trackItems)) {
+            throw new GlobalException("未查询到当前工序,请联系管理员", ResultCode.FAILED);
+        }
+        //过滤当前工序跟单
+        List<TrackItem> isCurrentList = trackItems.stream().filter(item -> item.getIsCurrent() == 1).collect(Collectors.toList());
         //查询当前跟单产品数量
         QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
         flowQueryWrapper.in("track_head_id", headIds);
         int count = trackFlowService.count(flowQueryWrapper);
         //过滤未完成数量
-        int size = (int) trackItems.stream().filter(item -> item.getIsFinalComplete().equals("0")).count();
+        int size = (int) isCurrentList.stream().filter(item -> item.getIsFinalComplete().equals("0")).count();
         //重新创建List每组数据组装完 向当前List填充
         List<TrackItem> trackItemList = new ArrayList<>();
         //获取List中最大当前工序值和最小工序值
         //最大值
-        int max = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).max().getAsInt();
+        int max = isCurrentList.stream().mapToInt(TrackItem::getOriginalOptSequence).max().getAsInt();
         //最小值
-        int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
+        int min = isCurrentList.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
+        //查询产品编号
+        String trackNo = trackHeadService.getById(headIds.get(0)).getTrackNo();
         //过滤出所有最小的工序||产品数量大于1 并且 产品总数 大于未完成数量
         if (max != min || (count > 1 && count > size)) {
             //过滤出所有最小的工序
-            trackItemList.addAll(trackItems.stream().filter(item -> item.getOriginalOptSequence() == min).collect(Collectors.toList()));
+            trackItemList.addAll(isCurrentList.stream().filter(item -> item.getOriginalOptSequence() == min).collect(Collectors.toList()));
         } else {
             //根据FlowID分组
             Map<String, List<TrackItem>> map = trackItems.stream().collect(Collectors.groupingBy(TrackItem::getFlowId));
             //拿到后续工序
-            for (List<TrackItem> trackItem : map.values()) {
-                trackItemList.addAll(trackItem);
-                nextOpt(trackItem, trackItemList);
+            for (List<TrackItem> nowadaysItemList : map.values()) {
+                //根据flow查询对应产品下所有外协工序
+                int optSequence = nowadaysItemList.get(0).getOptSequence();
+                for (TrackItem trackItem : nowadaysItemList) {
+                    boolean nowadaysSequence = false;
+                    //判断是否是查询出的第一道工序
+                    if (!nowadaysItemList.get(0).getId().equals(trackItem.getId())) {
+                        //连续工序判断
+                        nowadaysSequence = trackItem.getOptSequence() - 1 == optSequence;
+                    } else {
+                        nowadaysSequence = true;
+                    }
+                    //质检or调度判断
+                    boolean quantityOrSchedule = trackItem.getIsExistQualityCheck() == 1 || trackItem.getIsExistScheduleCheck() == 1;
+                    //校验不需要质检 不需要调度,查询下面工序
+                    if (trackItem.getIsExistQualityCheck() == 0 && trackItem.getIsExistScheduleCheck() == 0 && nowadaysSequence) {
+                        trackItemList.add(trackItem);
+                        optSequence = trackItem.getOptSequence();
+                    } else if (quantityOrSchedule && nowadaysSequence) {
+                        trackItemList.add(trackItem);
+                        break;
+                    }
+                }
             }
-        }
-        if (!trackItemList.isEmpty()) {
-            for (TrackItem trackItem : trackItemList) {
-                trackItem.setTrackNo(trackHeadService.getById(trackItem.getTrackHeadId()).getTrackNo());
+            if (!trackItemList.isEmpty()) {
+                for (TrackItem trackItem : trackItemList) {
+                    trackItem.setTrackNo(trackNo);
+                }
             }
         }
         return CommonResult.success(trackItemList, SUCCESS_MESSAGE);
