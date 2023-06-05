@@ -568,6 +568,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     /**
      * 跟单绑定工艺工序前的处理
+     *
      * @param trackItems
      */
     @Override
@@ -845,7 +846,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             List<TrackFlow> trackFlowList = new ArrayList<>();
             List<TrackHead> trackHeadList = TrackHeadUtil.flowInfo(trackHeadPublicDto);
             for (TrackHead th : trackHeadList) {
-                TrackFlow trackFlow = trackHeadFlow(th, th.getTrackItems(), th.getProductNo(), th.getNumber(),trackHeadPublicDto.getPriority());
+                TrackFlow trackFlow = trackHeadFlow(th, th.getTrackItems(), th.getProductNo(), th.getNumber(), trackHeadPublicDto.getPriority());
                 trackFlowList.add(trackFlow);
             }
 
@@ -900,7 +901,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number,String priority) {
+    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number, String priority) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
 
@@ -942,7 +943,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.save(trackFlow);
 
             //跟单工序添加
-            trackItemService.addItemByTrackHead(trackHead, trackItems, trackFlow.getProductNo(), number, flowId,priority);
+            trackItemService.addItemByTrackHead(trackHead, trackItems, trackFlow.getProductNo(), number, flowId, priority);
             return trackFlow;
         } catch (Exception e) {
             e.printStackTrace();
@@ -1626,12 +1627,16 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     public List<TrackHead> queryTrackAssemblyByTrackNo(String flowId) {
         QueryWrapper<TrackAssembly> wrapperTrackAssembly = new QueryWrapper();
         wrapperTrackAssembly.eq("flow_Id", flowId);
+        wrapperTrackAssembly.eq("is_key_part", "1");
+        wrapperTrackAssembly.gt("number_install", 0);
         List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(wrapperTrackAssembly);
         List<TrackHead> trackHeads = new ArrayList<>();
         trackAssemblyList.forEach(trackAssembly -> {
             QueryWrapper<TrackAssemblyBinding> wrapperTrackAssemblyBinding = new QueryWrapper();
             wrapperTrackAssemblyBinding.eq("assembly_id", trackAssembly.getId());
+            wrapperTrackAssemblyBinding.eq("is_binding", 1);
             wrapperTrackAssemblyBinding.isNotNull("number");
+
             List<TrackAssemblyBinding> trackAssemblyBindingList = trackAssemblyBindingService.list(wrapperTrackAssemblyBinding);
             trackAssemblyBindingList.forEach(trackAssemblyBinding -> {
                 String productNo = trackAssemblyBinding.getNumber();
@@ -2089,20 +2094,21 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     /**
      * 根据材质 试棒型号获取跟单信息
+     *
      * @param texture
      * @param testBar
      * @return
      */
     @Override
-    public List<TrackHead> getTestBarNo(String texture, String testBar, String branchCode,String testBarNo){
-        List<Router> routerList = baseServiceClient.find("", "", "", "", branchCode, SecurityUtils.getCurrentUser().getTenantId(), "", testBar, texture,"").getData();
+    public List<TrackHead> getTestBarNo(String texture, String testBar, String branchCode, String testBarNo) {
+        List<Router> routerList = baseServiceClient.find("", "", "", "", branchCode, SecurityUtils.getCurrentUser().getTenantId(), "", testBar, texture, "").getData();
         List<String> routerIds = routerList.stream().map(Router::getId).collect(Collectors.toList());
-        if(!CollectionUtil.isEmpty(routerIds)){
+        if (!CollectionUtil.isEmpty(routerIds)) {
             QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
-            trackHeadQueryWrapper.in("router_id",routerIds)
-                    .eq(!StringUtils.isNullOrEmpty(testBarNo),"test_bar_no",testBarNo)
-                    .eq("branch_code",branchCode)
-                    .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+            trackHeadQueryWrapper.in("router_id", routerIds)
+                    .eq(!StringUtils.isNullOrEmpty(testBarNo), "test_bar_no", testBarNo)
+                    .eq("branch_code", branchCode)
+                    .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
                     .orderByDesc("create_time");
             List<TrackHead> list = this.list(trackHeadQueryWrapper);
             return list;
@@ -2112,40 +2118,42 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     /**
      * 根据图号 获取跟单信息
+     *
      * @param drawingNo
      * @param branchCode
      * @param productNo
      * @return
      */
     @Override
-    public List<TrackHead> getProductNo(String drawingNo,String productNo, String branchCode){
+    public List<TrackHead> getProductNo(String drawingNo, String productNo, String branchCode) {
         QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
         trackHeadQueryWrapper
-                .eq(!StringUtils.isNullOrEmpty(productNo),"product_no",productNo)
-                .eq("branch_code",branchCode)
-                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+                .eq(!StringUtils.isNullOrEmpty(productNo), "product_no", productNo)
+                .eq("branch_code", branchCode)
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
                 .orderByDesc("create_time");
-        DrawingNoUtil.queryEq(trackHeadQueryWrapper,"drawing_no",drawingNo);
+        DrawingNoUtil.queryEq(trackHeadQueryWrapper, "drawing_no", drawingNo);
         List<TrackHead> list = this.list(trackHeadQueryWrapper);
         return list;
     }
 
     /**
      * 根据图号 获取跟单信息
+     *
      * @param trackHead
      */
     @Override
-    public void zGSaveHeadcheckInfo(TrackHeadPublicDto trackHead){
-        if(!StringUtils.isNullOrEmpty(String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")))){
-            List<TrackHead> products = getProductNo(trackHead.getDrawingNo(),String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")), trackHead.getBranchCode());
-            if(!CollectionUtil.isEmpty(products)){
-                throw new GlobalException("铸件编码已存在",ResultCode.FAILED);
+    public void zGSaveHeadcheckInfo(TrackHeadPublicDto trackHead) {
+        if (!StringUtils.isNullOrEmpty(String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")))) {
+            List<TrackHead> products = getProductNo(trackHead.getDrawingNo(), String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")), trackHead.getBranchCode());
+            if (!CollectionUtil.isEmpty(products)) {
+                throw new GlobalException("铸件编码已存在", ResultCode.FAILED);
             }
         }
-        if(!StringUtils.isNullOrEmpty(trackHead.getTestBarNo())){
-            List<TrackHead> testBarNos = getTestBarNo(trackHead.getTexture(), trackHead.getTestBar(), trackHead.getBranchCode(),trackHead.getTestBarNo());
-            if(!CollectionUtil.isEmpty(testBarNos)){
-                throw new GlobalException("试棒编码已存在",ResultCode.FAILED);
+        if (!StringUtils.isNullOrEmpty(trackHead.getTestBarNo())) {
+            List<TrackHead> testBarNos = getTestBarNo(trackHead.getTexture(), trackHead.getTestBar(), trackHead.getBranchCode(), trackHead.getTestBarNo());
+            if (!CollectionUtil.isEmpty(testBarNos)) {
+                throw new GlobalException("试棒编码已存在", ResultCode.FAILED);
             }
         }
     }
