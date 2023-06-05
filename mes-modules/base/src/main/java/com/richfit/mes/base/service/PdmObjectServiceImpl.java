@@ -6,13 +6,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.base.dao.PdmObjectMapper;
+import com.richfit.mes.base.entity.PdmDto;
 import com.richfit.mes.common.model.base.PdmBom;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmObject;
 import com.richfit.mes.common.model.base.PdmProcess;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,7 +58,8 @@ public class PdmObjectServiceImpl extends ServiceImpl<PdmObjectMapper, PdmObject
     }
 
     @Override
-    public IPage getPdmPage(String drawNo, String type, String branchCode, int page, int limit) {
+    public IPage<PdmDto> getPdmPage(String drawNo, String type, String branchCode, int page, int limit) {
+        Page<PdmDto> pdmDtoPage;
         switch (type) {
             case "draw":
                 QueryWrapper<PdmDraw> drawQueryWrapper = new QueryWrapper<>();
@@ -63,32 +68,97 @@ public class PdmObjectServiceImpl extends ServiceImpl<PdmObjectMapper, PdmObject
                     drawQueryWrapper.eq("item_id", drawNo);
                 }
                 Page<PdmDraw> pdmDrawPage = pdmDrawService.page(new Page<>(page, limit), drawQueryWrapper);
-                for (PdmDraw pdmDraw : pdmDrawPage.getRecords()) {
-                    pdmDraw.setType("图纸");
-                }
-                return pdmDrawPage;
+                //返回值统一
+                pdmDtoPage = buildTemplateForDraw(pdmDrawPage);
+                return pdmDtoPage;
             case "bom":
                 QueryWrapper<PdmBom> bomQueryWrapper = new QueryWrapper<>();
-                bomQueryWrapper.eq("datagroup",branchCode);
-                if (!StringUtils.isNullOrEmpty(drawNo)){
-                    bomQueryWrapper.eq("id",drawNo);
+                bomQueryWrapper.eq("datagroup", branchCode).eq("p_id", "0");
+                if (!StringUtils.isNullOrEmpty(drawNo)) {
+                    bomQueryWrapper.eq("id", drawNo);
                 }
                 Page<PdmBom> pdmBomPage = pdmBomService.page(new Page<>(page, limit), bomQueryWrapper);
-                for (PdmBom pdmBom : pdmBomPage.getRecords()) {
-                    pdmBom.setType("BOM");
-                }
-                return pdmBomPage;
+                pdmDtoPage = buildTemplateForBom(pdmBomPage);
+                return pdmDtoPage;
             case "router":
                 QueryWrapper<PdmProcess> processQueryWrapper = new QueryWrapper<>();
-                processQueryWrapper.eq("dataGroup",branchCode);
-                if (!StringUtils.isNullOrEmpty(drawNo)){
-                    processQueryWrapper.eq("draw_no",drawNo);
+                processQueryWrapper.eq("dataGroup", branchCode);
+                if (!StringUtils.isNullOrEmpty(drawNo)) {
+                    processQueryWrapper.eq("draw_no", drawNo);
                 }
                 Page<PdmProcess> pdmProcessPage = pdmProcessService.page(new Page<>(page, limit), processQueryWrapper);
-                for (PdmProcess process : pdmProcessPage.getRecords()) {
-                    process.setType("工艺");
-                }
-                return pdmProcessPage;
+                //返回值统一
+                pdmDtoPage = buildTemplateForProcess(pdmProcessPage);
+                return pdmDtoPage;
+        }
+        return new Page<>();
+    }
+
+    private Page<PdmDto> buildTemplateForProcess(Page<PdmProcess> pdmProcessPage) {
+        List<PdmDto> pdmDtoList = new ArrayList<>();
+        if (pdmProcessPage != null) {
+            for (PdmProcess process : pdmProcessPage.getRecords()) {
+                PdmDto pdmDto = new PdmDto();
+                pdmDto.setDrawNo(process.getDrawNo());
+                pdmDto.setVer(process.getRev());
+                pdmDto.setType("工艺");
+                pdmDto.setName(process.getName());
+                pdmDto.setFileType(process.getProcessType());
+                pdmDto.setFileUrl(null);
+                pdmDto.setPublisher(process.getProcessUser());
+                pdmDto.setPublishTime(process.getSycTime());
+                pdmDtoList.add(pdmDto);
+            }
+            Page<PdmDto> pdmDtoPage = new Page<>();
+            BeanUtils.copyProperties(pdmProcessPage, pdmDtoPage);
+            pdmDtoPage.setRecords(pdmDtoList);
+            return pdmDtoPage;
+        }
+        return new Page<>();
+    }
+
+    private Page<PdmDto> buildTemplateForBom(Page<PdmBom> pdmBomPage) {
+        List<PdmDto> pdmDtoList = new ArrayList<>();
+        if (pdmBomPage != null) {
+            for (PdmBom pdmBom : pdmBomPage.getRecords()) {
+                PdmDto pdmDto = new PdmDto();
+                pdmDto.setDrawNo(pdmBom.getId());
+                pdmDto.setVer(pdmBom.getVer());
+                pdmDto.setType("BOM");
+                pdmDto.setName(pdmBom.getName());
+                pdmDto.setFileType(pdmBom.getObjectType());
+                pdmDto.setFileUrl(null);
+                pdmDto.setPublisher(pdmBom.getItemUser());
+                pdmDto.setPublishTime(pdmBom.getSycTime());
+                pdmDtoList.add(pdmDto);
+            }
+            Page<PdmDto> pdmDtoPage = new Page<>();
+            BeanUtils.copyProperties(pdmBomPage, pdmDtoPage);
+            pdmDtoPage.setRecords(pdmDtoList);
+            return pdmDtoPage;
+        }
+        return new Page<>();
+    }
+
+    private Page<PdmDto> buildTemplateForDraw(Page<PdmDraw> pdmDrawPage) {
+        List<PdmDto> pdmDtoList = new ArrayList<>();
+        if (pdmDrawPage != null) {
+            for (PdmDraw pdmDraw : pdmDrawPage.getRecords()) {
+                PdmDto pdmDto = new PdmDto();
+                pdmDto.setDrawNo(pdmDraw.getItemId());
+                pdmDto.setVer(pdmDraw.getItemRev());
+                pdmDto.setType("图纸");
+                pdmDto.setName(pdmDraw.getFileName());
+                pdmDto.setFileType(pdmDraw.getFileType());
+                pdmDto.setFileUrl(pdmDraw.getFileUrl());
+                pdmDto.setPublisher(null);
+                pdmDto.setPublishTime(pdmDraw.getSycTime());
+                pdmDtoList.add(pdmDto);
+            }
+            Page<PdmDto> pdmDtoPage = new Page<>();
+            BeanUtils.copyProperties(pdmDrawPage, pdmDtoPage);
+            pdmDtoPage.setRecords(pdmDtoList);
+            return pdmDtoPage;
         }
         return new Page<>();
     }
