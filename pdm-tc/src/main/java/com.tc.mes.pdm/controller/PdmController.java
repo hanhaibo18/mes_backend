@@ -1,6 +1,5 @@
 package com.tc.mes.pdm.controller;
 
-import com.richfit.mes.common.core.api.CommonResult;
 import com.tc.mes.pdm.entity.PdmResult;
 import com.tc.mes.pdm.entity.ProductionSchedulingDto;
 import com.tc.mes.pdm.service.ProductToPdmService;
@@ -21,8 +20,14 @@ public class PdmController {
 
     @ApiOperation(value = "生产排产单同步", notes = "MES生产排产单同步PLM")
     @PostMapping("/production_scheduling_sync")
-    public CommonResult<PdmResult> ProductionSchedulingSync(@RequestBody ProductionSchedulingDto productionSchedulingDto) throws Exception {
-        return new CommonResult(productToPdmService.ProductionSchedulingSync(productionSchedulingDto));
+    public PdmResult productionSchedulingSync(@RequestBody ProductionSchedulingDto productionSchedulingDto) {
+        return productToPdmService.productionSchedulingSync(productionSchedulingDto);
+    }
+
+    @ApiOperation(value = "用户登录plm", notes = "用户登录plm")
+    @PostMapping("/login")
+    public PdmResult login() {
+        return productToPdmService.login();
     }
 
 }

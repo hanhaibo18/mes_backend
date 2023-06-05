@@ -14,7 +14,7 @@ import java.net.HttpCookie;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.tc.mes.pdm.constant.PdmConstant.J_SESSION_ID;
+import static com.tc.mes.pdm.constant.PdmConstant.*;
 
 @Slf4j
 @Service
@@ -42,10 +42,7 @@ public class ProductToPdmService {
      * @return
      */
     public String getCookieValue() {
-        //构造访问参数
-        Map<String, String> params = new HashMap<>(2);
-        params.put("password", password);
-        params.put("user_id", user_id);
+        Map<String, String> params = map();
         // 发送请求
         HttpResponse execute = HttpUtil.createPost(url + "/system/login")
                 .contentType("application/json")
@@ -56,11 +53,22 @@ public class ProductToPdmService {
     }
 
     /**
+     * 用户登录
+     * @return
+     */
+    public PdmResult login() {
+        Map<String, String> params = map();
+        String s = HttpUtil.createPost(url + "/system/login").contentType("application/json").body(JSONUtil.toJsonStr(params)).execute().body();
+        PdmResult result = JSONUtil.toBean(s, PdmResult.class);
+        return result;
+    }
+
+    /**
      * 生产排产单同步到 pdm
      * @param productionSchedulingDto
      * @return
      */
-    public PdmResult ProductionSchedulingSync(ProductionSchedulingDto productionSchedulingDto) {
+    public PdmResult productionSchedulingSync(ProductionSchedulingDto productionSchedulingDto) {
         if (StringUtils.isEmpty(getCookieValue())) {
             return null;
         }
@@ -68,6 +76,14 @@ public class ProductToPdmService {
         String s = HttpUtil.createPost(url + "/produce/sync").cookie(new HttpCookie(J_SESSION_ID, getCookieValue())).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").body(String.valueOf(productionSchedulingDto)).execute().body();
         PdmResult result = JSONUtil.toBean(s, PdmResult.class);
         return result;
+    }
+
+    private Map<String, String> map() {
+        //构造访问参数
+        Map<String, String> params = new HashMap<>(2);
+        params.put(PASSWORD, password);
+        params.put(USER_ID, user_id);
+        return params;
     }
 
 }
