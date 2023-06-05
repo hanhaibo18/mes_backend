@@ -26,4 +26,6 @@ public class PdmDto {
     private Date publishTime;
     //文件地址
     private String fileUrl;
+
+    private String drawIdGroup;
 }
