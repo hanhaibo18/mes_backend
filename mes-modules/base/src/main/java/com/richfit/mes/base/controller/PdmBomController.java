@@ -50,7 +50,7 @@ public class PdmBomController {
         return CommonResult.success(pdmBoms);
     }
 
-    @GetMapping(value = "/getBomByProcessIdAndRevTree")
+    @GetMapping(value = "/get_bom_by_process_id_and_rev_tree")
     public CommonResult<List<PdmBom>> getTreeList(String id, String ver) {
         return CommonResult.success(pdmBomService.getBomByProcessIdAndRevTree(id,ver));
     }
