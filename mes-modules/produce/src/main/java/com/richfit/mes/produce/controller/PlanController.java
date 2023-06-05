@@ -157,10 +157,10 @@ public class PlanController extends BaseController {
             DrawingNoUtil.queryLike(queryWrapper, "draw_no", planDto.getDrawNo());
         }
         if (!StringUtils.isNullOrEmpty(planDto.getStartTime())) {
-            queryWrapper.ge("start_time", planDto.getStartTime() + " 00:00:00");
+            queryWrapper.ge("create_time", planDto.getStartTime() + " 00:00:00");
         }
         if (!StringUtils.isNullOrEmpty(planDto.getEndTime())) {
-            queryWrapper.le("end_time", planDto.getEndTime() + " 23:59:59");
+            queryWrapper.le("create_time", planDto.getEndTime() + " 23:59:59");
         }
         if (planDto.getStatus() != null && planDto.getStatus() != -1) {
             queryWrapper.eq("status", planDto.getStatus());
