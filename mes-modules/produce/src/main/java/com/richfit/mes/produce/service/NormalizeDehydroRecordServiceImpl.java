@@ -120,7 +120,6 @@ public class NormalizeDehydroRecordServiceImpl extends ServiceImpl<NormalizeDehy
             }
             //每次修改需要把状态改为未审核(需要重新审核)
             normalizeDehydroRecord.setAuditStatus(0);
-            normalizeDehydroRecord.setAuditBy(currentUser.getUsername());
             int i = normalizeDehydroRecordMapper.updateById(normalizeDehydroRecord);
             if(i>0){
                 //修改装炉为已生成记录 record_status 记录状态  0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过

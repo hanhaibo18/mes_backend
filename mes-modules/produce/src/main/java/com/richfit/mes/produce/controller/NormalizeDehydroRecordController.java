@@ -157,6 +157,9 @@ public class NormalizeDehydroRecordController extends BaseController {
         updateWrapper.in("id",idList);
         updateWrapper.set("audit_status",status);
         updateWrapper.set("audit_by",currentUser.getUsername());
+        //登陆人信息
+        TenantUserVo tenantUser = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId()).getData();
+        updateWrapper.set("audit_name",tenantUser.getEmplName());
         updateWrapper.set("audit_time",new Date());
 
         //查出审核的装炉记录
