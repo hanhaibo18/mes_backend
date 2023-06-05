@@ -43,6 +43,15 @@ public class PdmBomServiceImpl extends ServiceImpl<PdmBomMapper, PdmBom> impleme
         }
     }
 
+    @Override
+    public List<PdmBom> getBomByProcessIdAndRevTree(String id, String ver) {
+        String pid = id + "@" + ver;
+        QueryWrapper<PdmBom> bomQueryWrapper = new QueryWrapper<>();
+        bomQueryWrapper.eq("p_id",pid);
+        List<PdmBom> childBom = this.list();
+        return getChildBomTree(childBom,childBom);
+    }
+
     //递归函数
     public void getChildBom(List<PdmBom> pdmBoms) {
         if (pdmBoms.size() > 0) {
@@ -55,5 +64,26 @@ public class PdmBomServiceImpl extends ServiceImpl<PdmBomMapper, PdmBom> impleme
                 pdmBom.setChildBom(childBom);
             }
         }
+    }
+
+    //递归函数
+    public List<PdmBom> getChildBomTree(List<PdmBom> pdmBoms,List<PdmBom> pdmBomsShow) {
+        if (pdmBoms.size() > 0) {
+            for (PdmBom pdmBom : pdmBoms) {
+                String pid = pdmBom.getId() + '@' + pdmBom.getVer();
+                QueryWrapper<PdmBom> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("p_id", pid);
+                List<PdmBom> childBom = this.list(queryWrapper);
+                if (!childBom.isEmpty()){
+                    pdmBom.setIsLeafNodes(true);
+                    for (PdmBom bom : childBom) {
+                        bom.setFid(pdmBom.getId());
+                    }
+                    pdmBomsShow.addAll(childBom);
+                }
+                pdmBomsShow = getChildBomTree(childBom,pdmBomsShow);
+            }
+        }
+        return pdmBomsShow;
     }
 }

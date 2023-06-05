@@ -2,6 +2,7 @@ package com.richfit.mes.common.model.base;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -117,19 +118,26 @@ public class PdmBom {
     private List<PdmBom> childBom;
 
     @TableField(exist = false)
-    private String  showName;
+    private String showName;
 
     @TableField(exist = false)
     private String type;
 
-    public String getShowName(){
-        if(StringUtils.isEmpty(materiaNo)){
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否叶子结点", dataType = "Boolean")
+    private Boolean isLeafNodes;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "父节点id", dataType = "String")
+    private String fid;
+
+    public String getShowName() {
+        if (StringUtils.isEmpty(materiaNo)) {
             materiaNo = "---";
         }
-        if(StringUtils.isEmpty(quantity) || quantity.equals("0")){
+        if (StringUtils.isEmpty(quantity) || quantity.equals("0")) {
             quantity = " 未填写";
         }
-        return  this.showName = "["+orderNo+"]"+name+" 【产品名:"+productName+"】 【图号:"+id+"】 【物料号:"+materiaNo+"】 【数量:"+quantity+"】";
+        return this.showName = "[" + orderNo + "]" + name + " 【产品名:" + productName + "】 【图号:" + id + "】 【物料号:" + materiaNo + "】 【数量:" + quantity + "】";
     }
 
 
