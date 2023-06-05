@@ -38,4 +38,6 @@ public class PdmProcess{
     private Date sycTime;
     @TableField(value = "dataGroup")
     private String dataGroup;
+    @TableField(exist = false)
+    private String type;
 }

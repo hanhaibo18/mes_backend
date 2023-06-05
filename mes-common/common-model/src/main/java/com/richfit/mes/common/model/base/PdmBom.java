@@ -119,6 +119,9 @@ public class PdmBom {
     @TableField(exist = false)
     private String  showName;
 
+    @TableField(exist = false)
+    private String type;
+
     public String getShowName(){
         if(StringUtils.isEmpty(materiaNo)){
             materiaNo = "---";
