@@ -252,6 +252,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @GetMapping("/api/base/branch/select_org_inner")
     @Override
     public CommonResult<List<Branch>> selectOrgInner(String tenantId) {
         return null;

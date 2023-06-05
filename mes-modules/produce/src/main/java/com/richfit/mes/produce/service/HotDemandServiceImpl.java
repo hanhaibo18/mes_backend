@@ -137,20 +137,26 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
      * @param hotDemand
      */
     private void disposeBranchCode(HotDemand hotDemand,TenantUserDetails currentUser) {
-        List<Branch> org = baseServiceClient.selectOrgInner(currentUser.getTenantId()).getData();
-        List<Branch> banch = baseServiceClient.selectBranchesInner(null, hotDemand.getInchargeWorkshopName(),currentUser.getTenantId()).getData();
-        Map<String, Branch> orgMap = org.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
-        Map<String, Branch> banchMap = banch.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
-        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(orgMap)){
-            Branch branch = orgMap.get(hotDemand.getInchargeOrgName());
-            if(ObjectUtils.isNotEmpty(branch)){
-                hotDemand.setInchargeOrg(branch.getBranchCode());
-            }
-        }
-        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(banchMap)){
-            Branch branch = banchMap.get(hotDemand.getInchargeWorkshopName());
-            if(ObjectUtils.isNotEmpty(branch)){
-                hotDemand.setInchargeWorkshop(branch.getBranchCode());
+        //单位
+        List<Branch> companys = baseServiceClient.selectOrgInner(null).getData();
+        //车间
+        List<Branch> banch = baseServiceClient.selectBranchesInner(null, hotDemand.getInchargeWorkshopName(),null).getData();
+        Map<String, Branch> orgMap = companys.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        Map<String, Branch> banchMap = banch.stream().collect(Collectors.toMap(x -> x.getBranchName()+x.getMainBranchCode(), x -> x));
+        if (CollectionUtils.isNotEmpty(orgMap)){
+            //加工单位
+            Branch company = orgMap.get(hotDemand.getInchargeOrgName());
+            if(ObjectUtils.isNotEmpty(company)){
+                //设置加工单位编码
+                hotDemand.setInchargeOrg(company.getBranchCode());
+                if (CollectionUtils.isNotEmpty(banchMap)){
+                    //车间
+                    Branch branch = banchMap.get(hotDemand.getInchargeWorkshopName()+company.getBranchCode());
+                    if(ObjectUtils.isNotEmpty(branch)){
+                        //设置加工车间编码
+                        hotDemand.setInchargeWorkshop(branch.getBranchCode());
+                    }
+                }
             }
         }
     }

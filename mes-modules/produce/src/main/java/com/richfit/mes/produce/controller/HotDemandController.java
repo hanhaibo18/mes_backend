@@ -304,7 +304,7 @@ public class HotDemandController extends BaseController {
             if (update) {
                 return CommonResult.success(ResultCode.SUCCESS);
             }
-            return CommonResult.failed();
+            return CommonResult.failed("模型检查失败");
         } else {
             return CommonResult.success("操作成功");
         }
@@ -388,7 +388,7 @@ public class HotDemandController extends BaseController {
             return CommonResult.success(ResultCode.SUCCESS);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return CommonResult.failed();
+            return CommonResult.failed("外协件检查异常");
         }
     }
 
@@ -516,7 +516,7 @@ public class HotDemandController extends BaseController {
             this.checkRouter(idList, branchCode);//工艺检查
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new GlobalException("一键检查异常", ResultCode.FAILED);
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
         return CommonResult.success("操作成功");
 
