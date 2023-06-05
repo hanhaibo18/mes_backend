@@ -601,7 +601,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     //匹配生产订单
-    private String matchProd(String materialNo, Integer number) {
+    private String matchProd(String materialNo, Integer number) throws Exception {
         String orderNo = "";
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
         wrapper.eq("material_code", materialNo);
@@ -621,7 +621,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 break;
             }
         }
-
+        if (StrUtil.isBlank(orderNo)) {
+            throw new Exception("自动匹配没有找订单！");
+        }
         return orderNo;
     }
 
