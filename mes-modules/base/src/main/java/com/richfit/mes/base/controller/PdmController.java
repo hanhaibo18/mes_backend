@@ -1,6 +1,7 @@
 package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.richfit.mes.base.entity.PdmDto;
 import com.richfit.mes.base.service.PdmObjectService;
 import com.richfit.mes.common.core.api.CommonResult;
 import io.swagger.annotations.Api;
@@ -25,8 +26,8 @@ public class PdmController {
     private PdmObjectService pdmObjectService;
 
     @GetMapping
-    public CommonResult<IPage> getPdm(@ApiParam(value = "图号") @RequestParam(required = false) String drawNo, @ApiParam(value = "图纸 = draw 工艺 = router BOM = bom") String type,
-                                      @ApiParam(value = "车间编码") String branchCode, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
+    public CommonResult<IPage<PdmDto>> getPdm(@ApiParam(value = "图号") @RequestParam(required = false) String drawNo, @ApiParam(value = "图纸 = draw 工艺 = router BOM = bom") String type,
+                                              @ApiParam(value = "车间编码") String branchCode, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
         return CommonResult.success(pdmObjectService.getPdmPage(drawNo, type, branchCode, page, limit));
     }
 }
