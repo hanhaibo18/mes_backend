@@ -26,11 +26,11 @@ public interface LineStoreService extends IService<LineStore> {
     boolean changeStatus(TrackHead trackHead);
 
     boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
-                     Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) throws Exception;
+                     Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix);
 
     // 材料入库
     boolean addStoreNew(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
-                        String isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) throws Exception;
+                        String isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix);
 
     boolean checkCodeExist(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo, String strartSuffix);
 
