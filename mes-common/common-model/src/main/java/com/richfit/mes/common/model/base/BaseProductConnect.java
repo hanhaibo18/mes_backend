@@ -13,6 +13,8 @@ import lombok.Data;
 /**
  * 产品交接单据
  *
+ * @author wangchenyu
+ *
  * @TableName base_product_connect
  */
 @TableName(value = "base_product_connect")
@@ -89,6 +91,24 @@ public class BaseProductConnect implements Serializable {
      * 验收单位：默认钻机分公司
      */
     private String receiveUnit;
+
+    /**
+     * 创建时间
+     */
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createDate;
+
+    /**
+     * 修改时间
+     */
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date modifyDate;
+
+    /**
+     * 交接状态：0：待接受；1：已接受；2：已拒收
+     */
+    private String status;
+
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

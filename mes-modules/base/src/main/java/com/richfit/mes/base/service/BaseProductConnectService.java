@@ -27,4 +27,20 @@ public interface BaseProductConnectService extends IService<BaseProductConnect> 
      * @return
      */
     Page queryConnectDetailInfo(String connectId, int page, int limit);
+
+    /**
+     * 新增交接单据
+     *
+     * @param connectDTO
+     * @return
+     */
+    void insertConnect(ConnectDTO connectDTO);
+
+    /**
+     * 新增交接单据
+     *
+     * @param connectDTO
+     * @return
+     */
+    void editConnect(ConnectDTO connectDTO);
 }
