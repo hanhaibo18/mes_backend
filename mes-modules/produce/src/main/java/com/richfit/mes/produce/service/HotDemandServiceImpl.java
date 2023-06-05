@@ -579,7 +579,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         //   map的 可以为固定值   drawNos,branchCodes
         List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoAndBranchCode).getData();
         if (CollectionUtils.isEmpty(byDrawNo)) {
-            return CommonResult.failed("没有工艺信息");
+            throw new GlobalException("没有工艺信息",ResultCode.FAILED);
         }
         List<String> routerIdList = byDrawNo.stream().map(x -> x.getId()).collect(Collectors.toList());
         Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion()+x.getBranchCode(), x -> x.getId()));
@@ -587,7 +587,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         //根据工艺id查出工序信息
         List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList,branchCode);
         if (CollectionUtils.isEmpty(sequences)) {
-            return CommonResult.failed("工艺没有工序信息");
+            throw new GlobalException("工艺没有工序信息",ResultCode.FAILED);
         }
         //根据工艺id分组
         //数据转换为
