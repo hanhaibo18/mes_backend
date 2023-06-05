@@ -681,7 +681,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             QueryWrapper<LayingOff> queryWrapperLayingOff = new QueryWrapper<>();
             queryWrapperLayingOff.eq("item_id", completeDto.getTiId());
             layingOffService.remove(queryWrapperLayingOff);
-
+            completeDto.getLayingOff().setItemId(completeDto.getTiId());
             layingOffService.saveOrUpdate(completeDto.getLayingOff());
         }
         //记录锻造信息
