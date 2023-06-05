@@ -63,7 +63,7 @@ public class PdmObjectServiceImpl extends ServiceImpl<PdmObjectMapper, PdmObject
         switch (type) {
             case "draw":
                 QueryWrapper<PdmDraw> drawQueryWrapper = new QueryWrapper<>();
-                drawQueryWrapper.eq("datagroup", branchCode).eq("isop", "1").orderByDesc("sys_time");
+                drawQueryWrapper.eq("datagroup", branchCode).eq("isop", "1").orderByDesc("syc_time");
                 if (!StringUtils.isNullOrEmpty(drawNo)) {
                     drawQueryWrapper.eq("item_id", drawNo);
                 }
@@ -73,7 +73,7 @@ public class PdmObjectServiceImpl extends ServiceImpl<PdmObjectMapper, PdmObject
                 return pdmDtoPage;
             case "bom":
                 QueryWrapper<PdmBom> bomQueryWrapper = new QueryWrapper<>();
-                bomQueryWrapper.eq("datagroup", branchCode).orderByDesc("sys_time");
+                bomQueryWrapper.eq("datagroup", branchCode).orderByDesc("syc_time");
                 if (!StringUtils.isNullOrEmpty(drawNo)) {
                     bomQueryWrapper.eq("id", drawNo);
                 }
@@ -82,7 +82,7 @@ public class PdmObjectServiceImpl extends ServiceImpl<PdmObjectMapper, PdmObject
                 return pdmDtoPage;
             case "router":
                 QueryWrapper<PdmProcess> processQueryWrapper = new QueryWrapper<>();
-                processQueryWrapper.eq("dataGroup", branchCode).orderByDesc("sys_time");
+                processQueryWrapper.eq("dataGroup", branchCode).orderByDesc("syc_time");
                 if (!StringUtils.isNullOrEmpty(drawNo)) {
                     processQueryWrapper.eq("draw_no", drawNo);
                 }
