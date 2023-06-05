@@ -1,4 +1,4 @@
-package com.richfit.mes.produce.service;
+package com.richfit.mes.produce.service.notice;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

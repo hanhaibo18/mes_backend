@@ -6,7 +6,7 @@ import lombok.Data;
  * PDM 通用返回类
  */
 @Data
-public class PlmResult {
+public class PdmResult {
     /**
      * 状态码
      */

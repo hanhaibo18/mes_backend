@@ -36,4 +36,10 @@ public class SalesSchedulingDto extends PageDto {
 
     @ApiModelProperty(value = "通知接收状态", dataType = "integer")
     private String notificationStatus;
+
+    @ApiModelProperty(value = "图号", dataType = "String")
+    private String drawingNo;
+
+    @ApiModelProperty(value = "物料编码", dataType = "String")
+    private String materialNo;
 }
