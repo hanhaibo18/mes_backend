@@ -108,11 +108,11 @@ public class PdmObjectServiceImpl extends ServiceImpl<PdmObjectMapper, PdmObject
                 pdmDto.setPublisher(process.getProcessUser());
                 pdmDto.setPublishTime(process.getSycTime());
                 pdmDtoList.add(pdmDto);
-                Page<PdmDto> pdmDtoPage = new Page<>();
-                BeanUtils.copyProperties(pdmProcessPage, pdmDtoPage);
-                pdmDtoPage.setRecords(pdmDtoList);
-                return pdmDtoPage;
             }
+            Page<PdmDto> pdmDtoPage = new Page<>();
+            BeanUtils.copyProperties(pdmProcessPage, pdmDtoPage);
+            pdmDtoPage.setRecords(pdmDtoList);
+            return pdmDtoPage;
         }
         return new Page<>();
     }
@@ -131,11 +131,11 @@ public class PdmObjectServiceImpl extends ServiceImpl<PdmObjectMapper, PdmObject
                 pdmDto.setPublisher(pdmBom.getItemUser());
                 pdmDto.setPublishTime(pdmBom.getSycTime());
                 pdmDtoList.add(pdmDto);
-                Page<PdmDto> pdmDtoPage = new Page<>();
-                BeanUtils.copyProperties(pdmBomPage, pdmDtoPage);
-                pdmDtoPage.setRecords(pdmDtoList);
-                return pdmDtoPage;
             }
+            Page<PdmDto> pdmDtoPage = new Page<>();
+            BeanUtils.copyProperties(pdmBomPage, pdmDtoPage);
+            pdmDtoPage.setRecords(pdmDtoList);
+            return pdmDtoPage;
         }
         return new Page<>();
     }
@@ -154,11 +154,11 @@ public class PdmObjectServiceImpl extends ServiceImpl<PdmObjectMapper, PdmObject
                 pdmDto.setPublisher(null);
                 pdmDto.setPublishTime(pdmDraw.getSycTime());
                 pdmDtoList.add(pdmDto);
-                Page<PdmDto> pdmDtoPage = new Page<>();
-                BeanUtils.copyProperties(pdmDrawPage, pdmDtoPage);
-                pdmDtoPage.setRecords(pdmDtoList);
-                return pdmDtoPage;
             }
+            Page<PdmDto> pdmDtoPage = new Page<>();
+            BeanUtils.copyProperties(pdmDrawPage, pdmDtoPage);
+            pdmDtoPage.setRecords(pdmDtoList);
+            return pdmDtoPage;
         }
         return new Page<>();
     }
