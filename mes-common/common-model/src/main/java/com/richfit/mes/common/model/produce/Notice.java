@@ -52,6 +52,18 @@ public class Notice extends BaseEntity<Notice> {
      */
     private String workNo;
     /**
+     * 图号
+     */
+    private String drawingNo;
+    /**
+     * 物料号
+     */
+    private String materialNo;
+    /**
+     * 物料名称
+     */
+    private String materialName;
+    /**
      * 产品名称
      */
     private String produceName;

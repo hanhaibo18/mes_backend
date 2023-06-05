@@ -36,4 +36,10 @@ public class ProductionSchedulingDto extends PageDto {
 
     @ApiModelProperty(value = "排产结束日期", dataType = "Date")
     private String salesSchedulingDateEnd;
+
+    @ApiModelProperty(value = "图号", dataType = "String")
+    private String drawingNo;
+
+    @ApiModelProperty(value = "物料编码", dataType = "String")
+    private String materialNo;
 }
