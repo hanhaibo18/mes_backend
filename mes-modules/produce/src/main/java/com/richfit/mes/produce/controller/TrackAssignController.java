@@ -279,7 +279,7 @@ public class TrackAssignController extends BaseController {
             //设备code添加
             Device device = baseServiceClient.getDeviceById(assigns[0].getDeviceId()).getData();
             for (Assign assign : assigns) {
-                assign.setDeviceCode(ObjectUtil.isEmpty(device)?"":device.getCode());
+                assign.setDeviceCode(ObjectUtil.isEmpty(device) ? "" : device.getCode());
                 if (StringUtils.isNullOrEmpty(assign.getTiId())) {
                     throw new GlobalException("未关联工序", ResultCode.FAILED);
                 }
@@ -376,12 +376,14 @@ public class TrackAssignController extends BaseController {
                     boolean assembly = "2".equals(trackHead.getClasses());
                     //是否进行齐套并发送申请单 true = 发送 false = 不发送
                     boolean switchOff = "true".equals(off);
-                    if (assembly && sendWMSA(trackItem) != 0 && switchOff && bom) {
+                    //配料工序校验
+                    int sendWMSA = sendWMSA(trackItem);
+                    if (assembly && sendWMSA != 0 && switchOff && bom) {
                         //无生产订单编号不允许发送申请单
                         if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
-                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode(), sendWMSA(trackItem));
+                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode(), sendWMSA);
                         requestNoteService.saveRequestNoteNew(ingredient, trackHead, trackHead.getBranchCode());
                         ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
 //                        ApplyListUpload ingredient = collect(trackItem, trackHead, trackHead.getBranchCode());
