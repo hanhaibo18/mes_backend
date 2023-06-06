@@ -1450,7 +1450,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                         changeItemInfo(LgItem, trackItem, 0, 2);
                         trackItemService.updateById(trackItem);
                     } else if ("16".equals(trackItem.getOptType())) {
-                        changeItemInfo(JzItem, trackItem, 1, 1);
+                        changeItemInfo(JzItem, trackItem, 0, 2);
                         trackItemService.updateById(trackItem);
                     }
                 }
@@ -1519,6 +1519,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         trackItem.setPrechargeFurnaceId(ItemList.get(0).getPrechargeFurnaceId());
         //预装炉派工id
         trackItem.setPrechargeFurnaceAssignId(ItemList.get(0).getPrechargeFurnaceAssignId());
+
+        trackItem.setFlowId(ItemList.get(0).getFlowId());
+
+        trackItem.setIsSchedule(1);
     }
 
     /**
