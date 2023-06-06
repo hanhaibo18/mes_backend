@@ -277,11 +277,6 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 }
             }
         }
-        //检查无模型数据
-//        List<String> ids = hotDemandService.checkModel(idList, branchCode);
-//        if (CollectionUtils.isNotEmpty(ids)) {
-//            return CommonResult.failed("存在无模型需求");
-//        }
         for (HotDemand hotDemand : hotDemands) {
             //无工艺不可批准生产
             if(hotDemand.getIsExistProcess()==null||hotDemand.getIsExistProcess()==0){

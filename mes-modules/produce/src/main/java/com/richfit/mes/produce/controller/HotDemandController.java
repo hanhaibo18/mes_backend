@@ -134,6 +134,9 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getVoucherNo())) {//凭证号
             queryWrapper.eq("voucher_no", hotDemandParam.getVoucherNo());
         }
+        if (StringUtils.isNotEmpty(hotDemandParam.getProduceOrgName())) {//生产部门名称
+            queryWrapper.eq("produce_org_name", hotDemandParam.getProduceOrgName());
+        }
         //0 :未提报  1 :已提报'
         if (hotDemandParam.getSubmitState() != null) {
             queryWrapper.eq("submit_state", hotDemandParam.getSubmitState());
