@@ -4,6 +4,7 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.tc.mes.pdm.entity.PdmResult;
+import com.tc.mes.pdm.entity.ProduceNoticeDto;
 import com.tc.mes.pdm.entity.ProductionSchedulingDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -11,7 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.HttpCookie;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.tc.mes.pdm.constant.PdmConstant.*;
@@ -65,17 +68,39 @@ public class ProductToPdmService {
 
     /**
      * 生产排产单同步到 pdm
-     * @param productionSchedulingDto
+     * @param produceNoticeDtoList
      * @return
      */
-    public PdmResult productionSchedulingSync(ProductionSchedulingDto productionSchedulingDto) {
+    public PdmResult productionSchedulingSync(List<ProduceNoticeDto> produceNoticeDtoList) {
         if (StringUtils.isEmpty(getCookieValue())) {
             return null;
         }
+        List<ProductionSchedulingDto> productionSchedulingDtoList = convert(produceNoticeDtoList);
         //发送请求
-        String s = HttpUtil.createPost(url + "/produce/sync").cookie(new HttpCookie(J_SESSION_ID, getCookieValue())).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").body(String.valueOf(productionSchedulingDto)).execute().body();
+        String s = HttpUtil.createPost(url + "/produce/sync").cookie(new HttpCookie(J_SESSION_ID, getCookieValue())).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").body(String.valueOf(productionSchedulingDtoList)).execute().body();
         PdmResult result = JSONUtil.toBean(s, PdmResult.class);
         return result;
+    }
+
+    private List<ProductionSchedulingDto> convert(List<ProduceNoticeDto> produceNoticeDtoList) {
+        List<ProductionSchedulingDto> productionSchedulingDtoList = new ArrayList<>();
+        for (ProduceNoticeDto produceNotice : produceNoticeDtoList) {
+            ProductionSchedulingDto productionSchedulingDto = new ProductionSchedulingDto();
+            productionSchedulingDto.setSchedulingNo(produceNotice.getProductionOrder());
+            productionSchedulingDto.setNoticSouce(produceNotice.getNotificationType());
+            productionSchedulingDto.setTechPlanTime(String.valueOf(produceNotice.getTechnicalCompletionTime()));
+            productionSchedulingDto.setDeliveryDate(produceNotice.getDeliveryDate());
+            productionSchedulingDto.setExecuOrganization(produceNotice.getUnit());
+            productionSchedulingDto.setWorkNo(produceNotice.getWorkNo());
+            productionSchedulingDto.setSchedulingGroup(produceNotice.getIssuingUnit());
+            productionSchedulingDto.setSchedulingDate(String.valueOf(produceNotice.getProductionScheduleDate()));
+            productionSchedulingDto.setCustomerName(produceNotice.getUserUnit());
+            productionSchedulingDto.setSchedulingType(produceNotice.getProductionType());
+            productionSchedulingDto.setProductName(produceNotice.getProduceName());
+            productionSchedulingDto.setPreviewUrl(produceNotice.getPreviewUrl());
+            productionSchedulingDtoList.add(productionSchedulingDto);
+        }
+        return productionSchedulingDtoList;
     }
 
     private Map<String, String> map() {

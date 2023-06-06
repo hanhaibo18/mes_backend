@@ -16,11 +16,6 @@ public class ProductionSchedulingDto {
     private String schedulingNo;
 
     /**
-     *  排产单名称（必填）
-     */
-    private String objectName;
-
-    /**
      *  通知来源（必填）
      */
     private String noticSouce;
@@ -69,11 +64,6 @@ public class ProductionSchedulingDto {
      *  产品名称（必填）
      */
     private String productName;
-
-    /**
-     *  审签意见（必填）
-     */
-    private List<String> opinion;
 
     /**
      *  排产单名称 指定格式pdf
