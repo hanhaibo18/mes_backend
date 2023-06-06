@@ -17,6 +17,12 @@ import java.util.List;
 public class ConnectDTO extends QueryPageDto implements Serializable {
 
     /**
+     * 主键id
+     */
+    @ApiModelProperty(value = "主键id")
+    private String id;
+
+    /**
      * 交接单号
      */
     @ApiModelProperty(value = "交接单号")

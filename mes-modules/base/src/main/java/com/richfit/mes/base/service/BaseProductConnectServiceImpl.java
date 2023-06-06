@@ -1,6 +1,7 @@
 package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -111,7 +112,33 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         baseProductConnectExtendLambdaQueryWrapper.eq(BaseProductConnectExtend::getConnectId, baseProductConnect.getId());
         baseProductConnectExtendService.remove(baseProductConnectExtendLambdaQueryWrapper);
         //主表信息变更；
+        LambdaUpdateWrapper<BaseProductConnect> baseProductConnectLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        baseProductConnectLambdaUpdateWrapper.eq(BaseProductConnect::getId, connectDTO.getId());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getDriNo, connectDTO.getDriNo());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getWorkNo, connectDTO.getWorkNo());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getDrawNo, connectDTO.getDrawNo());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getDrawNo, connectDTO.getDrawNo());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getBomId, connectDTO.getBomId());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getProductNo, connectDTO.getProductNo());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getNumber, connectDTO.getNumber());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getCheckUser, connectDTO.getCheckUser());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getCheckDate, connectDTO.getCheckDate());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getModifyBy, SecurityUtils.getCurrentUser().getUsername());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getBranchCode, connectDTO.getBranchCode());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getReceiveUser, connectDTO.getReceiveUser());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getReceiveUnit, connectDTO.getReceiveUnit());
         //新增子表数据；
+        List<BaseProductConnectExtend> baseProductConnectExtends = new ArrayList<>();
+        for (ConnectExtendDTO connectExtendDTO : connectDTO.getConnectExtendDTOList()) {
+            //todo 图号唯一性校验
+
+            BaseProductConnectExtend baseProductConnectExtend = new BaseProductConnectExtend();
+            BeanUtils.copyBeanProp(baseProductConnectExtend, connectExtendDTO);
+            baseProductConnectExtend.setConnectId(baseProductConnect.getId());
+            baseProductConnectExtends.add(baseProductConnectExtend);
+        }
+        //批量入库
+        baseProductConnectExtendService.saveBatch(baseProductConnectExtends);
     }
 
     private void checkData(ConnectDTO connectDTO) {
@@ -133,6 +160,13 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         if (connectDTO.getNumber() == null) {
             CommonResult.failed("数量不能为空");
         }
+    }
+
+    /**
+     * 校验图号是否唯一
+     */
+    public void checkDrawNo(){
+
     }
 }
 

@@ -78,6 +78,11 @@ public class BaseProductConnect implements Serializable {
     private String createBy;
 
     /**
+     * 修改人
+     */
+    private String modifyBy;
+
+    /**
      * 车间编码
      */
     private String branchCode;
