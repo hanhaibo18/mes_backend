@@ -48,6 +48,7 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     @Override
     public IPage<Notice> queryPage(SalesSchedulingDto salesSchedulingDto) {
         QueryWrapper<Notice> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(StrUtil.isNotBlank(salesSchedulingDto.getNotificationStatus()), "notification_state", salesSchedulingDto.getNotificationStatus());
         queryWrapper.eq(StrUtil.isNotBlank(salesSchedulingDto.getProductionOrder()), "production_order", salesSchedulingDto.getProductionOrder());
         queryWrapper.eq(StrUtil.isNotBlank(salesSchedulingDto.getWorkNo()), "work_no", salesSchedulingDto.getWorkNo());
         queryWrapper.like(StrUtil.isNotBlank(salesSchedulingDto.getProduceName()), "produce_name", salesSchedulingDto.getProduceName());
