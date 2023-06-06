@@ -169,9 +169,5 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
             jsonObject.put("XC031", "auxiliaryHours");             //辅助工时
             retHour.add(jsonObject);
         }
-
-        System.out.println(retHour);
     }
-
-
 }

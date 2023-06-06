@@ -93,7 +93,6 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             e.printStackTrace();
         }
         TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
-        ArrayList<HotDemand> demandList = new ArrayList<>();
         for (DemandExcel hemandExcel : list) {
             //丰富基础数据
             HotDemand hotDemand = new HotDemand();
@@ -122,16 +121,45 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
                 }
             }
+            this.disposeBranchCode(hotDemand,currentUser);
+
             //查重
             //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             this.save(hotDemand);
-            //demandList.add(hotDemand);
         }
 
-        //this.saveBatch(demandList);
         return CommonResult.success("");
     }
 
+
+    /**
+     * 处理车间编码
+     * @param hotDemand
+     */
+    private void disposeBranchCode(HotDemand hotDemand,TenantUserDetails currentUser) {
+        //单位
+        List<Branch> companys = baseServiceClient.selectOrgInner(null).getData();
+        //车间
+        List<Branch> banch = baseServiceClient.selectBranchesInner(null, hotDemand.getInchargeWorkshopName(),null).getData();
+        Map<String, Branch> orgMap = companys.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        Map<String, Branch> banchMap = banch.stream().collect(Collectors.toMap(x -> x.getBranchName()+x.getMainBranchCode(), x -> x));
+        if (CollectionUtils.isNotEmpty(orgMap)){
+            //加工单位
+            Branch company = orgMap.get(hotDemand.getInchargeOrgName());
+            if(ObjectUtils.isNotEmpty(company)){
+                //设置加工单位编码
+                hotDemand.setInchargeOrg(company.getBranchCode());
+                if (CollectionUtils.isNotEmpty(banchMap)){
+                    //车间
+                    Branch branch = banchMap.get(hotDemand.getInchargeWorkshopName()+company.getBranchCode());
+                    if(ObjectUtils.isNotEmpty(branch)){
+                        //设置加工车间编码
+                        hotDemand.setInchargeWorkshop(branch.getBranchCode());
+                    }
+                }
+            }
+        }
+    }
     /**
      * 导入需求提报数据(冶炼车间)
      * @param file
@@ -249,11 +277,6 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 }
             }
         }
-        //检查无模型数据
-//        List<String> ids = hotDemandService.checkModel(idList, branchCode);
-//        if (CollectionUtils.isNotEmpty(ids)) {
-//            return CommonResult.failed("存在无模型需求");
-//        }
         for (HotDemand hotDemand : hotDemands) {
             //无工艺不可批准生产
             if(hotDemand.getIsExistProcess()==null||hotDemand.getIsExistProcess()==0){
@@ -446,7 +469,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
                 //--------------------------
                 plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
-                plan.setInchargeOrgName(hotDemand.getInchargeOrg());//加工单位
+                plan.setInchargeOrgName(hotDemand.getInchargeOrgName());//加工单位
+                plan.setInchargeOrg(hotDemand.getInchargeOrg());
                 plan.setBlank(hotDemand.getWorkblankType());//毛坯
                 plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
                 plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
@@ -454,6 +478,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setModifyTime(new Date());
                 plan.setDrawNoName("");//图号名称
                 plan.setMaterialName(hotDemand.getDemandName());//零件名称
+                plan.setInchargeWorkshopName(hotDemand.getInchargeWorkshopName());
+                plan.setInchargeWorkshop(hotDemand.getInchargeWorkshop());
                 planService.save(plan);
                 //扩展字段保存
                 this.saveExtend(hotDemand, plan);
@@ -484,6 +510,9 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             planExtend.setSubmitOrderTime(hotDemand.getSubmitOrderTime());//提单日期
             planExtend.setIngotCase(hotDemand.getIngotCase());//锭 型
             planExtend.setWorkblankType(hotDemand.getWorkblankType());//毛坯类型 0锻件,1铸件,2钢锭
+            planExtend.setInchargeWorkshop(hotDemand.getInchargeWorkshop());//加工单位
+            planExtend.setInchargeWorkshopName(hotDemand.getInchargeWorkshopName());//加工单位名称
+            planExtend.setIsLongPeriod(hotDemand.getIsLongPeriod());//是否长周期
         planExtendService.save(planExtend);
     }
 
@@ -499,17 +528,27 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             plan.setBranchCode("BOMCO_RG_MX");//车间码(模型排产自动派发到模型车间)
         }else {
             //0锻件,1铸件,2钢锭
-            switch (hotDemand.getWorkblankType()){
-                case "0":  plan.setBranchCode("BOMCO_RG_DZ");//锻造车间
-                    break;
-                case "1":  plan.setBranchCode("BOMCO_RG_ZG");//铸造
-                    break;
-                case "2":  plan.setBranchCode("BOMCO_RG_YL");//冶炼
-                    break;
-                default: throw new GlobalException("毛坯类型超出范围", ResultCode.FAILED);
-            }
+            String branchCode = this.workblankTypeToBranchCode(hotDemand.getWorkblankType());
+
+            plan.setBranchCode(branchCode);
         }
     }
+
+    /**
+     * 根据毛坯类型返回车间码
+     * @param workblankType
+     * @return
+     */
+    @Override
+    public String workblankTypeToBranchCode(String workblankType) {
+        switch (workblankType){
+            case "0":  return "BOMCO_RG_DZ";//锻造车间
+            case "1":  return "BOMCO_RG_ZG";//铸造
+            case "2":  return "BOMCO_RG_YL";//冶炼
+            default: throw new GlobalException("毛坯类型超出范围", ResultCode.FAILED);
+        }
+    }
+
 
     /**
      * 自动生成工序计划
@@ -529,32 +568,37 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         if (CollectionUtils.isEmpty(hotDemands)){
             return CommonResult.failed("工序计划已生成");
         }
-        List<String> drawNoList = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
-        //根据图号查出工艺信息
-        List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoList, branchCode).getData();
+        //准备查询工艺库参数
+        HashMap<String, List<String>> drawNoAndBranchCode = this.getStringListHashMap(hotDemands);
+        //根据需求图号和车间码查询工艺库
+        //   map的 可以为固定值   drawNos,branchCodes
+        List<Router> byDrawNo = baseServiceClient.getByDrawNo(drawNoAndBranchCode).getData();
         if (CollectionUtils.isEmpty(byDrawNo)) {
-            return CommonResult.failed("没有工艺信息");
+            throw new GlobalException("没有工艺信息",ResultCode.FAILED);
         }
         List<String> routerIdList = byDrawNo.stream().map(x -> x.getId()).collect(Collectors.toList());
-        Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion(), x -> x.getId()));
+        Map<String, String> routerIdMap = byDrawNo.stream().collect(Collectors.toMap(x -> x.getRouterNo()+x.getVersion()+x.getBranchCode(), x -> x.getId()));
 
         //根据工艺id查出工序信息
-        List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList);
+        List<Sequence> sequences = baseServiceClient.querySequenceByRouterIds(routerIdList,branchCode);
         if (CollectionUtils.isEmpty(sequences)) {
-            return CommonResult.failed("工艺没有工序信息");
+            throw new GlobalException("工艺没有工序信息",ResultCode.FAILED);
         }
         //根据工艺id分组
+        //数据转换为
         Map<String, List<Sequence>> sequencesMap = sequences.stream().collect(Collectors.groupingBy(Sequence::getRouterId));
         //根据工序id查询工序字典(拿到关键工序字段)
         List<String> optIdList = sequences.stream().map(x -> x.getOptId()).collect(Collectors.toList());//工序字典id
+        //获取工序字典信息
         List<Operatipon> operatipons = baseServiceClient.queryOptByIds(optIdList);
+        //工序的工序字典map
         Map<String, Operatipon> optMap = operatipons.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
 
         ArrayList<HotPlanNode> planNodes = new ArrayList<>();
         ArrayList<String> demandIdList = new ArrayList<>();
         //根据需求信息自动生成生产计划数据
         for (HotDemand hotDemand : hotDemands) {
-            String s = routerIdMap.get(hotDemand.getDrawNo()+hotDemand.getVersionNum());
+            String s = routerIdMap.get(hotDemand.getDrawNo()+hotDemand.getVersionNum()+this.workblankTypeToBranchCode(hotDemand.getWorkblankType()));
             //有工艺的情况下
             if (StringUtils.isNotEmpty(s)) {
                 List<Sequence> sequencesList = sequencesMap.get(s);
@@ -584,8 +628,30 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         }
         planNodeService.saveBatch(planNodes);
         //更新关键计划节点生成状态
+        if(CollectionUtils.isNotEmpty(demandIdList)){
         this.updateDemand(demandIdList);
+        }
         return CommonResult.success("操作成功");
+    }
+
+    /**
+     * 准备查询工艺库参数
+     * @param hotDemands
+     * @return
+     */
+    @Override
+    public HashMap<String, List<String>> getStringListHashMap(List<HotDemand> hotDemands) {
+        List<String> drawNoList = hotDemands.stream().map(x -> x.getDrawNo()).collect(Collectors.toList());
+        //根据毛坯类型得到的车间编码
+        HashSet<String> branchCodes=new HashSet<>();
+        for (HotDemand hotDemand : hotDemands) {
+            branchCodes.add(hotDemandService.workblankTypeToBranchCode(hotDemand.getWorkblankType()));
+        }
+        //准备查询工艺参数
+        HashMap<String,List<String>> drawNoAndBranchCode=new HashMap<>();
+        drawNoAndBranchCode.put("branchCodes",new ArrayList<>(branchCodes));
+        drawNoAndBranchCode.put("drawNos",drawNoList);
+        return drawNoAndBranchCode;
     }
 
     /**

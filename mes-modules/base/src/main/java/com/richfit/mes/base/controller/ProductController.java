@@ -436,7 +436,7 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "查询物料", notes = "根据物料号图号查询物料")
     @GetMapping("/product/listByNo")
-    public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType) {
+    public CommonResult<List<Product>> selectProduct(String tenantId, String materialNo, String drawingNo, String materialType) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.eq("material_no", materialNo);
@@ -449,8 +449,12 @@ public class ProductController extends BaseController {
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             DrawingNoUtil.queryEq(queryWrapper, "drawing_no", drawingNo);
         }
-        if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
-            queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id", tenantId);
+        } else {
+            if (SecurityUtils.getCurrentUser() != null && SecurityUtils.getCurrentUser().getTenantId() != null) {
+                queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+            }
         }
         queryWrapper.orderByDesc("create_time");
         return CommonResult.success(productService.list(queryWrapper), PRODUCT_SUCCESS_MESSAGE);
@@ -669,7 +673,6 @@ public class ProductController extends BaseController {
                 int index = i == 0 ? i : 1000 * i;
                 //结尾下标
                 int toIndex = i == 0 ? 999 : 1000 * i + 999;
-                System.out.println(index + "  index-----------------  toindex" + toIndex);
                 List<Object> objects = null;
                 if (i < oldPage) {
                     objects = idList.subList(index, toIndex);

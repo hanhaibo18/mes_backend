@@ -285,12 +285,15 @@ public class TrackCheckController extends BaseController {
                     check.setDrawingNo(trackHead.getDrawingNo());
                     check.setTrackNo(trackHead.getTrackNo());
                     check.setProductName(trackHead.getProductName());
+                    check.setWorkNo(trackHead.getWorkNo());
+                    check.setMaterialName(trackHead.getMaterialName());
                 }
                 if (null != trackItem) {
                     check.setNumber(trackItem.getNumber());
                     check.setProductNo(trackItem.getProductNo());
                     check.setOptId(trackItem.getOptId());
                     check.setOptName(trackItem.getOptName());
+                    check.setOptNo(trackItem.getOptNo());
                     check.setOptType(trackItem.getOptType());
                     check.setIsCurrent(trackItem.getIsCurrent());
                 }

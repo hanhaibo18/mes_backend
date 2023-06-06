@@ -48,9 +48,6 @@ public class PdmMesDrawController {
         queryWrapper.orderByDesc("syc_time")
                 .eq("dataGroup", pdmMesDraw.getDataGroup());
         List<PdmMesDraw> list = pdmMesDrawService.list(queryWrapper);
-        System.out.println("--------------------------------------------------------------------");
-        System.out.println(list.size());
-        System.out.println(pdmMesDraw.getItemId());
         return CommonResult.success(list);
     }
 

@@ -34,7 +34,7 @@ public interface BaseServiceClient {
     public CommonResult<Branch> selectBranchByCodeAndTenantId(@RequestParam("branchCode") String branchCode, @RequestParam("tenantId") String tenantId);
 
     @GetMapping("/api/base/product/product/listByNo")
-    public CommonResult<List<Product>> selectProduct(@RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
+    public CommonResult<List<Product>> selectProduct(@RequestParam("tenantId") String tenantId, @RequestParam("materialNo") String materialNo, @RequestParam("drawingNo") String drawingNo, @RequestParam("materialType") String materialType);
 
     @GetMapping(value = "/api/base/device/find_one")
     public CommonResult<Device> getDeviceById(@RequestParam("id") String id);
@@ -212,13 +212,17 @@ public interface BaseServiceClient {
     @GetMapping("/api/base/opt/queryOptByOptNames")
     List<Operatipon> queryOptByOptNames(@ApiParam(value = "工序字典名称") @RequestBody List<String> optNams,
                                         @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode);
-
-    @PostMapping("/api/base/router/get_by_drawNo")
-    public CommonResult<List<Router>> getByDrawNo(@RequestBody List<String> drawNos, @RequestParam String branchCode);
+    /**
+     *
+     * @param param  map的 可以为固定值   drawNos,branchCodes
+     * @return
+     */
+    @PostMapping("/api/base/router/get_by_drawNo_branchCode")
+    public CommonResult<List<Router>> getByDrawNo(@RequestBody Map<String,List<String>> param);
 
 
     @PostMapping("/api/base/sequence/query_by_routerIds")
-    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds);
+    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds,@RequestParam String branchCode);
 
     /**
      * 功能描述:根据id查询工序字典列表
@@ -245,7 +249,7 @@ public interface BaseServiceClient {
 
     @ApiOperation(value = "查询工艺")
     @GetMapping("/api/base/router/find")
-    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status, @RequestParam String testBar, @RequestParam String texture);
+    public CommonResult<List<Router>> find(@RequestParam String id, @RequestParam String routerNo, @RequestParam String routerName, @RequestParam String version, @RequestParam String branchCode, @RequestParam String tenantId, @RequestParam String status, @RequestParam String testBar, @RequestParam String texture, @RequestParam String routerType);
 
     @ApiOperation(value = "获取所有车间")
     @GetMapping("/api/base/branch/query_all_branch")
@@ -254,5 +258,16 @@ public interface BaseServiceClient {
     @ApiOperation(value = "获取所有车间Inner")
     @GetMapping("/api/base/branch/query_all_branch_inner")
     public List<Branch> queryAllBranchInner(@RequestHeader(value = SecurityConstants.FROM) String header);
+
+    @ApiOperation(value = "查询组织机构inner", notes = "查询组织机构inner")
+    @GetMapping("/api/base/branch/select_org_inner")
+    public CommonResult<List<Branch>> selectOrgInner(@RequestParam("tenantId") String tenantId);
+    @ApiOperation(value = "查询分公司inner", notes = "查询分公司inner")
+    @GetMapping("/api/base/branch/select_branches_inner")
+    CommonResult<List<Branch>> selectBranchesInner( @RequestParam("branchCode") String branchCode,@RequestParam("branchName")  String branchName,@RequestParam("tenantId")String tenantId);
+
+    @ApiOperation(value = "根据branchCode和工艺id查询工序", notes = "根据branchCode和工艺id查询工序")
+    @GetMapping("/api/base/sequence/listByBranchCodeAndRouterId")
+    public List<Sequence> listByBranchCodeAndRouterId(@RequestParam String routerId, @RequestParam String branchCode);
 
 }

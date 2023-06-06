@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -97,6 +98,41 @@ public class DeviceController extends BaseController {
             }
             IPage<Device> devices = deviceService.page(new Page<Device>(page, limit), queryWrapper);
             return CommonResult.success(devices);
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "根据设备组名获取设备组下所有设备", notes = "根据设备组名获取设备组下所有设备")
+    @ApiImplicitParams({@ApiImplicitParam(name = "limit", value = "每页条数",
+            required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "code", value = "编码", required = true, paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "name", value = "名称", required = true, paramType = "query", dataType = "string")})
+    @GetMapping("/getByName")
+    public CommonResult<IPage<Device>> getByName(int page, int limit, String code, String name, String parentId, String type, String branchCode, String tenantId, String order, String orderCol) {
+        try {
+            QueryWrapper<Device> queryWrapper = new QueryWrapper<Device>();
+
+            if (!StringUtils.isNullOrEmpty(name)) {
+                queryWrapper.eq("name", name);
+            }
+            if (!StringUtils.isNullOrEmpty(type)) {
+                queryWrapper.eq("type", type);
+            }
+            if (!StringUtils.isNullOrEmpty(branchCode)) {
+                queryWrapper.eq("branch_code", branchCode);
+            }
+            if (!StringUtils.isNullOrEmpty(tenantId)) {
+                queryWrapper.eq("tenant_id", tenantId);
+            }
+            IPage<Device> devices = deviceService.page(new Page<Device>(page, limit), queryWrapper);
+            Device device = devices.getRecords().get(0);
+            if(ObjectUtil.isNotEmpty(devices)){
+                return   this.page(page,limit,code,null,device.getId(),"0",branchCode,tenantId,order,orderCol);
+            }else {
+                return CommonResult.success(devices);
+            }
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }

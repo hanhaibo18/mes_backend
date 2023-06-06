@@ -26,8 +26,30 @@ public class Certificate extends BaseEntity<Certificate> {
     public static String TRACK_NO_NULL_MESSAGE = "请选择跟单!";
 
     public static String SUCCESS_MESSAGE = "操作成功！";
+
     public static String FAILED_MESSAGE = "操作失败！";
+
     public static String FAILED_ON_COMPLETE = "工序未完成，不允许开具合格证";
+    //下工序车间、生产入库
+    public static String NEXT_OPT_WORK_BOMCO_SC = "BOMCO_SC";
+
+    //未推送工时
+    public static String IS_SENG_WORK_HOUR_0 = "0";
+
+    //已推送工时
+    public static String IS_SENG_WORK_HOUR_1 = "1";
+
+    //推送工时失败
+    public static String IS_SENG_WORK_HOUR_2 = "2";
+
+    //未交库
+    public static String IS_DELIVERY_TO_WAREHOUSE_0 = "0";
+
+    //已交库
+    public static String IS_DELIVERY_TO_WAREHOUSE_1 = "1";
+
+    //交库失败
+    public static String IS_DELIVERY_TO_WAREHOUSE_2 = "2";
 
     @ApiModelProperty(value = "租户ID")
     private String tenantId;
@@ -107,8 +129,16 @@ public class Certificate extends BaseEntity<Certificate> {
     private String isPush;
 
     //2022-07-26 gaol 添加
-    @ApiModelProperty(value = "是否推送工时给ERP  0：未推送  1：已推送")
+    @ApiModelProperty(value = "是否推送工时给ERP  0：未推送  1：已推送   2:失败")
     private String isSendWorkHour;
+    @ApiModelProperty(value = "是否推送工时给ERP返回的信息")
+    private String sendWorkHourMessage;
+
+    @ApiModelProperty(value = "是否交库给WMS  0：未推送  1：已推送   2:失败")
+    private String isDeliveryToWarehouse;
+
+    @ApiModelProperty(value = "是否交库给WMS返回的信息")
+    private String deliveryToWarehouseMessage;
 
     @ApiModelProperty(value = "试棒数量")
     private Integer testBarNumber;
@@ -142,6 +172,9 @@ public class Certificate extends BaseEntity<Certificate> {
 
     @ApiModelProperty(value = "金额")
     private Double money;
+
+    @ApiModelProperty(value = "工序类型", dataType = "String")
+    private String optType;
 
     @ApiModelProperty(value = "本车间名称")
     @TableField(exist = false)

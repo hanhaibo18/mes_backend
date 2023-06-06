@@ -891,9 +891,6 @@ public class TrackHeadController extends BaseController {
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("certificate_no", certificate.getCertificateNo());
             queryWrapper.eq("branch_code", certificate.getBranchCode());
-            System.out.println("-------------------");
-            System.out.println(certificate.getCertificateNo());
-            System.out.println(certificate.getBranchCode());
             trackHeadList = trackHeadService.list(queryWrapper);
             if (CollectionUtils.isEmpty(trackHeadList)) {
                 return CommonResult.failed("合格证号没有找到跟单信息，数据问题，联系维护人员进行处理");
@@ -952,9 +949,8 @@ public class TrackHeadController extends BaseController {
     }
 
     @ApiOperation(value = "查询BOM信息", notes = "根据装配信息查询BOM信息")
-    @GetMapping("/query_bom/{flowId}")
-    public CommonResult<List<TrackHead>> queryBomByTrackAssembly(@PathVariable String flowId) {
-        flowId = flowId.replaceAll("%20", " ");
+    @GetMapping("/query_bom")
+    public CommonResult<List<TrackHead>> queryBomByTrackAssembly(@RequestParam String flowId) {
         return CommonResult.success(trackHeadService.queryTrackAssemblyByTrackNo(flowId));
     }
 

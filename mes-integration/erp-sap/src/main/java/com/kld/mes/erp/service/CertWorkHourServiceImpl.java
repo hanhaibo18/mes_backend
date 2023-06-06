@@ -1,10 +1,12 @@
 package com.kld.mes.erp.service;
 
+import com.alibaba.fastjson.JSON;
 import com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024;
 import com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024Response;
 import com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024S1;
 import com.kld.mes.erp.entity.certWorkHour.Zc80Ppif024T1;
 import com.kld.mes.erp.utils.WsTemplateFactory;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.TrackItem;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,30 +40,29 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
     private final String packageName = "com.kld.mes.erp.entity.certWorkHour";
 
     @Override
-    public boolean sendWorkHour(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
+    public CommonResult sendWorkHour(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
 
         //生成报文主体
         Zc80Ppif024 zc80Ppif024 = generateRequestBody(trackItemList, erpCode, orderNo, qty, unit);
 
         //获取调用服务接口类实例
         WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
-
         //发起接口调用
         Zc80Ppif024Response zc80Ppif024Response = (Zc80Ppif024Response) webServiceTemplate
                 .marshalSendAndReceive(URL, zc80Ppif024);
-
-        return zc80Ppif024Response.getEMes().contains("完成");
+        if (zc80Ppif024Response.getEMes().contains("完成")) {
+            return CommonResult.success(zc80Ppif024Response, zc80Ppif024Response.getEMes());
+        } else {
+            return CommonResult.failed(zc80Ppif024Response.getEMes());
+        }
     }
 
 
     private Zc80Ppif024 generateRequestBody(List<TrackItem> trackItemList, String erpCode, String orderNo, int qty, String unit) {
-
         List<Zc80Ppif024S1> zc80Ppif024S1List = new ArrayList<>();
         for (int i = 0; i < trackItemList.size(); i++) {
             Zc80Ppif024S1 zc80Ppif024S1 = getZc80Ppif024S1(trackItemList.get(i), erpCode, orderNo, qty, unit, i);
-
             zc80Ppif024S1List.add(zc80Ppif024S1);
-
         }
 
         Zc80Ppif024 zc80Ppif024 = new Zc80Ppif024();
@@ -83,7 +84,7 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
         zc80Ppif024S1.setMeinh(unit);
         zc80Ppif024S1.setIle01("MIN");
 
-        zc80Ppif024S1.setIsm01(BigDecimal.valueOf(getHourToMinutes(trackItem)));
+        zc80Ppif024S1.setIsm01(BigDecimal.valueOf(getHourToMinutes(trackItem)).setScale(1, BigDecimal.ROUND_UP));
         zc80Ppif024S1.setFinConf("P");
         zc80Ppif024S1.setBudat(sdf.format(new Date()));
         zc80Ppif024S1.setZflag("Y");
@@ -98,16 +99,12 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
      * @return
      */
     private String getVornr(TrackItem item, int i) {
-
         Assert.notNull(item, "item 不应该为null");
-
         String s;
-
-        int optSequence = item.getOptSequence();
-
+        int optSequence = item.getOptSequence() * 10;
         if (optSequence > 0) {
             s = "000" + optSequence;
-            s = s.substring(s.length() - 4, 4);
+            s = s.substring(s.length() - 4, s.length());
         } else {
             if (i < 9) {
                 s = "00" + (i + 1) + "0";
@@ -115,7 +112,6 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
                 s = "0" + (i + 1) + "0";
             }
         }
-
         return s;
     }
 
@@ -128,9 +124,6 @@ public class CertWorkHourServiceImpl implements CertWorkHourService {
     private Double getHourToMinutes(TrackItem item) {
         Double singlePieceHours = item.getSinglePieceHours() == null ? 0.0 : item.getSinglePieceHours();
         Double prepareEndHours = item.getPrepareEndHours() == null ? 0.0 : item.getPrepareEndHours();
-
         return (singlePieceHours + prepareEndHours) * 60;
     }
-
-
 }

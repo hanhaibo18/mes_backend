@@ -33,7 +33,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Product>> selectProduct(String materialNo, String drawingNo, String materialType) {
+    public CommonResult<List<Product>> selectProduct(String tenantId, String materialNo, String drawingNo, String materialType) {
         return CommonResult.success(null);
     }
 
@@ -202,13 +202,13 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @PostMapping("/api/base/router/get_by_drawNo")
     @Override
-    public CommonResult<List<Router>> getByDrawNo(List<String> drawNos, String branchCode) {
+    public CommonResult<List<Router>> getByDrawNo(Map<String,List<String>> param) {
         return null;
     }
 
     @PostMapping("/api/base/sequence/query_by_routerIds")
     @Override
-    public List<Sequence> querySequenceByRouterIds(List<String> routerIds) {
+    public List<Sequence> querySequenceByRouterIds(List<String> routerIds,String branchCode) {
         return null;
     }
 
@@ -238,7 +238,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture, String routerType) {
         return null;
     }
 
@@ -249,6 +249,22 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @Override
     public List<Branch> queryAllBranchInner(String header) {
+        return null;
+    }
+
+    @GetMapping("/api/base/branch/select_org_inner")
+    @Override
+    public CommonResult<List<Branch>> selectOrgInner(String tenantId) {
+        return null;
+    }
+
+    @Override
+    public CommonResult<List<Branch>> selectBranchesInner(String branchCode, String branchName,String tenantId) {
+        return null;
+    }
+
+    @Override
+    public List<Sequence> listByBranchCodeAndRouterId(String routerId, String branchCode) {
         return null;
     }
 

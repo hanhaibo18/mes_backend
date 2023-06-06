@@ -14,9 +14,11 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.TrackAssignController;
+import com.richfit.mes.produce.enmus.OptTypeEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -220,6 +222,9 @@ public class PublicServiceImpl implements PublicService {
         return this.activationProcess(map);
     }
 
+    @Autowired
+    private CertificateService certificateService;
+
     /**
      * 功能描述: 激活工序
      *
@@ -228,7 +233,7 @@ public class PublicServiceImpl implements PublicService {
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean activationProcess(Map<String, String> map) {
+    public Boolean activationProcess(Map<String, String> map){
         //倒序获取工序列表
         QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
         currentTrackItem.eq("flow_id", map.get("flowId"));
@@ -397,19 +402,22 @@ public class PublicServiceImpl implements PublicService {
      * @Author: xinYu.hou
      * @Date: 2022/8/23 15:08
      **/
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean activation(TrackItem trackItem) {
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
         //激活前校验当前跟单多产品是否全部完成 全部完成 获取所有循环执行下工序激活
         QueryWrapper<TrackItem> queryWrapperItemList = new QueryWrapper();
         queryWrapperItemList.eq("track_head_id", trackItem.getTrackHeadId());
         queryWrapperItemList.eq("original_opt_sequence", trackItem.getOriginalOptSequence());
         List<TrackItem> itemList = trackItemService.list(queryWrapperItemList);
         //不查询传入工序,查询相同optSequence的其他工序 并且没最终完成的
-        List<TrackItem> NotIsFinalCompleteList = itemList.stream().filter(item -> item.getOptSequence().equals(trackItem.getOptSequence()) && !item.getId().equals(trackItem.getId()) && item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
+        List<TrackItem> notIsFinalCompleteList = itemList.stream().filter(item -> item.getOriginalOptSequence().equals(trackItem.getOriginalOptSequence()) && !item.getId().equals(trackItem.getId()) && item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
         //有其他工序没有最终完成 终止流程
-        if (!CollectionUtils.isEmpty(NotIsFinalCompleteList)) {
+        if (!CollectionUtils.isEmpty(notIsFinalCompleteList)) {
             return true;
         }
+
         for (TrackItem item : itemList) {
             //激活下工序
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
@@ -417,6 +425,10 @@ public class PublicServiceImpl implements PublicService {
             queryWrapper.eq("original_opt_sequence", item.getNextOptSequence());
             List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
             for (TrackItem trackItemEntity : trackItemList) {
+                //冶炼车间下工序装炉
+                if ("7".equals(trackHead.getClasses())){
+                    trackItemEntity.setPrechargeFurnaceId(item.getPrechargeFurnaceId());
+                }
                 trackItemEntity.setIsCurrent(1);
                 trackItemEntity.setModifyTime(new Date());
                 trackItemService.updateById(trackItemEntity);
@@ -427,6 +439,13 @@ public class PublicServiceImpl implements PublicService {
                     automaticProcess(map);
                 }
             }
+        }
+
+        //特殊工序流转下车间
+        String nextOptWork = "";
+        if(OptTypeEnum.KX_OPERATION.getStateId().equals(trackItem.getOptType())){
+            nextOptWork = "BOMCO_RG_YL";
+            certificateService.headMoveToNextBranch(trackItem.getTrackHeadId(),nextOptWork,trackItem);
         }
         return true;
     }

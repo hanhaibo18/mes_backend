@@ -79,8 +79,6 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
                 "</urn:ZC80_MMIF019>" +
                 "</soapenv:Body>" +
                 "</soapenv:Envelope>";
-        System.out.println("------------");
-        System.out.println(soapRequestData);
         //构造http请求头
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("text/xml;charset=UTF-8");
@@ -196,10 +194,8 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
         Document doc = null;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         List<ProducePurchaseOrder> list = new ArrayList<>();
-        System.out.println("------------------------------------1");
         CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "", SecurityConstants.FROM_INNER);
 //        CommonResult<List<ItemParam>> listCommonResult = systemServiceClient.selectItemClass("erpCode", "");
-        System.out.println("------------------------------------2");
         Map<String, ItemParam> maps = listCommonResult.getData().stream().collect(Collectors.toMap(ItemParam::getCode, Function.identity(), (key1, key2) -> key2));
         try {
             doc = DocumentHelper.parseText(xml);
@@ -271,7 +267,7 @@ public class PurchaseOrderSyncServiceImpl extends ServiceImpl<ProducePurchaseOrd
 //                                                purchase.Desc = dt.Rows[0]["Desc"].ToString();
 //                                            }
                                             purchase.setLgort(itemNext.elementTextTrim("LGORT"));
-                                            CommonResult<List<Product>> productList = baseServiceClient.selectProduct(purchase.getMaterialNo(), "", "");
+                                            CommonResult<List<Product>> productList = baseServiceClient.selectProduct(purchase.getTenantId(),purchase.getMaterialNo(), "", "");
                                             if (null != productList.getData()) {
                                                 for (Product product : productList.getData()) {
                                                     purchase.setMaterialRemark(product.getMaterialDesc());

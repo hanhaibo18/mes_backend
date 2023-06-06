@@ -435,7 +435,7 @@ public class HeatTrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMappe
         }
         prechargeFurnace.setStatus(PrechargeFurnace.YES_START_WORK);
         prechargeFurnace.setStepStatus(PrechargeFurnace.YES_START_WORK);
-        prechargeFurnace.setStartWorkBy(SecurityUtils.getCurrentUser().getUserId());
+        prechargeFurnace.setStartWorkBy(SecurityUtils.getCurrentUser().getUsername());
 
         //设置开工
         List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_id", prechargeFurnaceId));

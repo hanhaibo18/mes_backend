@@ -139,7 +139,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     @Override
     public IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query) {
 //        try {
-//            deleteComplete();
+//            deleteCompleteW();
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
@@ -431,14 +431,34 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
             trackItem.setPourTemperature(completeDto.getPourTemperature());
-            //下工序装炉
+            //冶炼车间预装炉重复利用，特有字段下工序装炉，若该字段不为空则修改预装炉状态为未派工
             if (completeDto.getNextFurnace() != null && completeDto.getNextFurnace()) {
                 QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
                 itemQueryWrapper.eq("track_head_id", trackItem.getTrackHeadId());
                 itemQueryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
                 TrackItem nextItem = trackItemService.getOne(itemQueryWrapper);
-                nextItem.setPrechargeFurnaceId(trackItem.getPrechargeFurnaceId());
-                trackItemService.updateById(nextItem);
+                if (!ObjectUtil.isEmpty(nextItem)) {
+                    //有下工序则修改预装炉状态为未派工
+                    PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                    if (!ObjectUtil.isEmpty(prechargeFurnace)) {
+                        prechargeFurnace.setAssignStatus(0);
+                        prechargeFurnaceService.updateById(prechargeFurnace);
+                    }
+                } else {
+                    //修改预装炉表状态为完工
+                    if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
+                        PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                        prechargeFurnace.setStatus(END_START_WORK);
+                        prechargeFurnaceService.updateById(prechargeFurnace);
+                    }
+                }
+            } else {
+                //修改预装炉表状态为完工
+                if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
+                    PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                    prechargeFurnace.setStatus(END_START_WORK);
+                    prechargeFurnaceService.updateById(prechargeFurnace);
+                }
             }
             //检验人
             trackItem.setQualityCheckBy(completeDto.getQcPersonId());
@@ -465,6 +485,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 trackComplete.setCompleteTime(new Date());
                 trackComplete.setDetectionResult("-");
                 trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+                if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
+                    trackComplete.setPrechargeFurnaceId(String.valueOf(trackItem.getPrechargeFurnaceId()));
+                }
                 number += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
                 time = time.add(new BigDecimal(trackComplete.getReportHours() == null ? 0.00 : trackComplete.getReportHours()));
             }
@@ -546,15 +569,18 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 //派工状态设置为完成
                 assign.setState(2);
                 trackAssignService.updateById(assign);
-                //修改预装炉派工表状态为完工
-                if (!StringUtils.isNullOrEmpty(trackItem.getPrechargeFurnaceAssignId())) {
-                    PrechargeFurnaceAssign assignInfo = prechargeFurnaceAssignService.getById(trackItem.getPrechargeFurnaceAssignId());
-                    assignInfo.setIsDoing(END_START_WORK);
-                    assignInfo.setFinishTime(new Date());
-                    prechargeFurnaceAssignService.updateById(assignInfo);
-                }
 
             }
+            //修改预装炉派工表状态为完工
+            if (!StringUtils.isNullOrEmpty(trackItem.getPrechargeFurnaceAssignId())) {
+                PrechargeFurnaceAssign assignInfo = prechargeFurnaceAssignService.getById(trackItem.getPrechargeFurnaceAssignId());
+                assignInfo.setIsDoing(END_START_WORK);
+                assignInfo.setFinishTime(new Date());
+                assignInfo.setCompleteStatus("1");
+                assignInfo.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+                prechargeFurnaceAssignService.updateById(assignInfo);
+            }
+
             log.error(completeDto.getTrackCompleteList().toString());
 
             this.saveBatch(completeDto.getTrackCompleteList());
@@ -613,7 +639,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         forgControlRecordCacheService.remove(queryWrapperForgControlRecordCache);
     }
 
-    private void saveKnockout(CompleteDto completeDto) {
+    void saveKnockout(CompleteDto completeDto) {
         if (!ObjectUtil.isEmpty(completeDto.getKnockout())) {
             //先删除该已保存过的
             QueryWrapper<Knockout> queryWrapperKnockout = new QueryWrapper<>();
@@ -624,7 +650,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
-    private void saveModelingAndCore(CompleteDto completeDto) {
+    void saveModelingAndCore(CompleteDto completeDto) {
         if (!ObjectUtil.isEmpty(completeDto.getModelingCore())) {
             //先删除该已保存过的
             QueryWrapper<ModelingCore> queryWrapperModelingCore = new QueryWrapper<>();
@@ -635,7 +661,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
-    private void saveRawMaterialRecord(CompleteDto completeDto) {
+    void saveRawMaterialRecord(CompleteDto completeDto) {
         if (!CollectionUtils.isEmpty(completeDto.getRawMaterialRecordList())) {
             //现根据item_id删除原有记录
             QueryWrapper<RawMaterialRecord> queryWrapperRawMaterialRecord = new QueryWrapper<>();
@@ -648,14 +674,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
     }
 
-    private void saveLayingOffAndForgControlRecord(CompleteDto completeDto) {
+    void saveLayingOffAndForgControlRecord(CompleteDto completeDto) {
         //记录下料信息
         if (!ObjectUtil.isEmpty(completeDto.getLayingOff())) {
             //先删除该已保存过的
             QueryWrapper<LayingOff> queryWrapperLayingOff = new QueryWrapper<>();
             queryWrapperLayingOff.eq("item_id", completeDto.getTiId());
             layingOffService.remove(queryWrapperLayingOff);
-
+            completeDto.getLayingOff().setItemId(completeDto.getTiId());
             layingOffService.saveOrUpdate(completeDto.getLayingOff());
         }
         //记录锻造信息
@@ -904,6 +930,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             if (org.apache.commons.lang3.StringUtils.isNotBlank(s)) {
                 return CommonResult.failed(s);
             }
+            trackComplete.setId(null);
             trackComplete.setAssignId(completeDto.getAssignId());
             trackComplete.setTiId(completeDto.getTiId());
             trackComplete.setTrackId(completeDto.getTrackId());
@@ -911,6 +938,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackComplete.setProdNo(completeDto.getProdNo());
             trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
             trackComplete.setCompleteTime(new Date());
+            trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             numDouble += trackComplete.getCompletedQty() == null ? 0 : trackComplete.getCompletedQty();
         }
         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
@@ -925,10 +953,15 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             //跟新工序完成数量
             trackItem.setCompleteQty(trackItem.getCompleteQty() + numDouble);
-            trackItemService.updateById(trackItem);
         }
-        log.error(completeDto.getTrackCompleteList().toString());
-
+//        log.error(completeDto.getTrackCompleteList().toString());
+        trackItemService.updateById(trackItem);
+        //修改工序浇注温度
+        if (completeDto.getPourTemperature() != null && completeDto.getPrechargeFurnaceAssignId() != null) {
+            UpdateWrapper<TrackItem> itemUpdateWrapper = new UpdateWrapper<>();
+            itemUpdateWrapper.eq("precharge_furnace_assign_id", completeDto.getPrechargeFurnaceAssignId()).set("pour_temperature", completeDto.getPourTemperature());
+            trackItemService.update(itemUpdateWrapper);
+        }
         //保存下料信息和锻造信息
         saveLayingOffAndForgControlRecord(completeDto);
         //保存原材料消耗信息
@@ -938,7 +971,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //保存造型/制芯工序报工信息
         saveModelingAndCore(completeDto);
 
-        return CommonResult.success(this.saveOrUpdateBatch(completeDto.getTrackCompleteList()));
+        return CommonResult.success(this.saveBatch(completeDto.getTrackCompleteList()));
     }
 
     /**
@@ -1187,9 +1220,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     .orderByDesc("next_opt_sequence");
             List<TrackItem> trackItems = trackItemService.list(queryWrapper);
             //最小值
-            int min = trackItems.stream().mapToInt(TrackItem::getOriginalOptSequence).min().getAsInt();
-            //获取有没有不等于最小值的
-            List<TrackItem> collect = result.stream().filter(item -> item.getOriginalOptSequence() != min).collect(Collectors.toList());
+            int min = trackItems.stream().mapToInt(TrackItem::getOptSequence).min().getAsInt();
+            //查询需要报工数据有最小当前工序
+            List<TrackItem> collect = result.stream().filter(item -> item.getOptSequence() == min).collect(Collectors.toList());
             //有大于最小值的不是最小工序报工,需要进行连续工序判断,和所有产品同时报工判断
             if (!collect.isEmpty()) {
                 //先判断报工的是所有产品吗
@@ -1203,8 +1236,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     result = result.stream().filter(item -> item.getIsCurrent() == 1 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
                 }
             } else {
-                //过滤掉已报工的数据&&过滤不在传入产品编号的数据
-                result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+//                //过滤掉已报工的数据&&过滤不在传入产品编号的数据
+//                result = result.stream().filter(item -> item.getIsOperationComplete() == 0 && outsource.getProdNoList().contains(item.getProductNo())).collect(Collectors.toList());
+                //没有最小当前工序 表示跳工序执行 抛出错误
+                throw new GlobalException("未选中最小当前工序,请按照工序顺序选择工序", ResultCode.FAILED);
             }
         } else {
             //单间并行工序全都是当前工序会出现跳工序执行问题,过滤其中最小工序 仅对最小工序执行
@@ -1253,7 +1288,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             trackComplete.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             trackComplete.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
             trackComplete.setCompletedQty(Double.valueOf(trackItem.getNumber()));
-            trackComplete.setTrackNo(trackHead.getProductNo());
+            trackComplete.setTrackNo(trackHead.getTrackNo());
 
             trackItem.setOperationCompleteTime(new Date());
             trackItem.setIsOperationComplete(1);
@@ -1329,7 +1364,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         }
         return optNext;
     }
-
 
     /**
      * 检查是否跳工序报工
@@ -2188,6 +2222,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
         assignQueryWrapper.eq("ti_id", tiId).last("limit 1");
         Assign assign = trackAssignService.getOne(assignQueryWrapper);
+        if (ObjectUtil.isEmpty(assign)) {
+            throw new GlobalException("原预装炉没有派工信息！", ResultCode.FAILED);
+        }
+        QueryWrapper<AssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
+        assignPersonQueryWrapper.eq("assign_id",assign.getId());
+        List<AssignPerson> assignPeople = trackAssignPersonMapper.selectList(assignPersonQueryWrapper);
+        assign.setAssignPersons(assignPeople);
         if ("15".equals(prechargeFurnaceAssign.getOptType())) {
             //变更炼钢作业记录
             UpdateWrapper<RecordsOfSteelmakingOperations> steelmakingOperationsUpdateWrapper = new UpdateWrapper<>();
@@ -2273,8 +2314,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         //循环派工记录分组
         int i = 0;
         for (List<TrackComplete> trackCompleteList : listMap.values()) {
-            System.out.println("---------------------------");
-            System.out.println(i++);
             //查询派工数量
             BigDecimal qty = BigDecimal.valueOf(assignMap.get(trackCompleteList.get(0).getAssignId()).getQty());
             //获取单件工时
@@ -2314,6 +2353,29 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 }
             } else {
                 trackCompleteList.forEach(complete -> complete.setIsRetain(3));
+            }
+            trackCompleteService.updateBatchById(trackCompleteList);
+        }
+    }
+
+    private void deleteCompleteW() {
+        //错误问题工序20条
+        List<String> trackItemList = trackItemMapper.queryBugTrackItemList();
+        //查询工序所有报工记录
+        QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
+        completeQueryWrapper.in("ti_id", trackItemList);
+        completeQueryWrapper.orderByAsc("complete_time");
+        List<TrackComplete> completeList = this.list(completeQueryWrapper);
+        //根据工序分组
+        Map<String, List<TrackComplete>> listMap = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
+        int i = 1;
+        for (List<TrackComplete> trackCompleteList : listMap.values()) {
+            for (TrackComplete trackComplete : trackCompleteList) {
+                if (trackComplete.getId().equals(trackCompleteList.get(0).getId())) {
+                    trackComplete.setIsRetain(1);
+                } else {
+                    trackComplete.setIsRetain(2);
+                }
             }
             trackCompleteService.updateBatchById(trackCompleteList);
         }

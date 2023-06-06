@@ -27,7 +27,6 @@ public class PurchaseOrderUtil {
         PurchaseOrderUtil purchaseOrderUtil = new PurchaseOrderUtil();
         String url = "http://10.30.47.134:8000/ZBZZ/HTXT/GetPurchaseInfoByTime2/service/PS/GetPurchaseInfoByTime2";
         List<ProducePurchaseOrder> producePurchaseOrders = purchaseOrderUtil.queryPurchaseSynchronization(url, "2023-01-01", "2023-04-20");
-        System.out.println(producePurchaseOrders.size());
     }
 
     public List<ProducePurchaseOrder> queryPurchaseSynchronization(String url, String startTime, String endTime) {

@@ -1068,6 +1068,10 @@ public class ProduceInspectionRecordService {
         dataMap.put("drawingNo", power.getDrawNo() );
         //零件名称
         dataMap.put("materialName",  power.getSampleName());
+        //产品编号处理
+        String productNo = String.valueOf(dataMap.get("productNo"));
+        productNo = productNo.replaceAll(String.valueOf(power.getDrawNo()),"").trim();
+        dataMap.put("productNo",  productNo);
 
         dataMap.put("inspectionResultsRemark", StringUtils.isEmpty(String.valueOf(dataMap.get("inspectionResultsRemark")))?null:dataMap.get("inspectionResultsRemark"));
         //报告日期取开工日期
@@ -1099,6 +1103,7 @@ public class ProduceInspectionRecordService {
         if (!StringUtils.isEmpty(produceInspectionRecordMt.getDiagramAttachmentId())) {
             dataMap.put("img", systemServiceClient.getBase64Code(produceInspectionRecordMt.getDiagramAttachmentId()).getData());
         }
+        //
 
     }
 

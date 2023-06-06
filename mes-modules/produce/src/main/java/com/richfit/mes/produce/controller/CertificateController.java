@@ -1,22 +1,28 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.code.CertTypeEnum;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.entity.CertQueryDto;
 import com.richfit.mes.produce.service.*;
+import com.richfit.mes.produce.service.bsns.CertAdditionalBsns;
+import com.richfit.mes.produce.utils.Code;
+import com.richfit.mes.produce.utils.Utils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -25,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -39,7 +47,6 @@ import static java.util.stream.Collectors.toCollection;
 @RequestMapping("/api/produce/certificate")
 public class CertificateController {
 
-
     @Autowired
     private CertificateService certificateService;
 
@@ -48,30 +55,26 @@ public class CertificateController {
 
     @Autowired
     private TrackHeadService trackHeadService;
-    @Autowired
-    public TrackItemService trackItemService;
-    @Autowired
-    public CodeRuleService codeRuleService;
 
-    @ApiOperation(value = "生成合格证", notes = "生成合格证")
-    @GetMapping("/auto")
-    public void addCertificate() throws Exception {
-        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("template_code", "BOMCO_BY_ZPG1");
-        queryWrapper.eq("tenant_id", "12345678901234567890123456789002");
-        queryWrapper.isNull("certificate_no");
-        queryWrapper.isNotNull("product_no");
-        List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
-        int i = 0;
-        for (TrackHead trackHead : trackHeadList) {
-            try {
-                System.out.println("----------------------" + i++);
-                certificateService.autoCertificate(trackHead);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    @ApiOperation(value = "生成合格证", notes = "生成合格证")
+//    @GetMapping("/auto")
+//    public void addCertificate() throws Exception {
+//        QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("template_code", "BOMCO_BY_ZPG1");
+//        queryWrapper.eq("tenant_id", "12345678901234567890123456789002");
+//        queryWrapper.isNull("certificate_no");
+//        queryWrapper.isNotNull("product_no");
+//        List<TrackHead> trackHeadList = trackHeadService.list(queryWrapper);
+//        int i = 0;
+//        for (TrackHead trackHead : trackHeadList) {
+//            try {
+//                System.out.println("----------------------" + i++);
+//                certificateService.autoCertificate(trackHead);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     @ApiOperation(value = "生成合格证", notes = "生成合格证")
     @PostMapping("/certificate")
@@ -181,11 +184,11 @@ public class CertificateController {
                                                     @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                     @ApiParam(value = "合格证号") @RequestParam(required = false) String certificateNo,
                                                     @ApiParam(value = "产品编号") @RequestParam(required = false) String productNo,
-                                                    @ApiParam(value = "是否推送") @RequestParam(required = false) Integer isPush,
                                                     @ApiParam(value = "类型") @RequestParam(required = false) String type,
                                                     @ApiParam(value = "来源") @RequestParam(required = false) String origin,
                                                     @ApiParam(value = "排序") @RequestParam(required = false) String order,
                                                     @ApiParam(value = "排序字段") @RequestParam(required = false) String orderCol,
+                                                    @ApiParam(value = "是否推送") @RequestParam(required = false) String isPush,
                                                     @ApiParam(value = "分公司") String branchCode,
                                                     @ApiParam(value = "页码") int page,
                                                     @ApiParam(value = "每页条数") int limit) {
@@ -203,9 +206,6 @@ public class CertificateController {
         if (!StringUtils.isNullOrEmpty(origin)) {
             queryWrapper.eq("cert_origin", origin);
         }
-        if (!ObjectUtil.isEmpty(isPush)) {
-            queryWrapper.eq("is_push", isPush);
-        }
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
         }
@@ -214,6 +214,9 @@ public class CertificateController {
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("product_no", productNo);
+        }
+        if (!StringUtils.isNullOrEmpty(isPush)) {
+            queryWrapper.eq("is_push", isPush);
         }
         OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());

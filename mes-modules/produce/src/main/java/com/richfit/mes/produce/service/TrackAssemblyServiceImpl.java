@@ -16,6 +16,7 @@ import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.util.Util;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.LineStoreMapper;
 import com.richfit.mes.produce.dao.TrackAssemblyMapper;
@@ -26,6 +27,7 @@ import com.richfit.mes.produce.entity.TrackHeadPublicDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
+import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -523,11 +525,15 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
     @Transactional(rollbackFor = Exception.class)
     public Boolean changeProductNo(String id, String productNo, String branchCode) {
         try {
+            if (StrUtil.isBlank(productNo)) {
+                throw new GlobalException("产品编码不能为空", ResultCode.FAILED);
+            }
             Assign assign = trackAssignService.getById(id);
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             //新的产品编号
-            String produceNoDesc = productNo.replace(trackHead.getDrawingNo(), "").trim();
+            String produceNo = productNo.replace(trackHead.getDrawingNo(), "").trim();
+            String produceNoDesc = trackHead.getDrawingNo() + " " + produceNo;
             //校验单个生产流程的可以更改
             QueryWrapper<TrackFlow> queryWrapperFlow = new QueryWrapper<>();
             queryWrapperFlow.eq("track_head_id", trackItem.getTrackHeadId());
@@ -540,7 +546,7 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             }
             //校验产品编码是否重复
             QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("product_no", produceNoDesc);
+            queryWrapper.eq("product_no", produceNo);
             queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             queryWrapper.ne("id", trackItem.getTrackHeadId());
@@ -553,13 +559,12 @@ public class TrackAssemblyServiceImpl extends ServiceImpl<TrackAssemblyMapper, T
             //旧的产品编号
             String produceNoDescOld = trackFlow.getProductNo();
             //修改跟单分流数据
-            trackFlow.setProductNo(produceNoDesc);
+            trackFlow.setProductNo(produceNo);
             trackHeadFlowService.updateById(trackFlow);
+
             //修改跟单数据
             UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
-            trackHeadUpdateWrapper.set("product_no", produceNoDesc)
-                    .set("product_no_desc", produceNoDesc)
-                    .eq("id", trackItem.getTrackHeadId());
+            trackHeadUpdateWrapper.set("product_no", produceNo).set("product_no_desc", produceNoDesc).set("product_no_continuous", produceNo).eq("id", trackItem.getTrackHeadId());
             trackHeadService.update(trackHeadUpdateWrapper);
             //修改跟单工序item数据
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();

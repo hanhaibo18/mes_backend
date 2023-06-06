@@ -8,12 +8,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.kld.mes.wms.utils.AESUtil;
 import com.richfit.mes.common.model.produce.WmsResult;
 import com.richfit.mes.common.model.wms.*;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,21 +18,18 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@Component
-@Data
-@ConfigurationProperties(prefix = "wms")
 public class ProductToWmsThreeService {
-
-    protected final RestTemplate restTemplate = new RestTemplate();
 
     /**
      * ApiKey
      */
+    @Value("${wms.mesToWmsApiKey}")
     private String mesToWmsApiKey;
 
     /**
      * url
      */
+    @Value("${wms.mesToWmsUrl}")
     private String mesToWmsUrl;
 
 
@@ -108,8 +102,12 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = convertInput(inventoryQuery);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/getInventory").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
+        if (applicationResult.getRetStatus().equals("N")) {
+            return null;
+        }
         JSONObject jsonObject = JSON.parseObject(s);
-        String data = jsonObject.get("data").toString();
+        String data = String.valueOf(jsonObject.get("data"));
         return JSONObject.parseArray(data, InventoryReturn.class);
     }
 

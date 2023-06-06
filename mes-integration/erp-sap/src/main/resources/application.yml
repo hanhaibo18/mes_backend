@@ -26,9 +26,9 @@ security:
       token-info-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/check_token
 interface:
   erp:
-    #正式地址http://emaip.erp.cnpc:80
-    #测试地址http://10.30.47.134:8000
-    #测试地址http://10.30.47.134:8001
+    #正式地址http://1emaip.erp.cnpc:80
+    #测试地址http://110.30.47.134:8000
+    #测试地址http://110.30.47.134:8001
 
     #用户名
     username: zbzz_esb

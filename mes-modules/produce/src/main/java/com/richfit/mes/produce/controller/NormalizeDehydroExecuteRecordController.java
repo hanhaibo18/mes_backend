@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * @author 胡甲
- * @Description 正火去氢工序控制记录Controller
+ * @Description 正火去氢工艺执行记录Controller
  */
 @Slf4j
 @Api(value = "正火去氢工艺执行记录", tags = {"正火去氢工艺执行记录"})

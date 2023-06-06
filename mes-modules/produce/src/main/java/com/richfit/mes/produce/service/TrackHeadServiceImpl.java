@@ -69,6 +69,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Resource
     private TrackAssemblyService trackAssemblyService;
 
+    @Resource
+    private TrackAssemblyBindingService trackAssemblyBindingService;
+
     @Autowired
     private LineStoreMapper lineStoreMapper;
 
@@ -149,6 +152,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Resource
     private CertificateService certificateService;
+
+    @Autowired
+    private TrackCertificateService trackCertificateService;
 
     @Override
     public List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead) {
@@ -400,10 +406,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         try {
             CommonResult<Attachment> atta = systemServiceClient.attachment(id);
             CommonResult<byte[]> data = systemServiceClient.getAttachmentInputStream(id);
-            System.out.println(id);
-            System.out.println(JSON.toJSONString(data));
             if (data.getStatus() == 200) {
-                System.out.println(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 File file = new File(path + "/" + (StringUtils.isNullOrEmpty(atta.getData().getAttachName()) ? atta.getData().getId() + "." + atta.getData().getAttachType() : atta.getData().getAttachName()));
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
@@ -556,25 +559,23 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     }
 
     public void updateItem() {
-//        List<String> trackIdList = trackHeadMapper.queryTrackId();
         List<String> trackFlows = trackFlowMapper.queryBugItemFlow();
         for (String track : trackFlows) {
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("flow_id", track);
             List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
-            trackItemList.forEach(trackItem -> {
-                System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());
-            });
-            System.out.println("----------------------------------");
             beforeSaveItemDeal(trackItemList);
-            trackItemList.forEach(trackItem -> {
-                System.out.println(trackItem.getOptName() + "--" + trackItem.getOptSequence() + "--" + trackItem.getOriginalOptSequence() + "--" + trackItem.getNextOptSequence());
-            });
             trackItemService.updateBatchById(trackItemList);
         }
     }
 
-    private void beforeSaveItemDeal(List<TrackItem> trackItems) {
+    /**
+     * 跟单绑定工艺工序前的处理
+     *
+     * @param trackItems
+     */
+    @Override
+    public void beforeSaveItemDeal(List<TrackItem> trackItems) {
         //工序校验，避免空工序
         if (trackItems == null || trackItems.size() == 0) {
             return;
@@ -848,7 +849,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             List<TrackFlow> trackFlowList = new ArrayList<>();
             List<TrackHead> trackHeadList = TrackHeadUtil.flowInfo(trackHeadPublicDto);
             for (TrackHead th : trackHeadList) {
-                TrackFlow trackFlow = trackHeadFlow(th, th.getTrackItems(), th.getProductNo(), th.getNumber());
+                TrackFlow trackFlow = trackHeadFlow(th, th.getTrackItems(), th.getProductNo(), th.getNumber(), trackHeadPublicDto.getPriority());
                 trackFlowList.add(trackFlow);
             }
 
@@ -858,13 +859,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             newTrackHead.setProductNoContinuous(Utils.productNoContinuous(newTrackHead.getProductNo()));
             trackHeadMapper.insert(newTrackHead);
             trackHeadPublicDto.setId(newTrackHead.getId());
-            //跟单创建模型
+            //模型
             if (trackHeadPublicDto.getClasses().equals("3")) {
                 TrackHeadMold trackHeadMold = new TrackHeadMold();
                 BeanUtils.copyProperties(trackHeadPublicDto, trackHeadMold);
                 trackHeadMoldService.save(trackHeadMold);
             }
-            //跟单创建铸造
+            //铸造
             if (trackHeadPublicDto.getClasses().equals("6")) {
                 TrackHeadCast trackHeadCast = new TrackHeadCast();
                 BeanUtils.copyProperties(trackHeadPublicDto, trackHeadCast);
@@ -903,7 +904,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
      * @Author: zhiqiang.lu
      * @Date: 2022/6/21 10:25
      **/
-    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number) {
+    public TrackFlow trackHeadFlow(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, int number, String priority) {
         try {
             String flowId = UUID.randomUUID().toString().replaceAll("-", "");
 
@@ -919,7 +920,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackFlow.setProductSourceName(trackHead.getProductSourceName());
             if (StrUtil.isNotBlank(productsNo)) {
                 //试棒类型拼接S
-                if ("1".equals(trackHead.getIsTestBar())) {
+                if ("1".equals(trackHead.getIsTestBar()) || "21".equals(trackHead.getIsTestBar())) {
                     productsNo = productsNo + "S";
                 }
                 if (!StrUtil.isBlank(productsNo)) {
@@ -939,13 +940,13 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             } else {
                 trackFlow.setProductNo(null);
             }
-            if (!"2".equals(trackHead.getClasses()) && trackFlow.getProductNo() == null) {
+            if ("1".equals(trackHead.getClasses()) && trackFlow.getProductNo() == null) {
                 throw new GlobalException("机加产品编号不能为空", ResultCode.FAILED);
             }
             trackHeadFlowService.save(trackFlow);
 
             //跟单工序添加
-            trackItemService.addItemByTrackHead(trackHead, trackItems, trackFlow.getProductNo(), number, flowId);
+            trackItemService.addItemByTrackHead(trackHead, trackItems, trackFlow.getProductNo(), number, flowId, priority);
             return trackFlow;
         } catch (Exception e) {
             e.printStackTrace();
@@ -1374,6 +1375,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setNumberComplete(num);
             if (trackHead.getNumber().equals(trackHead.getNumberComplete())) {
                 trackHead.setStatus("2");
+                //冶炼车间铸件产品浇注完工后，同步完工状态至铸钢车间，并激活铸钢车间浇注下工序。
+                //根据跟单和flow找到冶炼和浇注的工序信息
+                QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+                trackItemQueryWrapper.eq("track_head_id", trackHead.getId()).eq("flow_id", flowId);
+                List<TrackItem> trackItemList = trackItemService.list(trackItemQueryWrapper);
+                List<TrackItem> collect = trackItemList.stream().filter(item -> item.getIsCurrent() == 1).collect(Collectors.toList());
+                if ("7".equals(trackHead.getClasses()) && "1".equals(trackHead.getWorkblankType()) && collect != null && "16".equals(collect.get(0).getOptType())) {
+                    syncStatus(trackHead, flowId);
+                }
             }
 
             //完成品料单数据更新
@@ -1400,10 +1410,117 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             planService.planData(trackHead.getWorkPlanId());
             //订单数据更新
             orderService.orderDataTrackHead(trackHead);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
+    }
+
+    private void syncStatus(TrackHead trackHead, String flowId) {
+        //根据跟单和flow找到冶炼和浇注的工序信息
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("track_head_id", trackHead.getId()).eq("flow_id", flowId);
+        List<TrackItem> trackItemListYL = trackItemService.list(trackItemQueryWrapper);
+        Map<String, List<TrackItem>> itemMapYL = trackItemListYL.stream().collect(Collectors.groupingBy(TrackItem::getOptType));
+        List<TrackItem> LgItem = itemMapYL.get("15");
+        List<TrackItem> JzItem = itemMapYL.get("16");
+        if (CollectionUtils.isEmpty(LgItem) || CollectionUtils.isEmpty(JzItem)) {
+            throw new GlobalException("没有找到炼钢和浇注工序信息！", ResultCode.FAILED);
+        }
+        //通过合格证找到铸钢车间跟单
+        QueryWrapper<TrackCertificate> trackCertificateQueryWrapper = new QueryWrapper<>();
+        trackCertificateQueryWrapper.eq("next_th_id", trackHead.getId());
+        List<TrackCertificate> trackCertificateList = trackCertificateService.list(trackCertificateQueryWrapper);
+        String thId = null;
+        if (CollectionUtils.isNotEmpty(trackCertificateList)) {
+            thId = trackCertificateList.get(0).getThId();
+        }
+        TrackItem currentItem = new TrackItem();
+        //修改铸钢车间冶炼和浇注状态
+        if (thId != null) {
+            QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+            itemQueryWrapper.eq("track_head_id", thId);
+            List<TrackItem> trackItemListZG = trackItemService.list(itemQueryWrapper);
+            Map<String, List<TrackItem>> itemMap = trackItemListZG.stream().collect(Collectors.groupingBy(TrackItem::getFlowId));
+            itemMap.forEach((key, value) -> {
+                for (TrackItem trackItem : value) {
+                    //炼钢工序继承冶炼车间数据
+                    if ("15".equals(trackItem.getOptType())) {
+                        changeItemInfo(LgItem, trackItem, 0, 2);
+                        trackItemService.updateById(trackItem);
+                    } else if ("16".equals(trackItem.getOptType())) {
+                        changeItemInfo(JzItem, trackItem, 0, 2);
+                        trackItemService.updateById(trackItem);
+                    }
+                }
+            });
+            List<TrackItem> collect = trackItemListZG.stream().filter(item -> "16".equals(item.getOptType())).collect(Collectors.toList());
+            currentItem = collect.get(0);
+        }
+        //激活下工序
+        publicService.activation(currentItem);
+
+    }
+
+    private void changeItemInfo(List<TrackItem> ItemList, TrackItem trackItem, Integer isCurrent, Integer isDoing) {
+        //当前工序
+        trackItem.setIsCurrent(isCurrent);
+        //工序状况设置已完工
+        trackItem.setIsDoing(isDoing);
+        //开工人
+        trackItem.setStartDoingUser(ItemList.get(0).getStartDoingUser());
+        //开工时间
+        trackItem.setStartDoingTime(ItemList.get(0).getStartDoingTime());
+        //报工是否完成
+        trackItem.setIsOperationComplete(ItemList.get(0).getIsOperationComplete());
+        //报工完成时间
+        trackItem.setOperationCompleteTime(ItemList.get(0).getOperationCompleteTime());
+        //是否质检
+        trackItem.setIsExistQualityCheck(ItemList.get(0).getIsExistQualityCheck());
+        //是否质检完成
+        trackItem.setIsQualityComplete(ItemList.get(0).getIsQualityComplete());
+        //质检完成时间
+        trackItem.setQualityCompleteTime(ItemList.get(0).getQualityCompleteTime());
+        //质量检查人
+        trackItem.setQualityCheckBy(ItemList.get(0).getQualityCheckBy());
+        //质检人员车间
+        trackItem.setQualityCheckBranch(ItemList.get(0).getQualityCheckBranch());
+        //质检结果
+        trackItem.setQualityResult(ItemList.get(0).getQualityResult());
+        trackItem.setFailProcess(ItemList.get(0).getFailProcess());
+        //是否调度确认
+        trackItem.setIsExistScheduleCheck(ItemList.get(0).getIsExistScheduleCheck());
+        //调度是否完成
+        trackItem.setIsScheduleComplete(ItemList.get(0).getIsScheduleComplete());
+        //调度完成时间
+        trackItem.setScheduleCompleteTime(ItemList.get(0).getScheduleCompleteTime());
+        //调度是否显示
+        trackItem.setIsScheduleCompleteShow(ItemList.get(0).getIsScheduleCompleteShow());
+        //调度人
+        trackItem.setScheduleCompleteBy(ItemList.get(0).getScheduleCompleteBy());
+        //调度意见
+        trackItem.setScheduleCompleteResult(ItemList.get(0).getScheduleCompleteResult());
+        //最终完成时间
+        trackItem.setFinalCompleteTime(ItemList.get(0).getFinalCompleteTime());
+        //是否最终完成
+        trackItem.setIsFinalComplete(ItemList.get(0).getIsFinalComplete());
+        //跟单顺序完成
+        trackItem.setIsTrackSequenceComplete(ItemList.get(0).getIsTrackSequenceComplete());
+        //浇注状态
+        trackItem.setPourState(ItemList.get(0).getPourState());
+        //浇注温度
+        trackItem.setPourTemperature(ItemList.get(0).getPourTemperature());
+        //浇注时间
+        trackItem.setPourTime(ItemList.get(0).getPourTime());
+        //热风机关闭时间
+        trackItem.setFanClosedTime(ItemList.get(0).getFanClosedTime());
+        //预装炉id
+        trackItem.setPrechargeFurnaceId(ItemList.get(0).getPrechargeFurnaceId());
+        //预装炉派工id
+        trackItem.setPrechargeFurnaceAssignId(ItemList.get(0).getPrechargeFurnaceAssignId());
+
+        trackItem.setIsSchedule(1);
     }
 
     /**
@@ -1627,17 +1744,35 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Override
     public List<TrackHead> queryTrackAssemblyByTrackNo(String flowId) {
-        QueryWrapper<TrackAssembly> wrapper = new QueryWrapper();
-        wrapper.eq("flow_Id", flowId);
-        List<TrackAssembly> list = trackAssemblyService.list(wrapper);
+        QueryWrapper<TrackAssembly> wrapperTrackAssembly = new QueryWrapper();
+        wrapperTrackAssembly.eq("flow_Id", flowId);
+        wrapperTrackAssembly.eq("is_key_part", "1");
+        wrapperTrackAssembly.gt("number_install", 0);
+        List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(wrapperTrackAssembly);
         List<TrackHead> trackHeads = new ArrayList<>();
-        list.forEach(i -> {
-            QueryWrapper<TrackHead> tWrapper = new QueryWrapper<>();
-            tWrapper.eq("product_no", i.getProductNo());
-            TrackHead one = this.getOne(tWrapper);
-            if (ObjectUtils.isNotNull(one)) {
-                trackHeads.add(one);
-            }
+        trackAssemblyList.forEach(trackAssembly -> {
+            QueryWrapper<TrackAssemblyBinding> wrapperTrackAssemblyBinding = new QueryWrapper();
+            wrapperTrackAssemblyBinding.eq("assembly_id", trackAssembly.getId());
+            wrapperTrackAssemblyBinding.eq("is_binding", 1);
+            wrapperTrackAssemblyBinding.isNotNull("number");
+
+            List<TrackAssemblyBinding> trackAssemblyBindingList = trackAssemblyBindingService.list(wrapperTrackAssemblyBinding);
+            trackAssemblyBindingList.forEach(trackAssemblyBinding -> {
+                String productNo = trackAssemblyBinding.getNumber();
+                if (StrUtil.isNotBlank(productNo)) {
+                    QueryWrapper<TrackFlow> wrapperTrackFlow = new QueryWrapper<>();
+                    if (productNo.indexOf(" ") != -1) {
+                        productNo = productNo.split(" ")[1];
+                    }
+                    wrapperTrackFlow.eq("product_no", trackAssembly.getDrawingNo() + " " + productNo);
+                    wrapperTrackFlow.eq("tenant_id", trackAssembly.getTenantId());
+                    List<TrackFlow> trackFlows = trackHeadFlowService.list(wrapperTrackFlow);
+                    if (ObjectUtils.isNotNull(trackFlows)) {
+                        TrackHead trackHead = this.getById(trackFlows.get(0).getTrackHeadId());
+                        trackHeads.add(trackHead);
+                    }
+                }
+            });
         });
         Map<String, TrackHead> collect = trackHeads.stream().collect(Collectors.toMap(TrackHead::getProductNo, v -> v, (a, b) -> a));
         return new ArrayList<>(collect.values());
@@ -2047,8 +2182,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHeadFlowService.update(updateWrapperTrackFlow);
 
             //更新跟单状态动作
-            System.out.println("-------------------");
-            System.out.println(id);
             TrackHead trackHead = trackHeadMapper.selectById(id);
             trackHead.setStatus("9");
             trackHeadMapper.updateById(trackHead);
@@ -2080,20 +2213,21 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     /**
      * 根据材质 试棒型号获取跟单信息
+     *
      * @param texture
      * @param testBar
      * @return
      */
     @Override
-    public List<TrackHead> getTestBarNo(String texture, String testBar, String branchCode,String testBarNo){
-        List<Router> routerList = baseServiceClient.find("", "", "", "", branchCode, SecurityUtils.getCurrentUser().getTenantId(), "", testBar, texture).getData();
+    public List<TrackHead> getTestBarNo(String texture, String testBar, String branchCode, String testBarNo) {
+        List<Router> routerList = baseServiceClient.find("", "", "", "", branchCode, SecurityUtils.getCurrentUser().getTenantId(), "", testBar, texture, "").getData();
         List<String> routerIds = routerList.stream().map(Router::getId).collect(Collectors.toList());
-        if(!CollectionUtil.isEmpty(routerIds)){
+        if (!CollectionUtil.isEmpty(routerIds)) {
             QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
-            trackHeadQueryWrapper.in("router_id",routerIds)
-                    .eq(!StringUtils.isNullOrEmpty(testBarNo),"test_bar_no",testBarNo)
-                    .eq("branch_code",branchCode)
-                    .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+            trackHeadQueryWrapper.in("router_id", routerIds)
+                    .eq(!StringUtils.isNullOrEmpty(testBarNo), "test_bar_no", testBarNo)
+                    .eq("branch_code", branchCode)
+                    .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
                     .orderByDesc("create_time");
             List<TrackHead> list = this.list(trackHeadQueryWrapper);
             return list;
@@ -2103,40 +2237,42 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     /**
      * 根据图号 获取跟单信息
+     *
      * @param drawingNo
      * @param branchCode
      * @param productNo
      * @return
      */
     @Override
-    public List<TrackHead> getProductNo(String drawingNo,String productNo, String branchCode){
+    public List<TrackHead> getProductNo(String drawingNo, String productNo, String branchCode) {
         QueryWrapper<TrackHead> trackHeadQueryWrapper = new QueryWrapper<>();
         trackHeadQueryWrapper
-                .eq(!StringUtils.isNullOrEmpty(productNo),"product_no",productNo)
-                .eq("branch_code",branchCode)
-                .eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId())
+                .eq(!StringUtils.isNullOrEmpty(productNo), "product_no", productNo)
+                .eq("branch_code", branchCode)
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
                 .orderByDesc("create_time");
-        DrawingNoUtil.queryEq(trackHeadQueryWrapper,"drawing_no",drawingNo);
+        DrawingNoUtil.queryEq(trackHeadQueryWrapper, "drawing_no", drawingNo);
         List<TrackHead> list = this.list(trackHeadQueryWrapper);
         return list;
     }
 
     /**
      * 根据图号 获取跟单信息
+     *
      * @param trackHead
      */
     @Override
-    public void zGSaveHeadcheckInfo(TrackHeadPublicDto trackHead){
-        if(!StringUtils.isNullOrEmpty(String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")))){
-            List<TrackHead> products = getProductNo(trackHead.getDrawingNo(),String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")), trackHead.getBranchCode());
-            if(!CollectionUtil.isEmpty(products)){
-                throw new GlobalException("铸件编码已存在",ResultCode.FAILED);
+    public void zGSaveHeadcheckInfo(TrackHeadPublicDto trackHead) {
+        if (!StringUtils.isNullOrEmpty(String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")))) {
+            List<TrackHead> products = getProductNo(trackHead.getDrawingNo(), String.valueOf(trackHead.getStoreList().get(0).get("workblankNo")), trackHead.getBranchCode());
+            if (!CollectionUtil.isEmpty(products)) {
+                throw new GlobalException("铸件编码已存在", ResultCode.FAILED);
             }
         }
-        if(!StringUtils.isNullOrEmpty(trackHead.getTestBarNo())){
-            List<TrackHead> testBarNos = getTestBarNo(trackHead.getTexture(), trackHead.getTestBar(), trackHead.getBranchCode(),trackHead.getTestBarNo());
-            if(!CollectionUtil.isEmpty(testBarNos)){
-                throw new GlobalException("试棒编码已存在",ResultCode.FAILED);
+        if (!StringUtils.isNullOrEmpty(trackHead.getTestBarNo())) {
+            List<TrackHead> testBarNos = getTestBarNo(trackHead.getTexture(), trackHead.getTestBar(), trackHead.getBranchCode(), trackHead.getTestBarNo());
+            if (!CollectionUtil.isEmpty(testBarNos)) {
+                throw new GlobalException("试棒编码已存在", ResultCode.FAILED);
             }
         }
     }

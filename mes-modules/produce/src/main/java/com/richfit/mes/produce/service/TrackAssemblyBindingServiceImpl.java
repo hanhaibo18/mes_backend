@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -51,6 +52,9 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
 
     @Override
     public CommonResult<Boolean> saveAssemblyBinding(TrackAssemblyBinding assembly) {
+        if (StrUtil.isBlank(assembly.getNumber())) {
+            throw new GlobalException("零部件编号不允许为空", ResultCode.FAILED);
+        }
         assembly.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         /*QueryWrapper<TrackAssemblyBinding> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("number", assembly.getNumber());
@@ -131,6 +135,7 @@ public class TrackAssemblyBindingServiceImpl extends ServiceImpl<TrackAssemblyBi
                 String produceNo = trackHead.getDrawingNo() + " " + assemblyBinding.getNumber();
                 trackHead.setProductNo(assemblyBinding.getNumber());
                 trackHead.setProductNoDesc(produceNo);
+                trackHead.setProductNoContinuous(assemblyBinding.getNumber());
                 trackFlow.setProductNo(produceNo);
                 //修改工序表中产品编号
                 UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();

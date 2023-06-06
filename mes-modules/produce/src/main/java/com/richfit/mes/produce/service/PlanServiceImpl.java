@@ -36,6 +36,7 @@ import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
@@ -329,12 +330,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 //跟单完成数量
                 int trackHeadFinish = 0;
                 for (TrackHead trackHead : trackHeadList) {
+                    if (TrackHead.IS_TEST_BAR_1.equals(trackHead.getIsTestBar())) {
+                        //试棒实验跟单不进行计划数量的消耗
+                        continue;
+                    }
                     QueryWrapper<TrackItem> queryWrapperTrackItem = new QueryWrapper<TrackItem>();
                     queryWrapperTrackItem.eq("track_head_id", trackHead.getId());
                     List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperTrackItem);
                     optNumber += trackItemList.size();
-                    System.out.println("---");
-                    System.out.println(trackHead.getStatus());
                     switch (trackHead.getStatus()) {
                         case "0":
                         case "1":
@@ -364,8 +367,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                             break;
                         case "8":
                         case "9":
-                            System.out.println("------------------");
-                            System.out.println("已交");
                             //已交
                             //生成完工资料
                             trackHeadFinish++;
@@ -829,7 +830,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
     public void importPlanDZ(MultipartFile file, HttpServletRequest request,String branchCode) throws IOException {
         //sheet计划列表
         String[] fieldNames3 = {"productName","materialName","drawNo", "texture", "priority", "workNo", "pieceWeight", "projectName", "orderNo",
-                "projNum",  "inchargeOrg", "inchargeWorkshop", "endTime", "planMonth"};
+                "projNum",  "inchargeOrgName", "inchargeWorkshopName", "endTime", "planMonth"};
         this.importPlanDZ(file, request, fieldNames3, branchCode);
     }
 
@@ -873,6 +874,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      * @param fieldNames3
      */
     private void importPlanDZ(MultipartFile file, HttpServletRequest request, String[] fieldNames3,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -884,9 +886,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             FileUtils.delete(excelFile);
             //sheet1过滤要导入的数据
             List<Plan> sheetList = list3.stream().filter(t -> {
-                return !StringUtils.isEmpty(t.getInchargeWorkshop()) ; //加工车间必填
+                return !StringUtils.isEmpty(t.getInchargeWorkshopName()) ; //加工车间必填
             }).collect(Collectors.toList());
             TenantUserDetails user = SecurityUtils.getCurrentUser();
+
             for (Plan plan : sheetList) {
                 plan.setTenantId(user.getTenantId());
 
@@ -924,10 +927,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setDeliveryNum(0);
                 plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
                 plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
-                plan.setSubmitOrderOrg(plan.getBranchCode());//提单单位
+                plan.setSubmitOrderOrg(branchCode);//提单单位
                 plan.setSubmitOrderTime(new Date());//提单时间
                 plan.setSource(2);//导入默认为车间计划
                 plan.setBranchCode(branchCode);
+                plan.setMissingNum(plan.getProjNum());
+                plan.setPriority(this.disposePriority(plan.getPriority()));
+
+                this.disposeBranchCode(plan,currentUser);
                 //保存计划
                 this.savePlanHot(plan);
                 actionService.saveAction(ActionUtil.buildAction
@@ -939,6 +946,49 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         }
     }
 
+    /**
+     * 处理优先级编码
+     * @param priority
+     * @return
+     */
+    @Override
+    public String disposePriority(String priority) {
+        switch (priority) {
+            case "低":
+                return "0";
+            case "一般":
+                return "1";
+            case "中":
+                return "2";
+            case "高":
+                return "3";
+
+            default:return "3";
+        }
+    }
+
+    /**
+     * 处理车间码
+     * @param plan
+     */
+    private void disposeBranchCode(Plan plan,TenantUserDetails currentUser) {
+        List<Branch> org = baseServiceClient.selectOrgInner(currentUser.getTenantId()).getData();
+        List<Branch> banch = baseServiceClient.selectBranchesInner(null, plan.getInchargeWorkshopName(),currentUser.getTenantId()).getData();
+        Map<String, Branch> orgMap = org.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        Map<String, Branch> banchMap = banch.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(orgMap)){
+            Branch branch = orgMap.get(plan.getInchargeOrgName());
+            if(ObjectUtils.isNotEmpty(branch)){
+                plan.setInchargeOrg(branch.getBranchCode());
+            }
+        }
+        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(banchMap)){
+            Branch branch = banchMap.get(plan.getInchargeWorkshopName());
+            if(ObjectUtils.isNotEmpty(branch)){
+                plan.setInchargeWorkshop(branch.getBranchCode());
+            }
+        }
+    }
     /**
      * 导入计划(热工个性化)
      *
@@ -1013,6 +1063,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setSubmitOrderOrg(plan.getBranchCode());//提单单位
                 plan.setSubmitOrderTime(new Date());//提单时间
                 plan.setSource(2);//导入默认为车间计划
+                plan.setMissingNum(plan.getProjNum());
                 //保存计划
                 this.savePlanHot(plan);
                 actionService.saveAction(ActionUtil.buildAction

@@ -410,4 +410,6 @@ public interface TrackHeadService extends IService<TrackHead> {
      * @param trackHead
      */
     void zGSaveHeadcheckInfo(TrackHeadPublicDto trackHead);
+
+    void beforeSaveItemDeal(List<TrackItem> trackItems);
 }

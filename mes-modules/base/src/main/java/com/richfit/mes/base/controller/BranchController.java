@@ -351,4 +351,36 @@ public class BranchController extends BaseController {
         queryWrapper.eq("branch_type", "0");
         return branchService.list(queryWrapper);
     }
+
+    @ApiOperation(value = "查询分公司inner", notes = "查询分公司inner")
+    @GetMapping("/select_org_inner")
+    public CommonResult<List<Branch>> selectOrgInner(String tenantId) {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
+        queryWrapper.isNull("main_branch_code");
+        queryWrapper.orderByAsc("order_no");
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id",tenantId);
+        }
+        List<Branch> result = branchService.list(queryWrapper);
+        return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "查询分公司车间inner", notes = "查询分公司车间inner")
+    @GetMapping("/select_branches_inner")
+    public CommonResult<List<Branch>> selectBranchesInner( String branchCode,  String branchName,String tenantId) {
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
+        if (!StringUtils.isNullOrEmpty(branchName)) {
+            queryWrapper.like("branch_name", branchName);
+        }
+        if (!StringUtils.isNullOrEmpty(branchCode)) {
+            queryWrapper.eq("main_branch_code", branchCode);
+        }
+        if (!StringUtils.isNullOrEmpty(tenantId)) {
+            queryWrapper.eq("tenant_id",tenantId);
+        }
+        queryWrapper.isNotNull("main_branch_code");
+        queryWrapper.orderByAsc("order_no");
+        List<Branch> result = branchService.list(queryWrapper);
+        return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
+    }
 }
