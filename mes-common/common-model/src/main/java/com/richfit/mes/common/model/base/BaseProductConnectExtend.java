@@ -64,7 +64,7 @@ public class BaseProductConnectExtend implements Serializable {
     private Integer number;
 
     /**
-     * 本次送货数量
+     * 已发数量
      */
     private Integer alreadyNumber;
 
@@ -82,6 +82,13 @@ public class BaseProductConnectExtend implements Serializable {
      * 备注
      */
     private String extend;
+
+
+    /**
+     * BOM需求数量
+     */
+    @TableField(exist = false)
+    private Integer bomDemandNumber;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

@@ -2,6 +2,7 @@ package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.base.entity.ConnectDTO;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.BaseProductConnect;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -34,7 +35,7 @@ public interface BaseProductConnectService extends IService<BaseProductConnect> 
      * @param connectDTO
      * @return
      */
-    void insertConnect(ConnectDTO connectDTO);
+    CommonResult insertConnect(ConnectDTO connectDTO);
 
     /**
      * 新增交接单据
@@ -42,5 +43,5 @@ public interface BaseProductConnectService extends IService<BaseProductConnect> 
      * @param connectDTO
      * @return
      */
-    void editConnect(ConnectDTO connectDTO);
+    CommonResult editConnect(ConnectDTO connectDTO);
 }

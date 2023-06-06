@@ -14,6 +14,7 @@ import com.richfit.mes.base.util.BeanUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.BaseProductConnect;
 import com.richfit.mes.common.model.base.BaseProductConnectExtend;
+import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author wangchenyu
@@ -42,6 +44,9 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
 
     @Autowired
     private BaseProductConnectExtendService baseProductConnectExtendService;
+
+    @Autowired
+    private ProjectBomService projectBomService;
 
     @Override
     public Page queryConnectInfo(ConnectDTO connectDTO) {
@@ -72,7 +77,7 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
     }
 
     @Override
-    public void insertConnect(ConnectDTO connectDTO) {
+    public CommonResult insertConnect(ConnectDTO connectDTO) {
         //入参校验
         this.checkData(connectDTO);
         //处理主表数据信息
@@ -83,9 +88,16 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         baseProductConnect.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         baseProductConnect.setCreateDate(new Date());
         baseProductConnectMapper.insert(baseProductConnect);
+        //查询该BOM下的所有零件，用于新增时做校验；图号需唯一
+        List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());
+        List<String> drawNoList = projectBomPartByIdList.stream().map(e -> e.getDrawingNo()).collect(Collectors.toList());
         //处理子表数据信息
         List<BaseProductConnectExtend> baseProductConnectExtends = new ArrayList<>();
         for (ConnectExtendDTO connectExtendDTO : connectDTO.getConnectExtendDTOList()) {
+            //图号唯一性校验
+            if (drawNoList.contains(connectExtendDTO.getPartDrawingNo())) {
+                return CommonResult.failed("图号" + connectExtendDTO.getPartDrawingNo() + "已经存在，不能重复添加");
+            }
             BaseProductConnectExtend baseProductConnectExtend = new BaseProductConnectExtend();
             BeanUtils.copyBeanProp(baseProductConnectExtend, connectExtendDTO);
             baseProductConnectExtend.setConnectId(baseProductConnect.getId());
@@ -93,10 +105,12 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         }
         //批量入库
         baseProductConnectExtendService.saveBatch(baseProductConnectExtends);
+
+        return CommonResult.success(true);
     }
 
     @Override
-    public void editConnect(ConnectDTO connectDTO) {
+    public CommonResult editConnect(ConnectDTO connectDTO) {
         if (StringUtils.isBlank(connectDTO.getConnectNo())) {
             CommonResult.failed("交接单据号不能为空");
         }
@@ -127,11 +141,17 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getBranchCode, connectDTO.getBranchCode());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getReceiveUser, connectDTO.getReceiveUser());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getReceiveUnit, connectDTO.getReceiveUnit());
+        //查询该BOM下的所有零件，用于新增时做校验；图号需唯一
+        List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());
+        List<String> drawNoList = projectBomPartByIdList.stream().map(e -> e.getDrawingNo()).collect(Collectors.toList());
+        //处理子表数据信息
         //新增子表数据；
         List<BaseProductConnectExtend> baseProductConnectExtends = new ArrayList<>();
         for (ConnectExtendDTO connectExtendDTO : connectDTO.getConnectExtendDTOList()) {
-            //todo 图号唯一性校验
-
+            //图号唯一性校验
+            if (drawNoList.contains(connectExtendDTO.getPartDrawingNo())) {
+                return CommonResult.failed("图号" + connectExtendDTO.getPartDrawingNo() + "已经存在，不能重复添加");
+            }
             BaseProductConnectExtend baseProductConnectExtend = new BaseProductConnectExtend();
             BeanUtils.copyBeanProp(baseProductConnectExtend, connectExtendDTO);
             baseProductConnectExtend.setConnectId(baseProductConnect.getId());
@@ -139,6 +159,8 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         }
         //批量入库
         baseProductConnectExtendService.saveBatch(baseProductConnectExtends);
+
+        return CommonResult.success(true);
     }
 
     private void checkData(ConnectDTO connectDTO) {
@@ -160,13 +182,6 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         if (connectDTO.getNumber() == null) {
             CommonResult.failed("数量不能为空");
         }
-    }
-
-    /**
-     * 校验图号是否唯一
-     */
-    public void checkDrawNo(){
-
     }
 }
 
