@@ -1520,8 +1520,6 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         //预装炉派工id
         trackItem.setPrechargeFurnaceAssignId(ItemList.get(0).getPrechargeFurnaceAssignId());
 
-        trackItem.setFlowId(ItemList.get(0).getFlowId());
-
         trackItem.setIsSchedule(1);
     }
 
