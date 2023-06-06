@@ -1,5 +1,7 @@
 package com.richfit.mes.produce.service;
 
+import com.richfit.mes.common.model.produce.TrackItem;
+
 import java.util.List;
 import java.util.Map;
 
@@ -92,5 +94,7 @@ public interface PublicService {
      * @return: Boolean
      **/
     Boolean automaticProcess(Map<String, String> map);
+
+    public boolean activation(TrackItem trackItem);
 
 }

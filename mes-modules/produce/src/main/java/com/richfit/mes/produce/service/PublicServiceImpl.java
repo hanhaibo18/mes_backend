@@ -421,6 +421,7 @@ public class PublicServiceImpl implements PublicService {
      * @Author: xinYu.hou
      * @Date: 2022/8/23 15:08
      **/
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean activation(TrackItem trackItem) {
         TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
