@@ -101,4 +101,7 @@ public interface TrackItemMapper extends BaseMapper<TrackItem> {
             "        a.AA > 1\n" +
             "        GROUP BY ti_id")
     List<String> queryBugTrackItemList();
+
+    @Select("select * from (SELECT * FROM v_produce_track_item_hot ) a ${ew.customSqlSegment}")
+    List<TrackItem> getTrackItemList(@Param(Constants.WRAPPER) Wrapper<TrackItem> wrapper);
 }

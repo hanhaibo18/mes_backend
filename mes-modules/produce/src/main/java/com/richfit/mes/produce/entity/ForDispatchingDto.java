@@ -52,5 +52,13 @@ public class ForDispatchingDto extends QueryPageDto {
     private Long id;
     @ApiModelProperty(value = "材质", dataType = "String")
     private String texture;
+    @ApiModelProperty(value = "零件名称", dataType = "String")
+    private String materialName;
 
+    @ApiModelProperty(value = "派工状态::0:未派工，1::已派工", dataType = "Integer")
+    private Integer assignStatus;
+    @ApiModelProperty(value = "毛坯:: 0锻件,1铸件,2钢锭", dataType = "String")
+    private String workblankType;
+    @ApiModelProperty(value = "记录状态 0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过", dataType = "String")
+    private String recordStatus;
 }

@@ -12,6 +12,7 @@
         WHERE
         sys_role_menu.role_id = #{roleId}
         and menu_id in (select menu_id from sys_tenant_menu where tenant_id = #{tenantId})
+        and sys_menu.menu_type &lt;&gt; 2
         ORDER BY
         sys_menu.menu_order DESC
     </select>

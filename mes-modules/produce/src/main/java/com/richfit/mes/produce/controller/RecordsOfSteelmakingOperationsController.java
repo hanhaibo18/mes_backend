@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,7 +51,7 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
     }
 
     @ApiOperation(value = "修改炼钢记录信息", notes = "修改炼钢记录信息")
-    @PutMapping()
+    @PutMapping
     public CommonResult<Boolean> update(@RequestBody RecordsOfSteelmakingOperations recordsOfSteelmakingOperations) {
         return CommonResult.success(recordsOfSteelmakingOperationsService.update(recordsOfSteelmakingOperations));
     }
@@ -58,7 +59,7 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
     @ApiOperation(value = "批量删除炼钢信息", notes = "批量删除炼钢信息")
     @DeleteMapping
     public CommonResult<Boolean> delete(@RequestBody List<String> ids) {
-        return CommonResult.success(recordsOfSteelmakingOperationsService.removeByIds(ids));
+        return CommonResult.success(recordsOfSteelmakingOperationsService.delete(ids));
     }
 
     @ApiOperation(value = "记录审核", notes = "记录审核")
@@ -76,7 +77,7 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
                                                                       @ApiParam(value = "设备") String smeltingEquipment,
                                                                       String startTime, String endTime, Integer status,
                                                                       @RequestParam(defaultValue = "1") int page,
-                                                                      @RequestParam(defaultValue = "10") int limit) {
+                                                                      @RequestParam(defaultValue = "10") int limit, String order, String orderCol) {
         //获取登录用户权限
         List<Role> roles = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
         Set<String> rolesCode = roles.stream().map(Role::getRoleCode).collect(Collectors.toSet());
@@ -91,14 +92,24 @@ public class RecordsOfSteelmakingOperationsController extends ApiController {
         }
         //班组长查询
         if (isBzz) {
-            return CommonResult.success(recordsOfSteelmakingOperationsService.bzzcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit));
+            return CommonResult.success(recordsOfSteelmakingOperationsService.bzzcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit, order, orderCol));
         }
         //普通操作工查询
         else {
-            return CommonResult.success(recordsOfSteelmakingOperationsService.czgcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit));
+            return CommonResult.success(recordsOfSteelmakingOperationsService.czgcx(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, page, limit, order, orderCol));
         }
     }
 
+    @ApiOperation(value = "导出炼钢记录excel", notes = "导出炼钢记录excel")
+    @GetMapping("/export")
+    public void export(@ApiParam(value = "作业单编号") String recordNo,
+                       @ApiParam(value = "预装炉id") Long prechargeFurnaceId,
+                       @ApiParam(value = "炉号") String furnaceNo,
+                       @ApiParam(value = "钢种") String typeOfSteel,
+                       @ApiParam(value = "冶炼设备") String smeltingEquipment,
+                       String startTime, String endTime, @ApiParam(value = "审核状态") Integer status, HttpServletResponse response) {
+        recordsOfSteelmakingOperationsService.export(recordNo, prechargeFurnaceId, furnaceNo, typeOfSteel, smeltingEquipment, startTime, endTime, status, response);
+    }
 
 }
 

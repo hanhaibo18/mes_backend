@@ -143,7 +143,7 @@ public interface TrackItemService extends IService<TrackItem> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/23 10:59
      **/
-    void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId);
+    void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId,String priority);
 
     /**
      * 功能描述: 查询工序信息

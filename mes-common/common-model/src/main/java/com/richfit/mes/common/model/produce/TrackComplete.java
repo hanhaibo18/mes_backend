@@ -201,6 +201,8 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     protected BigDecimal heatHour;
     @ApiModelProperty(value = "工时权重", dataType = "double")
     private Double ratioHours;
+    @ApiModelProperty(value = "钢水重量", dataType = "String")
+    private String weightMolten;
 
 
     /**
@@ -312,6 +314,10 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @TableField(exist = false)
     @ApiModelProperty(value = "工序完工时间", dataType = "工序完工时间")
     private String finalCompleteTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "浇注温度", dataType = "String")
+    private String pourTemperature;
 
     @Override
     public int compareTo(TrackComplete o) {

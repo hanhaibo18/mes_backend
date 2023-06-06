@@ -1,4 +1,4 @@
-package com.richfit.mes.produce.service;
+package com.richfit.mes.produce.service.notice;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.NoticeTenant;

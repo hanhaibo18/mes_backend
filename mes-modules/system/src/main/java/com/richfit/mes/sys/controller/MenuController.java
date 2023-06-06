@@ -194,13 +194,18 @@ public class MenuController extends BaseController {
         //系统管理员 返回所有菜单
         if (SecurityUtils.getCurrentUser().isSysAdmin()) {
             List<Menu> menus = menuService.list(new QueryWrapper<Menu>()
-                    .orderByAsc("menu_order"));
+                    .orderByAsc("menu_order")
+                    .ne("menu_type",2));
             all.addAll(menus);
             return CommonResult.success(menuService.filterMenu(all, parentId));
         }
 
         //TODO 租户管理员及以下需要增加分配给这个租户里面查询
-
+        //TODO 两个分厂的公共菜单 只关联一个租户下的相同角色即可（角色关联到根组织机构），不需要配置两遍
+        /**
+         *  目前的实现  分厂A roleA 关联 1 2 3    分厂B roleB 关联  2 3 4  =》 用户关联 roleA  roleB
+         *  还有一种实现方式  分厂A roleA 关联 1  分厂B roleB 关联  4  租户级roleC  关联 2 3  =》 用户关联 roleA  roleB  roleC
+         */
         SecurityUtils.getRoles().forEach(roleId -> {
 
             //判断该角色是否是该组织机构的，如果是，才把相关菜单加入

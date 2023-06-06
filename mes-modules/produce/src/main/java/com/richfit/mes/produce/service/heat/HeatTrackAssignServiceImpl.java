@@ -192,11 +192,11 @@ public class HeatTrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, A
             queryWrapper.isNull("u.precharge_furnace_id");
         }
 
-        //锻造车间、铸钢车间、冶炼车间的工序名称过滤（这些车间预装炉子只涉及正火和去氢）
-        queryWrapper.and(wrapper1->wrapper1.eq("u.opt_name","正火").or().eq("u.opt_name","去氢"));
-
-
-        queryWrapper.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getBelongOrgId()+"',u.site_id)");
+        //锻造车间、铸钢车间、冶炼车间的工序类型过滤（这些车间预装炉子只涉及正火和去氢）
+        if("4".equals(dispatchingDto.getClasses()) || "6".equals(dispatchingDto.getClasses()) || "7".equals(dispatchingDto.getClasses())){
+            queryWrapper.and(wrapper1->wrapper1.eq("u.opt_type","13").or().eq("u.opt_type","14"));
+        }
+        queryWrapper.and(wrapper->wrapper.eq("u.user_id","/").or(wrapper2->wrapper2.apply("FIND_IN_SET('"+SecurityUtils.getCurrentUser().getUsername()+"',u.user_id)")));
         queryWrapper.eq("u.branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         OrderUtil.query(queryWrapper, dispatchingDto.getOrderCol(), dispatchingDto.getOrder());

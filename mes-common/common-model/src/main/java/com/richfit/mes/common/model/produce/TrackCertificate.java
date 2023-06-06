@@ -29,6 +29,9 @@ public class TrackCertificate {
     @ApiModelProperty(value = "跟单工序ID")
     private String tiId;
 
+    @ApiModelProperty(value = "下跟单ID")
+    private String nextThId;
+
     @ApiModelProperty(value = "产品编号")
     @TableField(exist = false)
     private String productNo;

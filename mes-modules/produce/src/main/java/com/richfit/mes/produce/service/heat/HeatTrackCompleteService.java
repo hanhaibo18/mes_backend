@@ -47,6 +47,8 @@ public interface HeatTrackCompleteService extends IService<TrackComplete> {
      **/
     boolean startWork(String prechargeFurnaceId);
 
+    boolean pLstartWork(String prechargeFurnaceAssignId);
+
     /**
      * 功能描述: 根据预装炉id获取报工信息
      *

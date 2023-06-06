@@ -6,11 +6,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.PrechargeFurnace;
+import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
 import com.richfit.mes.common.model.produce.TrackComplete;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.entity.OutsourceCompleteDto;
 import com.richfit.mes.produce.entity.QueryWorkingTimeVo;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import io.swagger.annotations.ApiParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -147,5 +150,11 @@ public interface TrackCompleteService extends IService<TrackComplete> {
 
     void knockoutLabel(HttpServletResponse response, String tiId);
 
-    IPage<PrechargeFurnace> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit);
+    IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit, String order, String orderCol);
+
+    List<TrackItem> getItemList(String prechargeFurnaceAssignId);
+
+    Map<String, Object> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol);
+
+    Boolean prechargeFurnaceChange(Long beforeId, Long afterId);
 }

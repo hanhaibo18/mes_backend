@@ -36,7 +36,7 @@ public class RecordsOfPourOperations extends BaseEntity<RecordsOfPourOperations>
      * 浇注时间
      */
     @ApiModelProperty(value = "浇注时间", dataType = "Date")
-    private Date pourTime;
+    private String pourTime;
     /**
      * 烘包时间H
      */
@@ -78,7 +78,7 @@ public class RecordsOfPourOperations extends BaseEntity<RecordsOfPourOperations>
      * 操作时间
      */
     @ApiModelProperty(value = "操作时间", dataType = "String")
-    private Date operatorTime;
+    private String operatorTime;
     /**
      * 审核员
      */
@@ -88,13 +88,15 @@ public class RecordsOfPourOperations extends BaseEntity<RecordsOfPourOperations>
      * 审核时间
      */
     @ApiModelProperty(value = "审核时间", dataType = "String")
-    private Date assessorTime;
+    private String assessorTime;
     @ApiModelProperty(value = "钢种", dataType = "String")
     private String typeOfSteel;
     @ApiModelProperty(value = "锭型", dataType = "String")
     private String ingotCase;
     @ApiModelProperty(value = "租户ID", dataType = "String")
     private String tenantId;
+    @ApiModelProperty(value = "冶炼班组", dataType = "String")
+    private String classGroup;
 
 }
 

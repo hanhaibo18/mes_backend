@@ -318,7 +318,7 @@ public class OperatiponController extends BaseController {
      * @Author: hujia
      **/
     @ApiOperation(value = "根据id查询工序字典列表", notes = "根据id查询工序字典列表")
-    @GetMapping("/queryOptByIds")
+    @PostMapping("/queryOptByIds")
     public List<Operatipon> queryOptByIds(@ApiParam(value = "工序字典idList") @RequestBody List<String> optIds){
         QueryWrapper<Operatipon> queryWrapper = new QueryWrapper<Operatipon>();
         queryWrapper.in("id",optIds);

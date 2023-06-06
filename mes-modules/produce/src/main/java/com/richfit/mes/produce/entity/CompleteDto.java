@@ -22,6 +22,8 @@ public class CompleteDto {
     private String tiId;
     @ApiModelProperty(value = "工序Id", dataType = "String")
     private String assignId;
+    @ApiModelProperty(value = "预装炉报工id", dataType = "String")
+    private String prechargeFurnaceAssignId;
     @ApiModelProperty(value = "跟单ID", dataType = "String")
     private String trackId;
     @ApiModelProperty(value = "跟单号", dataType = "String")
@@ -48,4 +50,8 @@ public class CompleteDto {
     private Knockout knockout;
     @ApiModelProperty(value = "造型/制芯工序报工信息", dataType = "ModelingCore")
     private ModelingCore modelingCore;
+    @ApiModelProperty(value = "下工序装炉", dataType = "Boolean")
+    private Boolean nextFurnace;
+    @ApiModelProperty(value = "浇注温度", dataType = "String")
+    private String pourTemperature;
 }

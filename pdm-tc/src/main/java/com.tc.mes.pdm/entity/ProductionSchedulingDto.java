@@ -11,72 +11,72 @@ import java.util.List;
 @Data
 public class ProductionSchedulingDto {
     /**
-     *  排产单号
+     *  排产单号（必填）
      */
     private String schedulingNo;
 
     /**
-     *  排产单名称
+     *  排产单名称（必填）
      */
     private String objectName;
 
     /**
-     *  通知来源
+     *  通知来源（必填）
      */
     private String noticSouce;
 
     /**
-     *  技术准备完成时间
+     *  技术准备完成时间（必填）
      */
     private String techPlanTime;
 
     /**
-     *  交货期
+     *  交货期（必填）
      */
     private Date deliveryDate;
 
     /**
-     *  落成单位
+     *  落成单位（必填）
      */
     private String execuOrganization;
 
     /**
-     *  工作号
+     *  工作号 （必填） 多个
      */
     private String workNo;
 
     /**
-     *  排产单位
+     *  排产单位（必填）
      */
     private String schedulingGroup;
 
     /**
-     *  生产排产日期
+     *  生产排产日期（必填）
      */
     private String schedulingDate;
 
     /**
-     *  用户
+     *  用户（必填）
      */
     private String customerName;
 
     /**
-     *  排产类型
+     *  排产类型（必填）
      */
     private String schedulingType;
 
     /**
-     *  产品名称
+     *  产品名称（必填）
      */
     private String productName;
 
     /**
-     *  审签意见
+     *  审签意见（必填）
      */
     private List<String> opinion;
 
     /**
-     *  排产单名称
+     *  排产单名称 指定格式pdf
      */
     private List<String> previewUrl;
 }

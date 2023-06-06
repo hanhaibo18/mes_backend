@@ -34,7 +34,7 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
     /**
      * 名称
      */
-    @ApiModelProperty(value = "名称 ", dataType = "String")
+    @ApiModelProperty(value = "零件名称 ", dataType = "String")
     private String demandName;
 
     /**
@@ -66,7 +66,12 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
      */
     @ApiModelProperty(value = " 加工单位id", dataType = "String")
     private String inchargeOrgId;
-
+    @ApiModelProperty(value = "加工单位名称")
+    private String inchargeOrgName;
+    @ApiModelProperty(value = "加工车间 ", dataType = "String")
+    private String inchargeWorkshop;
+    @ApiModelProperty(value = "加工车间名称 ", dataType = "String")
+    private String inchargeWorkshopName;
     /**
      * 加工单位
      */
@@ -183,6 +188,12 @@ public class HotDemandParam extends BaseEntity<HotDemandParam> implements Serial
      */
     @ApiModelProperty(value = "生产部门", dataType = "String")
     private String produceOrg;
+
+    /**
+     * 生产部门名称
+     */
+    @ApiModelProperty(value = "生产部门名称", dataType = "String")
+    private String produceOrgName;
 
     /**
      * 下发时间

@@ -14,9 +14,11 @@ import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.TrackAssignController;
+import com.richfit.mes.produce.enmus.OptTypeEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,8 +57,8 @@ public class PublicServiceImpl implements PublicService {
         //验证工序制作数量是否全部派工,全部派工才允许下工序激活
         String trackItemId = map.get("trackItemId");
         TrackItem trackItem = trackItemService.getById(trackItemId);
-        //有派工数量情况下直接退出方法不执行工序激活 && 过滤探伤类型工序 探伤类型工序没有派工
-        if (!trackItem.getOptType().equals("6") && 0 != trackItem.getAssignableQty()) {
+        //有派工数量情况下直接退出方法不执行工序激活 && 过滤探伤类型工序 探伤类型工序没有派工 && 过滤检验工序,检验工序直接进行质检
+        if (!trackItem.getOptType().equals("6") && 0 != trackItem.getAssignableQty() && !trackItem.getOptType().equals("5")) {
             return false;
         }
 
@@ -161,11 +163,7 @@ public class PublicServiceImpl implements PublicService {
             }
             trackItemService.updateById(trackItem);
         }
-        if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId()) && isNext) {
-            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-            if (null != trackHead.getWorkPlanId()) {
-                planService.planData(trackHead.getWorkPlanId());
-            }
+        if (isNext) {
             activationProcess = this.activationProcess(map);
         }
         return activationProcess;
@@ -191,13 +189,7 @@ public class PublicServiceImpl implements PublicService {
             trackItem.setFinalCompleteTime(new Date());
             trackItemService.updateById(trackItem);
             //校验并行工序是否完成,完成执行下工序激活,并调用跟单统计接口
-            if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId())) {
-                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
-                    planService.planData(trackHead.getWorkPlanId());
-                }
-                return activationProcess(map);
-            }
+            return activationProcess(map);
         }
         return true;
     }
@@ -227,17 +219,11 @@ public class PublicServiceImpl implements PublicService {
         if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
             planService.planData(trackHead.getWorkPlanId());
         }
-        //校验是否并行完成,全部完成执行下工序激活
-        if (verifyParallel(trackItem.getOriginalOptSequence(), trackItem.getFlowId())) {
-            //校验是否是最后一道工序
-            if (0 == trackItem.getNextOptSequence()) {
-                //并行全部完成,而且还是最后一道工序,执行跟单完成方法
-                trackHeadService.trackHeadFinish(trackItem.getFlowId());
-            }
-            return this.activationProcess(map);
-        }
-        return true;
+        return this.activationProcess(map);
     }
+
+    @Autowired
+    private CertificateService certificateService;
 
     /**
      * 功能描述: 激活工序
@@ -247,7 +233,7 @@ public class PublicServiceImpl implements PublicService {
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean activationProcess(Map<String, String> map) {
+    public Boolean activationProcess(Map<String, String> map){
         //倒序获取工序列表
         QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
         currentTrackItem.eq("flow_id", map.get("flowId"));
@@ -262,13 +248,8 @@ public class PublicServiceImpl implements PublicService {
         if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getTrackHeadId())) {
             return false;
         }
-        for (TrackItem trackItem : currentTrackItemList) {
-            if (2 != trackItem.getIsDoing()) {
-                return false;
-            }
-        }
-        //过滤已完工数据,获取未完工/未开工数据
-        List<TrackItem> collect = currentTrackItemList.stream().filter(item -> item.getIsDoing() != 2).collect(Collectors.toList());
+        //过滤最终完成数据,获取未最终完成数据
+        List<TrackItem> collect = currentTrackItemList.stream().filter(item -> item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
         //判断是最后一道工序 和 没有未完工/未开工数据 调用跟单状态修改
         if (currentTrackItemList.get(0).getNextOptSequence() == 0 && CollectionUtils.isEmpty(collect)) {
             trackHeadService.trackHeadFinish(map.get("flowId"));
@@ -421,8 +402,10 @@ public class PublicServiceImpl implements PublicService {
      * @Author: xinYu.hou
      * @Date: 2022/8/23 15:08
      **/
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean activation(TrackItem trackItem) {
+        TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
         //激活前校验当前跟单多产品是否全部完成 全部完成 获取所有循环执行下工序激活
         QueryWrapper<TrackItem> queryWrapperItemList = new QueryWrapper();
         queryWrapperItemList.eq("track_head_id", trackItem.getTrackHeadId());
@@ -434,6 +417,7 @@ public class PublicServiceImpl implements PublicService {
         if (!CollectionUtils.isEmpty(notIsFinalCompleteList)) {
             return true;
         }
+
         for (TrackItem item : itemList) {
             //激活下工序
             QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
@@ -441,6 +425,10 @@ public class PublicServiceImpl implements PublicService {
             queryWrapper.eq("original_opt_sequence", item.getNextOptSequence());
             List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
             for (TrackItem trackItemEntity : trackItemList) {
+                //冶炼车间下工序装炉
+                if ("7".equals(trackHead.getClasses())){
+                    trackItemEntity.setPrechargeFurnaceId(item.getPrechargeFurnaceId());
+                }
                 trackItemEntity.setIsCurrent(1);
                 trackItemEntity.setModifyTime(new Date());
                 trackItemService.updateById(trackItemEntity);
@@ -451,6 +439,13 @@ public class PublicServiceImpl implements PublicService {
                     automaticProcess(map);
                 }
             }
+        }
+
+        //特殊工序流转下车间
+        String nextOptWork = "";
+        if(OptTypeEnum.KX_OPERATION.getStateId().equals(trackItem.getOptType())){
+            nextOptWork = "BOMCO_RG_YL";
+            certificateService.headMoveToNextBranch(trackItem.getTrackHeadId(),nextOptWork,trackItem);
         }
         return true;
     }

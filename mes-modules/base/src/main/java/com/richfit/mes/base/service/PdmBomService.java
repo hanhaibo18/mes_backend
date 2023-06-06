@@ -9,4 +9,6 @@ import java.util.List;
 public interface PdmBomService extends IService<PdmBom> {
 
     PdmBom getBomByProcessIdAndRev(String id, String ver);
+
+    List<PdmBom> getBomByProcessIdAndRevTree(String id, String ver);
 }
