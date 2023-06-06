@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -12,6 +13,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.forg.ForgHour;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
@@ -37,6 +39,7 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -296,8 +299,22 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.orderByDesc("u.modify_time");
         }
         IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
+        //工艺ids
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(queryPage.getRecords().stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
+
         if (null != queryPage.getRecords()) {
+
             for (Assign assign : queryPage.getRecords()) {
+                if(!CollectionUtil.isEmpty(getRouter)){
+                    Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+                    Router router = routerMap.get(assign.getRouterId()+"_"+assign.getBranchCode());
+                    //下料规格
+                    assign.setBlankSpecifi(router.getBlankSpecifi());
+                    //锻造下料重量
+                    assign.setBlankWeight(router.getBlankWeight());
+                }
+
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
                 TrackItem trackItem = trackItemService.getById(assign.getTiId());
                 if (!StringUtils.isNullOrEmpty(trackHead.getRouterId())) {

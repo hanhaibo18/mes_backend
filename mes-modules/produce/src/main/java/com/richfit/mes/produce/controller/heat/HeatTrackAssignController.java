@@ -175,6 +175,7 @@ public class HeatTrackAssignController extends BaseController {
             Router router = baseServiceClient.getRouter(data.getRouterId()).getData();
             if(!ObjectUtil.isEmpty(router)){
                 data.setWeightMolten(router.getWeightMolten());
+                data.setBlankSpecifi(router.getBlankSpecifi());
             }
             //模型配送状态
             String modelDrawingNo = data.getDrawingNo();

@@ -537,4 +537,11 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String classes;
 
+    /**
+     * 下料规格
+     */
+    @TableField(exist = false)
+    private String blankSpecifi;
+
+
 }
