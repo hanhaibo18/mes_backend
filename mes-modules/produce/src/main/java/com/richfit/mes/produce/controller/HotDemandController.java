@@ -76,6 +76,8 @@ public class HotDemandController extends BaseController {
         hotDemand.setPlanNum(hotDemand.getNum());
         //查重
         //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
+        //生产部门车间编码赋值
+        hotDemandService.workblankTypeToProduceOrgName(hotDemand);
         boolean save = hotDemandService.save(hotDemand);
         if (save) {
             return CommonResult.success(ResultCode.SUCCESS);
@@ -134,8 +136,8 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getVoucherNo())) {//凭证号
             queryWrapper.eq("voucher_no", hotDemandParam.getVoucherNo());
         }
-        if (StringUtils.isNotEmpty(hotDemandParam.getProduceOrgName())) {//生产部门名称
-            queryWrapper.eq("produce_org_name", hotDemandParam.getProduceOrgName());
+        if (StringUtils.isNotEmpty(hotDemandParam.getProduceOrg())) {//生产部门
+            queryWrapper.eq("produce_org", hotDemandParam.getProduceOrg());
         }
         //0 :未提报  1 :已提报'
         if (hotDemandParam.getSubmitState() != null) {

@@ -121,8 +121,10 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                     default: throw new GlobalException("导入失败毛坯类型: "+hotDemand.getWorkblankType()+"超出范围(锻件 ,铸件 , 钢锭)", ResultCode.FAILED);
                 }
             }
+            //加工单位车间编码处理
             this.disposeBranchCode(hotDemand,currentUser);
-
+            //生产部门车间编码赋值
+            this.workblankTypeToProduceOrgName(hotDemand);
             //查重
             //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
             this.save(hotDemand);
@@ -133,7 +135,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
 
 
     /**
-     * 处理车间编码
+     * 处理加工单位车间编码
      * @param hotDemand
      */
     private void disposeBranchCode(HotDemand hotDemand,TenantUserDetails currentUser) {
@@ -205,6 +207,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             hotDemand.setWorkblankType("2");//冶炼
             //查重
             //hotDemandService.checkDemand(hotDemand.getWorkNo(),hotDemand.getDrawNo(),hotDemand.getVersionNum());
+            //生产部门车间编码赋值
+            this.workblankTypeToProduceOrgName(hotDemand);
             demandList.add(hotDemand);
         }
         this.saveBatch(demandList);
@@ -266,6 +270,7 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
         QueryWrapper<HotDemand> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", idList);
         queryWrapper.apply("(produce_ratify_state=0 or produce_ratify_state is null)");
+        queryWrapper.notIn("produce_org","BOMCO_RG_SC");//市场营销部不参与批准生产
         //查出需求提报数据
         List<HotDemand> hotDemands = hotDemandService.list(queryWrapper);
         if (CollectionUtils.isEmpty(hotDemands)) {
@@ -523,14 +528,19 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
      * @param plan
      */
     private void disposeBranchCode(int branchType, HotDemand hotDemand, Plan plan) {
-        if(branchType ==1){//模型排产
+        if (branchType == 1) {//模型排产
             plan.setProjType(1);//计划类型 1新制  2 返修(模型排产默认为新制)
             plan.setBranchCode("BOMCO_RG_MX");//车间码(模型排产自动派发到模型车间)
-        }else {
-            //0锻件,1铸件,2钢锭
-            String branchCode = this.workblankTypeToBranchCode(hotDemand.getWorkblankType());
-
-            plan.setBranchCode(branchCode);
+        } else {
+            //生产部门有值以生产部门为准
+            if (StringUtils.isNotEmpty(hotDemand.getProduceOrg())) {
+                plan.setBranchCode(hotDemand.getProduceOrg());
+            } else {
+                //生产部门为空时,根据毛坯类型决定计划所在车间
+                //0锻件,1铸件,2钢锭
+                String branchCode = this.workblankTypeToBranchCode(hotDemand.getWorkblankType());
+                plan.setBranchCode(branchCode);
+            }
         }
     }
 
@@ -545,6 +555,29 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             case "0":  return "BOMCO_RG_DZ";//锻造车间
             case "1":  return "BOMCO_RG_ZG";//铸造
             case "2":  return "BOMCO_RG_YL";//冶炼
+            default: throw new GlobalException("毛坯类型超出范围", ResultCode.FAILED);
+        }
+    }
+
+    /**
+     * 生产部门车间编码赋值
+     * @param hotDemand
+     */
+    @Override
+    public void workblankTypeToProduceOrgName(HotDemand hotDemand) {
+        switch (hotDemand.getWorkblankType()){
+            case "0":
+                hotDemand.setProduceOrg("BOMCO_RG_DZ");
+                hotDemand.setProduceOrgName("锻造车间");
+            break;
+            case "1":
+                hotDemand.setProduceOrg("BOMCO_RG_ZG");
+                hotDemand.setProduceOrgName("铸钢车间");
+            break;
+            case "2":
+                hotDemand.setProduceOrg("BOMCO_RG_YL") ;//冶炼
+                hotDemand.setProduceOrgName("冶炼车间");
+            break;
             default: throw new GlobalException("毛坯类型超出范围", ResultCode.FAILED);
         }
     }
