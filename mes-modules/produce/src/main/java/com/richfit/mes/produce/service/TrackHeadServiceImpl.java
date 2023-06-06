@@ -1380,7 +1380,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
                 trackItemQueryWrapper.eq("track_head_id", trackHead.getId()).eq("flow_id", flowId);
                 List<TrackItem> trackItemList = trackItemService.list(trackItemQueryWrapper);
-                List<TrackItem> collect = trackItemList.stream().filter(item -> "1".equals(item.getIsCurrent())).collect(Collectors.toList());
+                List<TrackItem> collect = trackItemList.stream().filter(item -> item.getIsCurrent() == 1).collect(Collectors.toList());
                 if ("7".equals(trackHead.getClasses()) && "1".equals(trackHead.getWorkblankType()) && collect != null && "16".equals(collect.get(0).getOptType())) {
                     syncStatus(trackHead, flowId);
                 }
@@ -1425,7 +1425,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         Map<String, List<TrackItem>> itemMapYL = trackItemListYL.stream().collect(Collectors.groupingBy(TrackItem::getOptType));
         List<TrackItem> LgItem = itemMapYL.get("15");
         List<TrackItem> JzItem = itemMapYL.get("16");
-        if (CollectionUtils.isEmpty(LgItem) || CollectionUtils.isNotEmpty(JzItem)) {
+        if (CollectionUtils.isEmpty(LgItem) || CollectionUtils.isEmpty(JzItem)) {
             throw new GlobalException("没有找到炼钢和浇注工序信息！", ResultCode.FAILED);
         }
         //通过合格证找到铸钢车间跟单
