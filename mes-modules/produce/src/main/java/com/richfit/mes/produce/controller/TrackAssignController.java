@@ -203,9 +203,9 @@ public class TrackAssignController extends BaseController {
             @ApiImplicitParam(name = "holdStatus", value = "保温状态 1 保温完成  2 保温中", required = false, paramType = "query", dataType = "String")
     })
     @GetMapping("/querypage")
-    public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes, String order, String orderCol,String holdStatus) {
+    public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes, String order, String orderCol, String holdStatus) {
         try {
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo, classes, order, orderCol,holdStatus);
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo, classes, order, orderCol, holdStatus);
 
             return CommonResult.success(assigns);
         } catch (Exception e) {
@@ -735,7 +735,10 @@ public class TrackAssignController extends BaseController {
             queryWrapper.apply("a.opt_type = '" + optType + "'");
         } else {
 //            queryWrapper.apply("(a.opt_type ='0' or a.opt_type ='2')");
-            queryWrapper.notIn("a.opt_type", 3);
+            List<Integer> list = new ArrayList<>();
+            list.add(3);
+            list.add(5);
+            queryWrapper.notIn("a.opt_type", list);
         }
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
