@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -12,6 +13,7 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
+import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -273,7 +275,10 @@ public class TrackAssignController extends BaseController {
         //获取request
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         try {
+            //设备code添加
+            Device device = baseServiceClient.getDeviceById(assigns[0].getDeviceId()).getData();
             for (Assign assign : assigns) {
+                assign.setDeviceCode(ObjectUtil.isEmpty(device)?"":device.getCode());
                 if (StringUtils.isNullOrEmpty(assign.getTiId())) {
                     throw new GlobalException("未关联工序", ResultCode.FAILED);
                 }

@@ -77,6 +77,9 @@ public class Assign extends BaseEntity<Assign> {
      */
     @ApiModelProperty(value = "派工设备名称", dataType = "String")
     private String deviceName;
+
+    @ApiModelProperty(value = "派工设备code", dataType = "String")
+    private String deviceCode;
     /**
      * 派工优先级  3=High、2=Medium、1=Normal、0=Low
      */
@@ -309,6 +312,13 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否当前工序 1是  0 否")
     private Integer isCurrent;
+
+    /**
+     * 下料重量
+     */
+
+    @TableField(exist = false)
+    private String blankWeight;
 
     public String getUserId() {
         return userId;
