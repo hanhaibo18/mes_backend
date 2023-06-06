@@ -153,6 +153,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
     @Resource
     private CertificateService certificateService;
 
+    @Autowired
+    private TrackCertificateService trackCertificateService;
+
     @Override
     public List<TrackHead> selectTrackHeadAccount(TeackHeadDto trackHead) {
         if (!StringUtils.isNullOrEmpty(trackHead.getDrawingNo())) {
@@ -1372,6 +1375,15 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             trackHead.setNumberComplete(num);
             if (trackHead.getNumber().equals(trackHead.getNumberComplete())) {
                 trackHead.setStatus("2");
+                //冶炼车间铸件产品浇注完工后，同步完工状态至铸钢车间，并激活铸钢车间浇注下工序。
+                //根据跟单和flow找到冶炼和浇注的工序信息
+                QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+                trackItemQueryWrapper.eq("track_head_id", trackHead.getId()).eq("flow_id", flowId);
+                List<TrackItem> trackItemList = trackItemService.list(trackItemQueryWrapper);
+                List<TrackItem> collect = trackItemList.stream().filter(item -> item.getIsCurrent() == 1).collect(Collectors.toList());
+                if ("7".equals(trackHead.getClasses()) && "1".equals(trackHead.getWorkblankType()) && collect != null && "16".equals(collect.get(0).getOptType())) {
+                    syncStatus(trackHead, flowId);
+                }
             }
 
             //完成品料单数据更新
@@ -1398,10 +1410,115 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             planService.planData(trackHead.getWorkPlanId());
             //订单数据更新
             orderService.orderDataTrackHead(trackHead);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
+    }
+
+    private void syncStatus(TrackHead trackHead, String flowId) {
+        //根据跟单和flow找到冶炼和浇注的工序信息
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("track_head_id", trackHead.getId()).eq("flow_id", flowId);
+        List<TrackItem> trackItemListYL = trackItemService.list(trackItemQueryWrapper);
+        Map<String, List<TrackItem>> itemMapYL = trackItemListYL.stream().collect(Collectors.groupingBy(TrackItem::getOptType));
+        List<TrackItem> LgItem = itemMapYL.get("15");
+        List<TrackItem> JzItem = itemMapYL.get("16");
+        if (CollectionUtils.isEmpty(LgItem) || CollectionUtils.isEmpty(JzItem)) {
+            throw new GlobalException("没有找到炼钢和浇注工序信息！", ResultCode.FAILED);
+        }
+        //通过合格证找到铸钢车间跟单
+        QueryWrapper<TrackCertificate> trackCertificateQueryWrapper = new QueryWrapper<>();
+        trackCertificateQueryWrapper.eq("next_th_id", trackHead.getId());
+        List<TrackCertificate> trackCertificateList = trackCertificateService.list(trackCertificateQueryWrapper);
+        String thId = null;
+        if (CollectionUtils.isNotEmpty(trackCertificateList)) {
+            thId = trackCertificateList.get(0).getThId();
+        }
+        TrackItem currentItem = new TrackItem();
+        //修改铸钢车间冶炼和浇注状态
+        if (thId != null) {
+            QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+            itemQueryWrapper.eq("track_head_id", thId);
+            List<TrackItem> trackItemListZG = trackItemService.list(itemQueryWrapper);
+            Map<String, List<TrackItem>> itemMap = trackItemListZG.stream().collect(Collectors.groupingBy(TrackItem::getFlowId));
+            itemMap.forEach((key, value) -> {
+                for (TrackItem trackItem : value) {
+                    //炼钢工序继承冶炼车间数据
+                    if ("15".equals(trackItem.getOptType())) {
+                        changeItemInfo(LgItem, trackItem, 0, 2);
+                        trackItemService.updateById(trackItem);
+                    } else if ("16".equals(trackItem.getOptType())) {
+                        changeItemInfo(JzItem, trackItem, 1, 1);
+                        trackItemService.updateById(trackItem);
+                    }
+                }
+            });
+            List<TrackItem> collect = trackItemListZG.stream().filter(item -> "16".equals(item.getOptType())).collect(Collectors.toList());
+            currentItem = collect.get(0);
+        }
+        //激活下工序
+        publicService.activation(currentItem);
+
+    }
+
+    private void changeItemInfo(List<TrackItem> ItemList, TrackItem trackItem, Integer isCurrent, Integer isDoing) {
+        //当前工序
+        trackItem.setIsCurrent(isCurrent);
+        //工序状况设置已完工
+        trackItem.setIsDoing(isDoing);
+        //开工人
+        trackItem.setStartDoingUser(ItemList.get(0).getStartDoingUser());
+        //开工时间
+        trackItem.setStartDoingTime(ItemList.get(0).getStartDoingTime());
+        //报工是否完成
+        trackItem.setIsOperationComplete(ItemList.get(0).getIsOperationComplete());
+        //报工完成时间
+        trackItem.setOperationCompleteTime(ItemList.get(0).getOperationCompleteTime());
+        //是否质检
+        trackItem.setIsExistQualityCheck(ItemList.get(0).getIsExistQualityCheck());
+        //是否质检完成
+        trackItem.setIsQualityComplete(ItemList.get(0).getIsQualityComplete());
+        //质检完成时间
+        trackItem.setQualityCompleteTime(ItemList.get(0).getQualityCompleteTime());
+        //质量检查人
+        trackItem.setQualityCheckBy(ItemList.get(0).getQualityCheckBy());
+        //质检人员车间
+        trackItem.setQualityCheckBranch(ItemList.get(0).getQualityCheckBranch());
+        //质检结果
+        trackItem.setQualityResult(ItemList.get(0).getQualityResult());
+        trackItem.setFailProcess(ItemList.get(0).getFailProcess());
+        //是否调度确认
+        trackItem.setIsExistScheduleCheck(ItemList.get(0).getIsExistScheduleCheck());
+        //调度是否完成
+        trackItem.setIsScheduleComplete(ItemList.get(0).getIsScheduleComplete());
+        //调度完成时间
+        trackItem.setScheduleCompleteTime(ItemList.get(0).getScheduleCompleteTime());
+        //调度是否显示
+        trackItem.setIsScheduleCompleteShow(ItemList.get(0).getIsScheduleCompleteShow());
+        //调度人
+        trackItem.setScheduleCompleteBy(ItemList.get(0).getScheduleCompleteBy());
+        //调度意见
+        trackItem.setScheduleCompleteResult(ItemList.get(0).getScheduleCompleteResult());
+        //最终完成时间
+        trackItem.setFinalCompleteTime(ItemList.get(0).getFinalCompleteTime());
+        //是否最终完成
+        trackItem.setIsFinalComplete(ItemList.get(0).getIsFinalComplete());
+        //跟单顺序完成
+        trackItem.setIsTrackSequenceComplete(ItemList.get(0).getIsTrackSequenceComplete());
+        //浇注状态
+        trackItem.setPourState(ItemList.get(0).getPourState());
+        //浇注温度
+        trackItem.setPourTemperature(ItemList.get(0).getPourTemperature());
+        //浇注时间
+        trackItem.setPourTime(ItemList.get(0).getPourTime());
+        //热风机关闭时间
+        trackItem.setFanClosedTime(ItemList.get(0).getFanClosedTime());
+        //预装炉id
+        trackItem.setPrechargeFurnaceId(ItemList.get(0).getPrechargeFurnaceId());
+        //预装炉派工id
+        trackItem.setPrechargeFurnaceAssignId(ItemList.get(0).getPrechargeFurnaceAssignId());
     }
 
     /**

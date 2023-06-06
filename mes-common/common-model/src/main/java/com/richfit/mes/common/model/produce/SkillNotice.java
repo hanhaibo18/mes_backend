@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
@@ -61,5 +62,6 @@ public class SkillNotice extends BaseEntity<SkillNotice> {
      * 所属机构
      */
     private String branchCode;
+    @TableField(exist = false)
     private String executableUnit;
 }

@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -30,6 +31,7 @@ import com.richfit.mes.produce.service.bsns.CertAdditionalBsns;
 import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -374,6 +376,12 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         }
         //绑定工艺
         this.bindRouterInfo(newTrackHead,trackFlows,newTrackItems,router.getId(),router.getVersion());
+
+        //合格证关联表下车间跟单赋值
+        UpdateWrapper<TrackCertificate> trackCertificateUpdate = new UpdateWrapper<>();
+        trackCertificateUpdate.eq("certificate_id",certificate.getId())
+                .set("next_th_id",newTrackHead.getId());
+        trackCertificateService.update(trackCertificateUpdate);
 
     }
 
