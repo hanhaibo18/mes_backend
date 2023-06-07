@@ -49,6 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 王瑞
@@ -102,6 +103,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Autowired
     private TrackCertificateService trackCertificateService;
+
+    @Autowired
+    private CertificateService certificateService;
 
     @Resource
     private BaseServiceClient baseServiceClient;
@@ -314,7 +318,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     List<TrackComplete> completes = trackCompleteService.list(completeQueryWrapper);
                     double numDouble = 0.00;
                     for (TrackComplete complete : completes) {
-                        numDouble += complete.getCompletedQty();
+                        numDouble += complete.getCompletedQty() == null ? 0.0 : complete.getCompletedQty();
                     }
                     item.setCompleteQty(item.getCompleteQty() - numDouble);
                     trackCompleteService.remove(completeQueryWrapper);
@@ -557,7 +561,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                 TrackCertificate certificate = trackCertificateService.getOne(certificateQueryWrapper);
                 if (certificate != null && certificate.getNextThId() != null) {
                     TrackHead trackHead = trackHeadService.getById(certificate.getNextThId());
-                    //若跟单为初始状态则删除head，item，flow信息
+                    //若跟单为初始状态则删除head，item，flow，合格证信息
                     if ("0".equals(trackHead.getStatus())) {
                         QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
                         flowQueryWrapper.eq("track_head_id", trackHead.getId());
@@ -566,6 +570,15 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                         QueryWrapper<TrackItem> itemQueryWrapper1 = new QueryWrapper<>();
                         itemQueryWrapper1.eq("track_head_id", trackHead.getId());
                         this.remove(itemQueryWrapper1);
+
+                        QueryWrapper<TrackCertificate> certificateQueryWrapper1 = new QueryWrapper<>();
+                        certificateQueryWrapper1.eq("item_id", trackItem.getId());
+                        List<TrackCertificate> certificateList = trackCertificateService.list(certificateQueryWrapper1);
+                        trackCertificateService.remove(certificateQueryWrapper1);
+                        if (CollectionUtils.isNotEmpty(certificateList)) {
+                            Set<String> set = certificateList.stream().map(TrackCertificate::getCertificateId).collect(Collectors.toSet());
+                            certificateService.removeByIds(set);
+                        }
 
                         trackHeadService.removeById(trackHead.getId());
                         return false;
