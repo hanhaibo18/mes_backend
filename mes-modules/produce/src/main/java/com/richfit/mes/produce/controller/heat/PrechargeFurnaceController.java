@@ -297,7 +297,8 @@ public class PrechargeFurnaceController extends BaseController {
                 .eq(!StringUtils.isNullOrEmpty(texture),"texture",texture)
                 .ge(!StringUtils.isNullOrEmpty(startTime),"date_format(create_time, '%Y-%m-%d')", startTime)
                 .le(!StringUtils.isNullOrEmpty(endTime),"date_format(create_time, '%Y-%m-%d')", endTime)
-                .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType);
+                .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType)
+                .eq("assign_status",0);
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper));
     }
 
