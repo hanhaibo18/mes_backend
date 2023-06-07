@@ -14,6 +14,7 @@ import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.service.PrechargeFurnaceAssignService;
 import com.richfit.mes.produce.service.TrackCompleteService;
