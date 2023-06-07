@@ -11,7 +11,7 @@ import lombok.Data;
 
 /**
  * 产品交接单-扩展表
- *
+ * @author wcy
  * @TableName base_product_connect_extend
  */
 @TableName(value = "base_product_connect_extend")
@@ -89,6 +89,12 @@ public class BaseProductConnectExtend implements Serializable {
      **/
     @ApiModelProperty(value = "重量")
     private String weight;
+
+    /**
+     * 来源
+     **/
+    @ApiModelProperty(value = "来源")
+    private String source;
 
     /**
      * 备注

@@ -87,6 +87,8 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         baseProductConnect.setCheckDate(new Date());
         baseProductConnect.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         baseProductConnect.setCreateDate(new Date());
+        //初始化状态为待交接
+        baseProductConnect.setStatus(ConnectStatusEnum.W.getCode());
         baseProductConnectMapper.insert(baseProductConnect);
         //查询该BOM下的所有零件，用于新增时做校验；图号需唯一
         List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());

@@ -79,6 +79,12 @@ public class ConnectExtendDTO {
     private String weight;
 
     /**
+     * 来源
+     **/
+    @ApiModelProperty(value = "来源:1:BOM；2:新增")
+    private String source;
+
+    /**
      * 备注
      */
     @ApiModelProperty(value = "备注")
