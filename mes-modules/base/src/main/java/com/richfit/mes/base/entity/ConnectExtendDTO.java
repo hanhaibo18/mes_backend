@@ -37,6 +37,12 @@ public class ConnectExtendDTO {
     private String productNo;
 
     /**
+     * 物料编码
+     */
+    @ApiModelProperty(value = "物料编码")
+    private String materialNo;
+
+    /**
      * 需求数量
      */
     @ApiModelProperty(value = "需求数量")

@@ -21,10 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,21 +56,39 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         baseProductConnectLambdaQueryWrapper.eq(StringUtils.isNotEmpty(connectDTO.getWorkNo()), BaseProductConnect::getWorkNo, connectDTO.getWorkNo());
         //车间查询
         baseProductConnectLambdaQueryWrapper.eq(StringUtils.isNotEmpty(connectDTO.getBranchCode()), BaseProductConnect::getBranchCode, connectDTO.getBranchCode());
+        //产品编号查询
         baseProductConnectLambdaQueryWrapper.like(StringUtils.isNotEmpty(connectDTO.getProductNo()), BaseProductConnect::getWorkNo, connectDTO.getWorkNo());
         //时间区间查询
         baseProductConnectLambdaQueryWrapper.ge(StringUtils.isNotEmpty(connectDTO.getStartTime()), BaseProductConnect::getCreateDate, connectDTO.getStartTime());
         baseProductConnectLambdaQueryWrapper.le(StringUtils.isNotEmpty(connectDTO.getEndTime()), BaseProductConnect::getCreateDate, connectDTO.getEndTime());
+        //产品名称查询
+        baseProductConnectLambdaQueryWrapper.eq(StringUtils.isNotEmpty(connectDTO.getProdDesc()), BaseProductConnect::getProdDesc, connectDTO.getProdDesc());
+
         return baseProductConnectMapper.selectPage(page, baseProductConnectLambdaQueryWrapper);
     }
 
     @Override
-    public Page queryConnectDetailInfo(String connectId, int currentPage, int limit) {
-        Page<BaseProductConnectExtend> page = new Page<>(currentPage, limit);
+    public List queryConnectDetailInfo(String connectId, Integer number) {
         LambdaQueryWrapper<BaseProductConnectExtend> baseProductConnectExtendLambdaQueryWrapper = new LambdaQueryWrapper<>();
         baseProductConnectExtendLambdaQueryWrapper.eq(BaseProductConnectExtend::getConnectId, connectId);
-        Page<BaseProductConnectExtend> baseProductConnectExtendPage = baseProductConnectExtendMapperMapper.selectPage(page, baseProductConnectExtendLambdaQueryWrapper);
-        //todo 数量信息计算
-        return baseProductConnectExtendPage;
+        List<BaseProductConnectExtend> baseProductConnectExtends = baseProductConnectExtendMapperMapper.selectList(baseProductConnectExtendLambdaQueryWrapper);
+        for (BaseProductConnectExtend record : baseProductConnectExtends) {
+            //BOM零件数量计算
+            //根据零件图号分组，查询交接单下的零部件数量；
+            List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(record.getBomId());
+            Map<String, List<ProjectBom>> collect = projectBomPartByIdList.stream().collect(Collectors.groupingBy(item -> item.getDrawingNo()));
+            if (collect.containsKey(record.getPartDrawingNo())) {
+                int sum = collect.get(record.getPartDrawingNo()).stream().mapToInt(e -> e.getNumber()).sum();
+                record.setBomDemandNumber(sum);
+                record.setDemandNumber(sum * number);
+            } else {
+                record.setBomDemandNumber(0);
+                record.setDemandNumber(record.getDemandNumber() * number);
+            }
+            //BOM需求数量计算
+
+        }
+        return baseProductConnectExtends;
     }
 
     @Override
@@ -91,18 +106,19 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         baseProductConnect.setStatus(ConnectStatusEnum.W.getCode());
         baseProductConnectMapper.insert(baseProductConnect);
         //查询该BOM下的所有零件，用于新增时做校验；图号需唯一
-        List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());
-        List<String> drawNoList = projectBomPartByIdList.stream().map(e -> e.getDrawingNo()).collect(Collectors.toList());
+        /*List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());
+        List<String> drawNoList = projectBomPartByIdList.stream().map(e -> e.getDrawingNo()).collect(Collectors.toList());*/
         //处理子表数据信息
         List<BaseProductConnectExtend> baseProductConnectExtends = new ArrayList<>();
         for (ConnectExtendDTO connectExtendDTO : connectDTO.getConnectExtendDTOList()) {
             //图号唯一性校验
-            if (drawNoList.contains(connectExtendDTO.getPartDrawingNo())) {
+            /*if (drawNoList.contains(connectExtendDTO.getPartDrawingNo())) {
                 return CommonResult.failed("图号" + connectExtendDTO.getPartDrawingNo() + "已经存在，不能重复添加");
-            }
+            }*/
             BaseProductConnectExtend baseProductConnectExtend = new BaseProductConnectExtend();
             BeanUtils.copyBeanProp(baseProductConnectExtend, connectExtendDTO);
             baseProductConnectExtend.setConnectId(baseProductConnect.getId());
+            baseProductConnectExtend.setBomId(connectDTO.getBomId());
             baseProductConnectExtends.add(baseProductConnectExtend);
         }
         //批量入库
@@ -144,16 +160,16 @@ public class BaseProductConnectServiceImpl extends ServiceImpl<BaseProductConnec
         baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getReceiveUser, connectDTO.getReceiveUser());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductConnect::getReceiveUnit, connectDTO.getReceiveUnit());
         //查询该BOM下的所有零件，用于新增时做校验；图号需唯一
-        List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());
-        List<String> drawNoList = projectBomPartByIdList.stream().map(e -> e.getDrawingNo()).collect(Collectors.toList());
+        /*List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());
+        List<String> drawNoList = projectBomPartByIdList.stream().map(e -> e.getDrawingNo()).collect(Collectors.toList());*/
         //处理子表数据信息
         //新增子表数据；
         List<BaseProductConnectExtend> baseProductConnectExtends = new ArrayList<>();
         for (ConnectExtendDTO connectExtendDTO : connectDTO.getConnectExtendDTOList()) {
             //图号唯一性校验
-            if (drawNoList.contains(connectExtendDTO.getPartDrawingNo())) {
+            /*if (drawNoList.contains(connectExtendDTO.getPartDrawingNo())) {
                 return CommonResult.failed("图号" + connectExtendDTO.getPartDrawingNo() + "已经存在，不能重复添加");
-            }
+            }*/
             BaseProductConnectExtend baseProductConnectExtend = new BaseProductConnectExtend();
             BeanUtils.copyBeanProp(baseProductConnectExtend, connectExtendDTO);
             baseProductConnectExtend.setConnectId(baseProductConnect.getId());
