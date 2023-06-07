@@ -28,5 +28,15 @@ public interface SkillNoticeMapper extends BaseMapper<SkillNotice> {
     @Select("SELECT n.*,t.unit FROM produce_skill_notice n,produce_skill_notice_tenant t ${ew.customSqlSegment} ")
     IPage<SkillNotice> queryAcceptingPage(@Param("page") Page<SkillNotice> page, @Param(Constants.WRAPPER) Wrapper<SkillNotice> wrapper);
 
-
+    /**
+     * 功能描述: 调度通知
+     *
+     * @param page
+     * @param wrapper
+     * @Author: xinYu.hou
+     * @Date: 2023/6/6 17:59
+     * @return: IPage<SkillNotice>
+     **/
+    @Select("SELECT n.*,t.unit FROM produce_skill_notice n LEFT JOIN produce_skill_notice_tenant t ON n.id = t.skill_id ${ew.customSqlSegment} ")
+    IPage<SkillNotice> queryDispatchPage(@Param("page") Page<SkillNotice> page, @Param(Constants.WRAPPER) Wrapper<SkillNotice> wrapper);
 }

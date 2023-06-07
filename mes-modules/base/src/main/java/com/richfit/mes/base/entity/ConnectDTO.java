@@ -111,5 +111,6 @@ public class ConnectDTO extends QueryPageDto implements Serializable {
     /**
      * 子bom信息
      */
+    @ApiModelProperty(value = "子bom信息")
     private List<ConnectExtendDTO> connectExtendDTOList;
 }
