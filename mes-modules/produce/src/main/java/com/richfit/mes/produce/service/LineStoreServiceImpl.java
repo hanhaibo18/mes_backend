@@ -649,16 +649,17 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         orderWrapper.orderByAsc("delivery_date");
         List<Order> orderList = orderService.list(orderWrapper);
 
-        //根据订单号计算入库数量
-        QueryWrapper<LineStore> lWrapper = new QueryWrapper<>();
-        lWrapper.select("sum(number) as number ");
-        lWrapper.eq("production_order", orderNo);
-        LineStore lineStore = this.getOne(lWrapper);
-
         HashMap<String, Integer> numMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(orderList)) {
-            Integer orderNum = orderList.get(0).getOrderNum();//订单数量
-            numMap.put("orderNum", orderNum);//订单物料数量
+            Order order = orderList.get(0);
+            numMap.put("orderNum", order.getOrderNum());//订单物料数量
+
+            //根据订单号计算入库数量
+            QueryWrapper<LineStore> lWrapper = new QueryWrapper<>();
+            lWrapper.select("sum(number) as number ");
+            lWrapper.eq("production_order", orderNo);
+            lWrapper.eq("branch_code", order.getBranchCode());
+            LineStore lineStore = this.getOne(lWrapper);
             if (ObjectUtils.isNotEmpty(lineStore)) {
                 numMap.put("inNum", lineStore.getNumber());//已入库数量
             } else {
