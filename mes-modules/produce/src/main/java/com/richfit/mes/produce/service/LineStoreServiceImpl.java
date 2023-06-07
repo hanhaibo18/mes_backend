@@ -446,8 +446,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (isAutoMatchProd.equals(2)) {
                 ordersSn = createOrder(lineStore);
             }
-
-
             for (int i = startNo; i <= endNo; i++) {
                 LineStore entity = new LineStore();
                 //改为浅拷贝
@@ -485,9 +483,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 entity.setProdNo(entity.getDrawingNo() + " " + entity.getWorkblankNo());
                 list.add(entity);
             }
-
+            for (LineStore s : list) {
+                if (StrUtil.isBlank(s.getProductionOrder())) {
+                    throw new Exception("没有订单！");
+                }
+            }
             bool = this.saveBatch(list);
-
             //保存料单-附件关系
             for (LineStore s : list) {
 //                storeAttachRelService.batchSaveStoreFile(s.getId(), branchCode, lineStore.getFileIds());
@@ -505,6 +506,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         } else {
             if (isAutoMatchProd.equals("1")) {
                 lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
+            }
+            if (StrUtil.isBlank(lineStore.getProductionOrder())) {
+                throw new Exception("没有订单！");
             }
             bool = this.save(lineStore);
             //保存料单-附件关系
@@ -622,7 +626,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             }
         }
         if (StrUtil.isBlank(orderNo)) {
-            throw new Exception("自动匹配没有找订单！");
+            throw new Exception("自动匹配没有找到订单！");
         }
         return orderNo;
     }
