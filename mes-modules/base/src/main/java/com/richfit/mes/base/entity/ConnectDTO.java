@@ -47,10 +47,22 @@ public class ConnectDTO extends QueryPageDto implements Serializable {
     private String drawNo;
 
     /**
+     * 产品名称
+     */
+    @ApiModelProperty(value = "产品名称")
+    private String prodDesc;
+
+    /**
      * 项目bom
      */
     @ApiModelProperty(value = "项目bom")
     private String bomId;
+
+    /**
+     * 项目bom名称
+     */
+    @ApiModelProperty(value = "项目bom名称")
+    private String bomName;
 
     /**
      * 产品编号

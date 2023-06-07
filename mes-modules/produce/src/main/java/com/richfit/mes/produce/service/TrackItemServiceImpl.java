@@ -49,6 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 王瑞
@@ -99,6 +100,12 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
     @Autowired
     private SystemServiceClient systemServiceClient;
+
+    @Autowired
+    private TrackCertificateService trackCertificateService;
+
+    @Autowired
+    private CertificateService certificateService;
 
     @Resource
     private BaseServiceClient baseServiceClient;
@@ -311,7 +318,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
                     List<TrackComplete> completes = trackCompleteService.list(completeQueryWrapper);
                     double numDouble = 0.00;
                     for (TrackComplete complete : completes) {
-                        numDouble += complete.getCompletedQty();
+                        numDouble += complete.getCompletedQty() == null ? 0.0 : complete.getCompletedQty();
                     }
                     item.setCompleteQty(item.getCompleteQty() - numDouble);
                     trackCompleteService.remove(completeQueryWrapper);
@@ -515,6 +522,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             if (isDoing || isOperationComplete || isQualityComplete || isScheduleComplete || isFinalComplete || isSchedule) {
                 return "回退前清清除当前工序状态！";
             }
+            if (certificateBegin(currItem, flowId)) {
+                return "该工序已在其他车间开工，不可回退！";
+            }
         }
         // 将当前工序is_current设为0
         UpdateWrapper<TrackItem> updateWrapperOld = new UpdateWrapper<>();
@@ -537,6 +547,50 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         //重置跟单状态
         trackHeadService.trackHeadData(item.getTrackHeadId());
         return "success";
+    }
+
+    private boolean certificateBegin(TrackItem currItem, String flowId) {
+        //当有合格证且合格证已经开了新跟单且新跟单开工时返回true，若新跟单未开工返回false同时删除跟单信息，其他情况均返回false
+        QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+        itemQueryWrapper.eq("flow_id", flowId).eq("next_opt_sequence", currItem.getOriginalOptSequence());
+        List<TrackItem> trackItemList = this.list(itemQueryWrapper);
+        if (CollectionUtils.isNotEmpty(trackItemList)) {
+            for (TrackItem trackItem : trackItemList) {
+                QueryWrapper<TrackCertificate> certificateQueryWrapper = new QueryWrapper<>();
+                certificateQueryWrapper.eq("ti_id", trackItem.getId());
+                TrackCertificate certificate = trackCertificateService.getOne(certificateQueryWrapper);
+                if (certificate != null && certificate.getNextThId() != null) {
+                    TrackHead trackHead = trackHeadService.getById(certificate.getNextThId());
+                    //若跟单为初始状态则删除head，item，flow，合格证信息
+                    if ("0".equals(trackHead.getStatus())) {
+                        QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
+                        flowQueryWrapper.eq("track_head_id", trackHead.getId());
+                        trackHeadFlowService.remove(flowQueryWrapper);
+
+                        QueryWrapper<TrackItem> itemQueryWrapper1 = new QueryWrapper<>();
+                        itemQueryWrapper1.eq("track_head_id", trackHead.getId());
+                        this.remove(itemQueryWrapper1);
+
+                        QueryWrapper<TrackCertificate> certificateQueryWrapper1 = new QueryWrapper<>();
+                        certificateQueryWrapper1.eq("item_id", trackItem.getId());
+                        List<TrackCertificate> certificateList = trackCertificateService.list(certificateQueryWrapper1);
+                        trackCertificateService.remove(certificateQueryWrapper1);
+                        if (CollectionUtils.isNotEmpty(certificateList)) {
+                            Set<String> set = certificateList.stream().map(TrackCertificate::getCertificateId).collect(Collectors.toSet());
+                            certificateService.removeByIds(set);
+                        }
+
+                        trackHeadService.removeById(trackHead.getId());
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 
 
@@ -588,7 +642,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
 
 
     @Override
-    public void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId,String priority) {
+    public void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId, String priority) {
         if (trackItems != null && trackItems.size() > 0) {
             int i = 1;
             for (TrackItem item : trackItems) {
