@@ -59,10 +59,22 @@ public class BaseProductConnect implements Serializable {
     private String bomId;
 
     /**
+     * 项目bom名称
+     */
+    @ApiModelProperty(value = "项目bom名称")
+    private String bomName;
+
+    /**
      * 产品编号
      */
     @ApiModelProperty(value = "产品编号")
     private String productNo;
+
+    /**
+     * 产品名称
+     */
+    @ApiModelProperty(value = "产品名称")
+    private String prodDesc;
 
     /**
      * 数量

@@ -5,6 +5,9 @@ import com.richfit.mes.base.entity.ConnectDTO;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.BaseProductConnect;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.base.BaseProductConnectExtend;
+
+import java.util.List;
 
 /**
  * @author wangchenyu
@@ -27,7 +30,7 @@ public interface BaseProductConnectService extends IService<BaseProductConnect> 
      * @param connectId
      * @return
      */
-    Page queryConnectDetailInfo(String connectId, int page, int limit);
+    List<BaseProductConnectExtend> queryConnectDetailInfo(String connectId, Integer number);
 
     /**
      * 新增交接单据

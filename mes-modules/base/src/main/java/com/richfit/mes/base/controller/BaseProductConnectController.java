@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author wangchenyu
  * @Description bom交接Controller
@@ -36,10 +38,10 @@ public class BaseProductConnectController extends BaseController {
 
     @ApiOperation(value = "交接单据详情列表")
     @GetMapping("/page/detail")
-    public CommonResult<Page<BaseProductConnectExtend>> queryDetail(@ApiParam(value = "查询条件") @RequestParam(value = "connectId", required = true) String connectId,
-                                                                    @RequestParam(defaultValue = "1", required = false) int page,
-                                                                    @RequestParam(defaultValue = "10", required = false) int limit) {
-        return CommonResult.success(baseProductConnectService.queryConnectDetailInfo(connectId, page, limit));
+    public CommonResult<List<BaseProductConnectExtend>> queryDetail(@ApiParam(value = "查询条件") @RequestParam(value = "connectId", required = true) String connectId,
+                                                                    @ApiParam(value = "交接单数量") @RequestParam(value = "number", required = true) Integer number
+    ) {
+        return CommonResult.success(baseProductConnectService.queryConnectDetailInfo(connectId, number));
     }
 
     @ApiOperation(value = "新增交接单信息")

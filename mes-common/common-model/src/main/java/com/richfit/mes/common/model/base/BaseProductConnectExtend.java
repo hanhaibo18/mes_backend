@@ -11,6 +11,7 @@ import lombok.Data;
 
 /**
  * 产品交接单-扩展表
+ *
  * @author wcy
  * @TableName base_product_connect_extend
  */
@@ -31,6 +32,12 @@ public class BaseProductConnectExtend implements Serializable {
     private String connectId;
 
     /**
+     * BOMId
+     */
+    @ApiModelProperty(value = "BOMId")
+    private String bomId;
+
+    /**
      * 零部件图号
      */
     @ApiModelProperty(value = "零部件图号")
@@ -47,6 +54,12 @@ public class BaseProductConnectExtend implements Serializable {
      */
     @ApiModelProperty(value = "产品编号")
     private String productNo;
+
+    /**
+     * 物料编码
+     */
+    @ApiModelProperty(value = "物料编码")
+    private String materialNo;
 
     /**
      * 需求数量
@@ -102,11 +115,10 @@ public class BaseProductConnectExtend implements Serializable {
     @ApiModelProperty(value = "备注")
     private String extend;
 
-
     /**
-     * BOM需求数量
+     * BOM零部件数量
      */
-    @ApiModelProperty(value = "BOM需求数量")
+    @ApiModelProperty(value = "BOM零部件数量")
     @TableField(exist = false)
     private Integer bomDemandNumber;
 
