@@ -1,8 +1,8 @@
 package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.richfit.mes.base.dao.BaseProductConnectExtendMapper;
-import com.richfit.mes.common.model.base.BaseProductConnectExtend;
+import com.richfit.mes.base.dao.BaseProductReceiptExtendMapper;
+import com.richfit.mes.common.model.base.BaseProductReceiptExtend;
 import org.springframework.stereotype.Service;
 
 /**
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * @createDate 2023-06-05 09:21:56
  */
 @Service
-public class BaseProductConnectExtendServiceImpl extends ServiceImpl<BaseProductConnectExtendMapper, BaseProductConnectExtend> implements BaseProductConnectExtendService {
+public class BaseProductReceiptExtendServiceImpl extends ServiceImpl<BaseProductReceiptExtendMapper, BaseProductReceiptExtend> implements BaseProductReceiptExtendService {
 
 }
 

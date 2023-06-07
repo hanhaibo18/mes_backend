@@ -1,7 +1,7 @@
 package com.richfit.mes.base.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.richfit.mes.common.model.base.BaseProductConnect;
+import com.richfit.mes.common.model.base.BaseProductReceipt;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Mapper;
 * @Entity generator.domain.BaseProductConnect
 */
 @Mapper
-public interface BaseProductConnectMapper extends BaseMapper<BaseProductConnect> {
+public interface BaseProductReceiptMapper extends BaseMapper<BaseProductReceipt> {
 
 }
 

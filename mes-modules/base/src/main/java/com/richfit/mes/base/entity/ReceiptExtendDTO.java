@@ -10,7 +10,7 @@ import lombok.Data;
  */
 
 @Data
-public class ConnectExtendDTO {
+public class ReceiptExtendDTO {
 
     /**
      * 交接单id

@@ -1,12 +1,12 @@
 package com.richfit.mes.base.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.richfit.mes.base.entity.ConnectDTO;
-import com.richfit.mes.base.service.BaseProductConnectService;
+import com.richfit.mes.base.entity.ReceiptDTO;
+import com.richfit.mes.base.service.BaseProductReceiptService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
-import com.richfit.mes.common.model.base.BaseProductConnect;
-import com.richfit.mes.common.model.base.BaseProductConnectExtend;
+import com.richfit.mes.common.model.base.BaseProductReceipt;
+import com.richfit.mes.common.model.base.BaseProductReceiptExtend;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -24,37 +24,37 @@ import java.util.List;
 @Api(value = "产品交接", tags = {"产品交接"})
 @RestController
 @RequestMapping("/api/base/connect")
-public class BaseProductConnectController extends BaseController {
+public class BaseProductReceiptController extends BaseController {
 
 
     @Autowired
-    private BaseProductConnectService baseProductConnectService;
+    private BaseProductReceiptService baseProductReceiptService;
 
     @ApiOperation(value = "交接单据列表")
     @PostMapping("/page")
-    public CommonResult<Page<BaseProductConnect>> query(@ApiParam(value = "查询条件") @RequestBody ConnectDTO connectDTO) {
-        return CommonResult.success(baseProductConnectService.queryConnectInfo(connectDTO));
+    public CommonResult<Page<BaseProductReceipt>> query(@ApiParam(value = "查询条件") @RequestBody ReceiptDTO receiptDTO) {
+        return CommonResult.success(baseProductReceiptService.queryReceiptInfo(receiptDTO));
     }
 
     @ApiOperation(value = "交接单据详情列表")
     @GetMapping("/page/detail")
-    public CommonResult<List<BaseProductConnectExtend>> queryDetail(@ApiParam(value = "查询条件") @RequestParam(value = "connectId", required = true) String connectId,
+    public CommonResult<List<BaseProductReceiptExtend>> queryDetail(@ApiParam(value = "查询条件") @RequestParam(value = "connectId", required = true) String connectId,
                                                                     @ApiParam(value = "交接单数量") @RequestParam(value = "number", required = true) Integer number
     ) {
-        return CommonResult.success(baseProductConnectService.queryConnectDetailInfo(connectId, number));
+        return CommonResult.success(baseProductReceiptService.queryReceiptDetailInfo(connectId, number));
     }
 
     @ApiOperation(value = "新增交接单信息")
     @PostMapping("/insert")
-    public CommonResult insertConnect(@ApiParam(value = "新增交接单据") @RequestBody ConnectDTO connectDTO) {
-        baseProductConnectService.insertConnect(connectDTO);
+    public CommonResult insertReceipt(@ApiParam(value = "新增交接单据") @RequestBody ReceiptDTO receiptDTO) {
+        baseProductReceiptService.insertReceipt(receiptDTO);
         return CommonResult.success("添加成功");
     }
 
     @ApiOperation(value = "编辑交接单信息")
     @PostMapping("/edit")
-    public CommonResult editConnect(@ApiParam(value = "编辑交接单据") @RequestBody ConnectDTO connectDTO) {
-        baseProductConnectService.editConnect(connectDTO);
+    public CommonResult editReceipt(@ApiParam(value = "编辑交接单据") @RequestBody ReceiptDTO receiptDTO) {
+        baseProductReceiptService.editReceipt(receiptDTO);
         return CommonResult.success("修改成功");
     }
 }

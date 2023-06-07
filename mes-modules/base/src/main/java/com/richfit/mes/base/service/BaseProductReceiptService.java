@@ -1,11 +1,11 @@
 package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.richfit.mes.base.entity.ConnectDTO;
+import com.richfit.mes.base.entity.ReceiptDTO;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.base.BaseProductConnect;
+import com.richfit.mes.common.model.base.BaseProductReceipt;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.richfit.mes.common.model.base.BaseProductConnectExtend;
+import com.richfit.mes.common.model.base.BaseProductReceiptExtend;
 
 import java.util.List;
 
@@ -14,15 +14,15 @@ import java.util.List;
  * @description 针对表【base_product_connect(产品交接单据)】的数据库操作Service
  * @createDate 2023-06-05 09:23:01
  */
-public interface BaseProductConnectService extends IService<BaseProductConnect> {
+public interface BaseProductReceiptService extends IService<BaseProductReceipt> {
 
     /**
      * 交接单据列表
      *
-     * @param connectDTO
+     * @param receiptDTO
      * @return
      */
-    Page queryConnectInfo(ConnectDTO connectDTO);
+    Page queryReceiptInfo(ReceiptDTO receiptDTO);
 
     /**
      * 交接单据详情列表
@@ -30,21 +30,21 @@ public interface BaseProductConnectService extends IService<BaseProductConnect> 
      * @param connectId
      * @return
      */
-    List<BaseProductConnectExtend> queryConnectDetailInfo(String connectId, Integer number);
+    List<BaseProductReceiptExtend> queryReceiptDetailInfo(String connectId, Integer number);
 
     /**
      * 新增交接单据
      *
-     * @param connectDTO
+     * @param receiptDTO
      * @return
      */
-    CommonResult insertConnect(ConnectDTO connectDTO);
+    CommonResult insertReceipt(ReceiptDTO receiptDTO);
 
     /**
      * 新增交接单据
      *
-     * @param connectDTO
+     * @param receiptDTO
      * @return
      */
-    CommonResult editConnect(ConnectDTO connectDTO);
+    CommonResult editReceipt(ReceiptDTO receiptDTO);
 }

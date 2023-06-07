@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 @Data
-public class ConnectDTO extends QueryPageDto implements Serializable {
+public class ReceiptDTO extends QueryPageDto implements Serializable {
 
     /**
      * 主键id
@@ -127,5 +127,5 @@ public class ConnectDTO extends QueryPageDto implements Serializable {
      * 子bom信息
      */
     @ApiModelProperty(value = "子bom信息")
-    private List<ConnectExtendDTO> connectExtendDTOList;
+    private List<ReceiptExtendDTO> receiptExtendDTOList;
 }

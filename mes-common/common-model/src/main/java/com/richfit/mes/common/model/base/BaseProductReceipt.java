@@ -18,9 +18,9 @@ import lombok.Data;
  *
  * @TableName base_product_connect
  */
-@TableName(value = "base_product_connect")
+@TableName(value = "base_product_receipt")
 @Data
-public class BaseProductConnect implements Serializable {
+public class BaseProductReceipt implements Serializable {
     /**
      * ID
      */

@@ -6,7 +6,7 @@ package com.richfit.mes.base.enmus;
  * @date 2022/10/31
  * @apiNote
  */
-public enum ConnectStatusEnum {
+public enum ReceiptStatusEnum {
 
 
 
@@ -21,7 +21,7 @@ public enum ConnectStatusEnum {
 
     private final String name;
 
-    private ConnectStatusEnum(String code, String name) {
+    private ReceiptStatusEnum(String code, String name) {
         this.code = code;
         this.name = name;
     }
@@ -34,8 +34,8 @@ public enum ConnectStatusEnum {
         return name;
     }
 
-    public static ConnectStatusEnum getSenderEnum(String stateId) {
-        for (ConnectStatusEnum recipientsEnum : ConnectStatusEnum.values()) {
+    public static ReceiptStatusEnum getSenderEnum(String stateId) {
+        for (ReceiptStatusEnum recipientsEnum : ReceiptStatusEnum.values()) {
             if (recipientsEnum.code.equals(stateId)) {
                 return recipientsEnum;
             }
@@ -44,7 +44,7 @@ public enum ConnectStatusEnum {
     }
 
     public static String getName(String stateId) {
-        for (ConnectStatusEnum recipientsEnum : ConnectStatusEnum.values()) {
+        for (ReceiptStatusEnum recipientsEnum : ReceiptStatusEnum.values()) {
             if (recipientsEnum.code.equals(stateId)) {
                 return recipientsEnum.getName();
             }
@@ -53,7 +53,7 @@ public enum ConnectStatusEnum {
     }
 
     public static String getCode(String name) {
-        for (ConnectStatusEnum recipientsEnum : ConnectStatusEnum.values()) {
+        for (ReceiptStatusEnum recipientsEnum : ReceiptStatusEnum.values()) {
             if (recipientsEnum.name.equals(name)) {
                 return recipientsEnum.getCode();
             }
