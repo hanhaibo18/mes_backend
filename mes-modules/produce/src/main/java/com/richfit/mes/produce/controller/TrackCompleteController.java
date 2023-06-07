@@ -235,9 +235,9 @@ public class TrackCompleteController extends BaseController {
     private boolean trackHeadBegin(String nextThId) {
         TrackHead trackHead = trackHeadService.getById(nextThId);
         if ("0".equals(trackHead.getStatus())) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**
