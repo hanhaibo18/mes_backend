@@ -9,5 +9,10 @@ import java.util.List;
 
 public interface ProduceNoticeService extends IService<ProduceNotice> {
 
+    /**
+     * 批量保存排产单
+     * @param schedulingDtoList
+     * @return
+     */
     boolean saveBatchNotice(List<SaleProductionSchedulingDto> schedulingDtoList);
 }

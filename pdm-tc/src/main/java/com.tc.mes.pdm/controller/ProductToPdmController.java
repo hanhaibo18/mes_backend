@@ -2,7 +2,7 @@ package com.tc.mes.pdm.controller;
 
 import com.tc.mes.pdm.entity.PdmResult;
 import com.tc.mes.pdm.entity.ProduceNoticeDto;
-import com.tc.mes.pdm.service.ProductToPdmService;
+import com.tc.mes.pdm.service.impl.ProductToPdmServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +15,10 @@ import java.util.List;
 @Api("PDM plm-tc接口")
 @RestController
 @RequestMapping("/api/integration/plm")
-public class PdmController {
+public class ProductToPdmController {
 
     @Autowired
-    private ProductToPdmService productToPdmService;
+    private ProductToPdmServiceImpl productToPdmService;
 
     @ApiOperation(value = "生产排产单同步", notes = "MES生产排产单同步PLM")
     @PostMapping("/production_scheduling_sync")

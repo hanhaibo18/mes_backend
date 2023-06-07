@@ -1,4 +1,4 @@
-package com.tc.mes.pdm.service;
+package com.tc.mes.pdm.service.impl;
 
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
@@ -21,7 +21,7 @@ import static com.tc.mes.pdm.constant.PdmConstant.*;
 
 @Slf4j
 @Service
-public class ProductToPdmService {
+public class ProductToPdmServiceImpl {
     /**
      * 用户名
      */
