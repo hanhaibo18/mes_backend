@@ -130,6 +130,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private RecordsOfPourOperationsService recordsOfPourOperationsService;
     @Autowired
     private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
+    @Autowired
+    private TrackCertificateService trackCertificateService;
 
     @Resource
     private TrackAssemblyService assemblyService;
@@ -995,6 +997,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (null == trackItem) {
             removeComplete(trackComplete.getTiId());
         } else {
+            //若该工序开了合格证进行车间扭转且下车间状态为未开工，移除下车间跟单信息
+            removeNextBranchInfo(trackItem);
             QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
             if (!StringUtils.isNullOrEmpty(id)) {
                 queryWrapper.eq("track_id", id);
@@ -1067,6 +1071,29 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             return CommonResult.success(null, "删除成功！");
         } else {
             return CommonResult.failed("操作失败，请重试！" + msg);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    private void removeNextBranchInfo(TrackItem trackItem) {
+        QueryWrapper<TrackCertificate> certificateQueryWrapper = new QueryWrapper<>();
+        certificateQueryWrapper.eq("ti_id", trackItem.getId());
+        TrackCertificate trackCertificate = trackCertificateService.getOne(certificateQueryWrapper);
+        if (trackCertificate != null && trackCertificate.getNextThId() != null) {
+            TrackHead trackHead = trackHeadService.getById(trackCertificate.getNextThId());
+            if (trackHead != null && "0".equals(trackHead.getStatus())) {
+                QueryWrapper<TrackFlow> flowQueryWrapper = new QueryWrapper<>();
+                flowQueryWrapper.eq("track_head_id", trackHead.getId());
+                trackFlowService.remove(flowQueryWrapper);
+
+                QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+                itemQueryWrapper.eq("track_head_id", trackHead.getId());
+                trackItemService.remove(itemQueryWrapper);
+
+                trackHeadService.removeById(trackHead.getId());
+            } else if (trackHead != null) {
+                throw new GlobalException("扭转车间工序状态已变更，无法回滚！", ResultCode.FAILED);
+            }
         }
     }
 
@@ -2226,7 +2253,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             throw new GlobalException("原预装炉没有派工信息！", ResultCode.FAILED);
         }
         QueryWrapper<AssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
-        assignPersonQueryWrapper.eq("assign_id",assign.getId());
+        assignPersonQueryWrapper.eq("assign_id", assign.getId());
         List<AssignPerson> assignPeople = trackAssignPersonMapper.selectList(assignPersonQueryWrapper);
         assign.setAssignPersons(assignPeople);
         if ("15".equals(prechargeFurnaceAssign.getOptType())) {
