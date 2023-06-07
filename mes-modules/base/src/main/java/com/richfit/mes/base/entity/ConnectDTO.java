@@ -108,8 +108,12 @@ public class ConnectDTO extends QueryPageDto implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String endTime;
 
+    @ApiModelProperty(value = "交接状态0：待交接；1：已交接；2：已拒收")
+    private String status;
+
     /**
      * 子bom信息
      */
+    @ApiModelProperty(value = "子bom信息")
     private List<ConnectExtendDTO> connectExtendDTOList;
 }

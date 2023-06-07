@@ -66,6 +66,8 @@ public class TrackCompleteController extends BaseController {
     private LayingOffService layingOffService;
     @Resource
     private ProduceRoleOperationService roleOperationService;
+    @Autowired
+    private TrackCertificateService trackCertificateService;
 
     @Resource
     private PublicService publicService;
@@ -198,6 +200,11 @@ public class TrackCompleteController extends BaseController {
                         track.setIsUpdate(1);
                         continue;
                     }
+                    //条件五 当前工序扭转到了下车间且已开工
+                    if (("4".equals(trackHead.getClasses()) || "6".equals(trackHead.getClasses()) || "7".equals(trackHead.getClasses())) && takeCertificate(trackItem)) {
+                        track.setIsUpdate(1);
+                        continue;
+                    }
                     if (null == track.getIsUpdate()) {
                         track.setIsUpdate(0);
                     }
@@ -209,6 +216,28 @@ public class TrackCompleteController extends BaseController {
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
+    }
+
+    private boolean takeCertificate(TrackItem trackItem) {
+        QueryWrapper<TrackCertificate> certificateQueryWrapper = new QueryWrapper<>();
+        certificateQueryWrapper.eq("ti_id", trackItem.getId());
+        TrackCertificate trackCertificate = trackCertificateService.getOne(certificateQueryWrapper);
+        if (null == trackCertificate) {
+            return false;
+        } else if (trackCertificate.getNextThId() == null) {
+            return false;
+        } else if (trackHeadBegin(trackCertificate.getNextThId())) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean trackHeadBegin(String nextThId) {
+        TrackHead trackHead = trackHeadService.getById(nextThId);
+        if ("0".equals(trackHead.getStatus())) {
+            return false;
+        }
+        return true;
     }
 
     /**
