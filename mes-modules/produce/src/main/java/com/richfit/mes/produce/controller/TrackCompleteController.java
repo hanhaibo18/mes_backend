@@ -200,7 +200,7 @@ public class TrackCompleteController extends BaseController {
                         track.setIsUpdate(1);
                         continue;
                     }
-                    //判断当前工序是否开了合格证且扭转到下车间
+                    //条件五 当前工序扭转到了下车间且已开工
                     if (("4".equals(trackHead.getClasses()) || "6".equals(trackHead.getClasses()) || "7".equals(trackHead.getClasses())) && takeCertificate(trackItem)) {
                         track.setIsUpdate(1);
                         continue;
@@ -225,8 +225,8 @@ public class TrackCompleteController extends BaseController {
         if (null == trackCertificate) {
             return false;
         } else if (trackCertificate.getNextThId() == null) {
-            return true;
-        } else if (!trackHeadBegin(trackCertificate.getNextThId())) {
+            return false;
+        } else if (trackHeadBegin(trackCertificate.getNextThId())) {
             return true;
         }
         return false;
@@ -235,9 +235,9 @@ public class TrackCompleteController extends BaseController {
     private boolean trackHeadBegin(String nextThId) {
         TrackHead trackHead = trackHeadService.getById(nextThId);
         if ("0".equals(trackHead.getStatus())) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**

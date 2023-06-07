@@ -299,12 +299,13 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
             queryWrapper.orderByDesc("u.modify_time");
         }
         IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
-        //工艺ids
-        List<String> routerIdAndBranchCodeList = new ArrayList<>(queryPage.getRecords().stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
-        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
-
+        //锻造、铸钢、冶炼 补充工艺信息
+        List<Router> getRouter = null;
+        if("4".equals(classes) || "6".equals(classes) || "7".equals(classes)){
+            List<String> routerIdAndBranchCodeList = new ArrayList<>(queryPage.getRecords().stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+            getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
+        }
         if (null != queryPage.getRecords()) {
-
             for (Assign assign : queryPage.getRecords()) {
                 if(!CollectionUtil.isEmpty(getRouter)){
                     Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));

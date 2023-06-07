@@ -329,11 +329,12 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         //创建跟单信息
         TrackHead trackHead = trackHeadService.getById(thId);
         TrackHead newTrackHead = new TrackHead();
-        BeanUtil.copyProperties(trackHead,newTrackHead,new String[]{"id","modifyTime","modifyBy","routerId","classes"});
+        BeanUtil.copyProperties(trackHead,newTrackHead,new String[]{"id","modifyTime","modifyBy","routerId","classes","status"});
         newTrackHead.setBranchCode(branchCode);
         newTrackHead.setTenantId(tenantId);
         newTrackHead.setStatus("0"); //初始状态
         newTrackHead.setClasses("7"); //冶炼车间
+        newTrackHead.setStatus("0"); //跟单状态设置为初始
         trackHeadService.save(newTrackHead);
         //创建跟单产品信息flow
         List<TrackFlow> trackFlows = trackHeadFlowService.list(new QueryWrapper<TrackFlow>().eq("track_head_id", trackHead.getId()));

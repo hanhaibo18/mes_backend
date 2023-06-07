@@ -708,8 +708,12 @@ public class RouterController extends BaseController {
         //没有自动派工信息返回工序定义中的自动派工信息
         if (ObjectUtil.isEmpty(one)) {
             OperationAssign operatinoAssign = operationAssignService.getOperatinoByParam(optName, branchCode);
-            //将工序定义的自动派工数据插入到工艺工序的自动派工配置里
             RouterOptAssign routerOptAssign = new RouterOptAssign();
+            //将工序定义的自动派工数据插入到工艺工序的自动派工配置里
+            if(ObjectUtil.isEmpty(operatinoAssign)){
+                return CommonResult.success(routerOptAssign, "操作成功！");
+            }
+
             BeanUtil.copyProperties(operatinoAssign, routerOptAssign, new String[]{"id", "createTime", "modifyTime", "modifyBy"});
             routerOptAssign.setRouterNo(routerNo);
             routerOptAssignService.save(routerOptAssign);
