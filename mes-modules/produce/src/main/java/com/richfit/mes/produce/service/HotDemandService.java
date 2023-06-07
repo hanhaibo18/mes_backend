@@ -28,6 +28,8 @@ public interface HotDemandService extends IService<HotDemand> {
 
     String workblankTypeToBranchCode(String workblankType);
 
+    void workblankTypeToProduceOrgName(HotDemand hotDemand);
+
     CommonResult<?> initPlanNode(List<String> idList, String branchCode);
 
     HashMap<String, List<String>> getStringListHashMap(List<HotDemand> hotDemands);

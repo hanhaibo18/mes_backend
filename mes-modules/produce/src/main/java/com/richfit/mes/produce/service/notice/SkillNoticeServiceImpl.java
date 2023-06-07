@@ -78,7 +78,6 @@ public class SkillNoticeServiceImpl extends ServiceImpl<SkillNoticeMapper, Skill
     @Override
     public IPage<SkillNotice> queryDispatchPage(DispatchDto dispatchDto) {
         QueryWrapper<SkillNotice> queryWrapper = new QueryWrapper<>();
-        queryWrapper.apply("n.id = t.notice_id ");
         queryWrapper.eq("dispatch_state", "1");
         queryWrapper.eq(StrUtil.isNotBlank(dispatchDto.getSkillNoticeNumber()), "dispatch_notice_number", dispatchDto.getSkillNoticeNumber());
         queryWrapper.eq(StrUtil.isNotBlank(dispatchDto.getWorkNo()), "work_no", dispatchDto.getWorkNo());
@@ -90,7 +89,7 @@ public class SkillNoticeServiceImpl extends ServiceImpl<SkillNoticeMapper, Skill
         TimeUtil.queryEndTime(queryWrapper, dispatchDto.getEndTime());
         OrderUtil.query(queryWrapper, dispatchDto.getOrder(), dispatchDto.getOrderCol());
         queryWrapper.groupBy("id");
-        IPage<SkillNotice> acceptingPage = skillNoticeMapper.queryAcceptingPage(new Page<>(dispatchDto.getPage(), dispatchDto.getSize()), queryWrapper);
+        IPage<SkillNotice> acceptingPage = skillNoticeMapper.queryDispatchPage(new Page<>(dispatchDto.getPage(), dispatchDto.getSize()), queryWrapper);
         if (CollectionUtils.isEmpty(acceptingPage.getRecords())) {
             return null;
         }
@@ -124,7 +123,7 @@ public class SkillNoticeServiceImpl extends ServiceImpl<SkillNoticeMapper, Skill
     @Override
     public IPage<SkillNotice> receiveDispatchNotification(AcceptDispatchDto acceptDispatchDto) {
         QueryWrapper<SkillNotice> queryWrapper = new QueryWrapper<>();
-        queryWrapper.apply("n.id = t.notice_id ");
+        queryWrapper.apply("n.id = t.skill_id ");
         queryWrapper.eq("dispatch_state", "2");
         queryWrapper.eq(StrUtil.isNotBlank(acceptDispatchDto.getSkillNoticeNumber()), "dispatch_notice_number", acceptDispatchDto.getSkillNoticeNumber());
         queryWrapper.eq(StrUtil.isNotBlank(acceptDispatchDto.getWorkNo()), "work_no", acceptDispatchDto.getWorkNo());
@@ -156,7 +155,7 @@ public class SkillNoticeServiceImpl extends ServiceImpl<SkillNoticeMapper, Skill
         //获取所有排产单 车间数据
         List<String> idList = noticeList.stream().map(SkillNotice::getId).collect(Collectors.toList());
         QueryWrapper<SkillNoticeTenant> tenantQueryWrapper = new QueryWrapper<>();
-        tenantQueryWrapper.in("notice_id", idList);
+        tenantQueryWrapper.in("skill_id", idList);
         List<SkillNoticeTenant> tenantList = noticeTenantService.list(tenantQueryWrapper);
         //根据排产单分组
         Map<String, List<SkillNoticeTenant>> collect = tenantList.stream().collect(Collectors.groupingBy(SkillNoticeTenant::getSkillId));
