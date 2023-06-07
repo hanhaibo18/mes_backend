@@ -298,6 +298,11 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "质检人")
     private String qualityCheckBy;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否质检")
+    private String isExistQualityCheck;
+
+
     /**
      * 下料规格
      */
