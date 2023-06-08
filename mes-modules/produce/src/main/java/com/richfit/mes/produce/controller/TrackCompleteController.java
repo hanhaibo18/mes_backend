@@ -284,6 +284,20 @@ public class TrackCompleteController extends BaseController {
         return CommonResult.success(trackCompleteService.queryTrackCompleteListByWorkNo(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
     }
 
+    @ApiOperation(value = "工时统计by工作号", notes = "工时统计by工作号")
+    @GetMapping("/query_work_hours")
+    public CommonResult<Map<String, Object>> pageOptimizeByWorkNo(@ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo,
+                                                                  @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+                                                                  @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+                                                                  @ApiParam(value = "机构ID") @RequestParam String branchCode,
+                                                                  @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                                                  @ApiParam(value = "用户id") @RequestParam(required = false) String userId,
+                                                                  @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo,
+                                                                  @ApiParam(value = "person,workNo,order,branch") @RequestParam(required = false) String type
+    ) {
+        return CommonResult.success(trackCompleteService.queryWorkHours(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo,type));
+    }
+
 
     @ApiOperation(value = "报工详情查询", notes = "报工详情查询")
     @ApiImplicitParams({
