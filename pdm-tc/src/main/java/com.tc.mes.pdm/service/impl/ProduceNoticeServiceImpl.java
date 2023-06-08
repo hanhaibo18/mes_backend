@@ -1,8 +1,9 @@
 package com.tc.mes.pdm.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.tc.mes.pdm.entity.SaleProduceNoticeDto;
-import com.tc.mes.pdm.entity.SaleProductionSchedulingDto;
+import com.tc.mes.pdm.entity.request.SaleProductionSchedulingRequest;
+import com.tc.mes.pdm.entity.vo.SaleProduceNoticeVo;
+import com.tc.mes.pdm.entity.dto.SaleProductionSchedulingDto;
 import com.tc.mes.pdm.entity.domain.ProduceNotice;
 import com.tc.mes.pdm.mapper.ProduceNoticeMapper;
 import com.tc.mes.pdm.service.ProduceNoticeService;
@@ -23,10 +24,11 @@ public class ProduceNoticeServiceImpl extends ServiceImpl<ProduceNoticeMapper, P
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean saveBatchNotice(List<SaleProductionSchedulingDto> schedulingDtoList) {
-        List<SaleProduceNoticeDto> dtoList = convert(schedulingDtoList);
+    public boolean saveBatchNotice(List<SaleProductionSchedulingRequest> schedulingList) {
+        List<SaleProductionSchedulingDto> dtoList = convertDto(schedulingList);
+        List<SaleProduceNoticeVo> voList = convertVo(dtoList);
         List<ProduceNotice> produceNoticeList = new ArrayList<>();
-        dtoList.forEach(e -> {
+        voList.forEach(e -> {
             ProduceNotice produceNotice = new ProduceNotice();
             BeanUtils.copyProperties(e, produceNotice);
             produceNoticeList.add(produceNotice);
@@ -35,23 +37,42 @@ public class ProduceNoticeServiceImpl extends ServiceImpl<ProduceNoticeMapper, P
         return flag ? true: false;
     }
 
+    private List<SaleProductionSchedulingDto> convertDto(List<SaleProductionSchedulingRequest> requestList) {
+        List<SaleProductionSchedulingDto> schedulingDtoList = new ArrayList<>();
+        requestList.forEach(e -> {
+            SaleProductionSchedulingDto schedulingDto = new SaleProductionSchedulingDto();
+            schedulingDto.setCode(e.getCode());
+            schedulingDto.setName(e.getName());
+            schedulingDto.setTrackNo(e.getTrack_no());
+            schedulingDto.setProductName(e.getProduct_name());
+            schedulingDto.setNumber(e.getNumber());
+            schedulingDto.setDeliveryTime(e.getDelivery_time());
+            schedulingDto.setRelationId(e.getRelation_id());
+            schedulingDto.setCreateTime(e.getCreate_time());
+            schedulingDto.setMaterialCode(e.getMaterial_code());
+            schedulingDto.setErpName(e.getErp_name());
+            schedulingDto.setDrawNo(e.getDraw_no());
+            schedulingDtoList.add(schedulingDto);
+        });
+        return schedulingDtoList;
+    }
 
-    private List<SaleProduceNoticeDto> convert(List<SaleProductionSchedulingDto> schedulingDtoList) {
-        List<SaleProduceNoticeDto> noticeDtoList = new ArrayList<>();
+    private List<SaleProduceNoticeVo> convertVo(List<SaleProductionSchedulingDto> schedulingDtoList) {
+        List<SaleProduceNoticeVo> noticeDtoList = new ArrayList<>();
         for (SaleProductionSchedulingDto schedulingDto: schedulingDtoList) {
-            SaleProduceNoticeDto noticeDto = new SaleProduceNoticeDto();
-            noticeDto.setProductionOrder(schedulingDto.getCode());
-            noticeDto.setUserUnit(schedulingDto.getName());
-            noticeDto.setWorkNo(schedulingDto.getTrackNo());
-            noticeDto.setProduceName(schedulingDto.getProductName());
-            noticeDto.setQuantity(schedulingDto.getNumber());
-            noticeDto.setDeliveryDate(schedulingDto.getDeliveryTime());
-            noticeDto.setPreviewUrl(schedulingDto.getRelationId());
-            noticeDto.setSalesSchedulingDate(schedulingDto.getCreateTime());
-            noticeDto.setMaterialNo(schedulingDto.getMaterialCode());
-            noticeDto.setMaterialName(schedulingDto.getErpName());
-            noticeDto.setDrawingNo(schedulingDto.getDrawNo());
-            noticeDtoList.add(noticeDto);
+            SaleProduceNoticeVo noticeVo = new SaleProduceNoticeVo();
+            noticeVo.setProductionOrder(schedulingDto.getCode());
+            noticeVo.setUserUnit(schedulingDto.getName());
+            noticeVo.setWorkNo(schedulingDto.getTrackNo());
+            noticeVo.setProduceName(schedulingDto.getProductName());
+            noticeVo.setQuantity(schedulingDto.getNumber());
+            noticeVo.setDeliveryDate(schedulingDto.getDeliveryTime());
+            noticeVo.setPreviewUrl(schedulingDto.getRelationId());
+            noticeVo.setSalesSchedulingDate(schedulingDto.getCreateTime());
+            noticeVo.setMaterialNo(schedulingDto.getMaterialCode());
+            noticeVo.setMaterialName(schedulingDto.getErpName());
+            noticeVo.setDrawingNo(schedulingDto.getDrawNo());
+            noticeDtoList.add(noticeVo);
         }
         return noticeDtoList;
     }

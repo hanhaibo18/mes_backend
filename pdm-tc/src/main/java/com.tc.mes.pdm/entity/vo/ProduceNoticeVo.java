@@ -1,4 +1,4 @@
-package com.tc.mes.pdm.entity;
+package com.tc.mes.pdm.entity.vo;
 
 import lombok.Data;
 
@@ -6,10 +6,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 生产排产单Dto
+ * 生产排产单Vo
  */
 @Data
-public class ProduceNoticeDto {
+public class ProduceNoticeVo {
 
     /**
      *排产单号

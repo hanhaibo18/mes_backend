@@ -1,4 +1,4 @@
-package com.tc.mes.pdm.entity;
+package com.tc.mes.pdm.entity.request;
 
 import lombok.Data;
 
@@ -6,67 +6,67 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 生产排产单同步到 plm
+ * 生产排产单 plm
  */
 @Data
-public class ProductionSchedulingDto {
+public class ProductionSchedulingRequest {
     /**
      *  排产单号（必填）
      */
-    private String schedulingNo;
+    private String scheduling_no;
 
     /**
      *  通知来源（必填）
      */
-    private String noticSouce;
+    private String notic_souce;
 
     /**
      *  技术准备完成时间（必填）
      */
-    private String techPlanTime;
+    private String tech_plan_time;
 
     /**
      *  交货期（必填）
      */
-    private Date deliveryDate;
+    private Date delivery_date;
 
     /**
      *  落成单位（必填）
      */
-    private String execuOrganization;
+    private String execu_organization;
 
     /**
      *  工作号 （必填） 多个
      */
-    private String workNo;
+    private String work_no;
 
     /**
      *  排产单位（必填）
      */
-    private String schedulingGroup;
+    private String scheduling_group;
 
     /**
      *  生产排产日期（必填）
      */
-    private String schedulingDate;
+    private String scheduling_date;
 
     /**
      *  用户（必填）
      */
-    private String customerName;
+    private String customer_name;
 
     /**
      *  排产类型（必填）
      */
-    private String schedulingType;
+    private String scheduling_type;
 
     /**
      *  产品名称（必填）
      */
-    private String productName;
+    private String product_name;
 
     /**
      *  排产单名称 指定格式pdf
      */
-    private List<String> previewUrl;
+    private List<String> preview_url;
 }

@@ -1,7 +1,7 @@
 package com.tc.mes.pdm.controller;
 
 import com.tc.mes.pdm.entity.PdmResult;
-import com.tc.mes.pdm.entity.ProduceNoticeDto;
+import com.tc.mes.pdm.entity.vo.ProduceNoticeVo;
 import com.tc.mes.pdm.service.impl.ProductToPdmServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,7 +22,7 @@ public class ProductToPdmController {
 
     @ApiOperation(value = "生产排产单同步", notes = "MES生产排产单同步PLM")
     @PostMapping("/production_scheduling_sync")
-    public PdmResult productionSchedulingSync(@RequestBody List<ProduceNoticeDto> produceNoticeDtoList) {
+    public PdmResult productionSchedulingSync(@RequestBody List<ProduceNoticeVo> produceNoticeDtoList) {
         return productToPdmService.productionSchedulingSync(produceNoticeDtoList);
     }
 

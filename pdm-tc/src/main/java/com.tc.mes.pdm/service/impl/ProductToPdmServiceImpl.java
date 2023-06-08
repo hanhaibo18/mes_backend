@@ -4,8 +4,9 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.tc.mes.pdm.entity.PdmResult;
-import com.tc.mes.pdm.entity.ProduceNoticeDto;
-import com.tc.mes.pdm.entity.ProductionSchedulingDto;
+import com.tc.mes.pdm.entity.request.ProductionSchedulingRequest;
+import com.tc.mes.pdm.entity.vo.ProduceNoticeVo;
+import com.tc.mes.pdm.entity.dto.ProductionSchedulingDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,20 +72,21 @@ public class ProductToPdmServiceImpl {
      * @param produceNoticeDtoList
      * @return
      */
-    public PdmResult productionSchedulingSync(List<ProduceNoticeDto> produceNoticeDtoList) {
+    public PdmResult productionSchedulingSync(List<ProduceNoticeVo> produceNoticeDtoList) {
         if (StringUtils.isEmpty(getCookieValue())) {
             return null;
         }
-        List<ProductionSchedulingDto> productionSchedulingDtoList = convert(produceNoticeDtoList);
+        List<ProductionSchedulingDto> productionSchedulingDtoList = convertDto(produceNoticeDtoList);
+        List<ProductionSchedulingRequest> productionSchedulingRequestList = convertRequest(productionSchedulingDtoList);
         //发送请求
-        String s = HttpUtil.createPost(url + "/produce/sync").cookie(new HttpCookie(J_SESSION_ID, getCookieValue())).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").body(String.valueOf(productionSchedulingDtoList)).execute().body();
+        String s = HttpUtil.createPost(url + "/produce/sync").cookie(new HttpCookie(J_SESSION_ID, getCookieValue())).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").body(String.valueOf(productionSchedulingRequestList)).execute().body();
         PdmResult result = JSONUtil.toBean(s, PdmResult.class);
         return result;
     }
 
-    private List<ProductionSchedulingDto> convert(List<ProduceNoticeDto> produceNoticeDtoList) {
+    private List<ProductionSchedulingDto> convertDto(List<ProduceNoticeVo> produceNoticeDtoList) {
         List<ProductionSchedulingDto> productionSchedulingDtoList = new ArrayList<>();
-        for (ProduceNoticeDto produceNotice : produceNoticeDtoList) {
+        for (ProduceNoticeVo produceNotice : produceNoticeDtoList) {
             ProductionSchedulingDto productionSchedulingDto = new ProductionSchedulingDto();
             productionSchedulingDto.setSchedulingNo(produceNotice.getProductionOrder());
             productionSchedulingDto.setNoticSouce(produceNotice.getNotificationType());
@@ -101,6 +103,27 @@ public class ProductToPdmServiceImpl {
             productionSchedulingDtoList.add(productionSchedulingDto);
         }
         return productionSchedulingDtoList;
+    }
+
+    private List<ProductionSchedulingRequest> convertRequest(List<ProductionSchedulingDto> productionSchedulingDtoList) {
+        List<ProductionSchedulingRequest> productionSchedulingRequestList = new ArrayList<>();
+        productionSchedulingDtoList.forEach(e -> {
+            ProductionSchedulingRequest schedulingRequest = new ProductionSchedulingRequest();
+            schedulingRequest.setScheduling_no(e.getSchedulingNo());
+            schedulingRequest.setNotic_souce(e.getNoticSouce());
+            schedulingRequest.setTech_plan_time(e.getTechPlanTime());
+            schedulingRequest.setDelivery_date(e.getDeliveryDate());
+            schedulingRequest.setExecu_organization(e.getExecuOrganization());
+            schedulingRequest.setWork_no(e.getWorkNo());
+            schedulingRequest.setScheduling_group(e.getSchedulingGroup());
+            schedulingRequest.setScheduling_date(e.getSchedulingDate());
+            schedulingRequest.setCustomer_name(e.getCustomerName());
+            schedulingRequest.setScheduling_type(e.getSchedulingType());
+            schedulingRequest.setProduct_name(e.getProductName());
+            schedulingRequest.setPreview_url(e.getPreviewUrl());
+            productionSchedulingRequestList.add(schedulingRequest);
+        });
+        return productionSchedulingRequestList;
     }
 
     private Map<String, String> map() {

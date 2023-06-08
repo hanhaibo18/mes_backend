@@ -1,4 +1,4 @@
-package com.tc.mes.pdm.entity;
+package com.tc.mes.pdm.entity.request;
 
 import lombok.Data;
 
@@ -8,7 +8,7 @@ import java.util.Date;
  * 销售排产单
  */
 @Data
-public class SaleProductionSchedulingDto {
+public class SaleProductionSchedulingRequest {
     /**
      *排产单号
      */
@@ -22,12 +22,12 @@ public class SaleProductionSchedulingDto {
     /**
      *工作号
      */
-    private String trackNo;
+    private String track_no;
 
     /**
      *产品名称
      */
-    private String productName;
+    private String product_name;
 
     /**
      *数量
@@ -37,31 +37,31 @@ public class SaleProductionSchedulingDto {
     /**
      *交货期
      */
-    private Date deliveryTime;
+    private Date delivery_time;
 
     /**
      *附件
      */
-    private String relationId;
+    private String relation_id;
 
     /**
      *排产日期
      */
-    private Date createTime;
+    private Date create_time;
 
     /**
      *物料编码
      */
-    private String materialCode;
+    private String material_code;
 
     /**
      *物料名称
      */
-    private String erpName;
+    private String erp_name;
 
     /**
      *图号
      */
-    private String drawNo;
+    private String draw_no;
 
 }

@@ -1,12 +1,15 @@
-package com.tc.mes.pdm.entity;
+package com.tc.mes.pdm.entity.vo;
 
 import com.tc.mes.pdm.entity.base.BaseEntity;
 import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * 排产单Vo
+ */
 @Data
-public class SaleProduceNoticeDto extends BaseEntity<SaleProductionSchedulingDto> {
+public class SaleProduceNoticeVo extends BaseEntity<SaleProduceNoticeVo> {
     /**
      *排产单号
      */
