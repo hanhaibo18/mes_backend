@@ -123,6 +123,9 @@ public class ReceiptDTO extends QueryPageDto implements Serializable {
     @ApiModelProperty(value = "交接状态0：待交接；1：已交接；2：已拒收")
     private String status;
 
+    @ApiModelProperty(value = "是否选中:1:选中；2：未选中")
+    private Integer ifCheck;
+
     /**
      * 子bom信息
      */

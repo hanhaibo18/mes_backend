@@ -145,6 +145,12 @@ public class BaseProductReceipt implements Serializable {
     @ApiModelProperty(value = "交接状态：0：待接受；1：已接受；2：已拒收")
     private String status;
 
+    /**
+     * 租户id
+     */
+    @ApiModelProperty(value = "租户id")
+    private String tenantId;
+
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
