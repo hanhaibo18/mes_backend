@@ -1880,7 +1880,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         List<TrackComplete> details = new ArrayList<>();
         if (!CollectionUtils.isEmpty(completes)) {
             ExecutorService executorService = Executors.newFixedThreadPool(20);
-            //查询当前车间下所有质检规则
+            //查询全部车间下所有质检规则
             Future<List<QualityInspectionRules>> qualityInspectionRulesFuture = ConcurrentUtil.doJob(executorService, () -> systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER));
             //根据员工分组
             Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
@@ -2274,6 +2274,27 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         List<Long> ids = new ArrayList<>();
         ids.add(afterId);
         return prechargeFurnaceAssignService.furnaceAssign(assign, ids);
+    }
+
+    @Override
+    public Map<String, Object> queryWorkHours(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo, String type) {
+        //1、根据条件查询报工信息
+        List<TrackComplete> completes = getCompleteByFilter(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
+        //2、查询当前车间下所有质检规则
+        //3、人员信息
+        //4、跟单信息
+        //5、跟单报工的工序信息
+        //6、根据类型组装数据type（工厂、方法或者map数组），返回执行的数组（计算、数据封装）
+        return null;
+    }
+
+
+    private Map<String, Object> workHoursCompletes(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo, String type) {
+        //1、根据type做数据的整合返回可通用循环执行数据
+        //2.1、循环执行单条数据的封装（数据封装set放到主逻辑外）
+        //2.2、循环执行汇总数据的封装
+        //3、返回封装后的数据
+        return null;
     }
 
     private List<TrackComplete> getCompleteByFilter(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
