@@ -13,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author sun
@@ -131,4 +132,10 @@ public class TenantUserVo extends BaseVo<TenantUser> {
 
     @ApiModelProperty(value = "工时比例")
     private Double ratioHours;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "menuType为2的menuCode", dataType = "String")
+    private Set<String> permissions;
+
+
 }

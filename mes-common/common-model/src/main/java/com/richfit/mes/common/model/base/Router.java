@@ -16,6 +16,8 @@ import java.util.List;
 public class Router extends BaseEntity<Router> {
 
     private static final long serialVersionUID = -3275178843268370454L;
+
+    public  static final String COMMON_ROUTER_TYPE = "通用工艺";
     /**
      * 租户ID
      */

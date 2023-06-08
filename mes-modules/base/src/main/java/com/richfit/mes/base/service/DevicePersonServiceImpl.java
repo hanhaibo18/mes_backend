@@ -70,17 +70,10 @@ public class DevicePersonServiceImpl extends ServiceImpl<DevicePersonMapper, Dev
                 }
             });
             if (deviceIds.size()>0) {
-                List<Device> deviceList = new ArrayList<>();
-                for (DevicePerson devicePerson : devicePeople) {
-                    QueryWrapper<Device> queryWrapper1 = new QueryWrapper<>();
-                    queryWrapper1.eq("branch_code",branchCode)
-                            .in("id",deviceIds);
-                    List<Device> list = deviceService.list(queryWrapper1);
-                    if(list.size()>0){
-                        deviceList.add(list.get(0));
-                    }
-                }
-                return deviceList;
+                QueryWrapper<Device> queryWrapper1 = new QueryWrapper<>();
+                queryWrapper1.eq("branch_code",branchCode)
+                        .in("id",deviceIds);
+                return deviceService.list(queryWrapper1);
             }
         }
         return Collections.emptyList();

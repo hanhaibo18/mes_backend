@@ -80,6 +80,7 @@ public class PlanController extends BaseController {
     public CommonResult pageMissing(@ApiParam(value = "计划编码") @RequestParam(required = false) String projCode,
                                     @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
                                     @ApiParam(value = "图号") @RequestParam(required = false) String drawNo,
+                                    @ApiParam(value = "零件名称") @RequestParam(required = false) String materialName,
                                     @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
                                     @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
                                     @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
@@ -100,6 +101,9 @@ public class PlanController extends BaseController {
         if (!StringUtils.isNullOrEmpty(projCode)) {
             queryWrapper.eq("proj_code", projCode);
         }
+        if (!StringUtils.isNullOrEmpty(materialName)) {
+            queryWrapper.eq("material_name", materialName);
+        }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             queryWrapper.ge("start_time", startTime + " 00:00:00");
         }
@@ -118,6 +122,7 @@ public class PlanController extends BaseController {
         queryWrapper.orderByDesc("modify_time");
         PageHelper.startPage(page, limit);
         List<Plan> planList = planService.list(queryWrapper);
+        planService.planPackageExtend(planList);//完善扩展表信息
         PageInfo<Plan> planPageInfo = new PageInfo(planList);
         log.debug("plan page_missing return is [{}]", planPageInfo);
         return CommonResult.success(planPageInfo);
@@ -152,10 +157,10 @@ public class PlanController extends BaseController {
             DrawingNoUtil.queryLike(queryWrapper, "draw_no", planDto.getDrawNo());
         }
         if (!StringUtils.isNullOrEmpty(planDto.getStartTime())) {
-            queryWrapper.ge("start_time", planDto.getStartTime() + " 00:00:00");
+            queryWrapper.ge("create_time", planDto.getStartTime() + " 00:00:00");
         }
         if (!StringUtils.isNullOrEmpty(planDto.getEndTime())) {
-            queryWrapper.le("end_time", planDto.getEndTime() + " 23:59:59");
+            queryWrapper.le("create_time", planDto.getEndTime() + " 23:59:59");
         }
         if (planDto.getStatus() != null && planDto.getStatus() != -1) {
             queryWrapper.eq("status", planDto.getStatus());
@@ -379,8 +384,8 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "导入计划--锻造车间", notes = "根据Excel文档导入计划--锻造车间")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel_DZ")
-    public CommonResult importExcelDZ(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IOException {
-        planService.importPlanDZ(file, request);
+    public CommonResult importExcelDZ(@RequestParam("file") MultipartFile file, HttpServletRequest request,String branchCode) throws IOException {
+        planService.importPlanDZ(file, request,branchCode);
         return CommonResult.success(null);
     }
 

@@ -488,7 +488,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @ApiModelProperty(value = "工艺浇注温度")
     @TableField(exist = false)
-    private Double pourTemperatureRouter;
+    private String pourTemperatureRouter;
 
     @ApiModelProperty(value = "浇注时间 单位秒")
     private String pourTime;
@@ -497,15 +497,51 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String pourTimeRouter;
 
-    @ApiModelProperty(value = "热风机关闭时间")
-    private Date fanClosedTime;
+    @ApiModelProperty(value = "保温完成时间 ", dataType = "Date")
+    private Date holdFinishedTime;
 
-    @ApiModelProperty(value = "试棒跟单编号")
+    @ApiModelProperty(value = "热风机关闭时间")
+    private String fanClosedTime;
+
+    @ApiModelProperty(value = "试棒编号")
     @TableField(exist = false)
-    private String testBarTrackNo;
+    private String testBarNo;
 
     @ApiModelProperty(value = "试棒跟单编号")
     @TableField(exist = false)
     private String testBarType;
+
+    @ApiModelProperty(value = "锭型")
+    @TableField(exist = false)
+    private String ingotCase;
+
+    @ApiModelProperty(value = "预装炉派工id")
+    private String prechargeFurnaceAssignId;
+
+    @ApiModelProperty(value = "是否冶炼配炉::是；否")
+    @TableField(exist = false)
+    private String ifPrechargeFurnace;
+
+    @ApiModelProperty(value = "派工id")
+    @TableField(exist = false)
+    private String assignId;
+
+    @ApiModelProperty(value = "根据材质和锭型进行分组后的数量")
+    @TableField(exist = false)
+    private Integer numByTexture;
+
+    @ApiModelProperty(value = "浇注时间点")
+    @TableField(exist = false)
+    private String pourTimeDot;
+
+    @TableField(exist = false)
+    private String classes;
+
+    /**
+     * 下料规格
+     */
+    @TableField(exist = false)
+    private String blankSpecifi;
+
 
 }

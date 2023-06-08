@@ -345,7 +345,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     // 材料入库
     @Override
     public boolean addStore(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
-                            Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) {
+                            Boolean isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) throws Exception {
         lineStore.setUseNum(0);
         lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
         lineStore.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
@@ -419,7 +419,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     // 材料入库
     @Override
     public boolean addStoreNew(LineStore lineStore, Integer startNo, Integer endNo, String suffixNo,
-                               String isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) {
+                               String isAutoMatchProd, Boolean isAutoMatchPur, String branchCode, String strartSuffix) throws Exception {
 
         lineStore.setUseNum(0);
         lineStore.setStatus(StoreItemStatusEnum.FINISH.getCode());
@@ -446,8 +446,6 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
             if (isAutoMatchProd.equals(2)) {
                 ordersSn = createOrder(lineStore);
             }
-
-
             for (int i = startNo; i <= endNo; i++) {
                 LineStore entity = new LineStore();
                 //改为浅拷贝
@@ -485,9 +483,12 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 entity.setProdNo(entity.getDrawingNo() + " " + entity.getWorkblankNo());
                 list.add(entity);
             }
-
+            for (LineStore s : list) {
+                if (StrUtil.isBlank(s.getProductionOrder())) {
+                    throw new Exception("没有订单！");
+                }
+            }
             bool = this.saveBatch(list);
-
             //保存料单-附件关系
             for (LineStore s : list) {
 //                storeAttachRelService.batchSaveStoreFile(s.getId(), branchCode, lineStore.getFileIds());
@@ -505,6 +506,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         } else {
             if (isAutoMatchProd.equals("1")) {
                 lineStore.setProductionOrder(matchProd(lineStore.getMaterialNo(), lineStore.getNumber()));
+            }
+            if (StrUtil.isBlank(lineStore.getProductionOrder())) {
+                throw new Exception("没有订单！");
             }
             bool = this.save(lineStore);
             //保存料单-附件关系
@@ -601,7 +605,7 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
     }
 
     //匹配生产订单
-    private String matchProd(String materialNo, Integer number) {
+    private String matchProd(String materialNo, Integer number) throws Exception {
         String orderNo = "";
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
         wrapper.eq("material_code", materialNo);
@@ -621,7 +625,9 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
                 break;
             }
         }
-
+        if (StrUtil.isBlank(orderNo)) {
+            throw new Exception("自动匹配没有找到订单！");
+        }
         return orderNo;
     }
 
@@ -643,16 +649,17 @@ public class LineStoreServiceImpl extends ServiceImpl<LineStoreMapper, LineStore
         orderWrapper.orderByAsc("delivery_date");
         List<Order> orderList = orderService.list(orderWrapper);
 
-        //根据订单号计算入库数量
-        QueryWrapper<LineStore> lWrapper = new QueryWrapper<>();
-        lWrapper.select("sum(number) as number ");
-        lWrapper.eq("production_order", orderNo);
-        LineStore lineStore = this.getOne(lWrapper);
-
         HashMap<String, Integer> numMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(orderList)) {
-            Integer orderNum = orderList.get(0).getOrderNum();//订单数量
-            numMap.put("orderNum", orderNum);//订单物料数量
+            Order order = orderList.get(0);
+            numMap.put("orderNum", order.getOrderNum());//订单物料数量
+
+            //根据订单号计算入库数量
+            QueryWrapper<LineStore> lWrapper = new QueryWrapper<>();
+            lWrapper.select("sum(number) as number ");
+            lWrapper.eq("production_order", orderNo);
+            lWrapper.eq("branch_code", order.getBranchCode());
+            LineStore lineStore = this.getOne(lWrapper);
             if (ObjectUtils.isNotEmpty(lineStore)) {
                 numMap.put("inNum", lineStore.getNumber());//已入库数量
             } else {

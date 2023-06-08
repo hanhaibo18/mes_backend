@@ -182,7 +182,7 @@ public class DevicePersonController extends BaseController {
     @ApiOperation(value = "根据人员Ids查找交集设备", notes = "根据人员Ids查找交集设备")
     @PostMapping("/queryDeviceByUserIds")
     public CommonResult<List<Device>> queryDeviceByUserIds(@RequestBody JSONObject jsonObject) {
-        //保存的工序
+        //人员id
         List<String> userIds = JSON.parseArray(JSONObject.toJSONString(jsonObject.get("userIds")), String.class);
         //组织机构
         String branchCode = jsonObject.getString("branchCode");

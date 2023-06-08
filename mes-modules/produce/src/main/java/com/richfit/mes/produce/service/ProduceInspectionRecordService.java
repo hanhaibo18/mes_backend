@@ -1103,6 +1103,7 @@ public class ProduceInspectionRecordService {
         if (!StringUtils.isEmpty(produceInspectionRecordMt.getDiagramAttachmentId())) {
             dataMap.put("img", systemServiceClient.getBase64Code(produceInspectionRecordMt.getDiagramAttachmentId()).getData());
         }
+        //
 
     }
 

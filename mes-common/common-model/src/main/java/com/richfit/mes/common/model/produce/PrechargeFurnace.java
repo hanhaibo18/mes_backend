@@ -83,7 +83,7 @@ public class PrechargeFurnace {
     private String number;
     @ApiModelProperty(value = "材质", dataType = "String")
     private String texture;
-    @ApiModelProperty(value = "记录状态", dataType = "String")
+    @ApiModelProperty(value = "记录状态 0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过", dataType = "String")
     private String recordStatus;
     @TableField(exist = false)
     @ApiModelProperty(value = "是否回滚标志", dataType = "int")
@@ -96,4 +96,23 @@ public class PrechargeFurnace {
     private String ingotCase;
     @ApiModelProperty(value = "毛坯类型 0锻件,1铸件,2钢锭", dataType = "String")
     private String workblankType;
+    @ApiModelProperty(value = "钢水总重", dataType = "String")
+    private Double totalMoltenSteel;
+    @ApiModelProperty(value = "机构编码", dataType = "Integer")
+    private String branchCode;
+
+    @ApiModelProperty(value = "租户ID", dataType = "Integer")
+    private String tenantId;
+    @ApiModelProperty(value = "派工状态::0:未派工，1::已派工", dataType = "Integer")
+    private Integer assignStatus;
+    @ApiModelProperty(value = "数量", dataType = "Integer")
+    private Integer num;
+
+    @ApiModelProperty(value = "工序类型", dataType = "String")
+    private String optType;
+
+    @ApiModelProperty(value = "根据材质和锭型统计后的数量", dataType = "Integer")
+    @TableField(exist = false)
+    private Integer numByTexture;
+
 }

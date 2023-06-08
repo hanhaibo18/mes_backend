@@ -1,7 +1,9 @@
 package com.richfit.mes.produce.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -186,6 +188,7 @@ public class CertificateController {
                                                     @ApiParam(value = "来源") @RequestParam(required = false) String origin,
                                                     @ApiParam(value = "排序") @RequestParam(required = false) String order,
                                                     @ApiParam(value = "排序字段") @RequestParam(required = false) String orderCol,
+                                                    @ApiParam(value = "是否推送") @RequestParam(required = false) String isPush,
                                                     @ApiParam(value = "分公司") String branchCode,
                                                     @ApiParam(value = "页码") int page,
                                                     @ApiParam(value = "每页条数") int limit) {
@@ -211,6 +214,9 @@ public class CertificateController {
         }
         if (!StringUtils.isNullOrEmpty(productNo)) {
             queryWrapper.like("product_no", productNo);
+        }
+        if (!StringUtils.isNullOrEmpty(isPush)) {
+            queryWrapper.eq("is_push", isPush);
         }
         OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -263,5 +269,17 @@ public class CertificateController {
         List<TrackHead> trackHeadList = certificateService.selectItemTrack(trackHead);
         PageInfo<TrackHead> trackHeadPageInfo = new PageInfo(trackHeadList);
         return CommonResult.success(trackHeadPageInfo, Certificate.SUCCESS_MESSAGE);
+    }
+
+    @ApiOperation(value = "合格证推送", notes = "合格证推送")
+    @PostMapping("/push")
+    public CommonResult<Boolean> push(@RequestBody List<String> ids) {
+        if(CollectionUtil.isEmpty(ids)){
+            return CommonResult.success(true, Certificate.SUCCESS_MESSAGE);
+        }
+        UpdateWrapper<Certificate> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.in("id",ids)
+                .set("is_push",1);
+        return CommonResult.success(certificateService.update(updateWrapper), Certificate.SUCCESS_MESSAGE);
     }
 }

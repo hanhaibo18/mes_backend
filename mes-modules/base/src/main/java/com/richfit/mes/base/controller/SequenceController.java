@@ -95,6 +95,22 @@ public class SequenceController extends BaseController {
     }
 
     /**
+     * 功能描述: 根据branchCode和工艺id查询工序
+     *
+     * @Author: renzewen
+     * @Date: 2023/6/1 11:37
+     **/
+    @ApiOperation(value = "根据branchCode和工艺id查询工序", notes = "根据branchCode和工艺id查询工序")
+    @GetMapping("/listByBranchCodeAndRouterId")
+    public List<Sequence> listByBranchCodeAndRouterId(@RequestParam String routerId,@RequestParam String branchCode) {
+        QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
+        queryWrapper.eq("router_id", routerId);
+        queryWrapper.eq("branch_code", branchCode);
+        queryWrapper.orderByAsc("opt_order");
+        return sequenceService.list(queryWrapper);
+    }
+
+    /**
      * ***
      * 分页查询
      *
@@ -824,7 +840,7 @@ public class SequenceController extends BaseController {
         //1、处理派工人员信息  机加userid和username前端拼接好了，所以可以直接用
         //2、热工前端没拼接，所以后端得处理 从assignPerson里边取值
         //3、热处理车间分配到车间  不涉及人员
-        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !ObjectUtil.isEmpty(assign.getAssignPersons())) {
+        if (!ObjectUtil.isEmpty(assign.getAssignPersons())) {
             StringBuilder userId = new StringBuilder();
             StringBuilder userName = new StringBuilder();
             for (AssignPerson assignPerson : assign.getAssignPersons()) {
@@ -876,11 +892,12 @@ public class SequenceController extends BaseController {
     }
 
     @ApiOperation(value = "根据工艺id查询工序列表", notes = "根据工艺id查询工序列表")
-    @GetMapping("/query_by_routerIds")
-    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds) {
+    @PostMapping("/query_by_routerIds")
+    public List<Sequence> querySequenceByRouterIds(@ApiParam(value = "工艺id", required = true) @RequestBody List<String> routerIds,@RequestParam("branchCode") String branchCode) {
         try {
             QueryWrapper<Sequence> queryWrapper = new QueryWrapper<Sequence>();
             queryWrapper.in("router_id", routerIds);
+            queryWrapper.eq("branch_code", branchCode);
             queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
             List<Sequence> sequences = sequenceService.list(queryWrapper);
             return sequences;

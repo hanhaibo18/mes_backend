@@ -36,6 +36,7 @@ import com.richfit.mes.produce.utils.DateUtils;
 import com.richfit.mes.produce.utils.Utils;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
@@ -826,11 +827,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void importPlanDZ(MultipartFile file, HttpServletRequest request) throws IOException {
+    public void importPlanDZ(MultipartFile file, HttpServletRequest request,String branchCode) throws IOException {
         //sheet计划列表
-        String[] fieldNames3 = {"productName", "drawNo", "drawNoName", "texture", "priority", "workNo", "weight", "projectName", "orderNo",
-                "projNum", "demandTime", "branchCode", "inchargeOrg", "startTime", "endTime", "projectNo"};
-        this.importPlan(file, request, fieldNames3);
+        String[] fieldNames3 = {"productName","materialName","drawNo", "texture", "priority", "workNo", "pieceWeight", "projectName", "orderNo",
+                "projNum",  "inchargeOrgName", "inchargeWorkshopName", "endTime", "planMonth"};
+        this.importPlanDZ(file, request, fieldNames3, branchCode);
     }
 
     /**
@@ -865,7 +866,129 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
         this.importPlan(file, request, fieldNames3);
     }
 
+    /**
+     * 导入计划(热工个性化)
+     *
+     * @param file
+     * @param request
+     * @param fieldNames3
+     */
+    private void importPlanDZ(MultipartFile file, HttpServletRequest request, String[] fieldNames3,String branchCode) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        File excelFile = null;
+        //给导入的excel一个临时的文件名
+        StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
+        tempName.append(".").append(FileUtils.getFilenameExtension(file.getOriginalFilename()));
+        try {
+            excelFile = new File(System.getProperty("java.io.tmpdir"), tempName.toString());
+            file.transferTo(excelFile);
+            List<Plan> list3 = ExcelUtils.importExcel(excelFile, Plan.class, fieldNames3, 1, 0, 0, tempName.toString());
+            FileUtils.delete(excelFile);
+            //sheet1过滤要导入的数据
+            List<Plan> sheetList = list3.stream().filter(t -> {
+                return !StringUtils.isEmpty(t.getInchargeWorkshopName()) ; //加工车间必填
+            }).collect(Collectors.toList());
+            TenantUserDetails user = SecurityUtils.getCurrentUser();
 
+            for (Plan plan : sheetList) {
+                plan.setTenantId(user.getTenantId());
+
+                if (!ObjectUtil.isEmpty(plan.getDrawNoName()) && plan.getDrawNoName().equals("0")) {
+                    plan.setDrawNoName(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getRemark()) && plan.getRemark().equals("0")) {
+                    plan.setRemark(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getMaterialProductionUnit()) && plan.getMaterialProductionUnit().equals("0")) {
+                    plan.setMaterialProductionUnit(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getRivetingWeldingUnit()) && plan.getRivetingWeldingUnit().equals("0")) {
+                    plan.setRivetingWeldingUnit(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getAssemblyContractorUnit()) && plan.getAssemblyContractorUnit().equals("0")) {
+                    plan.setAssemblyContractorUnit(null);
+                }
+                if (!ObjectUtil.isEmpty(plan.getFinalAssemblyContractorUnit()) && plan.getFinalAssemblyContractorUnit().equals("0")) {
+                    plan.setFinalAssemblyContractorUnit(null);
+                }
+                //数量的为空赋值0
+                plan.setProjCode(DateUtils.formatDate(new Date(), "yyyy-MM"));
+                plan.setCreateTime(new Date());
+                //单机
+                plan.setSingleNumber(StringUtils.isEmpty(plan.getSingleNumber()) ? 0 : plan.getSingleNumber());
+                //总台数
+                plan.setTotalNumber(StringUtils.isEmpty(plan.getTotalNumber()) ? 0 : plan.getTotalNumber());
+                //生产数量
+                plan.setProcessNum(StringUtils.isEmpty(plan.getProcessNum()) ? 0 : plan.getProcessNum());
+                plan.setTrackHeadNumber(0);
+                plan.setTrackHeadFinishNumber(0);
+                plan.setOptNumber(0);
+                plan.setOptFinishNumber(0);
+                plan.setDeliveryNum(0);
+                plan.setMissingNum(StringUtils.isEmpty(plan.getMissingNum()) ? plan.getProjNum() : plan.getMissingNum());
+                plan.setStoreNumber(StringUtils.isEmpty(plan.getStoreNumber()) ? 0 : plan.getStoreNumber());
+                plan.setSubmitOrderOrg(branchCode);//提单单位
+                plan.setSubmitOrderTime(new Date());//提单时间
+                plan.setSource(2);//导入默认为车间计划
+                plan.setBranchCode(branchCode);
+                plan.setMissingNum(plan.getProjNum());
+                plan.setPriority(this.disposePriority(plan.getPriority()));
+
+                this.disposeBranchCode(plan,currentUser);
+                //保存计划
+                this.savePlanHot(plan);
+                actionService.saveAction(ActionUtil.buildAction
+                        (branchCode, "0", "1", "Excel导入计划单号：" + plan.getProjNum(), OperationLogAspect.getIpAddress(request)));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
+
+    /**
+     * 处理优先级编码
+     * @param priority
+     * @return
+     */
+    @Override
+    public String disposePriority(String priority) {
+        switch (priority) {
+            case "低":
+                return "0";
+            case "一般":
+                return "1";
+            case "中":
+                return "2";
+            case "高":
+                return "3";
+
+            default:return "3";
+        }
+    }
+
+    /**
+     * 处理车间码
+     * @param plan
+     */
+    private void disposeBranchCode(Plan plan,TenantUserDetails currentUser) {
+        List<Branch> org = baseServiceClient.selectOrgInner(currentUser.getTenantId()).getData();
+        List<Branch> banch = baseServiceClient.selectBranchesInner(null, plan.getInchargeWorkshopName(),currentUser.getTenantId()).getData();
+        Map<String, Branch> orgMap = org.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        Map<String, Branch> banchMap = banch.stream().collect(Collectors.toMap(x -> x.getBranchName(), x -> x));
+        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(orgMap)){
+            Branch branch = orgMap.get(plan.getInchargeOrgName());
+            if(ObjectUtils.isNotEmpty(branch)){
+                plan.setInchargeOrg(branch.getBranchCode());
+            }
+        }
+        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(banchMap)){
+            Branch branch = banchMap.get(plan.getInchargeWorkshopName());
+            if(ObjectUtils.isNotEmpty(branch)){
+                plan.setInchargeWorkshop(branch.getBranchCode());
+            }
+        }
+    }
     /**
      * 导入计划(热工个性化)
      *
@@ -940,6 +1063,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
                 plan.setSubmitOrderOrg(plan.getBranchCode());//提单单位
                 plan.setSubmitOrderTime(new Date());//提单时间
                 plan.setSource(2);//导入默认为车间计划
+                plan.setMissingNum(plan.getProjNum());
                 //保存计划
                 this.savePlanHot(plan);
                 actionService.saveAction(ActionUtil.buildAction

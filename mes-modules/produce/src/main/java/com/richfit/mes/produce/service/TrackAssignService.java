@@ -26,11 +26,13 @@ public interface TrackAssignService extends IService<Assign> {
 
     IPage<TrackItem> getPageAssignsHot(Page page, QueryWrapper<TrackItem> qw);
 
+    List<TrackItem> getAssignsHot( QueryWrapper<TrackItem> qw);
+
     IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);
 
     IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);
 
-    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol) throws ParseException;
+    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol,String holdStatus) throws ParseException;
 
     /**
      * 功能描述: 根据跟单号查询 跟单工序
@@ -155,4 +157,6 @@ public interface TrackAssignService extends IService<Assign> {
      * @param trackItem
      */
     void calculationSinglePieceHours(TrackHead trackHead,TrackItem trackItem);
+
+    boolean deleteAssignYl(String[] ids);
 }

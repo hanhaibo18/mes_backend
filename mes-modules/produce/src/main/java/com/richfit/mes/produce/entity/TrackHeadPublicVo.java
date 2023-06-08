@@ -528,4 +528,7 @@ public class TrackHeadPublicVo {
      */
     @TableField(exist = false)
     private String deviceName;
+
+    @ApiModelProperty(value = "毛坯类型", dataType = "String")
+    private String workblankType;
 }

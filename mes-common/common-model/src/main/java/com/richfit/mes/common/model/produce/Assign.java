@@ -77,6 +77,9 @@ public class Assign extends BaseEntity<Assign> {
      */
     @ApiModelProperty(value = "派工设备名称", dataType = "String")
     private String deviceName;
+
+    @ApiModelProperty(value = "派工设备code", dataType = "String")
+    private String deviceCode;
     /**
      * 派工优先级  3=High、2=Medium、1=Normal、0=Low
      */
@@ -214,6 +217,12 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "分流Id")
     private String flowId;
 
+    @ApiModelProperty(value = "保温结束时间")
+    @TableField(exist = false)
+    private String holdFinishedTime;
+    @ApiModelProperty(value = "浇注时间", dataType = "Date")
+    @TableField(exist = false)
+    private String pourTime;
     /**
      * 探伤委托单id
      */
@@ -289,6 +298,11 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "质检人")
     private String qualityCheckBy;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否质检")
+    private String isExistQualityCheck;
+
+
     /**
      * 下料规格
      */
@@ -299,6 +313,17 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否更新", dataType = "Integer")
     private Integer isUpdate;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否当前工序 1是  0 否")
+    private Integer isCurrent;
+
+    /**
+     * 下料重量
+     */
+
+    @TableField(exist = false)
+    private String blankWeight;
 
     public String getUserId() {
         return userId;

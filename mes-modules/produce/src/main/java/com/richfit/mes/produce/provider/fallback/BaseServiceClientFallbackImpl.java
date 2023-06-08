@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -68,6 +69,12 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
+    public CommonResult<List<Router>> getRouterByIdAndBranchCode(List<String> routerIds) {
+        return null;
+    }
+
+    @GetMapping("/api/base/router/getByRouter")
+    @Override
     public CommonResult<Router> getByRouterId(String routerId, String branchCode) {
         return CommonResult.success(null);
     }
@@ -77,10 +84,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return CommonResult.success(null);
     }
 
-    @Override
-    public CommonResult<List<Router>> getByRouterId(List<String> idList) {
-        return CommonResult.success(null);
-    }
+
 
     @Override
     public CommonResult<List<Operatipon>> find(String id, String optCode, String optName, String routerId, String branchCode, String tenantId) {
@@ -199,13 +203,13 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @PostMapping("/api/base/router/get_by_drawNo")
     @Override
-    public CommonResult<List<Router>> getByDrawNo(List<String> drawNos, String branchCode) {
+    public CommonResult<List<Router>> getByDrawNo(Map<String,List<String>> param) {
         return null;
     }
 
-    @GetMapping("/api/base/sequence/query_by_routerIds")
+    @PostMapping("/api/base/sequence/query_by_routerIds")
     @Override
-    public List<Sequence> querySequenceByRouterIds(List<String> routerIds) {
+    public List<Sequence> querySequenceByRouterIds(List<String> routerIds,String branchCode) {
         return null;
     }
 
@@ -235,7 +239,7 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
     }
 
     @Override
-    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture) {
+    public CommonResult<List<Router>> find(String id, String routerNo, String routerName, String version, String branchCode, String tenantId, String status, String testBar, String texture, String routerType) {
         return null;
     }
 
@@ -246,6 +250,27 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @Override
     public List<Branch> queryAllBranchInner(String header) {
+        return null;
+    }
+
+    @GetMapping("/api/base/branch/select_org_inner")
+    @Override
+    public CommonResult<List<Branch>> selectOrgInner(String tenantId) {
+        return null;
+    }
+
+    @Override
+    public CommonResult<List<Branch>> selectBranchesInner(String branchCode, String branchName,String tenantId) {
+        return null;
+    }
+
+    @Override
+    public List<Sequence> listByBranchCodeAndRouterId(String routerId, String branchCode) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Branch> getBranchInfoMapByBranchCodeList(ArrayList<String> strings) {
         return null;
     }
 

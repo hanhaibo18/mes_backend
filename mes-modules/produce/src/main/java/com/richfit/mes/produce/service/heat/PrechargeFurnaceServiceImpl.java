@@ -1,27 +1,32 @@
 package com.richfit.mes.produce.service.heat;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Router;
-import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.PrechargeFurnace;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
 import com.richfit.mes.produce.dao.TrackAssignMapper;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.TrackCompleteService;
 import com.richfit.mes.produce.service.TrackItemService;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +40,8 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMapper, PrechargeFurnace> implements PrechargeFurnaceService {
 
+    @Autowired
+    private TrackHeadMapper trackHeadMapper;
 
     @Autowired
     private TrackItemService trackItemService;
@@ -47,6 +54,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
 
     @Autowired
     private PrechargeFurnaceMapper prechargeFurnaceMapper;
+
+    @Autowired
+    private TrackCompleteService trackCompleteService;
 
     @Override
     public void furnaceCharging(List<Assign> assignList, String tempWork) {
@@ -94,12 +104,38 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
      * @return
      */
     @Override
-    public List queryAssignByTexture(String texture,String branchCode){
+    public List<TrackItem> queryAssignByTexture(String texture,String branchCode){
         QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
         trackItemQueryWrapper.eq("texture",texture);
         trackItemQueryWrapper.eq("branch_code",branchCode);
         trackItemQueryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         return trackAssignMapper.getPageAssignsHot(trackItemQueryWrapper);
+    }
+
+    @Override
+    public List<TrackItem> getItemsByPrechargeFurnace(Long id) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_current", 1)
+                .eq("precharge_furnace_id", id);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        for (TrackItem trackItem : list) {
+            //查询跟单信息
+            LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            trackHeadLambdaQueryWrapper.eq(TrackHead::getId, trackItem.getTrackHeadId());
+            TrackHead trackHead = trackHeadMapper.selectOne(trackHeadLambdaQueryWrapper);
+            trackItem.setTexture(trackHead.getTexture());
+            trackItem.setWorkNo(trackHead.getWorkNo());
+            trackItem.setProductName(trackHead.getProductName());
+            //查询工艺信息
+            Router data = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
+            trackItem.setPieceWeight(Objects.nonNull(data) ? data.getPieceWeight() : "");
+            trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
+            //查询锭型信息
+            List<String> ingotCaseByItemId = trackHeadMapper.getIngotCaseByItemId(trackItem.getId());
+            trackItem.setIngotCase(CollectionUtils.isNotEmpty(ingotCaseByItemId) ? ingotCaseByItemId.get(0) : "");
+            trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
+        }
+        return list;
     }
 
     /**
@@ -108,7 +144,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
      * @param texture   材质
      */
     @Override
-    public void furnaceChargingHot(List<Assign> assignList,String texture) {
+    public void furnaceChargingHot(List<Assign> assignList, String texture, String branchCode, String workblankType) {
         if (assignList.isEmpty()) {
             throw new GlobalException("必须要有装炉的工序", ResultCode.FAILED);
         }
@@ -117,15 +153,20 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         prechargeFurnace.setSiteId(assignList.get(0).getSiteId());
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
         prechargeFurnace.setTexture(texture);
-        prechargeFurnace.setRecordStatus("1");
+        prechargeFurnace.setRecordStatus("0");
+        prechargeFurnace.setBranchCode(Optional.ofNullable(branchCode).orElse(""));
+        prechargeFurnace.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
+        prechargeFurnace.setWorkblankType(Optional.ofNullable(workblankType).orElse(""));
         this.save(prechargeFurnace);
         for (Assign assign : assignList) {
             //跟单工序添加装炉id
             //跟单工序添加装炉id
             TrackItem trackItem = trackItemService.getById(assign.getTiId());
             trackItem.setPrechargeFurnaceId(prechargeFurnace.getId());
+            prechargeFurnace.setOptType(trackItem.getOptType());
             trackItemService.updateById(trackItem);
         }
+        this.updateById(prechargeFurnace);
     }
 
 
@@ -167,8 +208,23 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             }
         }
         //设置工艺数据
-        setRouter(assigns);
+        if (CollectionUtils.isNotEmpty(assigns)){
+            setRouter(assigns);
+        }
         return assigns;
+    }
+
+    @Override
+    public void updateItemInfo(Long id) {
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("precharge_furnace_id", id);
+        List<TrackItem> list = trackItemService.list(trackItemQueryWrapper);
+        for (TrackItem trackItem : list) {
+            LambdaUpdateWrapper<TrackItem> trackItemLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            trackItemLambdaUpdateWrapper.eq(TrackItem::getId, trackItem.getId());
+            trackItemLambdaUpdateWrapper.set(TrackItem::getPrechargeFurnaceId, null);
+            trackItemService.update(trackItemLambdaUpdateWrapper);
+        }
     }
 
     /**
@@ -178,7 +234,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     private void setRouter(List<Assign> assigns) {
         List<String> routerIdList = assigns.stream().map(x -> x.getRouterId()).collect(Collectors.toList());
         //根据需求图号查询工艺库
-        CommonResult<List<Router>> byDrawNo = baseServiceClient.getByRouterId(routerIdList);
+        List<String> routerIdAndBranchCodeList =new ArrayList<>(assigns.stream().map(x -> x.getRouterId() + "_" + x.getBranchCode()).collect(Collectors.toSet()));
+        CommonResult<List<Router>> byDrawNo = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList);
         //工艺库数据
         Map<String, Router> routerMap = byDrawNo.getData().stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
         for (Assign assign : assigns) {
@@ -233,7 +290,6 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
             updateWrapper.eq("id", assign.getTiId());
             updateWrapper.set("precharge_furnace_id", assign.getPrechargeFurnaceId());
-            trackItemService.update(updateWrapper);
             trackItemService.update(updateWrapper);
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
@@ -298,6 +354,27 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         }else {
             return false;
         }
+    }
+
+    /**
+     * 预装炉报工回滚接口(锻造)
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean furnaceRollBack(Long id) {
+        QueryWrapper<TrackComplete> trackCompleteQueryWrapper = new QueryWrapper<>();
+        trackCompleteQueryWrapper.eq("precharge_furnace_id",id);
+        List<TrackComplete> trackCompletes = trackCompleteService.list(trackCompleteQueryWrapper);
+        //回滚报工信息
+        for (TrackComplete trackComplete : trackCompletes) {
+            trackCompleteService.rollBack(trackComplete.getId());
+        }
+        //预装炉信息回滚
+        PrechargeFurnace prechargeFurnace = this.getById(id);
+        prechargeFurnace.setStatus("1");
+        prechargeFurnace.setAssignStatus(0);
+        return this.updateById(prechargeFurnace);
     }
 
 

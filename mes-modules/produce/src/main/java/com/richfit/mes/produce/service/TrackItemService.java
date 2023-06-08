@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -14,7 +15,6 @@ import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -143,7 +143,7 @@ public interface TrackItemService extends IService<TrackItem> {
      * @Author: zhiqiang.lu
      * @Date: 2022/8/23 10:59
      **/
-    void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId);
+    void addItemByTrackHead(TrackHead trackHead, List<TrackItem> trackItems, String productsNo, Integer number, String flowId,String priority);
 
     /**
      * 功能描述: 查询工序信息
@@ -204,4 +204,6 @@ public interface TrackItemService extends IService<TrackItem> {
      * @return: DisqualificationItemVo
      **/
     DisqualificationItemVo queryDisqualificationByItem(String tiId, String branchCode);
+
+    List<TrackItem> getTrackItemList(Wrapper<TrackItem> wrapper);
 }

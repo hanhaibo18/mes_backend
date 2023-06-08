@@ -5,6 +5,8 @@ import com.richfit.mes.common.model.produce.ApplicationResult;
 import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.produce.IngredientApplicationDto;
 import com.richfit.mes.common.model.wms.ApplyListUpload;
+import com.richfit.mes.common.model.wms.InventoryQuery;
+import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.produce.provider.WmsServiceClient;
 
 import java.util.List;
@@ -31,6 +33,11 @@ public class WmsServiceClientFallbackImpl implements WmsServiceClient {
 
     @Override
     public CommonResult<ApplicationResult> applyListUpload(List<ApplyListUpload> applyListUpload) {
+        return null;
+    }
+
+    @Override
+    public CommonResult<List<InventoryReturn>> inventoryQuery(InventoryQuery inventoryQuery) {
         return null;
     }
 }

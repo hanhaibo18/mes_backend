@@ -91,13 +91,15 @@ public interface PlanService extends IService<Plan> {
     void importPlanMX(MultipartFile file, HttpServletRequest request) throws IOException;
 
     @Transactional(rollbackFor = Exception.class)
-    void importPlanDZ(MultipartFile file, HttpServletRequest request) throws IOException;
+    void importPlanDZ(MultipartFile file, HttpServletRequest request,String branchCode) throws IOException;
 
     @Transactional(rollbackFor = Exception.class)
     void importPlanZG(MultipartFile file, HttpServletRequest request) throws IOException;
 
     @Transactional(rollbackFor = Exception.class)
     void importPlanYL(MultipartFile file, HttpServletRequest request) throws IOException;
+
+    String disposePriority(String priority);
 
     /**
      * 计划列表动态数据封装（工艺状态）

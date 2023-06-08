@@ -79,14 +79,14 @@ public class HotModelStoreController extends BaseController {
     @PutMapping("/hot_model_store")
     public CommonResult updateHotModelStore(@RequestBody HotModelStore hotModelStore) {
         try {
-            QueryWrapper<HotModelStore> hotModelStoreQueryWrapper = new QueryWrapper<>();
-            DrawingNoUtil.queryEq(hotModelStoreQueryWrapper, "model_drawing_no", hotModelStore.getModelDrawingNo());
-//            hotModelStoreQueryWrapper.ne("id", hotModelStore.getId());
-            hotModelStoreQueryWrapper.eq("version",hotModelStore.getVersion());
-            List<HotModelStore> list = hotModelStoreService.list(hotModelStoreQueryWrapper);
-            if (CollectionUtils.isNotEmpty(list)) {
-                return CommonResult.failed(ModelDrawingNo_ISNULL_MESSAGE);
-            }
+//            QueryWrapper<HotModelStore> hotModelStoreQueryWrapper = new QueryWrapper<>();
+//            DrawingNoUtil.queryEq(hotModelStoreQueryWrapper, "model_drawing_no", hotModelStore.getModelDrawingNo());
+////            hotModelStoreQueryWrapper.ne("id", hotModelStore.getId());
+//            hotModelStoreQueryWrapper.eq("version",hotModelStore.getVersion());
+//            List<HotModelStore> list = hotModelStoreService.list(hotModelStoreQueryWrapper);
+//            if (CollectionUtils.isNotEmpty(list)) {
+//                return CommonResult.failed(ModelDrawingNo_ISNULL_MESSAGE);
+//            }
             if (StringUtils.isEmpty(hotModelStore.getTenantId())) {
                 return CommonResult.failed(TenantId_NULL_MESSAGE);
             }

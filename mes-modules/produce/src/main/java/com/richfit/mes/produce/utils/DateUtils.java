@@ -1009,15 +1009,15 @@ public class DateUtils {
         Integer i=0;
         System.out.println(i==0);
 
-        long time = DateUtils.parseDate("2022-08-31 12:00:00", "yyyy-MM-dd HH:mm:ss").getTime()-(1000*60*30);
+        long time = DateUtils.parseDate("2023-05-26 02:05:05", "yyyy-MM-dd HH:mm:ss").getTime()-(1000*60*30);
 
         System.out.println(DateUtils.formatDate(new Date(time),"yyyy-MM-dd HH:mm:ss"));
 
         Integer a=10;
         System.out.println(a*0.90);
 
-
-
+        //时间加上某小时
+        System.out.println( DateUtils.formatDate(addDateForHour(DateUtils.parseDate("2023-05-26 02:05:05", "yyyy-MM-dd HH:mm:ss"),6),"yyyy-MM-dd HH:mm:ss"));
 
 
     }

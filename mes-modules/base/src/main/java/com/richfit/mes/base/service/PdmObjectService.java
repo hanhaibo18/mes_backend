@@ -1,7 +1,9 @@
 package com.richfit.mes.base.service;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.base.entity.PdmDto;
 import com.richfit.mes.common.model.base.PdmObject;
 
 import java.util.List;
@@ -28,4 +30,6 @@ public interface PdmObjectService extends IService<PdmObject> {
      * @return: List<PdmObject>
      **/
     List<PdmObject> selectFixtureList(String optId);
+
+    IPage<PdmDto> getPdmPage(String drawNo, String type, String branchCode, int page, int limit);
 }

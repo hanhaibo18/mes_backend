@@ -66,6 +66,8 @@ public class TrackCompleteController extends BaseController {
     private LayingOffService layingOffService;
     @Resource
     private ProduceRoleOperationService roleOperationService;
+    @Autowired
+    private TrackCertificateService trackCertificateService;
 
     @Resource
     private PublicService publicService;
@@ -148,10 +150,6 @@ public class TrackCompleteController extends BaseController {
             }
             //增加工序过滤
 //            ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
-            //锻造车间、铸钢车间、冶炼车间的工序名称过滤（锻车间人员报工不涉及正火和去氢）
-            if ("4".equals(classes) || "6".equals(classes) || "7".equals(classes)) {
-                queryWrapper.and(wrapper1 -> wrapper1.ne("opt_name", "正火").ne("opt_name", "去氢"));
-            }
 
             if (!StringUtils.isNullOrEmpty(orderCol)) {
                 if (!StringUtils.isNullOrEmpty(order)) {
@@ -202,6 +200,11 @@ public class TrackCompleteController extends BaseController {
                         track.setIsUpdate(1);
                         continue;
                     }
+                    //条件五 当前工序扭转到了下车间且已开工
+                    if (("4".equals(trackHead.getClasses()) || "6".equals(trackHead.getClasses()) || "7".equals(trackHead.getClasses())) && takeCertificate(trackItem)) {
+                        track.setIsUpdate(1);
+                        continue;
+                    }
                     if (null == track.getIsUpdate()) {
                         track.setIsUpdate(0);
                     }
@@ -213,6 +216,28 @@ public class TrackCompleteController extends BaseController {
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
+    }
+
+    private boolean takeCertificate(TrackItem trackItem) {
+        QueryWrapper<TrackCertificate> certificateQueryWrapper = new QueryWrapper<>();
+        certificateQueryWrapper.eq("ti_id", trackItem.getId());
+        TrackCertificate trackCertificate = trackCertificateService.getOne(certificateQueryWrapper);
+        if (null == trackCertificate) {
+            return false;
+        } else if (trackCertificate.getNextThId() == null) {
+            return false;
+        } else if (trackHeadBegin(trackCertificate.getNextThId())) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean trackHeadBegin(String nextThId) {
+        TrackHead trackHead = trackHeadService.getById(nextThId);
+        if ("0".equals(trackHead.getStatus())) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -257,6 +282,20 @@ public class TrackCompleteController extends BaseController {
                                                                   @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo
     ) {
         return CommonResult.success(trackCompleteService.queryTrackCompleteListByWorkNo(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
+    }
+
+    @ApiOperation(value = "工时统计by工作号", notes = "工时统计by工作号")
+    @GetMapping("/query_work_hours")
+    public CommonResult<Map<String, Object>> pageOptimizeByWorkNo(@ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo,
+                                                                  @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
+                                                                  @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
+                                                                  @ApiParam(value = "机构ID") @RequestParam String branchCode,
+                                                                  @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
+                                                                  @ApiParam(value = "用户id") @RequestParam(required = false) String userId,
+                                                                  @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo,
+                                                                  @ApiParam(value = "person,workNo,order,branch") @RequestParam(required = false) String type
+    ) {
+        return CommonResult.success(trackCompleteService.queryWorkHours(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo,type));
     }
 
 
@@ -1083,8 +1122,34 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "冶炼车间获取预装炉派工信息")
     @GetMapping("/precharge_furnace_yl")
-    public CommonResult<IPage<PrechargeFurnace>> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
-        return CommonResult.success(trackCompleteService.prechargeFurnaceYl(prechargeFurnaceId, texture, startTime, endTime, workblankType, status, page, limit));
+    public CommonResult<IPage<PrechargeFurnaceAssign>> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status,
+                                                                          @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit, String order, String orderCol) {
+        return CommonResult.success(trackCompleteService.prechargeFurnaceYl(prechargeFurnaceId, texture, startTime, endTime, workblankType, status, page, limit, order, orderCol));
+    }
+
+    @ApiOperation(value = "根据预装炉派工id获取炉内的工序信息")
+    @GetMapping("/item_list")
+    public CommonResult<List<TrackItem>> getItemList(@ApiParam("预装炉派工id") @RequestParam String prechargeFurnaceAssignId) {
+        return CommonResult.success(trackCompleteService.getItemList(prechargeFurnaceAssignId));
+    }
+
+    @ApiOperation(value = "冶炼材质变更获取配炉列表")
+    @GetMapping("/precharge_furnace")
+    public CommonResult<Map<String, Object>> getPrechargeFurnaceMap(@ApiParam("毛坯类型 0锻件,1铸件,2钢锭") String workblankType,
+                                                                    @ApiParam("车间编码") String branchCode,
+                                                                    @ApiParam("配炉（预装炉编号）") Long prechargeFurnaceId,
+                                                                    @ApiParam("材质") String texture,
+                                                                    @ApiParam("开始日期") String startTime,
+                                                                    @ApiParam("截止日期") String endTime,
+                                                                    @RequestParam(defaultValue = "1") int page,
+                                                                    @RequestParam(defaultValue = "10") int limit, String order, String orderCol) {
+        return CommonResult.success(trackCompleteService.getPrechargeFurnaceMap(workblankType, branchCode, prechargeFurnaceId, texture, startTime, endTime, page, limit, order, orderCol));
+    }
+
+    @ApiOperation(value = "冶炼材质变更")
+    @GetMapping("precharge_furnace_change")
+    public CommonResult<Boolean> prechargeFurnaceChange(Long beforeId, Long afterId) {
+        return CommonResult.success(trackCompleteService.prechargeFurnaceChange(beforeId, afterId));
     }
 
 }

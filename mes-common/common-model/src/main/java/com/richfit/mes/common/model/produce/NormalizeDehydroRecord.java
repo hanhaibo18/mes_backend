@@ -12,9 +12,6 @@ import java.util.List;
 
 /**
  * 正火去氢工序控制记录(ProduceNormalizeDehydroRecord)表实体类
- *
- * @author makejava
- * @since 2023-03-23 14:13:03
  */
 @Data
 @TableName("produce_normalize_dehydro_record")
@@ -26,7 +23,7 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     private Integer type;
     @ApiModelProperty(value = "设备编号", dataType = "String")
     private String equipmentNo;
-    @ApiModelProperty(value = "审核状态 0 未通过  1 通过", dataType = "Integer")
+    @ApiModelProperty(value = "审核状态 0 未审核  1 通过,2 未通过", dataType = "Integer")
     private Integer auditStatus;
     @ApiModelProperty(value = "附件记录id", dataType = "String")
     private String attachmentId;
@@ -36,12 +33,18 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     private String problemProcessing;
     @ApiModelProperty(value = "审核人", dataType = "String")
     private String auditBy;
+    @ApiModelProperty(value = "审核人名", dataType = "String")
+    private String auditName;
     @ApiModelProperty(value = "审核时间", dataType = "Date")
     protected Date auditTime;
     @ApiModelProperty(value = "记录时间", dataType = "Date")
     protected Date recordTime;
     @ApiModelProperty(value = "文件id", dataType = "String")
     private String fileId;
+    @ApiModelProperty(value = "最大壁厚", dataType = "String")
+    private String maxThickness;
+    @ApiModelProperty(value = "班组id", dataType = "String")
+    private String siteId;
     @ApiModelProperty(value = "开始时间", dataType = "String")
     @TableField(exist = false)
     private String startTime;
@@ -59,7 +62,6 @@ public class NormalizeDehydroRecord extends BaseEntity<NormalizeDehydroRecord> {
     @TableField(exist = false)
     private int limit;
     @ApiModelProperty(value = "所属机构", dataType = "String")
-    @TableField(exist = false)
     private String branchCode;
 }
 

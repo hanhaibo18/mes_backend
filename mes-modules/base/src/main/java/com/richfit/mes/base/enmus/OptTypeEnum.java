@@ -21,6 +21,8 @@ public enum OptTypeEnum {
     QUALITY_CHECK_OPERATION(5, "检验工序"),
     //探伤工序
     DETECTION_OPERATION(6, "探伤工序"),
+    //扣箱工序
+    KX_OPERATION(20, "扣箱工序"),
 
     ;
     /**

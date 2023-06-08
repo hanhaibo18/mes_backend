@@ -25,16 +25,14 @@ public class DemandExcel {
     private String drawNo;
 
     /**
-     * 名称
+     * 零件名称
      */
-    @ApiModelProperty(value = "名称 ", dataType = "String")
+    @ApiModelProperty(value = "零件名称 ", dataType = "String")
     private String demandName;
 
-    /**
-     * ERP物料编码
-     */
-    @ApiModelProperty(value = "ERP物料编码 ", dataType = "String")
-    private String erpProductCode;
+
+    @ApiModelProperty(value = "产品名称 ", dataType = "String")
+    private String productName;
 
     /**
      * 材质
@@ -59,14 +57,13 @@ public class DemandExcel {
      * 加工单位
      */
     @ApiModelProperty(value = "加工单位 ", dataType = "String")
-    private String inchargeOrg;
+    private String inchargeOrgName;
 
     /**
-     * 计划完成时间
+     * 加工单位
      */
-    @ApiModelProperty(value = "计划完成时间 ", dataType = "Date")
-    private Date planEndTime;
-
+    @ApiModelProperty(value = "加工单位 ", dataType = "String")
+    private String inchargeWorkshopName;
     /**
      * 需求日期
      */
@@ -79,11 +76,6 @@ public class DemandExcel {
     @ApiModelProperty(value = "版本号 ", dataType = "String")
     private String versionNum;
 
-    /**
-     * 提单日期
-     */
-    @ApiModelProperty(value = "提单日期 ", dataType = "Date")
-    private Date submitOrderTime;
     /**
      * 备注字段
      */
