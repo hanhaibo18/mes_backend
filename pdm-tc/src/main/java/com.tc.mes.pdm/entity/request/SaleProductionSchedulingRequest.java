@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * 销售排产单
+ * pdm 销售排产单
  */
 @Data
 public class SaleProductionSchedulingRequest {
@@ -17,7 +17,7 @@ public class SaleProductionSchedulingRequest {
     /**
      *用户
      */
-    private String name;
+    private String customer;
 
     /**
      *工作号
@@ -27,7 +27,7 @@ public class SaleProductionSchedulingRequest {
     /**
      *产品名称
      */
-    private String product_name;
+    private String name;
 
     /**
      *数量

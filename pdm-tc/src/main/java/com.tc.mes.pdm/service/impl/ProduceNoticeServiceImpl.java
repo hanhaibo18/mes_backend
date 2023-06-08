@@ -42,9 +42,9 @@ public class ProduceNoticeServiceImpl extends ServiceImpl<ProduceNoticeMapper, P
         requestList.forEach(e -> {
             SaleProductionSchedulingDto schedulingDto = new SaleProductionSchedulingDto();
             schedulingDto.setCode(e.getCode());
-            schedulingDto.setName(e.getName());
+            schedulingDto.setCustomer(e.getCustomer());
             schedulingDto.setTrackNo(e.getTrack_no());
-            schedulingDto.setProductName(e.getProduct_name());
+            schedulingDto.setName(e.getName());
             schedulingDto.setNumber(e.getNumber());
             schedulingDto.setDeliveryTime(e.getDelivery_time());
             schedulingDto.setRelationId(e.getRelation_id());
@@ -62,9 +62,9 @@ public class ProduceNoticeServiceImpl extends ServiceImpl<ProduceNoticeMapper, P
         for (SaleProductionSchedulingDto schedulingDto: schedulingDtoList) {
             SaleProduceNoticeVo noticeVo = new SaleProduceNoticeVo();
             noticeVo.setProductionOrder(schedulingDto.getCode());
-            noticeVo.setUserUnit(schedulingDto.getName());
+            noticeVo.setUserUnit(schedulingDto.getCustomer());
             noticeVo.setWorkNo(schedulingDto.getTrackNo());
-            noticeVo.setProduceName(schedulingDto.getProductName());
+            noticeVo.setProduceName(schedulingDto.getName());
             noticeVo.setQuantity(schedulingDto.getNumber());
             noticeVo.setDeliveryDate(schedulingDto.getDeliveryTime());
             noticeVo.setPreviewUrl(schedulingDto.getRelationId());

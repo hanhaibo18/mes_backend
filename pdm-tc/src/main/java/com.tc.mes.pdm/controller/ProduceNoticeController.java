@@ -1,6 +1,5 @@
 package com.tc.mes.pdm.controller;
 
-import com.tc.mes.pdm.entity.dto.SaleProductionSchedulingDto;
 import com.tc.mes.pdm.entity.request.SaleProductionSchedulingRequest;
 import com.tc.mes.pdm.service.ProduceNoticeService;
 import io.swagger.annotations.Api;

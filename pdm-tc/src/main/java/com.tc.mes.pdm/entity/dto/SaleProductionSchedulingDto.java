@@ -17,7 +17,7 @@ public class SaleProductionSchedulingDto {
     /**
      *用户
      */
-    private String name;
+    private String customer;
 
     /**
      *工作号
@@ -27,7 +27,7 @@ public class SaleProductionSchedulingDto {
     /**
      *产品名称
      */
-    private String productName;
+    private String name;
 
     /**
      *数量
