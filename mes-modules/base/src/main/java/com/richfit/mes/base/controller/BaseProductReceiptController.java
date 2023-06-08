@@ -38,14 +38,14 @@ public class BaseProductReceiptController extends BaseController {
 
     @ApiOperation(value = "交接单据详情列表")
     @GetMapping("/page/detail")
-    public CommonResult<List<BaseProductReceiptExtend>> queryDetail(@ApiParam(value = "查询条件") @RequestParam(value = "connectId", required = true) String connectId,
-                                                                    @ApiParam(value = "交接单数量") @RequestParam(value = "number", required = true) Integer number,
-                                                                    @ApiParam(value = "工作号") @RequestParam(value = "workNo", required = true) String workNo,
-                                                                    @ApiParam(value = "图号") @RequestParam(value = "drawNo", required = true) String drawNo,
-                                                                    @ApiParam(value = "branchCode") @RequestParam(value = "branchCode", required = true) String branchCode,
-                                                                    @ApiParam(value = "tenantId") @RequestParam(value = "tenantId", required = true) String tenandId
+    public CommonResult<List<BaseProductReceiptExtend>> queryDetail(@ApiParam(value = "查询条件") @RequestParam(value = "connectId") String connectId,
+                                                                    @ApiParam(value = "交接单数量") @RequestParam(value = "number") Integer number,
+                                                                    @ApiParam(value = "工作号") @RequestParam(value = "workNo") String workNo,
+                                                                    @ApiParam(value = "图号") @RequestParam(value = "drawNo") String drawNo,
+                                                                    @ApiParam(value = "branchCode") @RequestParam(value = "branchCode") String branchCode,
+                                                                    @ApiParam(value = "tenantId") @RequestParam(value = "tenantId") String tenantId
     ) {
-        return CommonResult.success(baseProductReceiptService.queryReceiptDetailInfo(connectId, number, workNo, drawNo, branchCode, tenandId));
+        return CommonResult.success(baseProductReceiptService.queryReceiptDetailInfo(connectId, number, workNo, drawNo, branchCode, tenantId));
     }
 
     @ApiOperation(value = "新增交接单信息")

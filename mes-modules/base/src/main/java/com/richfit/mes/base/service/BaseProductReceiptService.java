@@ -32,6 +32,7 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
      * @param workNo
      * @param drawNo
      * @param branchCode
+     * @param tenantId
      * @return
      */
     List<BaseProductReceiptExtend> queryReceiptDetailInfo(String connectId, Integer number, String workNo, String drawNo, String branchCode, String tenantId);
