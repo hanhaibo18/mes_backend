@@ -318,18 +318,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         BigDecimal totalHours = realityReportHours.add(realityPrepareEndHours);
                         track.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         sumTotalHours = sumTotalHours.add(totalHours);
-                        track.setUserName(tenantUserVo.getEmplName());
-//                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
-                        track.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                        track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                        track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
-                        track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
-                        track.setOptSequence(trackItem.getOptSequence());
-                        track.setOptName(trackItem.getOptName());
-                        track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-                        track.setOptNo(trackItem.getOptNo());
-                        track.setParentId(id);
-                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
+                        buildDetails(track, tenantUserVo, realityReportHours, realityPrepareEndHours, trackHeadMap, trackItem, id);
                         details.add(track);
                     }
                     track0.setId(id);
@@ -1614,18 +1603,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         BigDecimal totalHours = number.multiply(realityReportHours).add(realityPrepareEndHours);
                         track.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         sumTotalHours = sumTotalHours.add(totalHours);
-                        track.setUserName(tenantUserVo.getEmplName());
-//                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
-                        track.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                        track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                        track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
-                        track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
-                        track.setOptSequence(trackItem.getOptSequence());
-                        track.setOptName(trackItem.getOptName());
-                        track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-                        track.setOptNo(trackItem.getOptNo());
-                        track.setParentId(orderno);
-                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
+                        buildDetails(track, tenantUserVo, realityReportHours, realityPrepareEndHours, trackHeadMap, trackItem, orderno);
                         details.add(track);
                     }
                     track0.setProductionOrder(orderno);
@@ -1829,18 +1807,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                         BigDecimal totalHours = number.multiply(realityReportHours).add(realityPrepareEndHours);
                         track.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                         sumTotalHours = sumTotalHours.add(totalHours);
-                        track.setUserName(tenantUserVo.getEmplName());
-//                        track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
-                        track.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                        track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                        track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
-                        track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
-                        track.setOptSequence(trackItem.getOptSequence());
-                        track.setOptName(trackItem.getOptName());
-                        track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-                        track.setOptNo(trackItem.getOptNo());
-                        track.setParentId(workno);
-                        track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
+                        buildDetails(track, tenantUserVo, realityReportHours, realityPrepareEndHours, trackHeadMap, trackItem, workno);
                         details.add(track);
                     }
                     track0.setWorkNo(workno);
@@ -2043,18 +2010,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                             BigDecimal totalHours = realityReportHours.add(realityPrepareEndHours);
                             track.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                             sumTotalHours = sumTotalHours.add(totalHours);
-                            track.setUserName(tenantUserVo.getEmplName());
-                            // track.setDeviceName(deviceMap.get(track.getDeviceId()) == null ? "" : deviceMap.get(track.getDeviceId()).getName());
-                            track.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                            track.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                            track.setWorkNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getWorkNo());
-                            track.setTrackNo(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getTrackNo());
-                            track.setOptSequence(trackItem.getOptSequence());
-                            track.setOptName(trackItem.getOptName());
-                            track.setProductionOrder(trackHeadMap.get(track.getTrackId()) == null ? "" : trackHeadMap.get(track.getTrackId()).getProductionOrder());
-                            track.setOptNo(trackItem.getOptNo());
-                            track.setParentId(id);
-                            track.setCompleteTimeStr(DateUtil.format(track.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
+                            buildDetails(track, tenantUserVo, realityReportHours, realityPrepareEndHours, trackHeadMap, trackItem, id);
                             details.add(track);
                         }
                     }
@@ -2307,10 +2263,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
         //过滤跟单工序只计算最终完成工序
         Map<String, TrackItem> trackItemMap = trackItems.stream().filter(item -> item.getIsOperationComplete() == 1).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k));
-        //只获取已完工数据计算工时
-        List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
-        List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
-        Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k));
+//        //只获取已完工数据计算工时
+//        List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
+//        List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
+//        Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k));
         //根据人员信息获取机构信息
         Map<String, Branch> branchMap = getBranchInfoByUserInfo(stringTenantUserVoMap);
         List<TrackHead> trackHeadList = new ArrayList<>();
@@ -2331,15 +2287,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         List<String> idList = getKeyByType(completes, stringTenantUserVoMap, trackHeadMap, trackItemMap, branchMap, workNoMap, orderNoMap, belongOrgIdMap, type);
         Map<String, List<TrackComplete>> completeMap = getCompleteMapByType(completes, stringTenantUserVoMap, trackHeadMap, trackItemMap, branchMap, workNoMap, orderNoMap, belongOrgIdMap, type);
         //2.封装数据
-        Map<String, Object> resule = buildComplete(idList, completeMap, stringTenantUserVoMap, rulesMap, trackHeadMap, trackItemMap, trackFlowMap, branchMap, workNoMap, orderNoMap, belongOrgIdMap, type);
+        Map<String, Object> resule = buildComplete(idList, completeMap, stringTenantUserVoMap, rulesMap, trackHeadMap, trackItemMap, branchMap, workNoMap, orderNoMap, belongOrgIdMap, type);
         //3、返回封装后的数据
         return resule;
     }
 
     private Map<String, Object> buildComplete(List<String> idList, Map<String, List<TrackComplete>> completeMap, Map<String, TenantUserVo> stringTenantUserVoMap,
                                               Map<String, QualityInspectionRules> rulesMap, Map<String, TrackHead> trackHeadMap,
-                                              Map<String, TrackItem> trackItemMap, Map<String, TrackFlow> trackFlowMap,
-                                              Map<String, Branch> branchMap, Map<String, List<TrackHead>> workNoMap,
+                                              Map<String, TrackItem> trackItemMap, Map<String, Branch> branchMap, Map<String, List<TrackHead>> workNoMap,
                                               Map<String, List<TrackHead>> orderNoMap, Map<String, List<TenantUserVo>> belongOrgIdMap, String type) {
         List<TrackComplete> summary = new ArrayList<>();
         List<TrackComplete> details = new ArrayList<>();
@@ -2362,6 +2317,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             for (TrackComplete trackComplete : completeMap.get(id)) {
                 //获取当前用户信息
                 TenantUserVo tenantUserVo = stringTenantUserVoMap.get(trackComplete.getUserId());
+                trackComplete.setBranchName(branchMap.get(tenantUserVo.getBelongOrgId()).getBranchName());
                 //根据跟单工序id获取跟单工序
                 TrackItem trackItem = trackItemMap.get(trackComplete.getTiId());
                 if (null == trackItem) {
@@ -2376,9 +2332,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     continue;
                 }
                 //查询产品编号
-                TrackFlow trackFlow = trackFlowMap.get(trackItem.getFlowId());
                 TrackHead trackHead = trackHeadMap.get(trackComplete.getTrackId());
-                trackComplete.setProdNo(trackFlow == null ? "" : trackFlow.getProductNo());
+                trackComplete.setProdNo(trackHead == null ? "" : trackHead.getProductNo());
                 trackComplete.setProductName(trackHead == null ? "" : trackHead.getProductName());
                 trackComplete.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
                 trackComplete.setMaterialName(trackHead == null ? "" : trackHead.getMaterialName());
@@ -2461,38 +2416,13 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 BigDecimal totalHours = number.multiply(realityReportHours).add(realityPrepareEndHours);
                 trackComplete.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
                 sumTotalHours = sumTotalHours.add(totalHours);
-                trackComplete.setUserName(tenantUserVo.getEmplName());
-                trackComplete.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                trackComplete.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                trackComplete.setWorkNo(trackHeadMap.get(trackComplete.getTrackId()) == null ? "" : trackHeadMap.get(trackComplete.getTrackId()).getWorkNo());
-                trackComplete.setTrackNo(trackHeadMap.get(trackComplete.getTrackId()) == null ? "" : trackHeadMap.get(trackComplete.getTrackId()).getTrackNo());
-                trackComplete.setOptSequence(trackItem.getOptSequence());
-                trackComplete.setOptName(trackItem.getOptName());
-                trackComplete.setProductionOrder(trackHeadMap.get(trackComplete.getTrackId()) == null ? "" : trackHeadMap.get(trackComplete.getTrackId()).getProductionOrder());
-                trackComplete.setOptNo(trackItem.getOptNo());
-                trackComplete.setParentId(id);
-                trackComplete.setCompleteTimeStr(DateUtil.format(trackComplete.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
+                buildDetails(trackComplete, tenantUserVo, realityReportHours, realityPrepareEndHours, trackHeadMap, trackItem, id);
                 details.add(trackComplete);
             }
             if ("branch".equals(type)) {
                 track0.setBranchName(branchMap.get(id).getBranchName());
             }
-            track0.setId(id);
-            //总报工数量
-            track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-            //实际准备工时
-            track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-            //实际额定工时
-            track0.setRealityReportHours(sumRealityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-            //准备工时
-            track0.setPrepareEndHours(sumPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-            //额定工时
-            track0.setReportHours(sumReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-            //总工时
-            track0.setTotalHours(sumTotalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-            track0.setTrackCompleteList(trackCompleteShowList);
-            //判断是否包含叶子结点
-            track0.setIsLeafNodes(!CollectionUtils.isEmpty(completeMap.get(id)));
+            buileSummary(completeMap, id, trackCompleteShowList, sumNumber, sumTotalHours, sumPrepareEndHours, sumReportHours, sumRealityPrepareEndHours, sumRealityReportHours, track0);
             summary.add(track0);
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
@@ -2500,6 +2430,39 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
         return stringObjectHashMap;
+    }
+
+    private void buileSummary(Map<String, List<TrackComplete>> completeMap, String id, List<TrackComplete> trackCompleteShowList, BigDecimal sumNumber, BigDecimal sumTotalHours, BigDecimal sumPrepareEndHours, BigDecimal sumReportHours, BigDecimal sumRealityPrepareEndHours, BigDecimal sumRealityReportHours, TrackComplete track0) {
+        track0.setId(id);
+        //总报工数量
+        track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //实际准备工时
+        track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //实际额定工时
+        track0.setRealityReportHours(sumRealityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //准备工时
+        track0.setPrepareEndHours(sumPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //额定工时
+        track0.setReportHours(sumReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //总工时
+        track0.setTotalHours(sumTotalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        track0.setTrackCompleteList(trackCompleteShowList);
+        //判断是否包含叶子结点
+        track0.setIsLeafNodes(!CollectionUtils.isEmpty(completeMap.get(id)));
+    }
+
+    private void buildDetails(TrackComplete trackComplete, TenantUserVo tenantUserVo, BigDecimal realityReportHours, BigDecimal realityPrepareEndHours, Map<String, TrackHead> trackHeadMap, TrackItem trackItem, String id) {
+        trackComplete.setUserName(tenantUserVo.getEmplName());
+        trackComplete.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        trackComplete.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        trackComplete.setWorkNo(trackHeadMap.get(trackComplete.getTrackId()) == null ? "" : trackHeadMap.get(trackComplete.getTrackId()).getWorkNo());
+        trackComplete.setTrackNo(trackHeadMap.get(trackComplete.getTrackId()) == null ? "" : trackHeadMap.get(trackComplete.getTrackId()).getTrackNo());
+        trackComplete.setOptSequence(trackItem.getOptSequence());
+        trackComplete.setOptName(trackItem.getOptName());
+        trackComplete.setProductionOrder(trackHeadMap.get(trackComplete.getTrackId()) == null ? "" : trackHeadMap.get(trackComplete.getTrackId()).getProductionOrder());
+        trackComplete.setOptNo(trackItem.getOptNo());
+        trackComplete.setParentId(id);
+        trackComplete.setCompleteTimeStr(DateUtil.format(trackComplete.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
     }
 
     private Map<String, List<TrackComplete>> getCompleteMapByType(List<TrackComplete> completes,
