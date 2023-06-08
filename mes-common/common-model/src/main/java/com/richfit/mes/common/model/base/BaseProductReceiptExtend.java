@@ -113,7 +113,7 @@ public class BaseProductReceiptExtend implements Serializable {
      * 是否选中：1：选中；2：未选中
      **/
     @ApiModelProperty(value = "是否选中：1：选中；2：未选中")
-    private int ifCheck;
+    private Integer isCheck;
 
     /**
      * 备注

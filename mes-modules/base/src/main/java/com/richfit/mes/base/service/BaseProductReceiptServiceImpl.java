@@ -63,7 +63,7 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductReceiptLambdaQueryWrapper.le(StringUtils.isNotEmpty(receiptDTO.getEndTime()), BaseProductReceipt::getCreateDate, receiptDTO.getEndTime());
         //产品名称查询
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getProdDesc()), BaseProductReceipt::getProdDesc, receiptDTO.getProdDesc());
-        //产品名称查询
+        //验收单位；
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
         return baseProductReceiptMapper.selectPage(page, baseProductReceiptLambdaQueryWrapper);
     }
@@ -73,21 +73,32 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         LambdaQueryWrapper<BaseProductReceiptExtend> baseProductReceiptExtendLambdaQueryWrapper = new LambdaQueryWrapper<>();
         baseProductReceiptExtendLambdaQueryWrapper.eq(BaseProductReceiptExtend::getConnectId, connectId);
         List<BaseProductReceiptExtend> baseProductReceiptExtends = baseProductReceiptExtendMapperMapper.selectList(baseProductReceiptExtendLambdaQueryWrapper);
+        //BOM零件数量计算
+        //根据零件图号分组，查询交接单下的零部件数量；
+        List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartList(workNo, drawNo, tenantId, branchCode);
+        Map<String, List<ProjectBom>> collect = projectBomPartByIdList.stream().collect(Collectors.groupingBy(item -> item.getDrawingNo()));
+        //只将勾选的进行汇总计算；
+        Map<String, List<BaseProductReceiptExtend>> collect1 = baseProductReceiptExtends.stream().filter(e -> e.getIsCheck() == 1).collect(Collectors.groupingBy(item -> item.getPartDrawingNo()));
         for (BaseProductReceiptExtend record : baseProductReceiptExtends) {
             //BOM零件数量计算
             //根据零件图号分组，查询交接单下的零部件数量；
-            List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartList(workNo, drawNo, tenantId, branchCode);
-            Map<String, List<ProjectBom>> collect = projectBomPartByIdList.stream().collect(Collectors.groupingBy(item -> item.getDrawingNo()));
-            if (collect.containsKey(record.getPartDrawingNo())) {
-                int sum = collect.get(record.getPartDrawingNo()).stream().mapToInt(e -> e.getNumber()).sum();
-                //BOM零件数量；
-                record.setBomDemandNumber(sum);
-            } else {
-                //BOM零件数量；
-                record.setBomDemandNumber(0);
+            if (record.getIsCheck() == 1) {
+                //之前有的图号数据；
+                if (collect.containsKey(record.getPartDrawingNo())) {
+                    //BOM零件数量；将相同图号数量进行累加；
+                    int sum = collect.get(record.getPartDrawingNo()).stream().mapToInt(e -> e.getNumber()).sum();
+                    record.setBomDemandNumber(sum);
+                    //BOM需求数量计算，相同图号进行累加；
+                    int sumByDrawNo = collect1.get(record.getPartDrawingNo()).stream().mapToInt(e -> e.getDemandNumber()).sum();
+                    record.setDemandNumber(sumByDrawNo * number);
+                    //新增进来的图号数据；
+                } else {
+                    //不存在的BOM，零件数量为0
+                    record.setBomDemandNumber(0);
+                    //BOM需求数量计算
+                    record.setDemandNumber(record.getDemandNumber() * number);
+                }
             }
-            //BOM需求数量计算
-            record.setDemandNumber(record.getDemandNumber() * number);
         }
         return baseProductReceiptExtends;
     }
@@ -194,7 +205,7 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
             CommonResult.failed("配套钻机不能为空");
         }
         if (StringUtils.isBlank(receiptDTO.getWorkNo())) {
-            CommonResult.failed("工作好不能为空");
+            CommonResult.failed("工作号不能为空");
         }
         if (StringUtils.isBlank(receiptDTO.getProductNo())) {
             CommonResult.failed("产品编号不能为空");
