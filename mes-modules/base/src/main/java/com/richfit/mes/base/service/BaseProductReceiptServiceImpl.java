@@ -162,7 +162,7 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getDriNo, receiptDTO.getDriNo());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getWorkNo, receiptDTO.getWorkNo());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getDrawNo, receiptDTO.getDrawNo());
-        baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getDrawNo, receiptDTO.getDrawNo());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getBomName, receiptDTO.getBomName());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getBomId, receiptDTO.getBomId());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getProductNo, receiptDTO.getProductNo());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getNumber, receiptDTO.getNumber());
@@ -172,6 +172,8 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getReceiveUser, receiptDTO.getReceiveUser());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
+        baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getModifyDate, new Date());
+        baseProductReceiptMapper.update(null, baseProductConnectLambdaUpdateWrapper);
         //查询该BOM下的所有零件，用于新增时做校验；图号需唯一
         /*List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());
         List<String> drawNoList = projectBomPartByIdList.stream().map(e -> e.getDrawingNo()).collect(Collectors.toList());*/
@@ -191,6 +193,27 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         //批量入库
         baseProductReceiptExtendService.saveBatch(baseProductReceiptExtends);
 
+        return CommonResult.success(true);
+    }
+
+    @Override
+    public CommonResult receive(String connectNo) {
+        //修改主表信息
+        LambdaUpdateWrapper<BaseProductReceipt> baseProductReceiptLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        baseProductReceiptLambdaUpdateWrapper.eq(BaseProductReceipt::getConnectNo, connectNo);
+        baseProductReceiptLambdaUpdateWrapper.set(BaseProductReceipt::getStatus, ReceiptStatusEnum.Y.getCode());
+        baseProductReceiptMapper.update(null, baseProductReceiptLambdaUpdateWrapper);
+        //记录汇总表数据
+
+        return CommonResult.success(true);
+    }
+
+    @Override
+    public CommonResult rejection(String connectNo) {
+        LambdaUpdateWrapper<BaseProductReceipt> baseProductReceiptLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        baseProductReceiptLambdaUpdateWrapper.eq(BaseProductReceipt::getConnectNo, connectNo);
+        baseProductReceiptLambdaUpdateWrapper.set(BaseProductReceipt::getStatus, ReceiptStatusEnum.N.getCode());
+        baseProductReceiptMapper.update(null, baseProductReceiptLambdaUpdateWrapper);
         return CommonResult.success(true);
     }
 

@@ -52,4 +52,20 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
      * @return
      */
     CommonResult editReceipt(ReceiptDTO receiptDTO);
+
+    /**
+     * 接收单据
+     *
+     * @param connectNo
+     * @return
+     */
+    CommonResult receive(String connectNo);
+
+    /**
+     * 拒收单据
+     *
+     * @param connectNo
+     * @return
+     */
+    CommonResult rejection(String connectNo);
 }

@@ -61,4 +61,18 @@ public class BaseProductReceiptController extends BaseController {
         baseProductReceiptService.editReceipt(receiptDTO);
         return CommonResult.success("修改成功");
     }
+
+    @ApiOperation(value = "物料确认接收")
+    @PostMapping("/receive")
+    public CommonResult receive(@ApiParam(value = "connectNo") @RequestParam(value = "connectNo") String connectNo) {
+        baseProductReceiptService.receive(connectNo);
+        return CommonResult.success("接收成功");
+    }
+
+    @ApiOperation(value = "物料单据拒收")
+    @PostMapping("/rejection")
+    public CommonResult rejection(@ApiParam(value = "connectNo") @RequestParam(value = "connectNo") String connectNo) {
+        baseProductReceiptService.rejection(connectNo);
+        return CommonResult.success("已拒收");
+    }
 }

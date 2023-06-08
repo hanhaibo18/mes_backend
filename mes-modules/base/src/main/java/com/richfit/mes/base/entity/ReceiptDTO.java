@@ -1,5 +1,6 @@
 package com.richfit.mes.base.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -86,6 +87,7 @@ public class ReceiptDTO extends QueryPageDto implements Serializable {
      * 校验日期
      */
     @ApiModelProperty(value = "校验日期")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date checkDate;
 
     /**
