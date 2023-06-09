@@ -15,7 +15,7 @@ import java.util.Date;
  * <p>
  * 20220429 gl 增加API注解，方便前端阅读接口文件
  */
-@TableName(value ="base_product")
+@TableName(value = "base_product")
 @Data
 public class Product extends BaseEntity<Product> {
 
@@ -126,6 +126,9 @@ public class Product extends BaseEntity<Product> {
 
     @ApiModelProperty(value = "是否齐套检查")
     private String isCheck;
+
+    @ApiModelProperty(value = "同步状态")
+    private Integer synchronousRegime;
 
 
     @TableField(exist = false)

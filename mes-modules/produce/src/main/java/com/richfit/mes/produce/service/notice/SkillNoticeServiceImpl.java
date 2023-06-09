@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.SkillNotice;
 import com.richfit.mes.common.model.produce.SkillNoticeTenant;
 import com.richfit.mes.common.model.sys.Tenant;
@@ -85,8 +87,8 @@ public class SkillNoticeServiceImpl extends ServiceImpl<SkillNoticeMapper, Skill
         queryWrapper.eq(StrUtil.isNotBlank(dispatchDto.getDispatchState()), "dispatch_state", dispatchDto.getDispatchState());
         queryWrapper.eq(StrUtil.isNotBlank(dispatchDto.getUnit()), "unit", dispatchDto.getUnit());
         queryWrapper.eq(StrUtil.isNotBlank(dispatchDto.getDrawingNo()), "drawingNo", dispatchDto.getDrawingNo());
-        TimeUtil.queryStartTime(queryWrapper, dispatchDto.getStateTime());
-        TimeUtil.queryEndTime(queryWrapper, dispatchDto.getEndTime());
+        TimeUtil.queryStartTime(queryWrapper, dispatchDto.getStateTime(), "issue_time");
+        TimeUtil.queryEndTime(queryWrapper, dispatchDto.getEndTime(), "issue_time");
         OrderUtil.query(queryWrapper, dispatchDto.getOrder(), dispatchDto.getOrderCol());
         queryWrapper.groupBy("id");
         IPage<SkillNotice> acceptingPage = skillNoticeMapper.queryDispatchPage(new Page<>(dispatchDto.getPage(), dispatchDto.getSize()), queryWrapper);
@@ -104,6 +106,9 @@ public class SkillNoticeServiceImpl extends ServiceImpl<SkillNoticeMapper, Skill
 
     @Override
     public Boolean dispatchNoticeDelivery(SkillIssueNoticeDto issueNoticeDto) {
+        if (CollectionUtils.isEmpty(issueNoticeDto.getExecutableUnitList())) {
+            throw new GlobalException("请选择执行单位", ResultCode.FAILED);
+        }
         UpdateWrapper<SkillNotice> updateWrapper = new UpdateWrapper<>();
         updateWrapper.in("id", issueNoticeDto.getIdList());
         updateWrapper.set("dispatch_state", "2");
@@ -131,8 +136,8 @@ public class SkillNoticeServiceImpl extends ServiceImpl<SkillNoticeMapper, Skill
         queryWrapper.eq(StrUtil.isNotBlank(acceptDispatchDto.getAcceptingState()), "accepting_state", acceptDispatchDto.getAcceptingState());
         queryWrapper.eq(StrUtil.isNotBlank(acceptDispatchDto.getDrawingNo()), "drawingNo", acceptDispatchDto.getDrawingNo());
         queryWrapper.eq("unit", SecurityUtils.getCurrentUser().getTenantId());
-        TimeUtil.queryStartTime(queryWrapper, acceptDispatchDto.getStateTime());
-        TimeUtil.queryEndTime(queryWrapper, acceptDispatchDto.getEndTime());
+        TimeUtil.queryStartTime(queryWrapper, acceptDispatchDto.getStateTime(), "issue_time");
+        TimeUtil.queryEndTime(queryWrapper, acceptDispatchDto.getEndTime(), "issue_time");
         OrderUtil.query(queryWrapper, acceptDispatchDto.getOrder(), acceptDispatchDto.getOrderCol());
         queryWrapper.groupBy("id");
         IPage<SkillNotice> acceptingPage = skillNoticeMapper.queryAcceptingPage(new Page<>(acceptDispatchDto.getPage(), acceptDispatchDto.getSize()), queryWrapper);
