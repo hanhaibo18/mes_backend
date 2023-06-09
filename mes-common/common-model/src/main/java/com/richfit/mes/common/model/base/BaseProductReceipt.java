@@ -15,7 +15,6 @@ import lombok.Data;
  * 产品交接单据
  *
  * @author wangchenyu
- *
  * @TableName base_product_connect
  */
 @TableName(value = "base_product_receipt")
@@ -112,6 +111,12 @@ public class BaseProductReceipt implements Serializable {
      */
     @ApiModelProperty(value = "车间编码")
     private String branchCode;
+
+    /**
+     * 车间编码
+     */
+    @ApiModelProperty(value = "车间编码")
+    private String branchName;
 
     /**
      * 验收人

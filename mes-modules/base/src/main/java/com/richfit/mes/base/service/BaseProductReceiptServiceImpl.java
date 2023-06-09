@@ -13,6 +13,7 @@ import com.richfit.mes.base.entity.ReceiptExtendDTO;
 import com.richfit.mes.base.util.BeanUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.BaseProductReceipt;
+import com.richfit.mes.common.model.base.BaseProductReceiptDetail;
 import com.richfit.mes.common.model.base.BaseProductReceiptExtend;
 import com.richfit.mes.common.model.base.ProjectBom;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -43,6 +44,9 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
     private BaseProductReceiptExtendService baseProductReceiptExtendService;
 
     @Autowired
+    private BaseProductReceiptDetailService baseProductReceiptDetailService;
+
+    @Autowired
     private ProjectBomService projectBomService;
 
     @Override
@@ -63,13 +67,13 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductReceiptLambdaQueryWrapper.le(StringUtils.isNotEmpty(receiptDTO.getEndTime()), BaseProductReceipt::getCreateDate, receiptDTO.getEndTime());
         //产品名称查询
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getProdDesc()), BaseProductReceipt::getProdDesc, receiptDTO.getProdDesc());
-        //验收单位；
-        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
+        //todo  目前是根据分公司来查询，代码先注释，前端字段调整后放开；
+        //baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, SecurityUtils.getCurrentUser().getTenantId());
         return baseProductReceiptMapper.selectPage(page, baseProductReceiptLambdaQueryWrapper);
     }
 
     @Override
-    public List queryReceiptDetailInfo(String connectId, Integer number, String workNo, String drawNo, String branchCode, String tenantId) {
+    public List queryReceiptDetailInfo(String connectId, Integer number, String workNo, String drawNo, String branchCode, String tenantId, String operate) {
         LambdaQueryWrapper<BaseProductReceiptExtend> baseProductReceiptExtendLambdaQueryWrapper = new LambdaQueryWrapper<>();
         baseProductReceiptExtendLambdaQueryWrapper.eq(BaseProductReceiptExtend::getConnectId, connectId);
         List<BaseProductReceiptExtend> baseProductReceiptExtends = baseProductReceiptExtendMapperMapper.selectList(baseProductReceiptExtendLambdaQueryWrapper);
@@ -90,13 +94,15 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
                     record.setBomDemandNumber(sum);
                     //BOM需求数量计算，相同图号进行累加；
                     int sumByDrawNo = collect1.get(record.getPartDrawingNo()).stream().mapToInt(e -> e.getDemandNumber()).sum();
-                    record.setDemandNumber(sumByDrawNo * number);
-                    //新增进来的图号数据；
+                    //BOM需求数量计算
+                    //如果是编辑操作，不能直接将计算后的数量返回页面，需要回显数据库数量；
+                    record.setDemandNumber("1".equals(operate) ? record.getDemandNumber() : sumByDrawNo * number);
                 } else {
                     //不存在的BOM，零件数量为0
                     record.setBomDemandNumber(0);
                     //BOM需求数量计算
-                    record.setDemandNumber(record.getDemandNumber() * number);
+                    //如果是编辑操作，不能直接将计算后的数量返回页面，需要回显数据库数量；
+                    record.setDemandNumber("1".equals(operate) ? record.getDemandNumber() : record.getDemandNumber() * number);
                 }
             }
         }
@@ -111,22 +117,14 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         BaseProductReceipt baseProductReceipt = new BaseProductReceipt();
         BeanUtils.copyBeanProp(baseProductReceipt, receiptDTO);
         baseProductReceipt.setId(UUID.randomUUID().toString().replace("-", ""));
-        baseProductReceipt.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         baseProductReceipt.setCreateDate(new Date());
         baseProductReceipt.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         //初始化状态为待交接
         baseProductReceipt.setStatus(ReceiptStatusEnum.W.getCode());
         baseProductReceiptMapper.insert(baseProductReceipt);
-        //查询该BOM下的所有零件，用于新增时做校验；图号需唯一
-        /*List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());
-        List<String> drawNoList = projectBomPartByIdList.stream().map(e -> e.getDrawingNo()).collect(Collectors.toList());*/
         //处理子表数据信息
         List<BaseProductReceiptExtend> baseProductReceiptExtends = new ArrayList<>();
         for (ReceiptExtendDTO receiptExtendDTO : receiptDTO.getReceiptExtendDTOList()) {
-            //图号唯一性校验
-            /*if (drawNoList.contains(connectExtendDTO.getPartDrawingNo())) {
-                return CommonResult.failed("图号" + connectExtendDTO.getPartDrawingNo() + "已经存在，不能重复添加");
-            }*/
             BaseProductReceiptExtend baseProductReceiptExtend = new BaseProductReceiptExtend();
             BeanUtils.copyBeanProp(baseProductReceiptExtend, receiptExtendDTO);
             baseProductReceiptExtend.setConnectId(baseProductReceipt.getId());
@@ -173,17 +171,10 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
         baseProductConnectLambdaUpdateWrapper.set(BaseProductReceipt::getModifyDate, new Date());
         baseProductReceiptMapper.update(null, baseProductConnectLambdaUpdateWrapper);
-        //查询该BOM下的所有零件，用于新增时做校验；图号需唯一
-        /*List<ProjectBom> projectBomPartByIdList = projectBomService.getProjectBomPartByIdList(connectDTO.getBomId());
-        List<String> drawNoList = projectBomPartByIdList.stream().map(e -> e.getDrawingNo()).collect(Collectors.toList());*/
         //处理子表数据信息
         //新增子表数据；
         List<BaseProductReceiptExtend> baseProductReceiptExtends = new ArrayList<>();
         for (ReceiptExtendDTO receiptExtendDTO : receiptDTO.getReceiptExtendDTOList()) {
-            //图号唯一性校验
-            /*if (drawNoList.contains(connectExtendDTO.getPartDrawingNo())) {
-                return CommonResult.failed("图号" + connectExtendDTO.getPartDrawingNo() + "已经存在，不能重复添加");
-            }*/
             BaseProductReceiptExtend baseProductReceiptExtend = new BaseProductReceiptExtend();
             BeanUtils.copyBeanProp(baseProductReceiptExtend, receiptExtendDTO);
             baseProductReceiptExtend.setConnectId(baseProductReceipt.getId());
@@ -196,22 +187,39 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
     }
 
     @Override
-    public CommonResult receive(String connectNo) {
+    public CommonResult receive(ReceiptDTO receiptDTO) {
         //修改主表信息
         LambdaUpdateWrapper<BaseProductReceipt> baseProductReceiptLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        baseProductReceiptLambdaUpdateWrapper.eq(BaseProductReceipt::getConnectNo, connectNo);
+        baseProductReceiptLambdaUpdateWrapper.eq(BaseProductReceipt::getId, receiptDTO.getId());
         baseProductReceiptLambdaUpdateWrapper.set(BaseProductReceipt::getStatus, ReceiptStatusEnum.Y.getCode());
         baseProductReceiptMapper.update(null, baseProductReceiptLambdaUpdateWrapper);
-        //记录汇总表数据
-
+        //记录到汇总数据库
+        //入库；
+        ArrayList<BaseProductReceiptDetail> baseProductReceiptDetails = new ArrayList<>();
+        for (ReceiptExtendDTO receiptExtendDTO : receiptDTO.getReceiptExtendDTOList()) {
+            BaseProductReceiptDetail baseProductReceiptDetail = new BaseProductReceiptDetail();
+            BeanUtils.copyBeanProp(baseProductReceiptDetail, receiptDTO);
+            BeanUtils.copyBeanProp(baseProductReceiptDetail, receiptExtendDTO);
+            baseProductReceiptDetail.setReceiveDate(new Date());
+        }
+        baseProductReceiptDetailService.saveBatch(baseProductReceiptDetails);
         return CommonResult.success(true);
     }
 
     @Override
-    public CommonResult rejection(String connectNo) {
+    public CommonResult rejection(String connectId) {
         LambdaUpdateWrapper<BaseProductReceipt> baseProductReceiptLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        baseProductReceiptLambdaUpdateWrapper.eq(BaseProductReceipt::getConnectNo, connectNo);
+        baseProductReceiptLambdaUpdateWrapper.eq(BaseProductReceipt::getId, connectId);
         baseProductReceiptLambdaUpdateWrapper.set(BaseProductReceipt::getStatus, ReceiptStatusEnum.N.getCode());
+        baseProductReceiptMapper.update(null, baseProductReceiptLambdaUpdateWrapper);
+        return CommonResult.success(true);
+    }
+
+    @Override
+    public CommonResult returnBack(String connectId) {
+        LambdaUpdateWrapper<BaseProductReceipt> baseProductReceiptLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        baseProductReceiptLambdaUpdateWrapper.eq(BaseProductReceipt::getId, connectId);
+        baseProductReceiptLambdaUpdateWrapper.set(BaseProductReceipt::getStatus, ReceiptStatusEnum.W.getCode());
         baseProductReceiptMapper.update(null, baseProductReceiptLambdaUpdateWrapper);
         return CommonResult.success(true);
     }
