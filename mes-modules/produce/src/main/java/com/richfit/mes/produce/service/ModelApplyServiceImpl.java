@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -108,7 +109,11 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
             modelApply.setPlanFinishTime(new Date());
             this.save(modelApply);
         }
-        return CommonResult.success(true, "以下工序查询不到模型信息：" + noModelList + "，以下工序已申请模型请求：" + appliedList);
+        if (CollectionUtils.isNotEmpty(noModelList)) {
+            Map<String, String> drawNoVerMap = noModelList.stream().collect(Collectors.toMap(x -> x.getDrawingNo(), x -> x.getOptVer()));
+            throw new GlobalException("以下工序查询不到模型信息：图号=版本号" + drawNoVerMap, ResultCode.FAILED);
+        }
+        return CommonResult.success(true);
     }
 
     @Override
