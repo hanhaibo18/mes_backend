@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- *
+ * 排产单
  * @TableName produce_notice
  */
 @TableName(value ="produce_notice")
