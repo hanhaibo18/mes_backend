@@ -249,12 +249,10 @@ public class TrackCheckController extends BaseController {
             }
 
             if (!StringUtils.isNullOrEmpty(startTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(track.modify_time) >= UNIX_TIMESTAMP('" + startTime + "')");
-
+                queryWrapper.ge("date_format(track.modify_time, '%Y-%m-%d')", startTime);
             }
             if (!StringUtils.isNullOrEmpty(endTime)) {
-                queryWrapper.apply("UNIX_TIMESTAMP(track.modify_time) <= UNIX_TIMESTAMP('" + endTime + "')");
-
+                queryWrapper.le("date_format(track.modify_time, '%Y-%m-%d')", endTime);
             }
             queryWrapper.and(wrapper -> wrapper.eq("track.is_show", "1").or().isNull("track.is_show"));
             queryWrapper.eq("item.quality_check_by", SecurityUtils.getCurrentUser().getUsername());

@@ -69,7 +69,7 @@ public class SkillNoticeController {
         return CommonResult.success(skillNoticeService.dispatchNoticeDelivery(issueNoticeDto));
     }
 
-    @ApiOperation(value = "接受调度通知", notes = "接受调度通知")
+    @ApiOperation(value = "接受调度通知分页查询", notes = "接受调度通知分页查询")
     @PostMapping("/receive_dispatch_notification")
     public CommonResult<IPage<SkillNotice>> receiveDispatchNotification(@RequestBody AcceptDispatchDto acceptDispatchDto) {
         return CommonResult.success(skillNoticeService.receiveDispatchNotification(acceptDispatchDto));

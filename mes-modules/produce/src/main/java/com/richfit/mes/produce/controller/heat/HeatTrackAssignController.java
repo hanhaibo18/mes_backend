@@ -64,11 +64,13 @@ public class HeatTrackAssignController extends BaseController {
     public CommonResult<IPage<Assign>> queryNotProduce(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(heatTrackAssignService.queryWhetherProduce(dispatchingDto, false));
     }
+
     @ApiOperation(value = "未装炉生产查询-(铸造、铸钢、冶炼)")
     @PostMapping("/query_not_produce_hot")
     public CommonResult<IPage<AssignHot>> queryNotProduceHot(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
         return CommonResult.success(heatTrackAssignService.queryWhetherProduceHot(dispatchingDto, false));
     }
+
     @ApiOperation(value = "装炉生产查询-（热处理）")
     @PostMapping("/query_produce")
     public CommonResult<IPage<Assign>> queryProduce(@ApiParam(value = "查询条件", required = true) @RequestBody ForDispatchingDto dispatchingDto) throws ParseException {
@@ -117,42 +119,46 @@ public class HeatTrackAssignController extends BaseController {
             @ApiImplicitParam(name = "workblankType", value = "毛坯类型:: 0锻件,1铸件,2钢锭", dataType = "String", paramType = "query")
     })
     @GetMapping("/getPageAssignsByStatus")
-    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo, String
-            drawingNo, String workNo,String texture,String isLongPeriod,String priority,String productName, String optName,String startTime, String endTime,String branchCode, String order, String orderCol, String productNo,String classes,String state,String status,String materialName,String workblankType) throws ParseException {
+    public CommonResult<IPage<TrackItem>> getPageAssignsByStatus(int page, int limit, String trackNo,
+                                                                 String drawingNo, String workNo, String texture, String isLongPeriod, String priority, String productName,
+                                                                 String optName, String startTime, String endTime, String branchCode, String order, String orderCol,
+                                                                 String productNo, String classes, String state, String status, String materialName, String workblankType) throws ParseException {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<TrackItem>();
-        //增加工序过滤
-        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+        if ("6".equals(classes)) {
+            queryWrapper.ne("opt_type", "15").ne("opt_type", 16);
+        }
 
+        //增加工序过滤
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", endTime);
             queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", startTime);
         }
-        if(!StringUtils.isNullOrEmpty(drawingNo)){
-            DrawingNoUtil.queryEq(queryWrapper,"drawing_no",drawingNo);
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            DrawingNoUtil.queryEq(queryWrapper, "drawing_no", drawingNo);
         }
-        if(!StringUtils.isNullOrEmpty(trackNo)){
+        if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
             queryWrapper.eq("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '')", trackNo);
         }
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(texture),"texture", texture);
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(isLongPeriod),"is_long_period", isLongPeriod);
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(priority),"priority", priority);
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(branchCode),"branch_code", branchCode);
-        queryWrapper.like(!StringUtils.isNullOrEmpty(productNo),"product_no", productNo);
-        queryWrapper.like(!StringUtils.isNullOrEmpty(productName),"product_name", productName);
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(optName),"opt_name", optName);
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(workNo),"work_no", workNo);
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(materialName),"material_name", materialName);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(texture), "texture", texture);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(isLongPeriod), "is_long_period", isLongPeriod);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(priority), "priority", priority);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(branchCode), "branch_code", branchCode);
+        queryWrapper.like(!StringUtils.isNullOrEmpty(productNo), "product_no", productNo);
+        queryWrapper.like(!StringUtils.isNullOrEmpty(productName), "product_name", productName);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(optName), "opt_name", optName);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(workNo), "work_no", workNo);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(materialName), "material_name", materialName);
         queryWrapper.ne("is_schedule", 1);
 
         //排序
         if (StringUtils.isNullOrEmpty(orderCol)) {
             queryWrapper.orderByDesc(new String[]{"modify_time", "sequence_order_by"});
         } else {
-            if(orderCol.endsWith(",")){
-                orderCol = orderCol.substring(0, orderCol.length()-1);
+            if (orderCol.endsWith(",")) {
+                orderCol = orderCol.substring(0, orderCol.length() - 1);
             }
-            OrderUtil.query(queryWrapper, orderCol, StringUtils.isNullOrEmpty(order)?"desc":order);
+            OrderUtil.query(queryWrapper, orderCol, StringUtils.isNullOrEmpty(order) ? "desc" : order);
         }
 
         //查询未配炉
@@ -160,7 +166,7 @@ public class HeatTrackAssignController extends BaseController {
             queryWrapper.isNull("precharge_furnace_id");
         }
         //查询已派工
-        if("1".equals(status)){
+        if ("1".equals(status)) {
             queryWrapper.isNotNull("precharge_furnace_assign_id");
         }
         //根据毛坯类型查询
@@ -173,7 +179,7 @@ public class HeatTrackAssignController extends BaseController {
             //默认未配送
             data.setApplyStatus(0);
             Router router = baseServiceClient.getRouter(data.getRouterId()).getData();
-            if(!ObjectUtil.isEmpty(router)){
+            if (!ObjectUtil.isEmpty(router)) {
                 data.setWeightMolten(router.getWeightMolten());
                 data.setBlankSpecifi(router.getBlankSpecifi());
             }
@@ -181,17 +187,17 @@ public class HeatTrackAssignController extends BaseController {
             String modelDrawingNo = data.getDrawingNo();
             String optVer = data.getOptVer();
             QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
-            modelApplyQueryWrapper.eq("model_drawing_no",modelDrawingNo)
-                    .eq("model_version",optVer);
+            modelApplyQueryWrapper.eq("model_drawing_no", modelDrawingNo)
+                    .eq("model_version", optVer);
             List<ModelApply> modelApplyList = modelApplyService.list(modelApplyQueryWrapper);
-            if(modelApplyList.size() == 0){
+            if (modelApplyList.size() == 0) {
                 continue;
             }
             //一次性的
             List<ModelApply> mode = modelApplyList.stream().filter(item -> data.getId().equals(item.getItemId())).collect(Collectors.toList());
-            if(!CollectionUtil.isEmpty(mode)){
+            if (!CollectionUtil.isEmpty(mode)) {
                 data.setApplyStatus(mode.get(0).getApplyStatus());
-            }else{
+            } else {
                 data.setApplyStatus(modelApplyList.get(0).getApplyStatus());
             }
         }
@@ -287,7 +293,7 @@ public class HeatTrackAssignController extends BaseController {
 
     @ApiOperation(value = "热工铸钢车间已派工查询")
     @PostMapping("/queryForDispatching")
-    public CommonResult<IPage<AssignHot>> queryForDispatching(@RequestBody ForDispatchingDto dispatchingDto){
+    public CommonResult<IPage<AssignHot>> queryForDispatching(@RequestBody ForDispatchingDto dispatchingDto) {
         return CommonResult.success(trackAssignService.queryDispatched(dispatchingDto));
     }
 

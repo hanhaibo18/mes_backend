@@ -711,7 +711,7 @@ public class RouterController extends BaseController {
             RouterOptAssign routerOptAssign = new RouterOptAssign();
             //将工序定义的自动派工数据插入到工艺工序的自动派工配置里
             if(ObjectUtil.isEmpty(operatinoAssign)){
-                return CommonResult.success(routerOptAssign, "操作成功！");
+                return CommonResult.success(null, "操作成功！");
             }
 
             BeanUtil.copyProperties(operatinoAssign, routerOptAssign, new String[]{"id", "createTime", "modifyTime", "modifyBy"});

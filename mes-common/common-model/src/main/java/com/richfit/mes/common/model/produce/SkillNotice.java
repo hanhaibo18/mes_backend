@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * produce_skill_notice
  *
@@ -57,6 +59,11 @@ public class SkillNotice extends BaseEntity<SkillNotice> {
      * 部件名称
      */
     private String partsName;
+    /**
+     * 下发时间
+     */
+    private Date issueTime;
+
     private String tenantId;
     /**
      * 所属机构
