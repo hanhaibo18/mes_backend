@@ -92,7 +92,7 @@ public class BaseProductReceipt implements Serializable {
      * 校验日期
      */
     @ApiModelProperty(value = "校验日期")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     private Date checkDate;
 
     /**
