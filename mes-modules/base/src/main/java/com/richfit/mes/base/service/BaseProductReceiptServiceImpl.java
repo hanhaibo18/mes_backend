@@ -111,7 +111,6 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         BaseProductReceipt baseProductReceipt = new BaseProductReceipt();
         BeanUtils.copyBeanProp(baseProductReceipt, receiptDTO);
         baseProductReceipt.setId(UUID.randomUUID().toString().replace("-", ""));
-        baseProductReceipt.setCheckDate(new Date());
         baseProductReceipt.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
         baseProductReceipt.setCreateDate(new Date());
         baseProductReceipt.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
