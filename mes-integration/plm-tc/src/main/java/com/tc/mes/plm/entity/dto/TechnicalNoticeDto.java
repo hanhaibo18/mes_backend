@@ -2,13 +2,15 @@ package com.tc.mes.plm.entity.dto;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * pdm 技术通知单
  */
 @Data
 public class TechnicalNoticeDto {
+    /**
+     * id
+     */
+    private String id;
     /**
      * 技术通知单编号
      */
@@ -25,8 +27,4 @@ public class TechnicalNoticeDto {
      *  工作号
      */
     private String workNo;
-    /**
-     *  附件
-     */
-    private List<String> previewUrl;
 }

@@ -73,7 +73,7 @@ public class PrechargeFurnaceAssignController extends ApiController {
 
     @ApiOperation(value = "根据预装炉派工id查询工序列表查询")
     @GetMapping("/assigned_furnace_item_list")
-    public CommonResult<List> assignedFurnaceItemList(Long id){
+    public CommonResult<List> assignedFurnaceItemList(String id){
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("precharge_furnace_assign_id",id);
         return CommonResult.success(trackItemService.list(queryWrapper));

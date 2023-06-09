@@ -14,7 +14,7 @@ import java.util.List;
 
 @Api("排产单")
 @RestController
-@RequestMapping("/api/produce")
+@RequestMapping("/api/produce/notice")
 public class ProduceNoticeController {
 
     @Autowired

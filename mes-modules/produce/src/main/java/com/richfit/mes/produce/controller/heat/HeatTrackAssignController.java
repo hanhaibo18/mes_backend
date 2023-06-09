@@ -129,6 +129,8 @@ public class HeatTrackAssignController extends BaseController {
         }
 
         //增加工序过滤
+        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", endTime);
             queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", startTime);
