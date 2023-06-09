@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -265,6 +266,11 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
 
     @Override
     public List<Sequence> listByBranchCodeAndRouterId(String routerId, String branchCode) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Branch> getBranchInfoMapByBranchCodeList(ArrayList<String> strings) {
         return null;
     }
 

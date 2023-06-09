@@ -1,10 +1,12 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -19,6 +21,7 @@ import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.Branch;
 import com.richfit.mes.common.model.base.PdmDraw;
 import com.richfit.mes.common.model.base.PdmMesOption;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -49,6 +52,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Collectors;
 
 /**
@@ -910,5 +915,25 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             disqualification.setUnitResponsibilityWithin(data.getUnitResponsibilityWithin());
         }
         return disqualification;
+    }
+
+    @Override
+    public List<TrackItem> getTrackItemList(Wrapper<TrackItem> wrapper) {
+        List<TrackItem> trackItemList = trackItemMapper.getTrackItemList(wrapper);
+        //工艺ids
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackItemList.stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
+        if(!CollectionUtil.isEmpty(getRouter)){
+            Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+            for (TrackItem trackItem : trackItemList) {
+                Router router = routerMap.get(trackItem.getRouterId()+"_"+trackItem.getBranchCode());
+                if(ObjectUtil.isEmpty(router)){
+                    trackItem.setWeightMolten(router.getWeightMolten());
+                    trackItem.setTexture(router.getTexture());
+                }
+            }
+        }
+
+        return null;
     }
 }

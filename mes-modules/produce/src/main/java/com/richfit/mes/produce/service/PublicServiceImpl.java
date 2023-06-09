@@ -377,10 +377,15 @@ public class PublicServiceImpl implements PublicService {
         assign.setTrackNo(trackHead.getTrackNo());
         assign.setClasses(trackHead.getClasses());
         List<AssignPerson> list = new ArrayList<>();
-        AssignPerson assignPerson = new AssignPerson();
-        assignPerson.setUserId(assignGet.getData().getUserId());
-        assignPerson.setUserName(assignGet.getData().getUserName());
-        list.add(assignPerson);
+
+        String[] userIds = assignGet.getData().getUserId().split(",");
+        String[] userNames = assignGet.getData().getUserName().split(",");
+        for (int i=0;i<userIds.length;i++) {
+            AssignPerson assignPerson = new AssignPerson();
+            assignPerson.setUserId(userIds[i]);
+            assignPerson.setUserName(userNames[i]);
+            list.add(assignPerson);
+        }
         assign.setAssignPersons(list);
         CommonResult<Assign[]> commonResult = trackAssignController.batchAssign(new Assign[]{assign});
         trackItem.setIsSchedule(1);

@@ -13,10 +13,10 @@ import com.richfit.mes.common.model.produce.PrechargeFurnace;
 import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.service.TrackItemService;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -24,10 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +42,8 @@ public class PrechargeFurnaceController extends BaseController {
     private TrackItemService trackItemService;
     @Autowired
     private PrechargeFurnaceService prechargeFurnaceService;
+    @Autowired
+    private TrackItemMapper trackItemMapper;
 
     @ApiOperation(value = "装炉")
     @PostMapping("/furnace_charging")
@@ -308,7 +307,7 @@ public class PrechargeFurnaceController extends BaseController {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("is_current",1)
                 .eq("precharge_furnace_id",id);
-        return CommonResult.success(trackItemService.list(queryWrapper));
+        return CommonResult.success(trackItemMapper.getTrackItemList(queryWrapper));
     }
 
     @ApiOperation(value = "配炉工序列表查询")

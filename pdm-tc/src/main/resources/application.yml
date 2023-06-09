@@ -12,23 +12,31 @@ spring:
         server-addr: ${DISCOVERY_HOST:11.54.85.62}:${DISCOVERY_PORT:8848}
         group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
         namespace: ${DISCOVERY_NAMESPACE:mes_dev}
-#security:
-#  oauth2:
-#    client:
-#      client-id: web_app
-#      client-secret: mes-web-secret
-#      access-token-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/token
-#      user-authorization-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/authorize
-#      grant-type: password
-#      scope: read
-#    resource:
-#      loadBalanced: true
-#      token-info-uri: http://${AUTH_SERVICE_HOST:11.54.91.48}:${AUTH_SERVICE_PORT:80}/oauth/check_token
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:${DATASOURCE_DBTYPE:mysql}://${DATASOURCE_HOST:11.54.85.62}:${DATASOURCE_PORT:3306}/${DB_SYSTEM:mes_produce}?characterEncoding=UTF-8&useUnicode=true&useSSL=false&allowPublicKeyRetrieval=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=CTT
+    username: ${DATASOURCE_USERNAME:mes_produce}
+    password: ${DATASOURCE_PASSWORD:Mes_produce@mes}
+    servlet:
+      multipart:
+        # 单个文件的大小
+        max-file-size: 10MB
+        # 单次请求的文件的总大小
+        max-request-size: 100MB
+    jackson:
+      time-zone: GMT+8
+# Mybatis-plus
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  global-config:
+    db-config:
+      table-prefix: produce_
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 ribbon:
   ConnectTimeout: 1200000 #ribbon 链接超时时长
   ReadTimeout: 1200000 #ribbon 读取超时时长
-tenant:
-  tenantIds: 12345678901234567890123456789001,12345678901234567890123456789002,12345678901234567890123456789003,12345678901234567890123456789004,12345678901234567890123456789005,12345678901234567890123456789006
 timer:
   time-interval: 15000
 pdm:

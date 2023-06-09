@@ -157,4 +157,21 @@ public interface TrackCompleteService extends IService<TrackComplete> {
     Map<String, Object> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol);
 
     Boolean prechargeFurnaceChange(Long beforeId, Long afterId);
+
+
+    /**
+     * 功能描述: 工时人员统计
+     *
+     * @param startTime
+     * @param endTime
+     * @param branchCode
+     * @param workNo
+     * @param userId
+     * @param orderNo
+     * @param type
+     * @Author: xinYu.hou
+     * @Date: 2023/2/10 15:17
+     * @return: Map<String, Object>
+     **/
+    Map<String, Object> queryWorkHours(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo, String type);
 }
