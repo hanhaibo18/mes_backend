@@ -403,7 +403,7 @@ public class TrackHeadController extends BaseController {
                         //钢水重量
                         record.setWeightMolten(router.getWeightMolten());
                         //工艺保温时间
-                        record.setProcessHoldTime(router.getWeightMolten());
+                        record.setProcessHoldTime(router.getProcessHoldTime());
                         //浇筑温度
                         record.setPourTemp(router.getPourTemp());
                         //浇筑时间
