@@ -38,8 +38,9 @@ public class ProduceSkillNoticeServiceImpl extends ServiceImpl<ProduceSkillNotic
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean saveBatchNotice(List<TechnicalNoticeRequest> noticeRequestList) {
-        List<ProduceSkillNoticeAttachment> attachmentList = convert(noticeRequestList).getAttachmentList();
-        List<TechnicalNoticeDto> technicalNoticeDtoList = convert(noticeRequestList).getTechnicalNoticeDtoList();
+        ProduceSkillNoticeAttachmentVo convert = convert(noticeRequestList);
+        List<ProduceSkillNoticeAttachment> attachmentList = convert.getAttachmentList();
+        List<TechnicalNoticeDto> technicalNoticeDtoList = convert.getTechnicalNoticeDtoList();
         List<ProduceSkillNoticeVo> skillNoticeVoList = convertVo(technicalNoticeDtoList);
         if (!CollectionUtils.isEmpty(attachmentList)) {
             produceSkillNoticeAttachmentService.saveBatch(attachmentList);
@@ -61,8 +62,9 @@ public class ProduceSkillNoticeServiceImpl extends ServiceImpl<ProduceSkillNotic
         List<TechnicalNoticeDto> technicalNoticeDtoList = new ArrayList<>(noticeRequestList.size());
         List<ProduceSkillNoticeAttachment> attachmentList = new ArrayList<>();
         noticeRequestList.forEach(e -> {
+            String uuid = UUID.randomUUID().toString().replaceAll("-", "");
             TechnicalNoticeDto technicalNoticeDto = new TechnicalNoticeDto();
-            technicalNoticeDto.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+            technicalNoticeDto.setId(uuid);
             technicalNoticeDto.setTechNoticeNo(e.getTech_notice_no());
             technicalNoticeDto.setTechNoticeRevId(e.getTech_notice_rev_id());
             technicalNoticeDto.setTechNoticeName(e.getTech_notice_name());
@@ -71,7 +73,7 @@ public class ProduceSkillNoticeServiceImpl extends ServiceImpl<ProduceSkillNotic
             e.getPreview_url().forEach(f -> {
                 ProduceSkillNoticeAttachment attachment = new ProduceSkillNoticeAttachment();
                 attachment.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                attachment.setSkillNoticeId(technicalNoticeDto.getId());
+                attachment.setSkillNoticeId(uuid);
                 attachment.setUrl(f);
                 attachmentList.add(attachment);
             });
