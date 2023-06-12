@@ -5,6 +5,7 @@ import com.richfit.mes.base.entity.ReceiptDTO;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.BaseProductReceipt;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.base.BaseProductReceiptDetail;
 import com.richfit.mes.common.model.base.BaseProductReceiptExtend;
 
 import java.util.List;
@@ -95,5 +96,5 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
      * @param tenantId
      * @return
      */
-    List<BaseProductReceipt> receiveDetail(String workNo, String drawNo, String branchCode, String tenantId);
+    List<BaseProductReceiptDetail> receiveDetail(String workNo, String drawNo, String branchCode, String tenantId);
 }

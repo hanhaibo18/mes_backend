@@ -269,10 +269,12 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
     }
 
     @Override
-    public List<BaseProductReceipt> receiveDetail(String workNo, String drawNo, String branchCode, String tenantId) {
-
-
-
+    public List<BaseProductReceiptDetail> receiveDetail(String workNo, String drawNo, String branchCode, String tenantId) {
+        LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        //查询产品图号和工作号下的所有数据，按照物料图号进行分组合并；合并后再进行数量计算；
+        baseProductReceiptLambdaQueryWrapper.eq(BaseProductReceiptDetail::getWorkNo, workNo);
+        baseProductReceiptLambdaQueryWrapper.eq(BaseProductReceiptDetail::getDrawNo, drawNo);
+        baseProductReceiptLambdaQueryWrapper.groupBy(BaseProductReceiptDetail::getPartDrawingNo);
         return null;
     }
 

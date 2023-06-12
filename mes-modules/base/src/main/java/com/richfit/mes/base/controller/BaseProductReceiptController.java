@@ -6,6 +6,7 @@ import com.richfit.mes.base.service.BaseProductReceiptService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.base.BaseProductReceipt;
+import com.richfit.mes.common.model.base.BaseProductReceiptDetail;
 import com.richfit.mes.common.model.base.BaseProductReceiptExtend;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -92,10 +93,10 @@ public class BaseProductReceiptController extends BaseController {
 
     @ApiOperation(value = "物料接收明细列表")
     @GetMapping("/receive/detail")
-    public CommonResult<List<BaseProductReceipt>> receiveDetail(@ApiParam(value = "工作号") @RequestParam(value = "workNo") String workNo,
-                                                                @ApiParam(value = "图号") @RequestParam(value = "drawNo") String drawNo,
-                                                                @ApiParam(value = "branchCode", required = false) @RequestParam(value = "branchCode", required = false) String branchCode,
-                                                                @ApiParam(value = "tenantId", required = false) @RequestParam(value = "tenantId", required = false) String tenantId) {
+    public CommonResult<List<BaseProductReceiptDetail>> receiveDetail(@ApiParam(value = "工作号") @RequestParam(value = "workNo") String workNo,
+                                                                      @ApiParam(value = "图号") @RequestParam(value = "drawNo") String drawNo,
+                                                                      @ApiParam(value = "branchCode", required = false) @RequestParam(value = "branchCode", required = false) String branchCode,
+                                                                      @ApiParam(value = "tenantId", required = false) @RequestParam(value = "tenantId", required = false) String tenantId) {
         return CommonResult.success(baseProductReceiptService.receiveDetail(workNo, drawNo, branchCode, tenantId));
     }
 }
