@@ -28,6 +28,11 @@ public class ApplyLineList implements Serializable {
     private Integer lineNum;
 
     /**
+     * 产品图号
+     */
+    private String drawingNo;
+
+    /**
      * 物料编码
      */
     private String materialNum;
