@@ -17,35 +17,35 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.Future;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
+@Data
 public class WorkHoursUtil {
+    public List<QualityInspectionRules> rulesList = new ArrayList<>();
+    public Map<String, TenantUserVo> stringTenantUserVoMap = new HashMap<>();
 
+    public List<TrackHead> trackHeads = new ArrayList<>();
 
-    public Map<String, Object> workHoursCompletes(BaseServiceClient baseServiceClient, List<TrackComplete> completes, Future<List<QualityInspectionRules>> qualityInspectionRulesFuture, Future<Map<String, TenantUserVo>> userMapFuture, Future<List<TrackHead>> trackHeadListFuture, Future<List<TrackItem>> trackItemListFuture, String type) {
-        //并行执行
-        List<QualityInspectionRules> rulesList = ConcurrentUtil.futureGet(qualityInspectionRulesFuture);
-        Map<String, TenantUserVo> stringTenantUserVoMap = ConcurrentUtil.futureGet(userMapFuture);
-        List<TrackHead> trackHeads = ConcurrentUtil.futureGet(trackHeadListFuture);
-        List<TrackItem> trackItems = ConcurrentUtil.futureGet(trackItemListFuture);
+    public List<TrackItem> trackItems = new ArrayList<>();
+    public final CountDownLatch cdl = new CountDownLatch(4);
+
+    public Map<String, Object> workHoursCompletes(BaseServiceClient baseServiceClient, List<TrackComplete> completes, String type) {
         Map<String, QualityInspectionRules> rulesMap = rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
         Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
         //过滤跟单工序只计算最终完成工序
         Map<String, TrackItem> trackItemMap = trackItems.stream().filter(item -> item.getIsOperationComplete() == 1).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k));
-//        //只获取已完工数据计算工时
-//        List<String> flowIdList = trackItems.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
-//        List<TrackFlow> trackFlows = trackFlowService.listByIds(flowIdList);
-//        Map<String, TrackFlow> trackFlowMap = trackFlows.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x, (k, v) -> k));
         //根据人员信息获取机构信息
         Map<String, Branch> branchMap = getBranchInfoByUserInfo(baseServiceClient, stringTenantUserVoMap);
         List<TrackHead> trackHeadList = new ArrayList<>();
         List<TenantUserVo> tenantUserVoList = new ArrayList<>();
         trackHeadMap.forEach((key, value) -> trackHeadList.add(value));
         stringTenantUserVoMap.forEach((key, value) -> tenantUserVoList.add(value));
+
         //跟单工作号map
         Map<String, List<TrackHead>> workNoMap = trackHeadList.stream().filter((trackHead -> StrUtil.isNotBlank(trackHead.getWorkNo())))
                 .collect(Collectors.groupingBy(TrackHead::getWorkNo));
@@ -55,7 +55,6 @@ public class WorkHoursUtil {
         //班组人员map
         Map<String, List<TenantUserVo>> belongOrgIdMap = tenantUserVoList.stream().filter(tenantUserVo -> StrUtil.isNotBlank(tenantUserVo.getBelongOrgId()))
                 .collect(Collectors.groupingBy(TenantUserVo::getBelongOrgId));
-
         //1、根据type做数据的整合返回可通用循环执行数据
         List<String> idList = getKeyByType(completes, stringTenantUserVoMap, trackHeadMap, trackItemMap, branchMap, workNoMap, orderNoMap, belongOrgIdMap, type);
         Map<String, List<TrackComplete>> completeMap = getCompleteMapByType(completes, stringTenantUserVoMap, trackHeadMap, trackItemMap, branchMap, workNoMap, orderNoMap, belongOrgIdMap, type);
