@@ -325,6 +325,20 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     private String blankWeight;
 
+    /**
+     * 锻始温度
+     */
+
+    @TableField(exist = false)
+    private String forgTempStart;
+
+    /**
+     * 锻终温度
+     */
+
+    @TableField(exist = false)
+    private String forgTempEnd;
+
     public String getUserId() {
         return userId;
     }
