@@ -84,9 +84,18 @@ public class BaseProductReceiptController extends BaseController {
         return CommonResult.success("返回接收成功");
     }
 
-    @ApiOperation(value = "物料接收明细")
-    @PostMapping("/receive/detail")
-    public CommonResult<Page<BaseProductReceipt>> receiveDetail(@ApiParam(value = "查询条件") @RequestBody ReceiptDTO receiptDTO) {
-        return CommonResult.success(baseProductReceiptService.receiveDetail(receiptDTO));
+    @ApiOperation(value = "物料接收列表")
+    @PostMapping("/receive/page")
+    public CommonResult<Page<BaseProductReceipt>> receivePage(@ApiParam(value = "查询条件") @RequestBody ReceiptDTO receiptDTO) {
+        return CommonResult.success(baseProductReceiptService.receivePage(receiptDTO));
+    }
+
+    @ApiOperation(value = "物料接收明细列表")
+    @GetMapping("/receive/detail")
+    public CommonResult<List<BaseProductReceipt>> receiveDetail(@ApiParam(value = "工作号") @RequestParam(value = "workNo") String workNo,
+                                                                @ApiParam(value = "图号") @RequestParam(value = "drawNo") String drawNo,
+                                                                @ApiParam(value = "branchCode", required = false) @RequestParam(value = "branchCode", required = false) String branchCode,
+                                                                @ApiParam(value = "tenantId", required = false) @RequestParam(value = "tenantId", required = false) String tenantId) {
+        return CommonResult.success(baseProductReceiptService.receiveDetail(workNo, drawNo, branchCode, tenantId));
     }
 }
