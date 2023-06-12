@@ -240,53 +240,9 @@ public class TrackCompleteController extends BaseController {
         return true;
     }
 
-    /**
-     * @return
-     */
-    @ApiOperation(value = "工时统计接口", notes = "工时统计接口")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "limit", value = "每页条数", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "tiId", value = "跟单工序项ID", paramType = "query", dataType = "string")
-    })
-    @GetMapping("/pageOptimize")
-    public CommonResult<Map<String, Object>> pageOptimize(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
-        return CommonResult.success(trackCompleteService.queryTrackCompleteList(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
-    }
-
-    @GetMapping("/pageOptimizeByBranch")
-    public CommonResult<Map<String, Object>> pageOptimizeByBranch(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
-        return CommonResult.success(trackCompleteService.queryTrackCompleteListByBranch(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
-    }
-
-    @ApiOperation(value = "工时统计by订单", notes = "工时统计by订单")
-    @GetMapping("/pageOptimizeByOrder")
-    public CommonResult<Map<String, Object>> pageOptimizeByOrder(@ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo,
-                                                                 @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
-                                                                 @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
-                                                                 @ApiParam(value = "机构ID") @RequestParam String branchCode,
-                                                                 @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
-                                                                 @ApiParam(value = "用户id") @RequestParam(required = false) String userId,
-                                                                 @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo) {
-        return CommonResult.success(trackCompleteService.queryTrackCompleteListByOrder(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
-    }
-
-    @ApiOperation(value = "工时统计by工作号", notes = "工时统计by工作号")
-    @GetMapping("/pageOptimizeByWorkNo")
-    public CommonResult<Map<String, Object>> pageOptimizeByWorkNo(@ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo,
-                                                                  @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
-                                                                  @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
-                                                                  @ApiParam(value = "机构ID") @RequestParam String branchCode,
-                                                                  @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
-                                                                  @ApiParam(value = "用户id") @RequestParam(required = false) String userId,
-                                                                  @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo
-    ) {
-        return CommonResult.success(trackCompleteService.queryTrackCompleteListByWorkNo(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
-    }
-
     @ApiOperation(value = "工时统计", notes = "工时统计by工作号")
     @GetMapping("/query_work_hours")
-    public CommonResult<Map<String, Object>> pageOptimizeByWorkNo(@ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo,
+    public CommonResult<Map<String, Object>> queryWorkHours(@ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo,
                                                                   @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
                                                                   @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
                                                                   @ApiParam(value = "机构ID") @RequestParam String branchCode,
@@ -294,8 +250,8 @@ public class TrackCompleteController extends BaseController {
                                                                   @ApiParam(value = "用户id") @RequestParam(required = false) String userId,
                                                                   @ApiParam(value = "订单号") @RequestParam(required = false) String orderNo,
                                                                   @ApiParam(value = "person,workNo,order,branch") @RequestParam(required = false) String type
-    ) {
-        return CommonResult.success(trackCompleteService.queryWorkHours(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo,type));
+    ) throws Exception {
+        return CommonResult.success(trackCompleteService.queryWorkHours(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo, type));
     }
 
 

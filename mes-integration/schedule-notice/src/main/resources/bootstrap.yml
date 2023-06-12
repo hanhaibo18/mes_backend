@@ -1,8 +1,8 @@
 server:
-  port: 8020
+  port: 8021
 spring:
   application:
-    name: plmtc
+    name: schedule-notice
   cloud:
     nacos:
       username: nacos_user01

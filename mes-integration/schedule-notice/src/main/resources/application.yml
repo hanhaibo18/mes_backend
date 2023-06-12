@@ -1,8 +1,8 @@
 server:
-  port: ${SERVER_PORT:8020}
+  port: ${SERVER_PORT:8021}
 spring:
   application:
-    name: plmtc-service
+    name: schedule-notice-service
   cloud:
     nacos:
       username: nacos
@@ -39,7 +39,3 @@ ribbon:
   ReadTimeout: 1200000 #ribbon 读取超时时长
 timer:
   time-interval: 15000
-pdm:
-  user_id: admin
-  password: infodba
-  url: http://192.168.2.48:8093
