@@ -36,6 +36,8 @@ public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certifi
                 return CommonResult.failed(certificate.getCertificateNo() + ":非生产入库合格证不进行工时推送;");
             }
             List<ApplyListUpload> applyListUploads = new ArrayList<>();
+            ApplyListUpload applyListUpload = new ApplyListUpload(certificate);
+            applyListUploads.add(applyListUpload);
             CommonResult<WmsResult> commonResult = wmsThreeServiceClient.applyListUpload(applyListUploads);
             if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
                 return CommonResult.failed(certificate.getCertificateNo() + ":" + commonResult.getMessage() + ";");
