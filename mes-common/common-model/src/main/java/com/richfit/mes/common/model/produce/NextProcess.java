@@ -59,4 +59,7 @@ public class NextProcess extends BaseEntity<NextProcess> {
     @TableField(exist = false)
     @ApiModelProperty(value = "opt工序Id", dataType = "String")
     private String optId;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "用户名称")
+    private String userName;
 }

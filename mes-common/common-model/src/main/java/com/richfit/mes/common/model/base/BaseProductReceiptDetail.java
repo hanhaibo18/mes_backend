@@ -81,6 +81,13 @@ public class BaseProductReceiptDetail implements Serializable {
     @ApiModelProperty(value = "交接单数量")
     private Integer number;
 
+    /**
+     * 是否齐套
+     */
+    @ApiModelProperty(value = "是否齐套")
+    @TableField(exist = false)
+    private Integer isKitting;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }
