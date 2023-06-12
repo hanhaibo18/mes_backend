@@ -4,11 +4,15 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.heat.CompleteUserInfoDto;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 马峰
@@ -17,6 +21,8 @@ import java.util.List;
  * @ModifyTime: 2022年08月15日 12:08:00
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TrackComplete extends BaseEntity<TrackComplete> implements Comparable<TrackComplete> {
 
     private static final long serialVersionUID = 2731220432204410300L;
@@ -318,6 +324,41 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @TableField(exist = false)
     @ApiModelProperty(value = "浇注温度", dataType = "String")
     private String pourTemperature;
+
+    public TrackComplete(Map<String, List<TrackComplete>> completeMap, String id, List<TrackComplete> trackCompleteShowList, BigDecimal sumNumber, BigDecimal sumTotalHours, BigDecimal sumPrepareEndHours, BigDecimal sumReportHours, BigDecimal sumRealityPrepareEndHours, BigDecimal sumRealityReportHours, TrackComplete temp, String type) {
+        buildSummaryColum(temp, type);
+        this.setId(id);
+        //总报工数量
+        this.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //实际准备工时
+        this.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //实际额定工时
+        this.setRealityReportHours(sumRealityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //准备工时
+        this.setPrepareEndHours(sumPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //额定工时
+        this.setReportHours(sumReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        //总工时
+        this.setTotalHours(sumTotalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        this.setTrackCompleteList(trackCompleteShowList);
+        //判断是否包含叶子结点
+        this.setIsLeafNodes(!CollectionUtils.isEmpty(completeMap.get(id)));
+    }
+
+    private void buildSummaryColum(TrackComplete temp, String type) {
+        if ("branch".equals(type)) {
+            this.setBranchName(temp.getBranchName());
+        }
+        if ("person".equals(type)) {
+            this.setUserName(temp.getUserName());
+        }
+        if ("workNo".equals(type)) {
+            this.setWorkNo(temp.getWorkNo());
+        }
+        if ("order".equals(type)) {
+            this.setProductionOrder(temp.getProductionOrder());
+        }
+    }
 
     @Override
     public int compareTo(TrackComplete o) {

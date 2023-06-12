@@ -59,6 +59,11 @@ public class ApplyListUpload implements Serializable {
     private String certificate;
 
     /**
+     * 炉批号
+     */
+    private String batchNo;
+
+    /**
      * 创建人
      */
     private String createBy;

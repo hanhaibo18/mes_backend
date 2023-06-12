@@ -2313,7 +2313,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             BigDecimal sumRealityPrepareEndHours = new BigDecimal(0);
             //实际额定工时累计值
             BigDecimal sumRealityReportHours = new BigDecimal(0);
-            TrackComplete track0 = new TrackComplete();
+            TrackComplete temp = new TrackComplete();
             for (TrackComplete trackComplete : completeMap.get(id)) {
                 //获取当前用户信息
                 TenantUserVo tenantUserVo = stringTenantUserVoMap.get(trackComplete.getUserId());
@@ -2418,11 +2418,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 sumTotalHours = sumTotalHours.add(totalHours);
                 buildDetails(trackComplete, tenantUserVo, realityReportHours, realityPrepareEndHours, trackHeadMap, trackItem, id);
                 details.add(trackComplete);
+                temp = trackComplete;
             }
-            if ("branch".equals(type)) {
-                track0.setBranchName(branchMap.get(id).getBranchName());
-            }
-            buileSummary(completeMap, id, trackCompleteShowList, sumNumber, sumTotalHours, sumPrepareEndHours, sumReportHours, sumRealityPrepareEndHours, sumRealityReportHours, track0);
+            TrackComplete track0 = new TrackComplete(completeMap, id, trackCompleteShowList, sumNumber, sumTotalHours, sumPrepareEndHours, sumReportHours, sumRealityPrepareEndHours, sumRealityReportHours, temp, type);
             summary.add(track0);
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
@@ -2432,24 +2430,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         return stringObjectHashMap;
     }
 
-    private void buileSummary(Map<String, List<TrackComplete>> completeMap, String id, List<TrackComplete> trackCompleteShowList, BigDecimal sumNumber, BigDecimal sumTotalHours, BigDecimal sumPrepareEndHours, BigDecimal sumReportHours, BigDecimal sumRealityPrepareEndHours, BigDecimal sumRealityReportHours, TrackComplete track0) {
-        track0.setId(id);
-        //总报工数量
-        track0.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-        //实际准备工时
-        track0.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-        //实际额定工时
-        track0.setRealityReportHours(sumRealityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-        //准备工时
-        track0.setPrepareEndHours(sumPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-        //额定工时
-        track0.setReportHours(sumReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-        //总工时
-        track0.setTotalHours(sumTotalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-        track0.setTrackCompleteList(trackCompleteShowList);
-        //判断是否包含叶子结点
-        track0.setIsLeafNodes(!CollectionUtils.isEmpty(completeMap.get(id)));
-    }
 
     private void buildDetails(TrackComplete trackComplete, TenantUserVo tenantUserVo, BigDecimal realityReportHours, BigDecimal realityPrepareEndHours, Map<String, TrackHead> trackHeadMap, TrackItem trackItem, String id) {
         trackComplete.setUserName(tenantUserVo.getEmplName());
@@ -2478,36 +2458,38 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 return completes.stream().collect(Collectors.groupingBy(TrackComplete::getCompleteBy));
             case "workNo":
                 Map<String, List<TrackComplete>> completeMapByWorkNo = new HashMap<>();
-                Set<String> workNoSet = workNoMap.keySet();
-                for (String workNo : workNoSet) {
-                    //先根据工作号找工作号有哪些跟单
-                    Set<String> trackHeadIds = workNoMap.get(workNo).stream().map(TrackHead::getId).collect(Collectors.toSet());
-                    List<TrackComplete> completeList = completes.stream().filter(x -> trackHeadIds.contains(x.getTrackId())).collect(Collectors.toList());
-                    completeMapByWorkNo.put(workNo, completeList);
-                }
+                buildTrackHeadResultMap(workNoMap, completes, completeMapByWorkNo);
                 return completeMapByWorkNo;
             case "order":
                 Map<String, List<TrackComplete>> completeMapByOrderNo = new HashMap<>();
-                Set<String> orderNoSet = orderNoMap.keySet();
-                for (String orderNo : orderNoSet) {
-                    //先根据订单号找工作号有哪些跟单
-                    Set<String> trackHeadIds = orderNoMap.get(orderNo).stream().map(TrackHead::getId).collect(Collectors.toSet());
-                    List<TrackComplete> completeList = completes.stream().filter(x -> trackHeadIds.contains(x.getTrackId())).collect(Collectors.toList());
-                    completeMapByOrderNo.put(orderNo, completeList);
-                }
+                buildTrackHeadResultMap(orderNoMap, completes, completeMapByOrderNo);
                 return completeMapByOrderNo;
             case "branch":
                 Map<String, List<TrackComplete>> completeMapByBranch = new HashMap<>();
-                Set<String> branchCodeSet = belongOrgIdMap.keySet();
-                for (String branchCode : branchCodeSet) {
-                    //先找到该班组下的人员
-                    Set<String> userIdSet = belongOrgIdMap.get(branchCode).stream().map(TenantUserVo::getUserAccount).collect(Collectors.toSet());
-                    List<TrackComplete> completeList = completes.stream().filter(x -> userIdSet.contains(x.getCompleteBy())).collect(Collectors.toList());
-                    completeMapByBranch.put(branchCode, completeList);
-                }
+                buildUserResultMap(completes, belongOrgIdMap, completeMapByBranch);
                 return completeMapByBranch;
         }
         return null;
+    }
+
+    private void buildTrackHeadResultMap(Map<String, List<TrackHead>> trackHeadMap, List<TrackComplete> completes, Map<String, List<TrackComplete>> trackCompleteMap) {
+        Set<String> keySet = trackHeadMap.keySet();
+        for (String key : keySet) {
+            //先找有哪些跟单
+            Set<String> trackHeadIds = trackHeadMap.get(key).stream().map(TrackHead::getId).collect(Collectors.toSet());
+            List<TrackComplete> completeList = completes.stream().filter(x -> trackHeadIds.contains(x.getTrackId())).collect(Collectors.toList());
+            trackCompleteMap.put(key, completeList);
+        }
+    }
+
+    private void buildUserResultMap(List<TrackComplete> completes, Map<String, List<TenantUserVo>> belongOrgIdMap, Map<String, List<TrackComplete>> completeMapByBranch) {
+        Set<String> branchCodeSet = belongOrgIdMap.keySet();
+        for (String branchCode : branchCodeSet) {
+            //先找到该班组下的人员
+            Set<String> userIdSet = belongOrgIdMap.get(branchCode).stream().map(TenantUserVo::getUserAccount).collect(Collectors.toSet());
+            List<TrackComplete> completeList = completes.stream().filter(x -> userIdSet.contains(x.getCompleteBy())).collect(Collectors.toList());
+            completeMapByBranch.put(branchCode, completeList);
+        }
     }
 
     private Map<String, Branch> getBranchInfoByUserInfo(Map<String, TenantUserVo> stringTenantUserVoMap) {

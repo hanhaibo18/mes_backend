@@ -284,7 +284,7 @@ public class TrackCompleteController extends BaseController {
         return CommonResult.success(trackCompleteService.queryTrackCompleteListByWorkNo(trackNo, startTime, endTime, branchCode, workNo, userId, orderNo));
     }
 
-    @ApiOperation(value = "工时统计by工作号", notes = "工时统计by工作号")
+    @ApiOperation(value = "工时统计", notes = "工时统计by工作号")
     @GetMapping("/query_work_hours")
     public CommonResult<Map<String, Object>> pageOptimizeByWorkNo(@ApiParam(value = "跟单号") @RequestParam(required = false) String trackNo,
                                                                   @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
