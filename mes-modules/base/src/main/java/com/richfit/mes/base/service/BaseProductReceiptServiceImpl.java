@@ -63,7 +63,7 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getDriNo()), BaseProductReceipt::getDriNo, receiptDTO.getDriNo());
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getWorkNo()), BaseProductReceipt::getWorkNo, receiptDTO.getWorkNo());
         //车间查询
-        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
+//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
         //产品编号查询
         baseProductReceiptLambdaQueryWrapper.like(StringUtils.isNotEmpty(receiptDTO.getProductNo()), BaseProductReceipt::getWorkNo, receiptDTO.getWorkNo());
         //时间区间查询
@@ -230,12 +230,13 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
     }
 
     @Override
-    public Page receiveDetail(ReceiptDTO receiptDTO) {
+    public Page receivePage(ReceiptDTO receiptDTO) {
         Page<BaseProductReceipt> page = new Page<>(receiptDTO.getPage(), receiptDTO.getLimit());
         LambdaQueryWrapper<BaseProductReceipt> baseProductReceiptLambdaQueryWrapper = new LambdaQueryWrapper<>();
         baseProductReceiptLambdaQueryWrapper.eq(BaseProductReceipt::getStatus, ReceiptStatusEnum.Y.getCode());
         //图号和工作号进行分组
         baseProductReceiptLambdaQueryWrapper.groupBy(BaseProductReceipt::getWorkNo, BaseProductReceipt::getDrawNo);
+        baseProductReceiptLambdaQueryWrapper.groupBy(BaseProductReceipt::getDrawNo, BaseProductReceipt::getDrawNo);
         //时间降序
         baseProductReceiptLambdaQueryWrapper.orderByDesc(BaseProductReceipt::getCheckDate);
         //查询条件;
@@ -243,12 +244,11 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getDriNo()), BaseProductReceipt::getDriNo, receiptDTO.getDriNo());
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getWorkNo()), BaseProductReceipt::getWorkNo, receiptDTO.getWorkNo());
         //车间查询
-        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
+//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
         //  分公司查询
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
         Page<BaseProductReceipt> baseProductReceiptPage = baseProductReceiptMapper.selectPage(page, baseProductReceiptLambdaQueryWrapper);
         for (BaseProductReceipt record : baseProductReceiptPage.getRecords()) {
-            //配送时间取最近的；
             LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
             baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getWorkNo, record.getWorkNo());
             baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getDrawNo, record.getDrawNo());
@@ -266,6 +266,14 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
             record.setCheckDate(baseProductReceiptDetails.get(0).getReceiveDate());
         }
         return baseProductReceiptPage;
+    }
+
+    @Override
+    public List<BaseProductReceipt> receiveDetail(String workNo, String drawNo, String branchCode, String tenantId) {
+
+
+
+        return null;
     }
 
     private void checkData(ReceiptDTO receiptDTO) {
