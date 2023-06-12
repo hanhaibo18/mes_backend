@@ -203,9 +203,9 @@ public class TrackAssignController extends BaseController {
             @ApiImplicitParam(name = "holdStatus", value = "保温状态 1 保温完成  2 保温中", required = false, paramType = "query", dataType = "String")
     })
     @GetMapping("/querypage")
-    public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes, String order, String orderCol, String holdStatus) {
+    public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes, String order, String orderCol, String holdStatus, String drawingNo) {
         try {
-            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo, classes, order, orderCol, holdStatus);
+            IPage<Assign> assigns = trackAssignService.queryPage(new Page<Assign>(page, limit), assignBy, trackNo, routerNo, startTime, endTime, state, userId, branchCode, productNo, classes, order, orderCol, holdStatus, drawingNo);
 
             return CommonResult.success(assigns);
         } catch (Exception e) {
