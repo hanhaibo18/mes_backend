@@ -1428,39 +1428,9 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         WorkHoursUtil workHoursUtil = new WorkHoursUtil();
         //1、根据条件查询报工信息
         List<TrackComplete> completes = workHoursUtil.getCompleteByFilter(systemServiceClient, trackCompleteMapper, trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
-
-        //2、通过报工的数据进行数据采集
-        Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
-        ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
-        Set<String> trackIdList = completes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
-        Set<String> tiIdList = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
-
-        //3、手动多线程方式查询数据
-        new Thread(() -> {
-            //3.1、查询当前车间下所有质检规则
-            workHoursUtil.rulesList = systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER);
-            workHoursUtil.cdl.countDown();
-        }).start();
-        new Thread(() -> {
-            //3.2、人员信息
-            workHoursUtil.stringTenantUserVoMap = systemServiceClient.queryByUserAccountListInner(userIdList, SecurityConstants.FROM_INNER);
-            workHoursUtil.cdl.countDown();
-        }).start();
-        new Thread(() -> {
-            //3.3、跟单信息
-            workHoursUtil.trackHeads = trackHeadService.listByIds(new ArrayList<>(trackIdList));
-            workHoursUtil.cdl.countDown();
-        }).start();
-        new Thread(() -> {
-            //3.4、跟单报工的工序信息
-            workHoursUtil.trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
-            workHoursUtil.cdl.countDown();
-        }).start();
-
-        //4、等待线程计数器归0
-        workHoursUtil.cdl.await();
-
-        //5、根据类型组装数据type（工厂、方法或者map数组），返回执行的数组（计算、数据封装）
+        //2、数据处理转换
+        workHoursUtil.workHoursThread(systemServiceClient, trackHeadService, trackItemService, completes);
+        //3、根据类型组装数据type（工厂、方法或者map数组），返回执行的数组（计算、数据封装）
         return workHoursUtil.workHoursCompletes(baseServiceClient, completes, type);
     }
 

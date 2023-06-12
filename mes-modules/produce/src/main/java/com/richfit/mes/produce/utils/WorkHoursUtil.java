@@ -13,10 +13,13 @@ import com.richfit.mes.common.model.sys.QualityInspectionRules;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.TimeUtil;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackCompleteMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.TrackHeadService;
+import com.richfit.mes.produce.service.TrackItemService;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -33,6 +36,40 @@ public class WorkHoursUtil {
 
     public List<TrackItem> trackItems = new ArrayList<>();
     public final CountDownLatch cdl = new CountDownLatch(4);
+
+    public void workHoursThread(SystemServiceClient systemServiceClient, TrackHeadService trackHeadService, TrackItemService trackItemService, List<TrackComplete> completes) throws InterruptedException {
+        //1、通过报工的数据进行数据采集
+        Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
+        ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
+        Set<String> trackIdList = completes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
+        Set<String> tiIdList = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
+
+        //2、手动多线程方式查询数据
+        new Thread(() -> {
+            //1、查询当前车间下所有质检规则
+            rulesList = systemServiceClient.allQualityInspectionRulesListInner(SecurityConstants.FROM_INNER);
+            cdl.countDown();
+        }).start();
+        new Thread(() -> {
+            //2、人员信息
+            stringTenantUserVoMap = systemServiceClient.queryByUserAccountListInner(userIdList, SecurityConstants.FROM_INNER);
+            cdl.countDown();
+        }).start();
+        new Thread(() -> {
+            //3、跟单信息
+            trackHeads = trackHeadService.listByIds(new ArrayList<>(trackIdList));
+            cdl.countDown();
+        }).start();
+        new Thread(() -> {
+            //4、跟单报工的工序信息
+            trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
+            cdl.countDown();
+        }).start();
+
+        //3、等待线程计数器归0
+        cdl.await();
+    }
+
 
     public Map<String, Object> workHoursCompletes(BaseServiceClient baseServiceClient, List<TrackComplete> completes, String type) {
         Map<String, QualityInspectionRules> rulesMap = rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
