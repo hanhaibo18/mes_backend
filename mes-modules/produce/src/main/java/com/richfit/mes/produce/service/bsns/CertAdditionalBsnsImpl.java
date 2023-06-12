@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,7 +56,9 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     @Override
     public void doAdditionalBsns(Certificate certificate) {
         if (needScjk(certificate)) {
-            CommonResult<Object> commonResultJK = inventoryService.handOver(certificate);
+            List<Certificate> certificateList = new ArrayList<>();
+            certificateList.add(certificate);
+            CommonResult<Object> commonResultJK = inventoryService.handOver(certificateList);
             //推送宝石
             if (commonResultJK.getStatus() == ResultCode.SUCCESS.getCode()) {
                 certificate.setIsDeliveryToWarehouse("1");

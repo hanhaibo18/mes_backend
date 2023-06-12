@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Certificate;
 
+import java.util.List;
+
 /**
  * 功能描述:库存管理
  *
@@ -19,5 +21,5 @@ public interface InventoryService extends IService<Certificate> {
      * @Author: zhiqiang.lu
      * @Date: 2023/05/26 16:27
      **/
-    CommonResult<Object> handOver(Certificate certificate);
+    CommonResult<Object> handOver(List<Certificate> certificate);
 }
