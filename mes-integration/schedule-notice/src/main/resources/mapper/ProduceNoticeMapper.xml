@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.tc.mes.plm.mapper.ProduceNoticeMapper">
+<mapper namespace="com.pdm.mes.schedule.mapper.ProduceNoticeMapper">
 
-    <resultMap id="BaseResultMap" type="com.tc.mes.plm.entity.domain.ProduceNotice">
+    <resultMap id="BaseResultMap" type="com.pdm.mes.schedule.entity.domain.ProduceNotice">
             <id property="id" column="id" jdbcType="VARCHAR"/>
             <result property="notificationState" column="notification_state" jdbcType="VARCHAR"/>
             <result property="schedulingState" column="scheduling_state" jdbcType="VARCHAR"/>
@@ -36,7 +36,6 @@
             <result property="modifyBy" column="modify_by" jdbcType="VARCHAR"/>
             <result property="modifyTime" column="modify_time" jdbcType="TIMESTAMP"/>
             <result property="remark" column="remark" jdbcType="VARCHAR"/>
-            <result property="previewUrl" column="preview_url" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -50,6 +49,6 @@
         production_schedule_date,reason_return,issuing_unit,
         tenant_id,branch_code,create_by,
         create_time,modify_by,modify_time,
-        remark,preview_url
+        remark
     </sql>
 </mapper>
