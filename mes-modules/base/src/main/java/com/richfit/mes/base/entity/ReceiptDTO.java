@@ -103,9 +103,9 @@ public class ReceiptDTO extends QueryPageDto implements Serializable {
     private String branchCode;
 
     /**
-     * 车间编码
+     * 车间名称
      */
-    @ApiModelProperty(value = "车间编码")
+    @ApiModelProperty(value = "车间名称")
     private String branchName;
 
     /**

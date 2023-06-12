@@ -77,4 +77,12 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
      * @return
      */
     CommonResult returnBack(String connectId);
+
+    /**
+     * 物料接收明细
+     *
+     * @param receiptDTO
+     * @return
+     */
+    Page receiveDetail(ReceiptDTO receiptDTO);
 }

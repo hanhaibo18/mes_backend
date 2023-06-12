@@ -75,6 +75,11 @@ public class BaseProductReceiptDetail implements Serializable {
     @ApiModelProperty(value = "本次送货数量")
     private Integer deliverNumber;
 
+    /**
+     * 交接单数量
+     */
+    @ApiModelProperty(value = "交接单数量")
+    private Integer number;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

@@ -156,6 +156,13 @@ public class BaseProductReceipt implements Serializable {
     @ApiModelProperty(value = "租户id")
     private String tenantId;
 
+    /**
+     * 是否齐套
+     */
+    @ApiModelProperty(value = "是否齐套")
+    @TableField(exist = false)
+    private Integer isKitting;
+
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

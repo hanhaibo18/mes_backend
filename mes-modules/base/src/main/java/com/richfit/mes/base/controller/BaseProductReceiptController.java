@@ -83,4 +83,10 @@ public class BaseProductReceiptController extends BaseController {
         baseProductReceiptService.returnBack(connectId);
         return CommonResult.success("返回接收成功");
     }
+
+    @ApiOperation(value = "物料接收明细")
+    @PostMapping("/receive/detail")
+    public CommonResult<Page<BaseProductReceipt>> receiveDetail(@ApiParam(value = "查询条件") @RequestBody ReceiptDTO receiptDTO) {
+        return CommonResult.success(baseProductReceiptService.receiveDetail(receiptDTO));
+    }
 }
