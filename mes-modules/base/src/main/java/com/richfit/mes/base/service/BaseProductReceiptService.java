@@ -85,7 +85,7 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
      * @param receiptDTO
      * @return
      */
-    Page receivePage(ReceiptDTO receiptDTO);
+    Page<BaseProductReceipt> receivePage(ReceiptDTO receiptDTO);
 
     /**
      * 物料接收明细列表

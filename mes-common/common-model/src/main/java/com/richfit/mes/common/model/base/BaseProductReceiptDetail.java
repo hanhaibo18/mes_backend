@@ -70,9 +70,9 @@ public class BaseProductReceiptDetail implements Serializable {
     private Integer demandNumber;
 
     /**
-     * 本次送货数量(物料接收数量)
+     * 接收数量
      */
-    @ApiModelProperty(value = "本次送货数量")
+    @ApiModelProperty(value = "接收数量")
     private Integer deliverNumber;
 
     /**
@@ -84,7 +84,7 @@ public class BaseProductReceiptDetail implements Serializable {
     /**
      * 是否齐套
      */
-    @ApiModelProperty(value = "是否齐套")
+    @ApiModelProperty(value = "是否齐套::1::是；2：：否")
     @TableField(exist = false)
     private Integer isKitting;
 

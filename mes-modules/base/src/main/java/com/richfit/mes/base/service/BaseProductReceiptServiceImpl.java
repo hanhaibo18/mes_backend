@@ -230,7 +230,7 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
     }
 
     @Override
-    public Page receivePage(ReceiptDTO receiptDTO) {
+    public Page<BaseProductReceipt> receivePage(ReceiptDTO receiptDTO) {
         Page<BaseProductReceipt> page = new Page<>(receiptDTO.getPage(), receiptDTO.getLimit());
         LambdaQueryWrapper<BaseProductReceipt> baseProductReceiptLambdaQueryWrapper = new LambdaQueryWrapper<>();
         baseProductReceiptLambdaQueryWrapper.eq(BaseProductReceipt::getStatus, ReceiptStatusEnum.Y.getCode());
@@ -270,12 +270,28 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
 
     @Override
     public List<BaseProductReceiptDetail> receiveDetail(String workNo, String drawNo, String branchCode, String tenantId) {
-        LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
         //查询产品图号和工作号下的所有数据，按照物料图号进行分组合并；合并后再进行数量计算；
-        baseProductReceiptLambdaQueryWrapper.eq(BaseProductReceiptDetail::getWorkNo, workNo);
-        baseProductReceiptLambdaQueryWrapper.eq(BaseProductReceiptDetail::getDrawNo, drawNo);
-        baseProductReceiptLambdaQueryWrapper.groupBy(BaseProductReceiptDetail::getPartDrawingNo);
-        return null;
+        baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getWorkNo, workNo);
+        baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getDrawNo, drawNo);
+        baseProductReceiptDetailLambdaQueryWrapper.groupBy(BaseProductReceiptDetail::getPartDrawingNo);
+        List<BaseProductReceiptDetail> baseProductReceiptDetails = baseProductReceiptDetailMapper.selectList(baseProductReceiptDetailLambdaQueryWrapper);
+        for (BaseProductReceiptDetail baseProductReceiptDetail : baseProductReceiptDetails) {
+            //接收数量计算；
+            LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptDetailLambdaQueryWrapperSub = new LambdaQueryWrapper<>();
+            baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getWorkNo, workNo);
+            baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getDrawNo, drawNo);
+            baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getPartDrawingNo, baseProductReceiptDetail.getPartDrawingNo());
+            List<BaseProductReceiptDetail> baseProductReceiptDetails1 = baseProductReceiptDetailMapper.selectList(baseProductReceiptDetailLambdaQueryWrapper);
+            int sum = baseProductReceiptDetails1.stream().mapToInt(e -> e.getDeliverNumber()).sum();
+            baseProductReceiptDetail.setDeliverNumber(sum);
+            //需求数量计算；
+            int sumTotal = baseProductReceiptDetails1.stream().mapToInt(e -> e.getNumber() * e.getDemandNumber()).sum();
+            baseProductReceiptDetail.setDemandNumber(sumTotal);
+            //接收数量大于或等于需求数量，齐套
+            baseProductReceiptDetail.setIsKitting(sum >= sumTotal ? 1 : 2);
+        }
+        return baseProductReceiptDetails;
     }
 
     private void checkData(ReceiptDTO receiptDTO) {
