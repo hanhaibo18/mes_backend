@@ -3,6 +3,7 @@ package com.richfit.mes.produce.utils;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.base.Branch;
@@ -23,10 +24,14 @@ import com.richfit.mes.produce.service.TrackItemService;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
+/**
+ * @author zhiqiang.lu
+ */
 @Data
 public class WorkHoursUtil {
     public List<QualityInspectionRules> rulesList = new ArrayList<>();
@@ -35,14 +40,12 @@ public class WorkHoursUtil {
     public List<TrackHead> trackHeads = new ArrayList<>();
 
     public List<TrackItem> trackItems = new ArrayList<>();
+    public Map<String, Branch> branchMap = new HashMap<>();
     public final CountDownLatch cdl = new CountDownLatch(4);
 
     public void workHoursThread(SystemServiceClient systemServiceClient, TrackHeadService trackHeadService, TrackItemService trackItemService, List<TrackComplete> completes) throws InterruptedException {
         //1、通过报工的数据进行数据采集
         Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
-        ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
-        Set<String> trackIdList = completes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
-        Set<String> tiIdList = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
 
         //2、手动多线程方式查询数据
         new Thread(() -> {
@@ -52,16 +55,19 @@ public class WorkHoursUtil {
         }).start();
         new Thread(() -> {
             //2、人员信息
+            ArrayList<String> userIdList = new ArrayList<>(completesMap.keySet());
             stringTenantUserVoMap = systemServiceClient.queryByUserAccountListInner(userIdList, SecurityConstants.FROM_INNER);
             cdl.countDown();
         }).start();
         new Thread(() -> {
             //3、跟单信息
+            Set<String> trackIdList = completes.stream().map(TrackComplete::getTrackId).collect(Collectors.toSet());
             trackHeads = trackHeadService.listByIds(new ArrayList<>(trackIdList));
             cdl.countDown();
         }).start();
         new Thread(() -> {
             //4、跟单报工的工序信息
+            Set<String> tiIdList = completes.stream().map(TrackComplete::getTiId).collect(Collectors.toSet());
             trackItems = trackItemService.listByIds(new ArrayList<>(tiIdList));
             cdl.countDown();
         }).start();
@@ -76,8 +82,7 @@ public class WorkHoursUtil {
         Map<String, TrackHead> trackHeadMap = trackHeads.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
         //过滤跟单工序只计算最终完成工序
         Map<String, TrackItem> trackItemMap = trackItems.stream().filter(item -> item.getIsOperationComplete() == 1).collect(Collectors.toMap(TrackItem::getId, x -> x, (k, v) -> k));
-        //根据人员信息获取机构信息
-        Map<String, Branch> branchMap = getBranchInfoByUserInfo(baseServiceClient, stringTenantUserVoMap);
+
         List<TrackHead> trackHeadList = new ArrayList<>();
         List<TenantUserVo> tenantUserVoList = new ArrayList<>();
         trackHeadMap.forEach((key, value) -> trackHeadList.add(value));
@@ -92,19 +97,21 @@ public class WorkHoursUtil {
         //班组人员map
         Map<String, List<TenantUserVo>> belongOrgIdMap = tenantUserVoList.stream().filter(tenantUserVo -> StrUtil.isNotBlank(tenantUserVo.getBelongOrgId()))
                 .collect(Collectors.groupingBy(TenantUserVo::getBelongOrgId));
+
         //1、根据type做数据的整合返回可通用循环执行数据
-        List<String> idList = getKeyByType(completes, stringTenantUserVoMap, trackHeadMap, trackItemMap, branchMap, workNoMap, orderNoMap, belongOrgIdMap, type);
-        Map<String, List<TrackComplete>> completeMap = getCompleteMapByType(completes, stringTenantUserVoMap, trackHeadMap, trackItemMap, branchMap, workNoMap, orderNoMap, belongOrgIdMap, type);
-        //2.封装数据
-        Map<String, Object> resule = buildComplete(idList, completeMap, stringTenantUserVoMap, rulesMap, trackHeadMap, trackItemMap, branchMap, workNoMap, orderNoMap, belongOrgIdMap, type);
-        //3、返回封装后的数据
-        return resule;
+        List<String> idList = getKeyByType(baseServiceClient, completes, workNoMap, orderNoMap, type);
+        Map<String, List<TrackComplete>> completeMap = getCompleteMapByType(completes, workNoMap, orderNoMap, belongOrgIdMap, type);
+        if (CollectionUtils.isNotEmpty(idList)) {
+            //2、返回封装后的数据
+            return buildComplete(idList, completeMap, stringTenantUserVoMap, rulesMap, trackHeadMap, trackItemMap, type);
+        } else {
+            return null;
+        }
     }
 
     private Map<String, Object> buildComplete(List<String> idList, Map<String, List<TrackComplete>> completeMap, Map<String, TenantUserVo> stringTenantUserVoMap,
                                               Map<String, QualityInspectionRules> rulesMap, Map<String, TrackHead> trackHeadMap,
-                                              Map<String, TrackItem> trackItemMap, Map<String, Branch> branchMap, Map<String, List<TrackHead>> workNoMap,
-                                              Map<String, List<TrackHead>> orderNoMap, Map<String, List<TenantUserVo>> belongOrgIdMap, String type) {
+                                              Map<String, TrackItem> trackItemMap, String type) {
         List<TrackComplete> summary = new ArrayList<>();
         List<TrackComplete> details = new ArrayList<>();
         for (String id : idList) {
@@ -123,114 +130,116 @@ public class WorkHoursUtil {
             //实际额定工时累计值
             BigDecimal sumRealityReportHours = new BigDecimal(0);
             TrackComplete temp = new TrackComplete();
-            for (TrackComplete trackComplete : completeMap.get(id)) {
-                //获取当前用户信息
-                TenantUserVo tenantUserVo = stringTenantUserVoMap.get(trackComplete.getUserId());
-                trackComplete.setBranchName(branchMap.get(tenantUserVo.getBelongOrgId()).getBranchName());
-                //根据跟单工序id获取跟单工序
-                TrackItem trackItem = trackItemMap.get(trackComplete.getTiId());
-                if (null == trackItem) {
-                    continue;
-                }
-                //加入校验 需要质检未质检 不记录 需要调度审核 未审核 不计入
-                //需要质检,质检未完成 不计入审核
-                boolean quality = trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 0;
-                //需要调度审核,调度未完成不计入审核
-                boolean schedule = trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 0;
-                if (quality || schedule) {
-                    continue;
-                }
-                //查询产品编号
-                TrackHead trackHead = trackHeadMap.get(trackComplete.getTrackId());
-                trackComplete.setProdNo(trackHead == null ? "" : trackHead.getProductNo());
-                trackComplete.setProductName(trackHead == null ? "" : trackHead.getProductName());
-                trackComplete.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
-                trackComplete.setMaterialName(trackHead == null ? "" : trackHead.getMaterialName());
-                //空校验
-                if (trackItem.getPrepareEndHours() == null) {
-                    trackItem.setPrepareEndHours(0.00);
-                    trackComplete.setPrepareEndHours(0.00);
-                } else {
-                    trackComplete.setPrepareEndHours(trackItem.getPrepareEndHours());
-                }
-                if (trackComplete.getReportHours() == null) {
-                    trackComplete.setReportHours(0.00);
-                }
-                //额定工时
-                if (trackItem.getSinglePieceHours() == null) {
-                    trackComplete.setSinglePieceHours(0.00);
-                } else {
-                    trackComplete.setSinglePieceHours(trackItem.getSinglePieceHours());
-                }
-                if (trackComplete.getCompletedQty() == null) {
-                    trackComplete.setCompletedQty(0.00);
-                }
-                //数量
-                BigDecimal number = new BigDecimal(trackComplete.getCompletedQty());
-                //额定工时
-                BigDecimal reportHours = new BigDecimal(trackComplete.getReportHours());
-                //准结工时
-                BigDecimal prepareEndHours = new BigDecimal(trackComplete.getPrepareEndHours());
-                //实际额定工时
-                BigDecimal realityReportHours = new BigDecimal(trackComplete.getReportHours());
-                if (0 == trackComplete.getCompletePersonQty()) {
-                    trackComplete.setCompletePersonQty(1);
-                }
-                //实际准结工时
-                BigDecimal realityPrepareEndHours = new BigDecimal(trackComplete.getPrepareEndHours() / trackComplete.getCompletePersonQty());
+            if (completeMap.get(id) != null) {
+                for (TrackComplete trackComplete : completeMap.get(id)) {
+                    //获取当前用户信息
+                    TenantUserVo tenantUserVo = stringTenantUserVoMap.get(trackComplete.getUserId());
+                    if (CollectionUtils.isNotEmpty(branchMap)) {
+                        trackComplete.setBranchName(branchMap.get(tenantUserVo.getBelongOrgId()).getBranchName());
+                    }
+                    //根据跟单工序id获取跟单工序
+                    TrackItem trackItem = trackItemMap.get(trackComplete.getTiId());
+                    if (null == trackItem) {
+                        continue;
+                    }
+                    //加入校验 需要质检未质检 不记录 需要调度审核 未审核 不计入
+                    //需要质检,质检未完成 不计入审核
+                    boolean quality = trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 0;
+                    //需要调度审核,调度未完成不计入审核
+                    boolean schedule = trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 0;
+                    if (quality || schedule) {
+                        continue;
+                    }
+                    //查询产品编号
+                    TrackHead trackHead = trackHeadMap.get(trackComplete.getTrackId());
+                    trackComplete.setProdNo(trackHead == null ? "" : trackHead.getProductNo());
+                    trackComplete.setProductName(trackHead == null ? "" : trackHead.getProductName());
+                    trackComplete.setDrawingNo(trackHead == null ? "" : trackHead.getDrawingNo());
+                    trackComplete.setMaterialName(trackHead == null ? "" : trackHead.getMaterialName());
+                    //空校验
+                    if (trackItem.getPrepareEndHours() == null) {
+                        trackItem.setPrepareEndHours(0.00);
+                        trackComplete.setPrepareEndHours(0.00);
+                    } else {
+                        trackComplete.setPrepareEndHours(trackItem.getPrepareEndHours());
+                    }
+                    if (trackComplete.getReportHours() == null) {
+                        trackComplete.setReportHours(0.00);
+                    }
+                    //额定工时
+                    if (trackItem.getSinglePieceHours() == null) {
+                        trackComplete.setSinglePieceHours(0.00);
+                    } else {
+                        trackComplete.setSinglePieceHours(trackItem.getSinglePieceHours());
+                    }
+                    if (trackComplete.getCompletedQty() == null) {
+                        trackComplete.setCompletedQty(0.00);
+                    }
+                    //数量
+                    BigDecimal number = BigDecimal.valueOf(trackComplete.getCompletedQty());
+                    //额定工时
+                    BigDecimal reportHours = BigDecimal.valueOf(trackComplete.getReportHours());
+                    //准结工时
+                    BigDecimal prepareEndHours = BigDecimal.valueOf(trackComplete.getPrepareEndHours());
+                    //实际额定工时
+                    BigDecimal realityReportHours = BigDecimal.valueOf(trackComplete.getReportHours());
+                    if (0 == trackComplete.getCompletePersonQty()) {
+                        trackComplete.setCompletePersonQty(1);
+                    }
+                    //实际准结工时
+                    BigDecimal realityPrepareEndHours = BigDecimal.valueOf(trackComplete.getPrepareEndHours() / trackComplete.getCompletePersonQty());
 
-                sumNumber = sumNumber.add(number);
-                //累计准结工时
-                sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
-                //累计额定工时
-                sumReportHours = sumReportHours.add(reportHours);
-                //已质检 校验不合格是否给工时(单件工时/额定工时)
-                if (trackItem.getIsExistQualityCheck() == 1) {
-                    if (StrUtil.isNotBlank(trackItem.getRuleId())) {
-                        QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
-                        if (rules != null) {
-                            if (rules.getIsGiveTime() == 1) {
-                                //累计实际额定工时
-                                sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
+                    sumNumber = sumNumber.add(number);
+                    //累计准结工时
+                    sumPrepareEndHours = sumPrepareEndHours.add(prepareEndHours);
+                    //累计额定工时
+                    sumReportHours = sumReportHours.add(reportHours);
+                    //已质检 校验不合格是否给工时(单件工时/额定工时)
+                    if (trackItem.getIsExistQualityCheck() == 1) {
+                        if (StrUtil.isNotBlank(trackItem.getRuleId())) {
+                            QualityInspectionRules rules = rulesMap.get(trackItem.getRuleId());
+                            if (rules != null) {
+                                if (rules.getIsGiveTime() == 1) {
+                                    //累计实际额定工时
+                                    sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
+                                } else {
+                                    realityReportHours = new BigDecimal(0);
+                                }
+                                trackComplete.setQualityResult(rules.getStateName());
                             } else {
-                                realityReportHours = new BigDecimal(0);
-                            }
-                            trackComplete.setQualityResult(rules.getStateName());
-                        } else {
 //                                    realityReportHours = new BigDecimal(0);
+                                realityPrepareEndHours = new BigDecimal(0);
+                                sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
+                                trackComplete.setQualityResult("没有质检内容");
+                            }
+                        } else {
+//                                realityReportHours = new BigDecimal(0);
                             realityPrepareEndHours = new BigDecimal(0);
                             sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
                             trackComplete.setQualityResult("没有质检内容");
                         }
                     } else {
-//                                realityReportHours = new BigDecimal(0);
-                        realityPrepareEndHours = new BigDecimal(0);
+                        //不质检也计算工时
+                        //累计实际额定工时
                         sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
-                        trackComplete.setQualityResult("没有质检内容");
+                        trackComplete.setQualityResult("合格（非质检）");
                     }
-                } else {
-                    //不质检也计算工时
-                    //累计实际额定工时
-                    sumRealityReportHours = sumRealityReportHours.add(realityReportHours);
-                    trackComplete.setQualityResult("合格（非质检）");
+                    //没有调度审核或者 调度已审核并且给予准结工时进入
+                    if (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() != 1) {
+                        realityPrepareEndHours = new BigDecimal(0);
+                    }
+                    sumRealityPrepareEndHours = sumRealityPrepareEndHours.add(realityPrepareEndHours);
+                    //总工时
+                    BigDecimal totalHours = number.multiply(realityReportHours).add(realityPrepareEndHours);
+                    trackComplete.setTotalHours(totalHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
+                    sumTotalHours = sumTotalHours.add(totalHours);
+                    buildDetails(trackComplete, tenantUserVo, realityReportHours, realityPrepareEndHours, trackHeadMap, trackItem, id);
+                    details.add(trackComplete);
+                    temp = trackComplete;
                 }
-                //没有调度审核或者 调度已审核并且给予准结工时进入
-                if (trackItem.getIsScheduleComplete() == null || trackItem.getIsScheduleComplete() == 0 || (trackItem.getIsScheduleComplete() == 1 && trackItem.getIsPrepare() != null && trackItem.getIsPrepare() == 1)) {
-                    //累计实际准结工时
-                } else {
-                    realityPrepareEndHours = new BigDecimal(0);
-                }
-                sumRealityPrepareEndHours = sumRealityPrepareEndHours.add(realityPrepareEndHours);
-                //总工时
-                BigDecimal totalHours = number.multiply(realityReportHours).add(realityPrepareEndHours);
-                trackComplete.setTotalHours(totalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-                sumTotalHours = sumTotalHours.add(totalHours);
-                buildDetails(trackComplete, tenantUserVo, realityReportHours, realityPrepareEndHours, trackHeadMap, trackItem, id);
-                details.add(trackComplete);
-                temp = trackComplete;
+                TrackComplete track0 = new TrackComplete(completeMap, id, trackCompleteShowList, sumNumber, sumTotalHours, sumPrepareEndHours, sumReportHours, sumRealityPrepareEndHours, sumRealityReportHours, temp, type);
+                summary.add(track0);
             }
-            TrackComplete track0 = new TrackComplete(completeMap, id, trackCompleteShowList, sumNumber, sumTotalHours, sumPrepareEndHours, sumReportHours, sumRealityPrepareEndHours, sumRealityReportHours, temp, type);
-            summary.add(track0);
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>();
         Collections.sort(details);
@@ -242,8 +251,8 @@ public class WorkHoursUtil {
 
     private void buildDetails(TrackComplete trackComplete, TenantUserVo tenantUserVo, BigDecimal realityReportHours, BigDecimal realityPrepareEndHours, Map<String, TrackHead> trackHeadMap, TrackItem trackItem, String id) {
         trackComplete.setUserName(tenantUserVo.getEmplName());
-        trackComplete.setRealityReportHours(realityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
-        trackComplete.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        trackComplete.setRealityReportHours(realityReportHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
+        trackComplete.setRealityPrepareEndHours(realityPrepareEndHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
         trackComplete.setWorkNo(trackHeadMap.get(trackComplete.getTrackId()) == null ? "" : trackHeadMap.get(trackComplete.getTrackId()).getWorkNo());
         trackComplete.setTrackNo(trackHeadMap.get(trackComplete.getTrackId()) == null ? "" : trackHeadMap.get(trackComplete.getTrackId()).getTrackNo());
         trackComplete.setOptSequence(trackItem.getOptSequence());
@@ -255,10 +264,6 @@ public class WorkHoursUtil {
     }
 
     private Map<String, List<TrackComplete>> getCompleteMapByType(List<TrackComplete> completes,
-                                                                  Map<String, TenantUserVo> stringTenantUserVoMap,
-                                                                  Map<String, TrackHead> trackHeadMap,
-                                                                  Map<String, TrackItem> trackItemMap,
-                                                                  Map<String, Branch> branchMap,
                                                                   Map<String, List<TrackHead>> workNoMap,
                                                                   Map<String, List<TrackHead>> orderNoMap,
                                                                   Map<String, List<TenantUserVo>> belongOrgIdMap, String type) {
@@ -277,8 +282,9 @@ public class WorkHoursUtil {
                 Map<String, List<TrackComplete>> completeMapByBranch = new HashMap<>();
                 buildUserResultMap(completes, belongOrgIdMap, completeMapByBranch);
                 return completeMapByBranch;
+            default:
+                return null;
         }
-        return null;
     }
 
     private void buildTrackHeadResultMap(Map<String, List<TrackHead>> trackHeadMap, List<TrackComplete> completes, Map<String, List<TrackComplete>> trackCompleteMap) {
@@ -309,26 +315,27 @@ public class WorkHoursUtil {
         return baseServiceClient.getBranchInfoMapByBranchCodeList(new ArrayList<>(belongOrgIdMap.keySet()));
     }
 
-    private List<String> getKeyByType(List<TrackComplete> completes, Map<String, TenantUserVo> stringTenantUserVoMap,
-                                      Map<String, TrackHead> trackHeadMap, Map<String, TrackItem> trackItemMap,
-                                      Map<String, Branch> branchMap, Map<String, List<TrackHead>> workNoMap,
-                                      Map<String, List<TrackHead>> orderNoMap, Map<String, List<TenantUserVo>> belongOrgIdMap,
+    private List<String> getKeyByType(BaseServiceClient baseServiceClient, List<TrackComplete> completes, Map<String, List<TrackHead>> workNoMap,
+                                      Map<String, List<TrackHead>> orderNoMap,
                                       String type) {
         switch (type) {
             case "person":
-                return new ArrayList<>(completes.stream().map(TrackComplete::getUserId).collect(Collectors.toSet()));
+                return completes.stream().map(TrackComplete::getUserId).distinct().collect(Collectors.toList());
             case "workNo":
                 return new ArrayList<>(workNoMap.keySet());
             case "order":
                 return new ArrayList<>(orderNoMap.keySet());
             case "branch":
+                //根据人员信息获取机构信息
+                branchMap = getBranchInfoByUserInfo(baseServiceClient, stringTenantUserVoMap);
                 return new ArrayList<>(branchMap.keySet());
+            default:
+                return null;
         }
-        return null;
     }
 
     public List<TrackComplete> getCompleteByFilter(SystemServiceClient systemServiceClient, TrackCompleteMapper trackCompleteMapper, String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo) {
-        QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<TrackComplete>();
+        QueryWrapper<TrackComplete> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
             queryWrapper.apply("replace(replace(replace(track_no, char(13), ''), char(10), ''),' ', '') like '%" + trackNo + "%'");
@@ -348,8 +355,8 @@ public class WorkHoursUtil {
         }
         queryWrapper.eq("is_final_complete", "1");
         //获取当前登录用户角色列表
-        List<Role> roleList = systemServiceClient.queryRolesByUserId(SecurityUtils.getCurrentUser().getUserId());
-        List<String> roleCodeList = roleList.stream().map(x -> x.getRoleCode()).collect(Collectors.toList());
+        List<Role> roleList = systemServiceClient.queryRolesByUserId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getUserId());
+        List<String> roleCodeList = roleList.stream().map(Role::getRoleCode).collect(Collectors.toList());
         //查询权限控制
         if (roleCodeList.toString().contains("_LDGL") || roleCodeList.toString().contains("_TJ") || roleCodeList.contains("role_tenant_admin")) {
             if (!StringUtils.isNullOrEmpty(branchCode)) {
@@ -359,7 +366,6 @@ public class WorkHoursUtil {
         } else {
             queryWrapper.eq("user_id", SecurityUtils.getCurrentUser().getUsername());
         }
-        List<TrackComplete> completes = trackCompleteMapper.queryList(queryWrapper);
-        return completes;
+        return trackCompleteMapper.queryList(queryWrapper);
     }
 }
