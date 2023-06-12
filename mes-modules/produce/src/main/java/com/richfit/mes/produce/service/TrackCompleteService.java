@@ -129,5 +129,5 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @Date: 2023/2/10 15:17
      * @return: Map<String, Object>
      **/
-    Map<String, Object> queryWorkHours(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo, String type);
+    Map<String, Object> queryWorkHours(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo, String type) throws Exception;
 }
