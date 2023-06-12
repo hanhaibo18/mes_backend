@@ -314,6 +314,10 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                     assign.setBlankSpecifi(router.getBlankSpecifi());
                     //锻造下料重量
                     assign.setBlankWeight(router.getBlankWeight());
+                    //锻始温度
+                    assign.setForgTempStart(router.getForgTempStart());
+                    //锻终温度
+                    assign.setForgTempEnd(router.getForgTempEnd());
                 }
 
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
