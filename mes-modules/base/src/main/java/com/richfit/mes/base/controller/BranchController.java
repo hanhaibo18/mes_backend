@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author 王瑞
@@ -335,6 +337,17 @@ public class BranchController extends BaseController {
         return branchService.getOne(queryWrapper);
     }
 
+    @ApiOperation(value = "根据branchCode获取机构信息(其他服务调用)")
+    @PostMapping("/getBranchInfoMapByBranchCodeList")
+    public Map<String, Branch> getBranchInfoMapByBranchCodeList(@RequestBody List<String> branchCodeList) {
+        TenantUserDetails currentUser = SecurityUtils.getCurrentUser();
+        QueryWrapper<Branch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("branch_code", branchCodeList);
+        queryWrapper.eq("tenant_id", currentUser.getTenantId());
+        List<Branch> branchList = branchService.list(queryWrapper);
+        return branchList.stream().collect(Collectors.toMap(x -> x.getBranchCode(), x -> x));
+    }
+
     @ApiOperation(value = "获取所有车间", response = List.class)
     @GetMapping("/query_all_branch")
     public List<Branch> queryAllBranch() {
@@ -359,7 +372,7 @@ public class BranchController extends BaseController {
         queryWrapper.isNull("main_branch_code");
         queryWrapper.orderByAsc("order_no");
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-            queryWrapper.eq("tenant_id",tenantId);
+            queryWrapper.eq("tenant_id", tenantId);
         }
         List<Branch> result = branchService.list(queryWrapper);
         return CommonResult.success(result, BRANCH_SUCCESS_MESSAGE);
@@ -367,7 +380,7 @@ public class BranchController extends BaseController {
 
     @ApiOperation(value = "查询分公司车间inner", notes = "查询分公司车间inner")
     @GetMapping("/select_branches_inner")
-    public CommonResult<List<Branch>> selectBranchesInner( String branchCode,  String branchName,String tenantId) {
+    public CommonResult<List<Branch>> selectBranchesInner(String branchCode, String branchName, String tenantId) {
         QueryWrapper<Branch> queryWrapper = new QueryWrapper<Branch>();
         if (!StringUtils.isNullOrEmpty(branchName)) {
             queryWrapper.like("branch_name", branchName);
@@ -376,7 +389,7 @@ public class BranchController extends BaseController {
             queryWrapper.eq("main_branch_code", branchCode);
         }
         if (!StringUtils.isNullOrEmpty(tenantId)) {
-            queryWrapper.eq("tenant_id",tenantId);
+            queryWrapper.eq("tenant_id", tenantId);
         }
         queryWrapper.isNotNull("main_branch_code");
         queryWrapper.orderByAsc("order_no");

@@ -827,7 +827,7 @@ public class SequenceController extends BaseController {
                 userName.append(assignPerson.getUserName());
             }
             assign.setUserId(String.valueOf(userId));
-            assign.setSiteName(String.valueOf(userName));
+            assign.setUserName(String.valueOf(userName));
         }
         assign.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         return CommonResult.success(operationAssignService.save(assign), "操作成功！");
@@ -852,7 +852,7 @@ public class SequenceController extends BaseController {
                 userName.append(assignPerson.getUserName());
             }
             assign.setUserId(String.valueOf(userId));
-            assign.setSiteName(String.valueOf(userName));
+            assign.setUserName(String.valueOf(userName));
         }
         return CommonResult.success(operationAssignService.updateById(assign), "操作成功！");
     }

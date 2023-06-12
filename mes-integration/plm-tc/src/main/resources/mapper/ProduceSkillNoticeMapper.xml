@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.mes.plm.mapper.ProduceSkillNoticeMapper">
+
+    <resultMap id="BaseResultMap" type="com.tc.mes.plm.entity.domain.ProduceSkillNotice">
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="notificationState" column="notification_state" jdbcType="VARCHAR"/>
+            <result property="dispatchState" column="dispatch_state" jdbcType="VARCHAR"/>
+            <result property="acceptingState" column="accepting_state" jdbcType="VARCHAR"/>
+            <result property="skillNoticeNumber" column="skill_notice_number" jdbcType="VARCHAR"/>
+            <result property="skillNoticeName" column="skill_notice_name" jdbcType="VARCHAR"/>
+            <result property="dispatchNoticeNumber" column="dispatch_notice_number" jdbcType="VARCHAR"/>
+            <result property="workNo" column="work_no" jdbcType="VARCHAR"/>
+            <result property="drawingNo" column="drawing_no" jdbcType="VARCHAR"/>
+            <result property="issuingUnit" column="issuing_unit" jdbcType="VARCHAR"/>
+            <result property="drillingRigName" column="drilling_rig_name" jdbcType="VARCHAR"/>
+            <result property="partsName" column="parts_name" jdbcType="VARCHAR"/>
+            <result property="tenantId" column="tenant_id" jdbcType="VARCHAR"/>
+            <result property="branchCode" column="branch_code" jdbcType="VARCHAR"/>
+            <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="modifyBy" column="modify_by" jdbcType="VARCHAR"/>
+            <result property="modifyTime" column="modify_time" jdbcType="TIMESTAMP"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
+            <result property="skillNoticeRevId" column="skill_notice_rev_id" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,notification_state,dispatch_state,
+        accepting_state,skill_notice_number,skill_notice_name,
+        dispatch_notice_number,work_no,drawing_no,
+        issuing_unit,drilling_rig_name,parts_name,
+        tenant_id,branch_code,create_by,
+        create_time,modify_by,modify_time,
+        remark,skill_notice_rev_id
+    </sql>
+</mapper>

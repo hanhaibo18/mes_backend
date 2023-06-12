@@ -64,7 +64,7 @@ public class ReceiptExtendDTO {
      * 本次送货数量
      */
     @ApiModelProperty(value = "本次送货数量")
-    private Integer number;
+    private Integer deliverNumber;
 
     /**
      * 本次送货数量
@@ -89,6 +89,9 @@ public class ReceiptExtendDTO {
      **/
     @ApiModelProperty(value = "来源:1:BOM；2:新增")
     private String source;
+
+    @ApiModelProperty(value = "是否选中:1:选中；2：未选中")
+    private Integer isCheck;
 
     /**
      * 备注

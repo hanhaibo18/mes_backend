@@ -70,6 +70,66 @@ public class TemplatePrintController extends BaseController {
     @Autowired
     private CertificateService certificateService;
 
+    @ApiOperation(value = "根据跟单id批量生成跟单模板EXCEL", notes = "根据跟单id批量生成跟单模板EXCEL")
+    @PostMapping("/excel")
+    public void excel(@ApiParam(value = "跟单ids", required = true) @RequestBody List<String> ids,
+                      @ApiIgnore HttpServletResponse rsp) {
+        try {
+            int i = 1;
+            File file = FilesUtil.createRandomTempDirectory();
+            for (String id : ids) {
+                // 获取跟单
+                TrackHead trackHead = trackHeadService.getById(id);
+                QueryWrapper<ProduceTrackHeadTemplate> queryWrapper = new QueryWrapper<ProduceTrackHeadTemplate>();
+                queryWrapper.eq("template_code", trackHead.getTemplateCode());
+                //获取跟单模板配置信息
+                List<ProduceTrackHeadTemplate> trackHeadTemplates = produceTrackHeadTemplateService.list(queryWrapper);
+                ProduceTrackHeadTemplate p = trackHeadTemplates.get(0);
+
+                List<List<Map<String, Object>>> sheets = new ArrayList();
+
+                CommonResult<Map<String, String>> resultUsersAccount = systemServiceClient.usersAccount();
+                Map<String, String> usersAccount = resultUsersAccount.getData();
+                // 根据配置SQL，获取SHEET1、2、3表数据
+                sheets.add(TemplateUtil.getDataList(id, p.getSheet1(), jdbcTemplate, usersAccount));
+                sheets.add(TemplateUtil.getDataList(id, p.getSheet2(), jdbcTemplate, usersAccount));
+                sheets.add(TemplateUtil.getDataList(id, p.getSheet3(), jdbcTemplate, usersAccount));
+                // 生成EXCEL文件，并输出文件流
+                try {
+                    // byte[] bytes = fastDfsService.downloadFile(attach.getGroupName(), attach.getFastFileId());
+                    //InputStream  inputStream = new java.io.ByteArrayInputStream(bytes);
+                    String templateFileId = p.getFileId();
+                    CommonResult<byte[]> result = systemServiceClient.getAttachmentInputStream(templateFileId);
+                    if (result.getData() == null) {
+                        throw new GlobalException("没有在文件服务器再到模板文件，清重新上传！", ResultCode.FAILED);
+                    }
+                    InputStream inputStream = new java.io.ByteArrayInputStream(result.getData());
+//                    ExcelUtils.exportExcelOnSheetsData("跟单", inputStream, sheets, rsp);
+                    ExcelUtils.exportExcelToFile(file.getAbsolutePath() + "/" + trackHead.getTrackNo(), inputStream, sheets);
+                    i++;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    log.error(e.getMessage());
+                    throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+                }
+            }
+
+            //打包压缩包，下载输出
+            try {
+                FilesUtil.zip(file.getAbsolutePath());
+                FilesUtil.downloads(rsp, file.getAbsolutePath() + ".zip");
+            } catch (Exception e) {
+                throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+            } finally {
+                file.delete();
+                new File(file.getAbsolutePath() + ".zip").delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
+
     /**
      * 功能描述: 按跟单模板编码生成跟单模板EXCEL
      *

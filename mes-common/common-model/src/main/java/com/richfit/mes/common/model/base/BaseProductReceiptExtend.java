@@ -83,7 +83,7 @@ public class BaseProductReceiptExtend implements Serializable {
      * 本次送货数量
      */
     @ApiModelProperty(value = "本次送货数量")
-    private Integer number;
+    private Integer deliverNumber;
 
     /**
      * 已发数量
@@ -108,6 +108,12 @@ public class BaseProductReceiptExtend implements Serializable {
      **/
     @ApiModelProperty(value = "来源")
     private String source;
+
+    /**
+     * 是否选中：1：选中；2：未选中
+     **/
+    @ApiModelProperty(value = "是否选中：1：选中；2：未选中")
+    private Integer isCheck;
 
     /**
      * 备注

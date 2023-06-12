@@ -92,7 +92,7 @@ public class BaseProductReceipt implements Serializable {
      * 校验日期
      */
     @ApiModelProperty(value = "校验日期")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     private Date checkDate;
 
     /**
@@ -144,6 +144,12 @@ public class BaseProductReceipt implements Serializable {
      */
     @ApiModelProperty(value = "交接状态：0：待接受；1：已接受；2：已拒收")
     private String status;
+
+    /**
+     * 租户id
+     */
+    @ApiModelProperty(value = "租户id")
+    private String tenantId;
 
 
     @TableField(exist = false)

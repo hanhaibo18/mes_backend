@@ -25,12 +25,17 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
     Page queryReceiptInfo(ReceiptDTO receiptDTO);
 
     /**
-     * 交接单据详情列表
+     * 交接单据详情
      *
      * @param connectId
+     * @param number
+     * @param workNo
+     * @param drawNo
+     * @param branchCode
+     * @param tenantId
      * @return
      */
-    List<BaseProductReceiptExtend> queryReceiptDetailInfo(String connectId, Integer number);
+    List<BaseProductReceiptExtend> queryReceiptDetailInfo(String connectId, Integer number, String workNo, String drawNo, String branchCode, String tenantId);
 
     /**
      * 新增交接单据
@@ -47,4 +52,20 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
      * @return
      */
     CommonResult editReceipt(ReceiptDTO receiptDTO);
+
+    /**
+     * 接收单据
+     *
+     * @param connectNo
+     * @return
+     */
+    CommonResult receive(String connectNo);
+
+    /**
+     * 拒收单据
+     *
+     * @param connectNo
+     * @return
+     */
+    CommonResult rejection(String connectNo);
 }
