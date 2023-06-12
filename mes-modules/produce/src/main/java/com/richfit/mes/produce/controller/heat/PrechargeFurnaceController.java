@@ -170,18 +170,6 @@ public class PrechargeFurnaceController extends BaseController {
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         Page<PrechargeFurnace> page = prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
-        //根据材质和锭型进行分组
-        Map<String, Map<String, List<PrechargeFurnace>>> collect = page.getRecords().stream().collect(
-                Collectors.groupingBy(e -> Optional.ofNullable(e.getTexture()).orElse("null"),
-                        Collectors.groupingBy(e -> Optional.ofNullable(e.getIngotCase()).orElse("null"))));
-        for (PrechargeFurnace record : page.getRecords()) {
-            //根据材质和锭型获取数量
-            if (!StringUtils.isNullOrEmpty(record.getTexture()) && !StringUtils.isNullOrEmpty(record.getIngotCase())) {
-                record.setNumByTexture(collect.get(record.getTexture()).get(record.getIngotCase()).size());
-            } else {
-                record.setNumByTexture(0);
-            }
-        }
         return CommonResult.success(page);
     }
 
@@ -236,18 +224,6 @@ public class PrechargeFurnaceController extends BaseController {
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         Page<PrechargeFurnace> page = prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
-        //根据材质和锭型进行分组
-        Map<String, Map<String, List<PrechargeFurnace>>> collect = page.getRecords().stream().collect(
-                Collectors.groupingBy(e -> Optional.ofNullable(e.getTexture()).orElse("null"),
-                        Collectors.groupingBy(e -> Optional.ofNullable(e.getIngotCase()).orElse("null"))));
-        for (PrechargeFurnace record : page.getRecords()) {
-            //根据材质和锭型获取数量
-            if (!StringUtils.isNullOrEmpty(record.getTexture()) && !StringUtils.isNullOrEmpty(record.getIngotCase())) {
-                record.setNumByTexture(collect.get(record.getTexture()).get(record.getIngotCase()).size());
-            } else {
-                record.setNumByTexture(0);
-            }
-        }
         return CommonResult.success(page);
     }
 

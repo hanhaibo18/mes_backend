@@ -62,7 +62,7 @@ public class PrechargeFurnaceAssignController extends ApiController {
     public CommonResult<Page> assignedFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType){
         QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceQueryWrapper.eq("branch_code",branchCode)
-                .eq(!ObjectUtil.isEmpty(id),"id",id)
+                .eq(!ObjectUtil.isEmpty(id),"furnace_id",id)
                 .eq(!StringUtils.isNullOrEmpty(texture),"texture",texture)
                 .ge(!StringUtils.isNullOrEmpty(startTime),"date_format(assign_time, '%Y-%m-%d')", startTime)
                 .le(!StringUtils.isNullOrEmpty(endTime),"date_format(assign_time, '%Y-%m-%d')", endTime)
