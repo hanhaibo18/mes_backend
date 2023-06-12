@@ -2475,7 +2475,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private void buildTrackHeadResultMap(Map<String, List<TrackHead>> trackHeadMap, List<TrackComplete> completes, Map<String, List<TrackComplete>> trackCompleteMap) {
         Set<String> keySet = trackHeadMap.keySet();
         for (String key : keySet) {
-            //先根据订单号找工作号有哪些跟单
+            //先找有哪些跟单
             Set<String> trackHeadIds = trackHeadMap.get(key).stream().map(TrackHead::getId).collect(Collectors.toSet());
             List<TrackComplete> completeList = completes.stream().filter(x -> trackHeadIds.contains(x.getTrackId())).collect(Collectors.toList());
             trackCompleteMap.put(key, completeList);
