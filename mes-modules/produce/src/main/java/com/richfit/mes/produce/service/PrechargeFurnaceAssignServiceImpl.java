@@ -182,6 +182,8 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
 
             //设备code添加
             Device device = baseServiceClient.getDeviceById(assign.getDeviceId()).getData();
+            //根据前端传的assignPersons 构造userId和emplName
+            dealUserIdAndEmplNameByAssignPersons(assign);
             for (Assign oldAssign: assigns) {
                 TrackItem trackItem = trackItemService.getById(oldAssign.getTiId());
                 if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
@@ -197,14 +199,16 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                 }
                 // 设置派工时间，人员，工序可派工数
                 if (null != SecurityUtils.getCurrentUser()) {
-                    assign.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
-                    assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                    oldAssign.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    oldAssign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
                 }
                 oldAssign.setAssignTime(new Date());
                 oldAssign.setAvailQty(assign.getQty());
                 oldAssign.setUserId(assign.getUserId());
                 oldAssign.setDeviceName(assign.getDeviceName());
                 oldAssign.setDeviceId(assign.getDeviceId());
+                oldAssign.setUserId(assign.getUserId());
+                oldAssign.setEmplName(assign.getEmplName());
                 if(!ObjectUtil.isEmpty(device)){
                     oldAssign.setDeviceCode(device.getCode());
                 }
@@ -231,6 +235,30 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
     }
+
+    private void dealUserIdAndEmplNameByAssignPersons(Assign assign) {
+        //处理派工人员信息  (前端没有处理userId 和userName  assignPerson为派工人列表)
+        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !CollectionUtil.isEmpty(assign.getAssignPersons())) {
+            StringBuilder userId = new StringBuilder();
+            StringBuilder userName = new StringBuilder();
+            for (AssignPerson assignPerson : assign.getAssignPersons()) {
+                if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
+                    userId.append(",");
+                    userName.append(",");
+                }
+                userId.append(assignPerson.getUserId());
+                userName.append(assignPerson.getUserName());
+            }
+            assign.setUserId(String.valueOf(userId));
+            assign.setEmplName(String.valueOf(userName));
+        }
+        boolean isAllUser = assign.getUserId().contains("/") ? true : false;
+        if (isAllUser) {
+            assign.setUserId("/");
+            assign.setEmplName("/");
+        }
+    }
+
     @Override
     public List assignedFurnaceItemList(String id) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
@@ -276,6 +304,9 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         prechargeFurnaceAssign.setAssignUserName(assign.getEmplName());
         prechargeFurnaceAssign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
         prechargeFurnaceAssign.setAssignTime(new Date());
+        prechargeFurnaceAssign.setQty(assign.getQty());
+        prechargeFurnaceAssign.setPriority(assign.getPriority());
+        prechargeFurnaceAssign.setRemark(assign.getRemark());
         prechargeFurnaceAssignService.saveOrUpdate(prechargeFurnaceAssign);
         //预装炉派工id
         if(!ObjectUtil.isEmpty(trackItem)){
@@ -329,25 +360,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
             assign.setTenantId(trackHead.getTenantId());
         }
         //处理派工人员信息  (前端没有处理userId 和userName  assignPerson为派工人列表)
-        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !CollectionUtil.isEmpty(assign.getAssignPersons())) {
-            StringBuilder userId = new StringBuilder();
-            StringBuilder userName = new StringBuilder();
-            for (AssignPerson assignPerson : assign.getAssignPersons()) {
-                if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
-                    userId.append(",");
-                    userName.append(",");
-                }
-                userId.append(assignPerson.getUserId());
-                userName.append(assignPerson.getUserName());
-            }
-            assign.setUserId(String.valueOf(userId));
-            assign.setEmplName(String.valueOf(userName));
-        }
-        boolean isAllUser = assign.getUserId().contains("/") ? true : false;
-        if (isAllUser) {
-            assign.setUserId("/");
-            assign.setEmplName("/");
-        }
+        dealUserIdAndEmplNameByAssignPersons(assign);
     }
 }
 

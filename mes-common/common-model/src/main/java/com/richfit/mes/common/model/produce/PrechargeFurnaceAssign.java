@@ -65,8 +65,10 @@ public class PrechargeFurnaceAssign extends BaseEntity<PrechargeFurnaceAssign> {
     private Date finishTime;
     private String branchCode;
     private String tenantId;
+    @ApiModelProperty(value = "派工优先级  3=High、2=Medium、1=Normal、0=Low", dataType = "int")
+    private int priority;
     @ApiModelProperty(value = "数量", dataType = "Integer")
-    private Integer num;
+    private Integer qty;
     @ApiModelProperty(value = "记录审核状态", dataType = "Integer")
     private Integer recordStatus;
 
