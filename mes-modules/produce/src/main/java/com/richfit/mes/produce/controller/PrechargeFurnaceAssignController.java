@@ -10,15 +10,15 @@ import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.PrechargeFurnaceAssign;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.CompleteDto;
+import com.richfit.mes.produce.service.PrechargeFurnaceAssignPersonService;
 import com.richfit.mes.produce.service.PrechargeFurnaceAssignService;
 import com.richfit.mes.produce.service.TrackCompleteService;
 import com.richfit.mes.produce.service.TrackItemService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
  * @since 2023-05-19 10:36:13
  */
 @RestController
+@Api(value = "配炉派工", tags = {"配炉派工"})
 @RequestMapping("/api/produce/prechargeFurnaceAssign")
 public class PrechargeFurnaceAssignController extends ApiController {
     /**
@@ -47,6 +48,8 @@ public class PrechargeFurnaceAssignController extends ApiController {
     private TrackItemService trackItemService;
     @Autowired
     private TrackCompleteService trackCompleteService;
+    @Autowired
+    private PrechargeFurnaceAssignPersonService prechargeFurnaceAssignPersonService;
 
     @ApiOperation(value = "批量新增预装炉派工", notes = "批量新增预装炉派工")
     @PostMapping("/furnaceAssign")
@@ -57,6 +60,18 @@ public class PrechargeFurnaceAssignController extends ApiController {
         //派工信息
         Assign assign = JSONObject.toJavaObject(JSONObject.parseObject(JSONObject.toJSONString(jsonObject.get("assign"))),Assign.class);
         return CommonResult.success(prechargeFurnaceAssignService.furnaceAssign(assign,furnaceIds));
+    }
+
+    @ApiOperation(value = "编辑装炉派工", notes = "编辑装炉派工")
+    @PostMapping("/update_furnace_assign")
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> updateFurnaceAssign(@RequestBody JSONObject jsonObject) {
+        //派工信息
+        Assign assign = JSONObject.toJavaObject(JSONObject.parseObject(JSONObject.toJSONString(jsonObject.get("assign"))),Assign.class);
+        //预装炉派工id
+        String furnaceAssignId = jsonObject.getString("id");
+
+        return CommonResult.success(prechargeFurnaceAssignService.updateFurnaceAssign(assign,furnaceAssignId));
     }
 
     @ApiOperation(value = "配炉已派工列表查询")
@@ -70,7 +85,16 @@ public class PrechargeFurnaceAssignController extends ApiController {
                 .le(!StringUtils.isNullOrEmpty(endTime),"date_format(assign_time, '%Y-%m-%d')", endTime)
                 .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType)
                 .eq("assign_by", SecurityUtils.getCurrentUser().getUsername());
-        return CommonResult.success(prechargeFurnaceAssignService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper));
+        Page<PrechargeFurnaceAssign> prechargeFurnaceAssigns = prechargeFurnaceAssignService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper);
+        if (null != prechargeFurnaceAssigns.getRecords()) {
+            for (PrechargeFurnaceAssign prechargeFurnaceAssign : prechargeFurnaceAssigns.getRecords()) {
+                //添加 派工人员返回
+                QueryWrapper<PrechargeFurnaceAssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
+                assignPersonQueryWrapper.eq("precharge_furnace_assign_id", prechargeFurnaceAssign.getId());
+                prechargeFurnaceAssign.setAssignPersons(prechargeFurnaceAssignPersonService.list(assignPersonQueryWrapper));
+            }
+        }
+        return CommonResult.success(prechargeFurnaceAssigns);
     }
 
     @ApiOperation(value = "根据预装炉派工id查询工序列表查询")
