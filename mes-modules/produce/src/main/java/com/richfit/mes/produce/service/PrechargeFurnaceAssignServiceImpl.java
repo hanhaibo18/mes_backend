@@ -285,7 +285,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(furnaceId);
         //预装炉派工表
         //为空表示新增
-        if(ObjectUtil.isEmpty(prechargeFurnaceAssign)){
+        if(StringUtils.isNullOrEmpty(prechargeFurnaceAssign.getId())){
             prechargeFurnaceAssign.setFurnaceId(furnaceId);
             prechargeFurnaceAssign.setOptType(trackItem.getOptType());
             prechargeFurnaceAssign.setTexture(trackHead.getTexture());
