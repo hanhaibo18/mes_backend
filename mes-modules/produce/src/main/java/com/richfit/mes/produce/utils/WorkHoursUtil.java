@@ -2,7 +2,6 @@ package com.richfit.mes.produce.utils;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
@@ -196,7 +195,7 @@ public class WorkHoursUtil {
             TrackComplete track0 = new TrackComplete(completeMap, id, trackCompleteShowList, sumNumber, sumTotalHours, sumPrepareEndHours, sumReportHours, sumRealityPrepareEndHours, sumRealityReportHours, temp, type);
             summary.add(track0);
         }
-        Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Map<String, Object> stringObjectHashMap = new HashMap<>(2);
         Collections.sort(details);
         stringObjectHashMap.put("details", details);
         stringObjectHashMap.put("summary", summary);
@@ -212,25 +211,8 @@ public class WorkHoursUtil {
         trackComplete.setCompleteTimeStr(DateUtil.format(trackComplete.getCompleteTime(), "yyyy-MM-dd HH:mm:ss"));
     }
 
-    private Map<String, List<TrackComplete>> getCompleteMapByType(List<TrackComplete> completes,
-                                                                  Map<String, List<TenantUserVo>> belongOrgIdMap, String type) {
-        switch (type) {
-            case "person":
-                return completes.stream().collect(Collectors.groupingBy(trackComplete -> StrUtil.isEmpty(trackComplete.getUserId()) ? "无" : trackComplete.getCompleteBy()));
-            case "workNo":
-                return completes.stream().collect(Collectors.groupingBy(trackComplete -> StrUtil.isEmpty(trackComplete.getWorkNo()) ? "无" : trackComplete.getWorkNo()));
-            case "order":
-                return completes.stream().collect(Collectors.groupingBy(trackComplete -> StrUtil.isEmpty(trackComplete.getProductionOrder()) ? "无" : trackComplete.getProductionOrder()));
-            case "branch":
-                Map<String, List<TrackComplete>> completeMapByBranch = new HashMap<>();
-                buildUserResultMap(completes, belongOrgIdMap, completeMapByBranch);
-                return completeMapByBranch;
-            default:
-                return null;
-        }
-    }
-
-    private void buildUserResultMap(List<TrackComplete> completes, Map<String, List<TenantUserVo>> belongOrgIdMap, Map<String, List<TrackComplete>> completeMapByBranch) {
+    private Map<String, List<TrackComplete>> buildUserResultMap(List<TrackComplete> completes, Map<String, List<TenantUserVo>> belongOrgIdMap) {
+        Map<String, List<TrackComplete>> completeMapByBranch = new HashMap<>();
         Set<String> branchCodeSet = belongOrgIdMap.keySet();
         for (String branchCode : branchCodeSet) {
             //先找到该班组下的人员
@@ -238,29 +220,45 @@ public class WorkHoursUtil {
             List<TrackComplete> completeList = completes.stream().filter(x -> userIdSet.contains(x.getCompleteBy())).collect(Collectors.toList());
             completeMapByBranch.put(branchCode, completeList);
         }
+        return completeMapByBranch;
     }
 
-    private Map<String, Branch> getBranchInfoByUserInfo(BaseServiceClient baseServiceClient, Map<String, TenantUserVo> stringTenantUserVoMap) {
+    private List<String> getBranchInfoByUserInfo(BaseServiceClient baseServiceClient, Map<String, TenantUserVo> stringTenantUserVoMap) {
         List<TenantUserVo> tenantUserVoList = new ArrayList<>();
         stringTenantUserVoMap.forEach((key, value) -> tenantUserVoList.add(value));
         Map<String, List<TenantUserVo>> belongOrgIdMap = tenantUserVoList.stream().filter(tenantUserVo -> StrUtil.isNotBlank(tenantUserVo.getBelongOrgId()))
                 .collect(Collectors.groupingBy(TenantUserVo::getBelongOrgId));
-        return baseServiceClient.getBranchInfoMapByBranchCodeList(new ArrayList<>(belongOrgIdMap.keySet()));
+        branchMap = baseServiceClient.getBranchInfoMapByBranchCodeList(new ArrayList<>(belongOrgIdMap.keySet()));
+        return new ArrayList<>(branchMap.keySet());
     }
 
     private List<String> getKeyByType(BaseServiceClient baseServiceClient, List<TrackComplete> completes,
                                       String type) {
         switch (type) {
             case "person":
-                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getUserId()) ? "无" : trackComplete.getCompleteBy()).distinct().collect(Collectors.toList());
+                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getUserId()) ? "/" : trackComplete.getCompleteBy()).distinct().collect(Collectors.toList());
             case "workNo":
-                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getWorkNo()) ? "无" : trackComplete.getWorkNo()).distinct().collect(Collectors.toList());
+                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getWorkNo()) ? "/" : trackComplete.getWorkNo()).distinct().collect(Collectors.toList());
             case "order":
-                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getProductionOrder()) ? "无" : trackComplete.getProductionOrder()).distinct().collect(Collectors.toList());
+                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getProductionOrder()) ? "/" : trackComplete.getProductionOrder()).distinct().collect(Collectors.toList());
             case "branch":
-                //根据人员信息获取机构信息
-                branchMap = getBranchInfoByUserInfo(baseServiceClient, stringTenantUserVoMap);
-                return new ArrayList<>(branchMap.keySet());
+                return getBranchInfoByUserInfo(baseServiceClient, stringTenantUserVoMap);
+            default:
+                return null;
+        }
+    }
+
+    private Map<String, List<TrackComplete>> getCompleteMapByType(List<TrackComplete> completes,
+                                                                  Map<String, List<TenantUserVo>> belongOrgIdMap, String type) {
+        switch (type) {
+            case "person":
+                return completes.stream().collect(Collectors.groupingBy(trackComplete -> StrUtil.isEmpty(trackComplete.getUserId()) ? "/" : trackComplete.getCompleteBy()));
+            case "workNo":
+                return completes.stream().collect(Collectors.groupingBy(trackComplete -> StrUtil.isEmpty(trackComplete.getWorkNo()) ? "/" : trackComplete.getWorkNo()));
+            case "order":
+                return completes.stream().collect(Collectors.groupingBy(trackComplete -> StrUtil.isEmpty(trackComplete.getProductionOrder()) ? "/" : trackComplete.getProductionOrder()));
+            case "branch":
+                return buildUserResultMap(completes, belongOrgIdMap);
             default:
                 return null;
         }
