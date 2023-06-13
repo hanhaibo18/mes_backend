@@ -73,6 +73,8 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductReceiptLambdaQueryWrapper.le(StringUtils.isNotEmpty(receiptDTO.getEndTime()), BaseProductReceipt::getCreateDate, receiptDTO.getEndTime());
         //产品名称查询
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getProdDesc()), BaseProductReceipt::getProdDesc, receiptDTO.getProdDesc());
+        //状态
+        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getStatus()), BaseProductReceipt::getStatus, receiptDTO.getStatus());
         //todo  目前是根据分公司来查询，代码先注释，前端字段调整后放开；
         //baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, SecurityUtils.getCurrentUser().getTenantId());
         return baseProductReceiptMapper.selectPage(page, baseProductReceiptLambdaQueryWrapper);
@@ -208,6 +210,8 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
             BeanUtils.copyBeanProp(baseProductReceiptDetail, receiptDTO);
             BeanUtils.copyBeanProp(baseProductReceiptDetail, receiptExtendDTO);
             baseProductReceiptDetail.setReceiveDate(new Date());
+            baseProductReceiptDetail.setId(UUID.randomUUID().toString().replace("-", ""));
+            baseProductReceiptDetails.add(baseProductReceiptDetail);
         }
         baseProductReceiptDetailService.saveBatch(baseProductReceiptDetails);
         return CommonResult.success(true);
@@ -234,42 +238,27 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
     @Override
     public IPage<BaseProductReceipt> receivePage(ReceiptDTO receiptDTO) {
         Page<BaseProductReceipt> page = new Page<>(receiptDTO.getPage(), receiptDTO.getLimit());
-        QueryWrapper<BaseProductReceipt> baseProductReceiptLambdaQueryWrapper = new QueryWrapper<>();
-        baseProductReceiptLambdaQueryWrapper.eq("status", ReceiptStatusEnum.Y.getCode());
-        //图号和工作号进行分组
-        baseProductReceiptLambdaQueryWrapper.groupBy("workNo", "drawNo");
+        LambdaQueryWrapper<BaseProductReceipt> baseProductReceiptLambdaQueryWrapper = new LambdaQueryWrapper<>();
         //时间降序
-//        baseProductReceiptLambdaQueryWrapper.orderByDesc(BaseProductReceipt::getCheckDate);
+        baseProductReceiptLambdaQueryWrapper.orderByDesc(BaseProductReceipt::getCheckDate);
+        //过滤出接受的
+        baseProductReceiptLambdaQueryWrapper.having("status", ReceiptStatusEnum.Y.getCode());
         //查询条件;
-//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getConnectNo()), BaseProductReceipt::getConnectNo, receiptDTO.getConnectNo());
-//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getDrawNo()), BaseProductReceipt::getDrawNo, receiptDTO.getDrawNo());
-//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getWorkNo()), BaseProductReceipt::getWorkNo, receiptDTO.getWorkNo());
+        baseProductReceiptLambdaQueryWrapper.having(StringUtils.isNotEmpty(receiptDTO.getConnectNo()), "connect_no", receiptDTO.getDrawNo());
+        baseProductReceiptLambdaQueryWrapper.having(StringUtils.isNotEmpty(receiptDTO.getDrawNo()), "draw_no", receiptDTO.getDrawNo());
+        baseProductReceiptLambdaQueryWrapper.having(StringUtils.isNotEmpty(receiptDTO.getWorkNo()), "work_no", receiptDTO.getWorkNo());
+        baseProductReceiptLambdaQueryWrapper.having(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), "receive_unit", receiptDTO.getReceiveUnit());
         //车间查询
-//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
+        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
         //  分公司查询
-//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
+        //  baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
         IPage<BaseProductReceipt> baseProductReceiptIPage = baseProductReceiptMapper.queryPage(new Page<>(receiptDTO.getPage(), receiptDTO.getLimit()), baseProductReceiptLambdaQueryWrapper);
         for (BaseProductReceipt record : baseProductReceiptIPage.getRecords()) {
-            LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getWorkNo, record.getWorkNo());
-            baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getDrawNo, record.getDrawNo());
-            baseProductReceiptDetailLambdaQueryWrapper.groupBy(BaseProductReceiptDetail::getConnectId);
-            //数量
-            List<BaseProductReceiptDetail> baseProductReceiptDetailsForNum = baseProductReceiptDetailMapper.selectList(baseProductReceiptDetailLambdaQueryWrapper);
-            int sum = baseProductReceiptDetailsForNum.stream().mapToInt(e -> e.getNumber()).sum();
-            record.setNumber(sum);
-            //配送时间取最近的；
-            LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptDetailLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
-            baseProductReceiptDetailLambdaQueryWrapper2.eq(BaseProductReceiptDetail::getWorkNo, record.getWorkNo());
-            baseProductReceiptDetailLambdaQueryWrapper2.eq(BaseProductReceiptDetail::getDrawNo, record.getDrawNo());
-            baseProductReceiptDetailLambdaQueryWrapper2.orderByDesc(BaseProductReceiptDetail::getReceiveDate);
-            List<BaseProductReceiptDetail> baseProductReceiptDetails = baseProductReceiptDetailMapper.selectList(baseProductReceiptDetailLambdaQueryWrapper2);
-            record.setCheckDate(baseProductReceiptDetails.get(0).getReceiveDate());
-            //是否齐套检验；
-            List<BaseProductReceiptDetail> baseProductReceiptDetails1 = this.receiveDetail(receiptDTO.getWorkNo(), receiptDTO.getDrawNo(), receiptDTO.getBranchCode(), receiptDTO.getTenantId());
-            //过滤出未齐套的数据
-            List<BaseProductReceiptDetail> collect = baseProductReceiptDetails1.stream().filter(e -> e.getIsKitting() == 2).collect(Collectors.toList());
-            record.setIsKitting(CollectionUtils.isEmpty(collect) ? 1 : 2);
+            List<BaseProductReceiptDetail> baseProductReceiptDetails = this.receiveDetail(record.getWorkNo(), record.getDrawNo(), record.getBranchCode(), record.getTenantId());
+            List<BaseProductReceiptDetail> collect = baseProductReceiptDetails.stream().filter(e -> e.getIsKitting() == 2).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(collect)) {
+                record.setIsKitting(1);
+            }
         }
         return baseProductReceiptIPage;
     }
@@ -278,24 +267,16 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
     public List<BaseProductReceiptDetail> receiveDetail(String workNo, String drawNo, String branchCode, String tenantId) {
         LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
         //查询产品图号和工作号下的所有数据，按照物料图号进行分组合并；合并后再进行数量计算；
-        baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getWorkNo, workNo);
-        baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getDrawNo, drawNo);
-        baseProductReceiptDetailLambdaQueryWrapper.groupBy(BaseProductReceiptDetail::getPartDrawingNo);
-        List<BaseProductReceiptDetail> baseProductReceiptDetails = baseProductReceiptDetailMapper.selectList(baseProductReceiptDetailLambdaQueryWrapper);
+        baseProductReceiptDetailLambdaQueryWrapper.having("work_no", workNo);
+        baseProductReceiptDetailLambdaQueryWrapper.having("draw_no", drawNo);
+        List<BaseProductReceiptDetail> baseProductReceiptDetails = baseProductReceiptDetailMapper.queryDetailInfo(baseProductReceiptDetailLambdaQueryWrapper);
         for (BaseProductReceiptDetail baseProductReceiptDetail : baseProductReceiptDetails) {
-            //接收数量计算；
-            LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptDetailLambdaQueryWrapperSub = new LambdaQueryWrapper<>();
-            baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getWorkNo, workNo);
-            baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getDrawNo, drawNo);
-            baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getPartDrawingNo, baseProductReceiptDetail.getPartDrawingNo());
-            List<BaseProductReceiptDetail> baseProductReceiptDetails1 = baseProductReceiptDetailMapper.selectList(baseProductReceiptDetailLambdaQueryWrapper);
-            int sum = baseProductReceiptDetails1.stream().mapToInt(e -> e.getDeliverNumber()).sum();
-            baseProductReceiptDetail.setDeliverNumber(sum);
-            //需求数量计算；
-            int sumTotal = baseProductReceiptDetails1.stream().mapToInt(e -> e.getNumber() * e.getDemandNumber()).sum();
-            baseProductReceiptDetail.setDemandNumber(sumTotal);
-            //接收数量大于或等于需求数量，齐套
-            baseProductReceiptDetail.setIsKitting(sum >= sumTotal ? 1 : 2);
+            //齐套检查
+            if (baseProductReceiptDetail.getDeliverNumber() >= baseProductReceiptDetail.getDemandNumber()) {
+                baseProductReceiptDetail.setIsKitting(1);
+            } else {
+                baseProductReceiptDetail.setIsKitting(2);
+            }
         }
         return baseProductReceiptDetails;
     }
