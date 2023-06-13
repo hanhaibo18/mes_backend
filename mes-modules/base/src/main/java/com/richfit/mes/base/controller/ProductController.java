@@ -97,6 +97,8 @@ public class ProductController extends BaseController {
             } else {
                 product.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 product.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                //导入同步状态为初始值
+                product.setSynchronousRegime(0);
                 boolean bool = productService.save(product);
                 if (bool) {
                     return CommonResult.success(product, PRODUCT_SUCCESS_MESSAGE);
@@ -159,6 +161,8 @@ public class ProductController extends BaseController {
 
             product.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             product.setModifyTime(new Date());
+            //导入同步状态为初始值
+            product.setSynchronousRegime(0);
             boolean bool = productService.updateById(product);
             if (bool) {
                 return CommonResult.success(product, PRODUCT_SUCCESS_MESSAGE);
@@ -483,6 +487,8 @@ public class ProductController extends BaseController {
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());
+                //导入同步状态为初始值
+                item.setSynchronousRegime(0);
             });
 
             boolean bool = productService.saveBatch(list);
