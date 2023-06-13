@@ -27,7 +27,7 @@ public interface WmsServiceClient {
      * @return
      */
     @PostMapping("/api/integration/wms/three/material_basis")
-    public CommonResult<ApplicationResult> materialBasis(@RequestBody List<MaterialBasis> materialBasisList);
+    public CommonResult materialBasis(@RequestBody List<MaterialBasis> materialBasisList);
 
     /**
      * MES实时查询WMS库存
