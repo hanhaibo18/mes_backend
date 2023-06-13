@@ -160,18 +160,14 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("precharge_furnace_assign_id",id);
         List<TrackItem> trackItems = trackItemService.list(queryWrapper);
-        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackItems.stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
-        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
-        Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
         for (TrackItem trackItem : trackItems) {
-            if(!CollectionUtil.isEmpty(getRouter)){
-                Router router = routerMap.get(trackItem.getRouterId()+"_"+trackItem.getBranchCode());
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+            Router router = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
+            if(!Objects.isNull(router)){
                 trackItem.setPieceWeight(router.getPieceWeight());
                 trackItem.setWeightMolten(router.getWeightMolten());
                 trackItem.setTexture(router.getTexture());
             }
-
-            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             trackItem.setTrackNo(trackHead.getTrackNo());
             trackItem.setWorkNo(trackHead.getWorkNo());
             trackItem.setProductName(trackHead.getProductName());
