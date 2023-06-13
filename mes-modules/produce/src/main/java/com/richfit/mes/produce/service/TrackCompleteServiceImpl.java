@@ -1428,8 +1428,11 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         WorkHoursUtil workHoursUtil = new WorkHoursUtil();
         //1、根据条件查询报工信息
         List<TrackComplete> completes = workHoursUtil.getCompleteByFilter(systemServiceClient, trackCompleteMapper, trackNo, startTime, endTime, branchCode, workNo, userId, orderNo);
+        if (CollectionUtils.isEmpty(completes)) {
+            return null;
+        }
         //2、基本数据获取
-        workHoursUtil.workHoursThread(systemServiceClient, trackHeadService, trackItemService, completes);
+        workHoursUtil.workHoursThread(systemServiceClient, completes);
         //3、根据类型组装数据type（工厂、方法或者map数组），返回执行的数组（计算、数据封装）
         return workHoursUtil.workHoursCompletes(baseServiceClient, completes, type);
     }
