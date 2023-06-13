@@ -276,7 +276,6 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @TableField(exist = false)
     private String optId;
 
-
     /**
      * 工时查询总工时
      */
@@ -371,4 +370,24 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @TableField(exist = false)
     @ApiModelProperty(value = "班组名称", dataType = "String")
     private String branchName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否质检确认", dataType = "Integer")
+    private Integer isExistQualityCheck;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否质检完成", dataType = "Integer")
+    private Integer isQualityComplete;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否调度确认", dataType = "Integer")
+    private Integer isExistScheduleCheck;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否调度完成", dataType = "Integer")
+    private Integer isScheduleComplete;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "规则Id", dataType = "String")
+    private String ruleId;
 }
