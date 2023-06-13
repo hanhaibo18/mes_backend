@@ -7,26 +7,26 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 技术通知单与附件关系表
- * @TableName produce_skill_notice_attachment
+ * PDM附件
+ * @TableName produce_mes_pdm_attachment
  */
-@TableName(value ="produce_skill_notice_attachment")
+@TableName(value ="produce_mes_pdm_attachment")
 @Data
-public class ProduceSkillNoticeAttachment implements Serializable {
+public class ProduceMesPdmAttachment implements Serializable {
     /**
      * id
      */
     private String id;
 
     /**
-     * 技术通知单id
+     * 表名id
      */
-    private String skillNoticeId;
+    private String tableId;
 
     /**
-     * 附件url
+     * 文件地址
      */
-    private String url;
+    private String fileUrl;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

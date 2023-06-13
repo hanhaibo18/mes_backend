@@ -80,9 +80,9 @@ public class BaseProductReceiptExtend implements Serializable {
     private Integer receiveNumber;
 
     /**
-     * 本次送货数量
+     * 本次送货数量,对应物料接收单配送数量
      */
-    @ApiModelProperty(value = "本次送货数量")
+    @ApiModelProperty(value = "本次送货数量,对应物料接收单配送数量")
     private Integer deliverNumber;
 
     /**

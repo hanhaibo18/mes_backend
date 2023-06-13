@@ -25,7 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * (PrechargeFurnaceAssign)表控制层
@@ -62,7 +64,7 @@ public class PrechargeFurnaceAssignController extends ApiController {
     public CommonResult<Page> assignedFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType){
         QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceQueryWrapper.eq("branch_code",branchCode)
-                .eq(!ObjectUtil.isEmpty(id),"id",id)
+                .eq(!ObjectUtil.isEmpty(id),"furnace_id",id)
                 .eq(!StringUtils.isNullOrEmpty(texture),"texture",texture)
                 .ge(!StringUtils.isNullOrEmpty(startTime),"date_format(assign_time, '%Y-%m-%d')", startTime)
                 .le(!StringUtils.isNullOrEmpty(endTime),"date_format(assign_time, '%Y-%m-%d')", endTime)
@@ -74,9 +76,7 @@ public class PrechargeFurnaceAssignController extends ApiController {
     @ApiOperation(value = "根据预装炉派工id查询工序列表查询")
     @GetMapping("/assigned_furnace_item_list")
     public CommonResult<List> assignedFurnaceItemList(String id){
-        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("precharge_furnace_assign_id",id);
-        return CommonResult.success(trackItemService.list(queryWrapper));
+        return CommonResult.success(prechargeFurnaceAssignService.assignedFurnaceItemList(id));
     }
 
     @ApiOperation(value = "修改报工(锻造)")

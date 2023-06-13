@@ -111,8 +111,4 @@ public class PrechargeFurnace {
     @ApiModelProperty(value = "工序类型", dataType = "String")
     private String optType;
 
-    @ApiModelProperty(value = "根据材质和锭型统计后的数量", dataType = "Integer")
-    @TableField(exist = false)
-    private Integer numByTexture;
-
 }

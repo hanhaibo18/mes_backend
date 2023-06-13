@@ -20,13 +20,12 @@ import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.service.TrackCompleteService;
 import com.richfit.mes.produce.service.TrackItemService;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -107,7 +106,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     public List<TrackItem> queryAssignByTexture(String texture,String branchCode){
         QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
         trackItemQueryWrapper.eq("texture",texture);
-        trackItemQueryWrapper.eq("branch_code",branchCode);
+        trackItemQueryWrapper.eq(!StringUtils.isNotEmpty(branchCode),"branch_code",branchCode);
         trackItemQueryWrapper.eq("tenant_id",SecurityUtils.getCurrentUser().getTenantId());
         return trackAssignMapper.getPageAssignsHot(trackItemQueryWrapper);
     }
@@ -157,6 +156,17 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         prechargeFurnace.setBranchCode(Optional.ofNullable(branchCode).orElse(""));
         prechargeFurnace.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
         prechargeFurnace.setWorkblankType(Optional.ofNullable(workblankType).orElse(""));
+        //数量赋值
+        int num = 0;
+        double weightMolten = 0;
+        for (Assign assign : assignList) {
+            num += ObjectUtil.isAllEmpty(assign.getNumber())?0:assign.getNumber();
+            weightMolten+= ObjectUtil.isAllEmpty(assign.getWeightMolten())?0:Double.parseDouble(assign.getWeightMolten());
+        }
+        prechargeFurnace.setNum(num);
+        //钢水总计
+        prechargeFurnace.setTotalMoltenSteel(weightMolten);
+
         this.save(prechargeFurnace);
         for (Assign assign : assignList) {
             //跟单工序添加装炉id
@@ -293,7 +303,19 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             trackItemService.update(updateWrapper);
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
-
+        //数量和钢水重量赋值
+        int num = 0;
+        double totalMoltenSteel = 0.0;
+        for (Assign assign : assignList) {
+            num+=ObjectUtil.isEmpty(assign.getNumber())?0:assign.getNumber();
+            totalMoltenSteel+=StringUtils.isEmpty(assign.getWeightMolten())?0.0:Double.parseDouble(assign.getWeightMolten());
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getNum()) && num>0){
+            prechargeFurnace.setNum(prechargeFurnace.getNum()+num);
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getTotalMoltenSteel()) && totalMoltenSteel>0){
+            prechargeFurnace.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel()+totalMoltenSteel);
+        }
         this.updateById(prechargeFurnace);
         return prechargeFurnace;
     }
@@ -316,6 +338,19 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
         //设备类型赋值
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
+        //数量和钢水重量赋值
+        int num = 0;
+        double totalMoltenSteel = 0.0;
+        for (Assign assign : assignList) {
+            num+=ObjectUtil.isEmpty(assign.getNumber())?0:assign.getNumber();
+            totalMoltenSteel+=StringUtils.isEmpty(assign.getWeightMolten())?0.0:Double.parseDouble(assign.getWeightMolten());
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getNum()) && num>0){
+            prechargeFurnace.setNum(prechargeFurnace.getNum()-num);
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getTotalMoltenSteel()) && totalMoltenSteel>0){
+            prechargeFurnace.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel()-totalMoltenSteel);
+        }
         this.updateById(prechargeFurnace);
         return prechargeFurnace;
     }

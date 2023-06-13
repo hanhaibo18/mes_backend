@@ -231,7 +231,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
 
     @Override
-    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol, String holdStatus) throws ParseException {
+    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol, String holdStatus, String drawingNo) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
@@ -273,6 +273,9 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if ("2".equals(state)) {
             queryWrapper.in("u.state", 2);
         }
+        if (StrUtil.isNotBlank(drawingNo)) {
+            DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
+        }
         //增加工序过滤（新要求，屏蔽）
 //        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
 //        queryWrapper.eq("u.classes", classes);
@@ -286,6 +289,9 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                     .ne("opt_type", "13");
         }
         if (!StringUtils.isNullOrEmpty(orderCol)) {
+            if (StrUtil.toUnderlineCase(orderCol).equals("parts_name")) {
+                orderCol = "material_name";
+            }
             if (!StringUtils.isNullOrEmpty(order)) {
                 if ("desc".equals(order)) {
                     queryWrapper.orderByDesc("u." + StrUtil.toUnderlineCase(orderCol));
@@ -301,19 +307,23 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         IPage<Assign> queryPage = trackAssignMapper.queryPageNew(page, queryWrapper);
         //锻造、铸钢、冶炼 补充工艺信息
         List<Router> getRouter = null;
-        if("4".equals(classes) || "6".equals(classes) || "7".equals(classes)){
-            List<String> routerIdAndBranchCodeList = new ArrayList<>(queryPage.getRecords().stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        if ("4".equals(classes) || "6".equals(classes) || "7".equals(classes)) {
+            List<String> routerIdAndBranchCodeList = new ArrayList<>(queryPage.getRecords().stream().map(item -> item.getRouterId() + "_" + item.getBranchCode()).collect(Collectors.toSet()));
             getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
         }
         if (null != queryPage.getRecords()) {
             for (Assign assign : queryPage.getRecords()) {
-                if(!CollectionUtil.isEmpty(getRouter)){
-                    Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
-                    Router router = routerMap.get(assign.getRouterId()+"_"+assign.getBranchCode());
+                if (!CollectionUtil.isEmpty(getRouter)) {
+                    Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId() + "_" + item.getBranchCode(), Function.identity()));
+                    Router router = routerMap.get(assign.getRouterId() + "_" + assign.getBranchCode());
                     //下料规格
                     assign.setBlankSpecifi(router.getBlankSpecifi());
                     //锻造下料重量
                     assign.setBlankWeight(router.getBlankWeight());
+                    //锻始温度
+                    assign.setForgTempStart(router.getForgTempStart());
+                    //锻终温度
+                    assign.setForgTempEnd(router.getForgTempEnd());
                 }
 
                 TrackHead trackHead = trackHeadService.getById(assign.getTrackId());
@@ -884,11 +894,11 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
                 List<TrackItem> list = trackItemService.list(wrapper);
                 if (list.size() == 1) {
                     //预装炉只有当前派工工序  提示不可移除
-                    throw new GlobalException("不能移除预装炉中所有工序！",ResultCode.FAILED);
+                    throw new GlobalException("不能移除预装炉中所有工序！", ResultCode.FAILED);
                 }
                 UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
                 trackItemUpdateWrapper.eq("id", trackItem.getId())
-                        .set("precharge_furnace_id", null).set("precharge_furnace_assign_id",null);
+                        .set("precharge_furnace_id", null).set("precharge_furnace_assign_id", null);
                 trackItemService.update(trackItemUpdateWrapper);
             }
         }

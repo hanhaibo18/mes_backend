@@ -16,6 +16,7 @@ import com.richfit.mes.common.model.base.SequenceSite;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.QualityInspectionRules;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
@@ -862,12 +863,29 @@ public class TrackCheckController extends BaseController {
         NextProcess process = new NextProcess();
         process.setCurrentProcessId(tiId);
         nextProcessList.add(process);
+        //查询所有报工数据
+        List<String> list = nextProcessList.stream().map(NextProcess::getCurrentProcessId).collect(Collectors.toList());
+        QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
+        completeQueryWrapper.in("ti_id", list);
+        List<TrackComplete> completeList = trackCompleteService.list(completeQueryWrapper);
+        //获取所有人员信息
+        List<String> collect = completeList.stream().map(TrackComplete::getCompleteBy).collect(Collectors.toList());
+        Map<String, TenantUserVo> userAccountList = systemServiceClient.queryByUserAccountList(collect);
+        completeList.forEach(complete -> {
+            if (userAccountList.get(complete.getUserId()) != null) {
+                complete.setUserId(userAccountList.get(complete.getUserId()).getEmplName());
+            }
+        });
+        //根据工序ID分组报工信息
+        Map<String, List<TrackComplete>> completeUserList = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
         for (NextProcess nextProcess : nextProcessList) {
             TrackItem trackItem = trackItemService.getById(nextProcess.getCurrentProcessId());
             nextProcess.setProcessName(trackItem.getOptName());
             nextProcess.setOptSequence(trackItem.getSequenceOrderBy().toString());
             nextProcess.setOptId(trackItem.getOptId());
             nextProcess.setOptType(trackItem.getOptType());
+            String userName = completeUserList.get(nextProcess.getCurrentProcessId()).stream().map(TrackComplete::getUserId).collect(Collectors.joining(","));
+            nextProcess.setUserName(userName);
         }
         return CommonResult.success(nextProcessList);
     }

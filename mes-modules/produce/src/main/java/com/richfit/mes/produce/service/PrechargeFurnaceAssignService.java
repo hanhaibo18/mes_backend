@@ -18,5 +18,6 @@ public interface PrechargeFurnaceAssignService extends IService<PrechargeFurnace
 
     boolean furnaceAssign(Assign assign, List<Long> furnaceIds);
 
+    List assignedFurnaceItemList(String id);
 }
 

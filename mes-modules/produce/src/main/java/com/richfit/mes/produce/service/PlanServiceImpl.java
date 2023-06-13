@@ -557,7 +557,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, Plan> implements Pl
             planExtendMapper.insert(newplanExtend);
         } else {
             //修改扩信息
-            BeanUtils.copyProperties(plan, planExtend);
+            BeanUtils.copyProperties(plan, planExtend,new String[]{"id"});
             planExtend.setPlanId(plan.getId());
             planExtendMapper.updateById(planExtend);
         }
