@@ -168,6 +168,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                 trackItem.setWeightMolten(router.getWeightMolten());
                 trackItem.setTexture(router.getTexture());
             }
+            trackItem.setRouterId(trackHead.getRouterId());
             trackItem.setTrackNo(trackHead.getTrackNo());
             trackItem.setWorkNo(trackHead.getWorkNo());
             trackItem.setProductName(trackHead.getProductName());
