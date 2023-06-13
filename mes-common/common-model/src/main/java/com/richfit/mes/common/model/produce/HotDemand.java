@@ -241,7 +241,7 @@ public class HotDemand extends BaseEntity<HotDemand> implements Serializable {
     /**
      * 优先级
      */
-    @ApiModelProperty(value = "优先级: 高 ,中, 低", dataType = "String")
+    @ApiModelProperty(value = " 优先级 高3  中3  低0  一般1", dataType = "String")
     private String priority;
 
     @ApiModelProperty(value = "单重KG")

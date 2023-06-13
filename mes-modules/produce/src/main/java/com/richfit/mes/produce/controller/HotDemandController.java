@@ -586,7 +586,7 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "设置优先级", notes = "设置优先级")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "IdList", required = true, paramType = "query"),
-            @ApiImplicitParam(name = "priority", value = "优先级 :高 ,中, 低", required = true, dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "priority", value = "优先级 高3  中3  低0  一般1", required = true, dataType = "String", paramType = "query")
     })
     @PostMapping("/set_priority")
     public CommonResult setPriority(@RequestBody List<String> idList, String priority) {
