@@ -43,9 +43,6 @@ public class WorkHoursUtil {
 
     public Map<String, TenantUserVo> stringTenantUserVoMap = new HashMap<>();
 
-    public Map<String, Branch> branchMap = new HashMap<>();
-
-
     public void workHoursThread(SystemServiceClient systemServiceClient, List<TrackComplete> completes) throws InterruptedException {
         //1、通过报工的数据进行数据采集
         Map<String, List<TrackComplete>> completesMap = completes.stream().filter(complete -> StrUtil.isNotBlank(complete.getUserId())).collect(Collectors.groupingBy(TrackComplete::getUserId));
@@ -74,20 +71,12 @@ public class WorkHoursUtil {
         List<TenantUserVo> tenantUserVoList = new ArrayList<>();
         stringTenantUserVoMap.forEach((key, value) -> tenantUserVoList.add(value));
 
-        //班组人员map
-        Map<String, List<TenantUserVo>> belongOrgIdMap = tenantUserVoList.stream().filter(tenantUserVo -> StrUtil.isNotBlank(tenantUserVo.getBelongOrgId()))
-                .collect(Collectors.groupingBy(TenantUserVo::getBelongOrgId));
-
         //1、根据type做数据的整合返回可通用循环执行数据
         List<String> idList = getKeyByType(baseServiceClient, completes, type);
         Map<String, List<TrackComplete>> completeMap = getCompleteMapByType(completes, type);
 
-        if (CollectionUtils.isNotEmpty(idList)) {
-            //2、返回封装后的数据
-            return buildComplete(idList, completeMap, stringTenantUserVoMap, rulesMap, type);
-        } else {
-            return null;
-        }
+        //2、返回封装后的数据
+        return buildComplete(idList, completeMap, stringTenantUserVoMap, rulesMap, type);
     }
 
     private Map<String, Object> buildComplete(List<String> idList, Map<String, List<TrackComplete>> completeMap, Map<String, TenantUserVo> stringTenantUserVoMap,
@@ -225,7 +214,7 @@ public class WorkHoursUtil {
         stringTenantUserVoMap.forEach((key, value) -> tenantUserVoList.add(value));
         Map<String, List<TenantUserVo>> belongOrgIdMap = tenantUserVoList.stream().filter(tenantUserVo -> StrUtil.isNotBlank(tenantUserVo.getBelongOrgId()))
                 .collect(Collectors.groupingBy(TenantUserVo::getBelongOrgId));
-        branchMap = baseServiceClient.getBranchInfoMapByBranchCodeList(new ArrayList<>(belongOrgIdMap.keySet()));
+        Map<String, Branch> branchMap = baseServiceClient.getBranchInfoMapByBranchCodeList(new ArrayList<>(belongOrgIdMap.keySet()));
         for (TrackComplete complete : completes) {
             complete.setBranchName(branchMap.get(complete.getBelongOrgId()).getBranchName());
         }
