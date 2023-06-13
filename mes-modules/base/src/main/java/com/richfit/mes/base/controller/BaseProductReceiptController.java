@@ -1,5 +1,6 @@
 package com.richfit.mes.base.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.base.entity.ReceiptDTO;
 import com.richfit.mes.base.service.BaseProductReceiptService;
@@ -87,7 +88,7 @@ public class BaseProductReceiptController extends BaseController {
 
     @ApiOperation(value = "物料接收列表")
     @PostMapping("/receive/page")
-    public CommonResult<Page<BaseProductReceipt>> receivePage(@ApiParam(value = "查询条件") @RequestBody ReceiptDTO receiptDTO) {
+    public CommonResult<IPage<BaseProductReceipt>> receivePage(@ApiParam(value = "查询条件") @RequestBody ReceiptDTO receiptDTO) {
         return CommonResult.success(baseProductReceiptService.receivePage(receiptDTO));
     }
 

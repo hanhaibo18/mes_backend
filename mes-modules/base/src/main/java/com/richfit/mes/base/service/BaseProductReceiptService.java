@@ -1,5 +1,6 @@
 package com.richfit.mes.base.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.base.entity.ReceiptDTO;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -85,7 +86,7 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
      * @param receiptDTO
      * @return
      */
-    Page<BaseProductReceipt> receivePage(ReceiptDTO receiptDTO);
+    IPage<BaseProductReceipt> receivePage(ReceiptDTO receiptDTO);
 
     /**
      * 物料接收明细列表

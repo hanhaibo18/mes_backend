@@ -1,7 +1,9 @@
 package com.richfit.mes.base.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -230,24 +232,24 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
     }
 
     @Override
-    public Page<BaseProductReceipt> receivePage(ReceiptDTO receiptDTO) {
+    public IPage<BaseProductReceipt> receivePage(ReceiptDTO receiptDTO) {
         Page<BaseProductReceipt> page = new Page<>(receiptDTO.getPage(), receiptDTO.getLimit());
-        LambdaQueryWrapper<BaseProductReceipt> baseProductReceiptLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        baseProductReceiptLambdaQueryWrapper.eq(BaseProductReceipt::getStatus, ReceiptStatusEnum.Y.getCode());
+        QueryWrapper<BaseProductReceipt> baseProductReceiptLambdaQueryWrapper = new QueryWrapper<>();
+        baseProductReceiptLambdaQueryWrapper.eq("status", ReceiptStatusEnum.Y.getCode());
         //图号和工作号进行分组
-        baseProductReceiptLambdaQueryWrapper.groupBy(BaseProductReceipt::getWorkNo, BaseProductReceipt::getDrawNo);
+        baseProductReceiptLambdaQueryWrapper.groupBy("workNo", "drawNo");
         //时间降序
-        baseProductReceiptLambdaQueryWrapper.orderByDesc(BaseProductReceipt::getCheckDate);
+//        baseProductReceiptLambdaQueryWrapper.orderByDesc(BaseProductReceipt::getCheckDate);
         //查询条件;
-        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getConnectNo()), BaseProductReceipt::getConnectNo, receiptDTO.getConnectNo());
-        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getDrawNo()), BaseProductReceipt::getDrawNo, receiptDTO.getDrawNo());
-        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getWorkNo()), BaseProductReceipt::getWorkNo, receiptDTO.getWorkNo());
+//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getConnectNo()), BaseProductReceipt::getConnectNo, receiptDTO.getConnectNo());
+//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getDrawNo()), BaseProductReceipt::getDrawNo, receiptDTO.getDrawNo());
+//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getWorkNo()), BaseProductReceipt::getWorkNo, receiptDTO.getWorkNo());
         //车间查询
 //        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
         //  分公司查询
-        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
-        Page<BaseProductReceipt> baseProductReceiptPage = baseProductReceiptMapper.selectPage(page, baseProductReceiptLambdaQueryWrapper);
-        for (BaseProductReceipt record : baseProductReceiptPage.getRecords()) {
+//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
+        IPage<BaseProductReceipt> baseProductReceiptIPage = baseProductReceiptMapper.queryPage(new Page<>(receiptDTO.getPage(), receiptDTO.getLimit()), baseProductReceiptLambdaQueryWrapper);
+        for (BaseProductReceipt record : baseProductReceiptIPage.getRecords()) {
             LambdaQueryWrapper<BaseProductReceiptDetail> baseProductReceiptDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
             baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getWorkNo, record.getWorkNo());
             baseProductReceiptDetailLambdaQueryWrapper.eq(BaseProductReceiptDetail::getDrawNo, record.getDrawNo());
@@ -269,7 +271,7 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
             List<BaseProductReceiptDetail> collect = baseProductReceiptDetails1.stream().filter(e -> e.getIsKitting() == 2).collect(Collectors.toList());
             record.setIsKitting(CollectionUtils.isEmpty(collect) ? 1 : 2);
         }
-        return baseProductReceiptPage;
+        return baseProductReceiptIPage;
     }
 
     @Override
