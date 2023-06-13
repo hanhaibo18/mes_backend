@@ -324,6 +324,39 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @ApiModelProperty(value = "浇注温度", dataType = "String")
     private String pourTemperature;
 
+    @Override
+    public int compareTo(TrackComplete o) {
+        return o.getFinalCompleteTime().compareTo(this.getFinalCompleteTime());
+    }
+
+    @ApiModelProperty(value = "表示是否删除 1 = 保留, 2 = 删除, 3=人工判断(这次派工的报工记录没有符合的记录,人工介入)")
+    private int isRetain;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "班组名称", dataType = "String")
+    private String branchName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否质检确认", dataType = "Integer")
+    private Integer isExistQualityCheck;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否质检完成", dataType = "Integer")
+    private Integer isQualityComplete;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否调度确认", dataType = "Integer")
+    private Integer isExistScheduleCheck;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否调度完成", dataType = "Integer")
+    private Integer isScheduleComplete;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "规则Id", dataType = "String")
+    private String ruleId;
+
+
     public TrackComplete(Map<String, List<TrackComplete>> completeMap, String id, List<TrackComplete> trackCompleteShowList, BigDecimal sumNumber, BigDecimal sumTotalHours, BigDecimal sumPrepareEndHours, BigDecimal sumReportHours, BigDecimal sumRealityPrepareEndHours, BigDecimal sumRealityReportHours, TrackComplete temp, String type) {
         buildSummaryColum(temp, type);
         this.setId(id);
@@ -359,35 +392,4 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
         }
     }
 
-    @Override
-    public int compareTo(TrackComplete o) {
-        return o.getFinalCompleteTime().compareTo(this.getFinalCompleteTime());
-    }
-
-    @ApiModelProperty(value = "表示是否删除 1 = 保留, 2 = 删除, 3=人工判断(这次派工的报工记录没有符合的记录,人工介入)")
-    private int isRetain;
-
-    @TableField(exist = false)
-    @ApiModelProperty(value = "班组名称", dataType = "String")
-    private String branchName;
-
-    @TableField(exist = false)
-    @ApiModelProperty(value = "是否质检确认", dataType = "Integer")
-    private Integer isExistQualityCheck;
-
-    @TableField(exist = false)
-    @ApiModelProperty(value = "是否质检完成", dataType = "Integer")
-    private Integer isQualityComplete;
-
-    @TableField(exist = false)
-    @ApiModelProperty(value = "是否调度确认", dataType = "Integer")
-    private Integer isExistScheduleCheck;
-
-    @TableField(exist = false)
-    @ApiModelProperty(value = "是否调度完成", dataType = "Integer")
-    private Integer isScheduleComplete;
-
-    @TableField(exist = false)
-    @ApiModelProperty(value = "规则Id", dataType = "String")
-    private String ruleId;
 }
