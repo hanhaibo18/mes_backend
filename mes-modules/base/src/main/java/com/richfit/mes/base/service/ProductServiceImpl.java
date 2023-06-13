@@ -244,6 +244,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 materialBasis.setMaterialType(MaterialTypeEnum.getName(productMap.get(product.getId()).getMaterialType()));
                 materialBasis.setWorkshop(productMap.get(product.getId()).getBranchCode());
                 materialBasisList.add(materialBasis);
+                //修改物料同步状态
+                product.setSynchronousRegime(1);
+                this.updateById(product);
             }
             // 同步到wms中
             wmsServiceClient.materialBasis(materialBasisList);
