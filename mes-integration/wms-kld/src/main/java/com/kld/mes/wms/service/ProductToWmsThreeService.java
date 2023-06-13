@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.kld.mes.wms.utils.AESUtil;
+import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.WmsResult;
 import com.richfit.mes.common.model.wms.*;
 import lombok.extern.slf4j.Slf4j;
@@ -34,90 +35,92 @@ public class ProductToWmsThreeService {
 
 
     // MES物料基础数据同步接口
-    public WmsResult materialBasis(List<MaterialBasis> materialBasisList) {
+    public CommonResult materialBasis(List<MaterialBasis> materialBasisList) {
         Map<String, Object> params = convertArrayInput(materialBasisList);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadMat").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
-        return applicationResult;
+        WmsResult result = JSONUtil.toBean(s, WmsResult.class);
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
     }
 
     // MES报检单驳回WMS
-    public WmsResult rejectInspectionDoc(RejectInspectionDoc rejectInspectionDoc) {
+    public CommonResult rejectInspectionDoc(RejectInspectionDoc rejectInspectionDoc) {
         Map<String, Object> params = convertInput(rejectInspectionDoc);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/returnIns").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
-        return applicationResult;
+        WmsResult result = JSONUtil.toBean(s, WmsResult.class);
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
     }
 
     // MES报检单质检结果上传WMS
-    public WmsResult inspectionDocUpload(InspectionDocUpload inspectionDocUpload) {
+    public CommonResult inspectionDocUpload(InspectionDocUpload inspectionDocUpload) {
         Map<String, Object> params = convertInput(inspectionDocUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadInsResult").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
-        return applicationResult;
+        WmsResult result = JSONUtil.toBean(s, WmsResult.class);
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
     }
 
     // MES申请单上传WMS（已上线）
-    public WmsResult applyListUpload(List<ApplyListUpload> applyListUploads) {
+    public CommonResult applyListUpload(List<ApplyListUpload> applyListUploads) {
         Map<String, Object> params = convertToInput(applyListUploads);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
-        return applicationResult;
+        WmsResult result = JSONUtil.toBean(s, WmsResult.class);
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
     }
 
 
     // MES领料单上传WMS
-    public WmsResult materialRequisitionUpload(List<MaterialRequisitionUpload> materialRequisitionUploads) {
+    public CommonResult materialRequisitionUpload(List<MaterialRequisitionUpload> materialRequisitionUploads) {
         Map<String, Object> params = convertToInput(materialRequisitionUploads);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadOutApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
-        return applicationResult;
+        WmsResult result = JSONUtil.toBean(s, WmsResult.class);
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
     }
 
     // MES领料单撤回上传WMS
-    public WmsResult materialRequisitionRecall(MaterialRequisitionRecall materialRequisitionRecall) {
+    public CommonResult materialRequisitionRecall(MaterialRequisitionRecall materialRequisitionRecall) {
         Map<String, Object> params = convertInput(materialRequisitionRecall);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/returnOutApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
-        return applicationResult;
+        WmsResult result = JSONUtil.toBean(s, WmsResult.class);
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
     }
 
     // MES计划清单锁定/解锁物资库存上传WMS(待接口)
-    public WmsResult systemUpload(SystemUpload systemUpload) {
+    public CommonResult systemUpload(SystemUpload systemUpload) {
         Map<String, Object> params = convertInput(systemUpload);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
-        return applicationResult;
+        WmsResult result = JSONUtil.toBean(s, WmsResult.class);
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
     }
 
     // MES实时查询WMS库存
-    public List<InventoryReturn> inventoryQuery(InventoryQuery inventoryQuery) {
+    public CommonResult inventoryQuery(InventoryQuery inventoryQuery) {
         Map<String, Object> params = convertInput(inventoryQuery);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/getInventory").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
-        if (applicationResult.getRetStatus().equals("N")) {
-            return null;
+        WmsResult result = JSONUtil.toBean(s, WmsResult.class);
+
+        if (result.getRetStatus().equals("N")) {
+            JSONObject jsonObject = JSON.parseObject(s);
+            String data = String.valueOf(jsonObject.get("data"));
+            return CommonResult.success(JSONObject.parseArray(data, InventoryReturn.class), result.getRetMsg());
+        } else {
+            return CommonResult.failed(result.getRetMsg());
         }
-        JSONObject jsonObject = JSON.parseObject(s);
-        String data = String.valueOf(jsonObject.get("data"));
-        return JSONObject.parseArray(data, InventoryReturn.class);
     }
 
     // MES接收/拒绝WMS出库单
-    public WmsResult acceptIssueNote(IssueNote issueNote) {
+    public CommonResult acceptIssueNote(IssueNote issueNote) {
         Map<String, Object> params = convertInput(issueNote);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/receiveTransOut").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        WmsResult applicationResult = JSONUtil.toBean(s, WmsResult.class);
-        return applicationResult;
+        WmsResult result = JSONUtil.toBean(s, WmsResult.class);
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
     }
 
     /**
