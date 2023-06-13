@@ -30,9 +30,19 @@ import java.util.stream.Collectors;
  */
 @Data
 public class WorkHoursUtil {
+
+    public static final String ROLE_LDGL = "_LDGL";
+
+    public static final String ROLE_TJ = "_TJ";
+
+    public static final String ROLE_ADMIN = "role_tenant_admin";
+
     public List<QualityInspectionRules> rulesList = new ArrayList<>();
+
     public Map<String, TenantUserVo> stringTenantUserVoMap = new HashMap<>();
+
     public Map<String, Branch> branchMap = new HashMap<>();
+
     public final CountDownLatch cdl = new CountDownLatch(2);
 
     public void workHoursThread(SystemServiceClient systemServiceClient, List<TrackComplete> completes) throws InterruptedException {
@@ -288,7 +298,7 @@ public class WorkHoursUtil {
         List<Role> roleList = systemServiceClient.queryRolesByUserId(Objects.requireNonNull(SecurityUtils.getCurrentUser()).getUserId());
         List<String> roleCodeList = roleList.stream().map(Role::getRoleCode).collect(Collectors.toList());
         //查询权限控制
-        if (roleCodeList.toString().contains("_LDGL") || roleCodeList.toString().contains("_TJ") || roleCodeList.contains("role_tenant_admin")) {
+        if (roleCodeList.toString().contains(ROLE_LDGL) || roleCodeList.toString().contains(ROLE_TJ) || roleCodeList.contains(ROLE_ADMIN)) {
             if (!StringUtils.isNullOrEmpty(branchCode)) {
                 queryWrapper.eq("branch_code", branchCode);
             }
