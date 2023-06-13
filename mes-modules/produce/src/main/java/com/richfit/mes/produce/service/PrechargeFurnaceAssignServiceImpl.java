@@ -8,6 +8,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
@@ -18,6 +19,7 @@ import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.CompleteDto;
+import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * (PrechargeFurnaceAssign)表服务实现类
@@ -66,6 +70,8 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
     private TrackCompleteService trackCompleteService;
     @Autowired
     private TrackCompleteServiceImpl trackCompleteServiceImpl;
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
 
     @Override
@@ -147,6 +153,30 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         } catch (Exception e) {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
+    }
+
+    @Override
+    public List assignedFurnaceItemList(String id) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("precharge_furnace_assign_id",id);
+        List<TrackItem> trackItems = trackItemService.list(queryWrapper);
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackItems.stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
+        Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+        for (TrackItem trackItem : trackItems) {
+            if(!CollectionUtil.isEmpty(getRouter)){
+                Router router = routerMap.get(trackItem.getRouterId()+"_"+trackItem.getBranchCode());
+                trackItem.setPieceWeight(router.getPieceWeight());
+                trackItem.setWeightMolten(router.getWeightMolten());
+                trackItem.setTexture(router.getTexture());
+            }
+
+            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+            trackItem.setTrackNo(trackHead.getTrackNo());
+            trackItem.setWorkNo(trackHead.getWorkNo());
+            trackItem.setProductName(trackHead.getProductName());
+        }
+        return trackItems;
     }
 
     private void constructFurnaceAssignInfo(@RequestBody Assign assign, Long furnaceId, TrackItem trackItem, TrackHead trackHead, String furnaceAssignId) {
