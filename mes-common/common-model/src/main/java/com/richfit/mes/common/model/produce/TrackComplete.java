@@ -6,10 +6,12 @@ import com.richfit.mes.common.model.heat.CompleteUserInfoDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,7 @@ import java.util.Map;
  * @CreateTime: 2022年02月02日 08:08:00
  * @ModifyTime: 2022年08月15日 12:08:00
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -108,7 +111,6 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     /**
      * 报工人
      */
-    //报工人
     protected String completeBy;
 
     /**
@@ -203,7 +205,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @ApiModelProperty(value = "步骤分组id", dataType = "String")
     protected String stepGroupId;
     @TableField(exist = false)
-    @ApiModelProperty(value = "标准工时", dataType = "")
+    @ApiModelProperty(value = "标准工时", dataType = "double")
     protected BigDecimal heatHour;
     @ApiModelProperty(value = "工时权重", dataType = "double")
     private Double ratioHours;
@@ -361,17 +363,17 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
         buildSummaryColum(temp, type);
         this.setId(id);
         //总报工数量
-        this.setCompletedQty(sumNumber.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        this.setCompletedQty(sumNumber.setScale(4, RoundingMode.HALF_UP).doubleValue());
         //实际准备工时
-        this.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        this.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
         //实际额定工时
-        this.setRealityReportHours(sumRealityReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        this.setRealityReportHours(sumRealityReportHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
         //准备工时
-        this.setPrepareEndHours(sumPrepareEndHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        this.setPrepareEndHours(sumPrepareEndHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
         //额定工时
-        this.setReportHours(sumReportHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        this.setReportHours(sumReportHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
         //总工时
-        this.setTotalHours(sumTotalHours.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue());
+        this.setTotalHours(sumTotalHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
         this.setTrackCompleteList(trackCompleteShowList);
         //判断是否包含叶子结点
         this.setIsLeafNodes(!CollectionUtils.isEmpty(completeMap.get(id)));
@@ -391,5 +393,4 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
             this.setProductionOrder(temp.getProductionOrder());
         }
     }
-
 }

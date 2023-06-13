@@ -236,12 +236,11 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductReceiptLambdaQueryWrapper.eq(BaseProductReceipt::getStatus, ReceiptStatusEnum.Y.getCode());
         //图号和工作号进行分组
         baseProductReceiptLambdaQueryWrapper.groupBy(BaseProductReceipt::getWorkNo, BaseProductReceipt::getDrawNo);
-        baseProductReceiptLambdaQueryWrapper.groupBy(BaseProductReceipt::getDrawNo, BaseProductReceipt::getDrawNo);
         //时间降序
         baseProductReceiptLambdaQueryWrapper.orderByDesc(BaseProductReceipt::getCheckDate);
         //查询条件;
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getConnectNo()), BaseProductReceipt::getConnectNo, receiptDTO.getConnectNo());
-        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getDriNo()), BaseProductReceipt::getDriNo, receiptDTO.getDriNo());
+        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getDrawNo()), BaseProductReceipt::getDrawNo, receiptDTO.getDrawNo());
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getWorkNo()), BaseProductReceipt::getWorkNo, receiptDTO.getWorkNo());
         //车间查询
 //        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
@@ -264,6 +263,11 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
             baseProductReceiptDetailLambdaQueryWrapper2.orderByDesc(BaseProductReceiptDetail::getReceiveDate);
             List<BaseProductReceiptDetail> baseProductReceiptDetails = baseProductReceiptDetailMapper.selectList(baseProductReceiptDetailLambdaQueryWrapper2);
             record.setCheckDate(baseProductReceiptDetails.get(0).getReceiveDate());
+            //是否齐套检验；
+            List<BaseProductReceiptDetail> baseProductReceiptDetails1 = this.receiveDetail(receiptDTO.getWorkNo(), receiptDTO.getDrawNo(), receiptDTO.getBranchCode(), receiptDTO.getTenantId());
+            //过滤出未齐套的数据
+            List<BaseProductReceiptDetail> collect = baseProductReceiptDetails1.stream().filter(e -> e.getIsKitting() == 2).collect(Collectors.toList());
+            record.setIsKitting(CollectionUtils.isEmpty(collect) ? 1 : 2);
         }
         return baseProductReceiptPage;
     }
