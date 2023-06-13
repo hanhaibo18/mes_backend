@@ -39,8 +39,10 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = convertArrayInput(materialBasisList);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadMat").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
+        System.out.println("--------------------------");
+        System.out.println(s);
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
-        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null, result.getRetMsg()) : CommonResult.failed(result.getRetMsg());
     }
 
     // MES报检单驳回WMS
@@ -49,7 +51,7 @@ public class ProductToWmsThreeService {
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/returnIns").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
-        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null, result.getRetMsg()) : CommonResult.failed(result.getRetMsg());
     }
 
     // MES报检单质检结果上传WMS
@@ -58,7 +60,7 @@ public class ProductToWmsThreeService {
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadInsResult").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
-        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null, result.getRetMsg()) : CommonResult.failed(result.getRetMsg());
     }
 
     // MES申请单上传WMS（已上线）
@@ -67,7 +69,7 @@ public class ProductToWmsThreeService {
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
-        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null, result.getRetMsg()) : CommonResult.failed(result.getRetMsg());
     }
 
 
@@ -77,7 +79,7 @@ public class ProductToWmsThreeService {
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadOutApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
-        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null, result.getRetMsg()) : CommonResult.failed(result.getRetMsg());
     }
 
     // MES领料单撤回上传WMS
@@ -86,7 +88,7 @@ public class ProductToWmsThreeService {
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/returnOutApply").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
-        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null, result.getRetMsg()) : CommonResult.failed(result.getRetMsg());
     }
 
     // MES计划清单锁定/解锁物资库存上传WMS(待接口)
@@ -95,7 +97,7 @@ public class ProductToWmsThreeService {
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
-        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null, result.getRetMsg()) : CommonResult.failed(result.getRetMsg());
     }
 
     // MES实时查询WMS库存
@@ -120,11 +122,12 @@ public class ProductToWmsThreeService {
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/receiveTransOut").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
-        return result.getRetStatus().equals("Y") ? CommonResult.success(null,result.getRetMsg()): CommonResult.failed(result.getRetMsg());
+        return result.getRetStatus().equals("Y") ? CommonResult.success(null, result.getRetMsg()) : CommonResult.failed(result.getRetMsg());
     }
 
     /**
      * 加密json数组
+     *
      * @param o
      * @return
      */
@@ -142,6 +145,7 @@ public class ProductToWmsThreeService {
 
     /**
      * 加密json数组
+     *
      * @param list
      * @return
      */
@@ -158,6 +162,7 @@ public class ProductToWmsThreeService {
 
     /**
      * 加密json串
+     *
      * @param o
      * @return
      */
