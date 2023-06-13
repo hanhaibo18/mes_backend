@@ -3,7 +3,6 @@ package com.richfit.mes.produce.utils;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.base.Branch;
@@ -68,14 +67,12 @@ public class WorkHoursUtil {
     public Map<String, Object> workHoursCompletes(BaseServiceClient baseServiceClient, List<TrackComplete> completes, String type) {
         Map<String, QualityInspectionRules> rulesMap = rulesList.stream().collect(Collectors.toMap(BaseEntity::getId, x -> x));
 
-        List<TenantUserVo> tenantUserVoList = new ArrayList<>();
-        stringTenantUserVoMap.forEach((key, value) -> tenantUserVoList.add(value));
-
         //1、根据type做数据的整合返回可通用循环执行数据
         List<String> idList = getKeyByType(baseServiceClient, completes, type);
         Map<String, List<TrackComplete>> completeMap = getCompleteMapByType(completes, type);
 
         //2、返回封装后的数据
+        assert idList != null;
         return buildComplete(idList, completeMap, stringTenantUserVoMap, rulesMap, type);
     }
 
@@ -216,6 +213,7 @@ public class WorkHoursUtil {
                 .collect(Collectors.groupingBy(TenantUserVo::getBelongOrgId));
         Map<String, Branch> branchMap = baseServiceClient.getBranchInfoMapByBranchCodeList(new ArrayList<>(belongOrgIdMap.keySet()));
         for (TrackComplete complete : completes) {
+            complete.setBelongOrgId(stringTenantUserVoMap.get(complete.getUserId()).getBelongOrgId());
             complete.setBranchName(branchMap.get(complete.getBelongOrgId()).getBranchName());
         }
     }
