@@ -91,7 +91,7 @@ public class Plan extends BaseEntity<Plan> {
     @ApiModelProperty(value = "结束时间")
     private Date endTime;
 
-    @ApiModelProperty(value = "优先级 0低 1中 2高 ")
+    @ApiModelProperty(value = "优先级 高3  中3  低0  一般1")
     private String priority;
 
     @ApiModelProperty(value = "计划类型 1新制  2 返修")
