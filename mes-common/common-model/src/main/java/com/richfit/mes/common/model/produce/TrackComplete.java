@@ -391,5 +391,4 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
             this.setProductionOrder(temp.getProductionOrder());
         }
     }
-
 }

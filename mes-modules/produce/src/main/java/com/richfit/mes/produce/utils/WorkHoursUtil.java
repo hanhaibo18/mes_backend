@@ -66,18 +66,16 @@ public class WorkHoursUtil {
 
 
     public Map<String, Object> workHoursCompletes(BaseServiceClient baseServiceClient, List<TrackComplete> completes, String type) {
-        //2、根据type做数据的整合返回可通用循环执行数据
-        List<String> idList = getKeyByType(baseServiceClient, completes, type);
-        Map<String, List<TrackComplete>> completeMap = getCompleteMapByType(completes, type);
-        //3、返回封装后的数据
-        assert idList != null;
-        return buildComplete(idList, completeMap, type);
+        //1、根据type做数据的整合返回可通用循环执行数据
+        Map<String, List<TrackComplete>> completeMap = getCompleteMapByType(baseServiceClient, completes, type);
+        //2、返回封装后的数据
+        return buildComplete(completeMap, type);
     }
 
-    private Map<String, Object> buildComplete(List<String> idList, Map<String, List<TrackComplete>> completeMap, String type) {
+    private Map<String, Object> buildComplete(Map<String, List<TrackComplete>> completeMap, String type) {
         List<TrackComplete> summary = new ArrayList<>();
         List<TrackComplete> details = new ArrayList<>();
-        for (String id : idList) {
+        for (String id : completeMap.keySet()) {
             //用来展示数据列表
             List<TrackComplete> trackCompleteShowList = new ArrayList<>();
             //总工报工数量
@@ -94,8 +92,6 @@ public class WorkHoursUtil {
             BigDecimal sumRealityReportHours = new BigDecimal(0);
             TrackComplete temp = new TrackComplete();
             for (TrackComplete complete : completeMap.get(id)) {
-
-
                 //加入校验 需要质检未质检 不记录 需要调度审核 未审核 不计入
                 //需要质检,质检未完成 不计入审核
                 boolean quality = complete.getIsExistQualityCheck() == 1 && complete.getIsQualityComplete() == 0;
@@ -183,8 +179,8 @@ public class WorkHoursUtil {
                 details.add(complete);
                 temp = complete;
             }
-            TrackComplete track0 = new TrackComplete(completeMap, id, trackCompleteShowList, sumNumber, sumTotalHours, sumPrepareEndHours, sumReportHours, sumRealityPrepareEndHours, sumRealityReportHours, temp, type);
-            summary.add(track0);
+            TrackComplete trackComplete = new TrackComplete(completeMap, id, trackCompleteShowList, sumNumber, sumTotalHours, sumPrepareEndHours, sumReportHours, sumRealityPrepareEndHours, sumRealityReportHours, temp, type);
+            summary.add(trackComplete);
         }
         Map<String, Object> stringObjectHashMap = new HashMap<>(2);
         Collections.sort(details);
@@ -217,24 +213,7 @@ public class WorkHoursUtil {
         }
     }
 
-    private List<String> getKeyByType(BaseServiceClient baseServiceClient, List<TrackComplete> completes,
-                                      String type) {
-        switch (type) {
-            case "person":
-                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getUserId()) ? "/" : trackComplete.getCompleteBy()).distinct().collect(Collectors.toList());
-            case "workNo":
-                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getWorkNo()) ? "/" : trackComplete.getWorkNo()).distinct().collect(Collectors.toList());
-            case "order":
-                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getProductionOrder()) ? "/" : trackComplete.getProductionOrder()).distinct().collect(Collectors.toList());
-            case "branch":
-                getBranchInfoByUserInfo(baseServiceClient, completes);
-                return completes.stream().map(trackComplete -> StrUtil.isEmpty(trackComplete.getBranchName()) ? "/" : trackComplete.getBranchName()).distinct().collect(Collectors.toList());
-            default:
-                return null;
-        }
-    }
-
-    private Map<String, List<TrackComplete>> getCompleteMapByType(List<TrackComplete> completes,
+    private Map<String, List<TrackComplete>> getCompleteMapByType(BaseServiceClient baseServiceClient, List<TrackComplete> completes,
                                                                   String type) {
         switch (type) {
             case "person":
@@ -244,6 +223,7 @@ public class WorkHoursUtil {
             case "order":
                 return completes.stream().collect(Collectors.groupingBy(trackComplete -> StrUtil.isEmpty(trackComplete.getProductionOrder()) ? "/" : trackComplete.getProductionOrder()));
             case "branch":
+                getBranchInfoByUserInfo(baseServiceClient, completes);
                 return completes.stream().collect(Collectors.groupingBy(trackComplete -> StrUtil.isEmpty(trackComplete.getBranchName()) ? "/" : trackComplete.getBranchName()));
             default:
                 return null;
