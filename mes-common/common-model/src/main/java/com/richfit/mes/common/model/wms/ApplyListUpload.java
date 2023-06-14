@@ -87,7 +87,7 @@ public class ApplyListUpload implements Serializable {
 
     }
 
-    public ApplyListUpload(List<Certificate> certificates) {
+    public ApplyListUpload(Certificate certificate) {
 
     }
 }
