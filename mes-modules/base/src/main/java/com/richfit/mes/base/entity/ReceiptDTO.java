@@ -135,6 +135,18 @@ public class ReceiptDTO extends QueryPageDto implements Serializable {
     private Integer ifCheck;
 
     /**
+     * 物料号
+     */
+    @ApiModelProperty(value = "物料号", dataType = "String")
+    private String materialNo;
+
+    /**
+     * 单位
+     */
+    @ApiModelProperty(value = "单位", dataType = "String")
+    private String unit;
+
+    /**
      * 子bom信息
      */
     @ApiModelProperty(value = "子bom信息")
