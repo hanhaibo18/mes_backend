@@ -245,7 +245,7 @@ public class PublicServiceImpl implements PublicService {
             throw new GlobalException("当前跟单工序异常，没有找到当前工序！", ResultCode.FAILED);
         }
         //判断所有并行工序是否全部最终完成
-        if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getTrackHeadId())) {
+        if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getFlowId())) {
             return false;
         }
         //过滤最终完成数据,获取未最终完成数据
