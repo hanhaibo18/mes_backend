@@ -58,15 +58,7 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
         if (needScjk(certificate)) {
             List<Certificate> certificateList = new ArrayList<>();
             certificateList.add(certificate);
-            CommonResult<Object> commonResultJK = inventoryService.handOver(certificateList);
-            //推送宝石
-            if (commonResultJK.getStatus() == ResultCode.SUCCESS.getCode()) {
-                certificate.setIsDeliveryToWarehouse("1");
-                certificate.setDeliveryToWarehouseMessage("操作成功");
-            } else {
-                certificate.setIsDeliveryToWarehouse("2");
-                certificate.setDeliveryToWarehouseMessage(commonResultJK.getMessage());
-            }
+            inventoryService.handOver(certificateList);
             String companyCode = Objects.requireNonNull(SecurityUtils.getCurrentUser()).getCompanyCode();
             //根据数据字段配置，判断推送哪个系统
             if (Tenant.COMPANYCODE_BEISHI.equals(companyCode)) {

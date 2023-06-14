@@ -33,17 +33,10 @@ public class InventoryController {
     @Autowired
     InventoryService inventoryService;
 
-    @ApiOperation(value = "生产人库", notes = "推送工时")
+    @ApiOperation(value = "手动生产人库", notes = "手动生产人库")
     @PostMapping("/handOver")
     public CommonResult<Object> handOver(@ApiParam(value = "合格证", required = true) @RequestBody List<Certificate> certificateList) {
-        StringBuilder message = new StringBuilder();
-        for (Certificate certificate : certificateList) {
-            try {
-                inventoryService.handOver(certificateList);
-            } catch (Exception e) {
-                message.append(e.getMessage());
-            }
-        }
-        return CommonResult.success(message.toString());
+        inventoryService.handOver(certificateList);
+        return CommonResult.success("操作完成");
     }
 }

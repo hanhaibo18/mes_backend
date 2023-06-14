@@ -30,21 +30,33 @@ public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certifi
     public WmsThreeServiceClient wmsThreeServiceClient;
 
     @Override
-    public CommonResult<Object> handOver(List<Certificate> certificateList) {
+    public void handOver(List<Certificate> certificateList) {
         List<ApplyListUpload> applyListUploads = new ArrayList<>();
         for (Certificate certificate : certificateList) {
             if (!Certificate.IS_DELIVERY_TO_WAREHOUSE_1.equals(certificate.getIsDeliveryToWarehouse())) {
                 if (!Certificate.NEXT_OPT_WORK_BOMCO_SC.equals(certificate.getNextOptWork())) {
-                    return CommonResult.failed(certificate.getCertificateNo() + ":非生产入库合格证不进行工时推送;");
+                    certificate.setIsDeliveryToWarehouse("2");
+                    certificate.setDeliveryToWarehouseMessage("非生产入库合格证不进行生产入库");
+                } else {
+                    certificate.setIsDeliveryToWarehouse("1");
+                    certificate.setDeliveryToWarehouseMessage("操作成功");
+                    ApplyListUpload applyListUpload = new ApplyListUpload(certificate);
+                    applyListUploads.add(applyListUpload);
                 }
+            } else {
+                certificate.setIsDeliveryToWarehouse("2");
+                certificate.setDeliveryToWarehouseMessage("已生产入库合格证不进行生产入库");
             }
-            ApplyListUpload applyListUpload = new ApplyListUpload(certificate);
-            applyListUploads.add(applyListUpload);
         }
         CommonResult commonResult = wmsThreeServiceClient.applyListUpload(applyListUploads);
-        if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
-            return CommonResult.failed(commonResult.getMessage());
+        if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
+            this.updateBatchById(certificateList);
+        } else {
+            for (Certificate certificate : certificateList) {
+                certificate.setIsDeliveryToWarehouse("2");
+                certificate.setDeliveryToWarehouseMessage(commonResult.getMessage());
+            }
+            this.updateBatchById(certificateList);
         }
-        return CommonResult.success("操作成功");
     }
 }
