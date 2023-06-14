@@ -151,6 +151,18 @@ public class BaseProductReceipt implements Serializable {
     private String status;
 
     /**
+     * 物料号
+     */
+    @ApiModelProperty(value = "物料号", dataType = "String")
+    private String materialNo;
+
+    /**
+     * 单位
+     */
+    @ApiModelProperty(value = "单位", dataType = "String")
+    private String unit;
+
+    /**
      * 租户id
      */
     @ApiModelProperty(value = "租户id")

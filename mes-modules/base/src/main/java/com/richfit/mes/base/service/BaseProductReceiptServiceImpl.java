@@ -249,7 +249,7 @@ public class BaseProductReceiptServiceImpl extends ServiceImpl<BaseProductReceip
         baseProductReceiptLambdaQueryWrapper.having(StringUtils.isNotEmpty(receiptDTO.getWorkNo()), "work_no", receiptDTO.getWorkNo());
         baseProductReceiptLambdaQueryWrapper.having(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), "receive_unit", receiptDTO.getReceiveUnit());
         //车间查询
-        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
+//        baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getBranchCode()), BaseProductReceipt::getBranchCode, receiptDTO.getBranchCode());
         //  分公司查询
         //  baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(receiptDTO.getReceiveUnit()), BaseProductReceipt::getReceiveUnit, receiptDTO.getReceiveUnit());
         IPage<BaseProductReceipt> baseProductReceiptIPage = baseProductReceiptMapper.queryPage(new Page<>(receiptDTO.getPage(), receiptDTO.getLimit()), baseProductReceiptLambdaQueryWrapper);
