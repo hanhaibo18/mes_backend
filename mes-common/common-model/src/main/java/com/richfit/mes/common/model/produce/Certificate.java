@@ -191,4 +191,56 @@ public class Certificate extends BaseEntity<Certificate> {
     @TableField(exist = false)
     @ApiModelProperty(value = "工序产品数量")
     private String itemNumber;
+
+    @ApiModelProperty(value = "id")
+    private String id;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "MES申请单号 时间戳，毫秒级")
+    private String applyNum;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单据类型")
+    private String transType;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工厂")
+    private String tenantErpCode;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "库存地点 待定")
+    private String invCode;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "系统自动生成的ID")
+    private String applyId;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "MES申请单行项目 默认为01")
+    private String lineNum;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单位")
+    private String unit;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "物料类型")
+    private String materialType;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "关键件")
+    private String isKeyPart;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟踪方式")
+    private String trackType;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟踪方式")
+    private String trackHeadProductNo;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "数量")
+    private String trackHeadFlowNumber;
+
 }
