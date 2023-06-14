@@ -33,7 +33,7 @@ public class InventoryController {
     @Autowired
     InventoryService inventoryService;
 
-    @ApiOperation(value = "推送工时", notes = "推送工时")
+    @ApiOperation(value = "生产人库", notes = "推送工时")
     @PostMapping("/handOver")
     public CommonResult<Object> handOver(@ApiParam(value = "合格证", required = true) @RequestBody List<Certificate> certificateList) {
         StringBuilder message = new StringBuilder();
