@@ -11,6 +11,7 @@ import com.richfit.mes.base.dao.ProductMapper;
 import com.richfit.mes.base.enmus.MaterialTypeEnum;
 import com.richfit.mes.base.enmus.MessageEnum;
 import com.richfit.mes.base.enmus.TrackTypeEnum;
+import com.richfit.mes.base.entity.MaterialBasisDto;
 import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.base.provider.WmsServiceClient;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -225,8 +226,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(e -> e.getId(), product -> product, (value1, value2) -> value2));
         if (CollectionUtils.isNotEmpty(productList)) {
             List<MaterialBasis> materialBasisList = new ArrayList<>();
-            MaterialBasis materialBasis = new MaterialBasis();
             for (Product product : productList) {
+                MaterialBasis materialBasis = new MaterialBasis();
                 materialBasis.setWorkCode(tenantMap.get(product.getTenantId()).getTenantErpCode());
                 materialBasis.setMaterialNum(productMap.get(product.getId()).getMaterialNo());
                 materialBasis.setMaterialDesc(productMap.get(product.getId()).getMaterialDesc());
@@ -248,11 +249,17 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 product.setSynchronousRegime(1);
                 this.updateById(product);
             }
-            // 同步到wms中
-            wmsServiceClient.materialBasis(materialBasisList);
-            return CommonResult.success(true, "操作成功");
+            List<MaterialBasisDto> basisDtoList = materialBasisList.stream().map(MaterialBasisDto::map).collect(Collectors.toList());
+            Set<MaterialBasisDto> basisDtoSet = materialBasisList.stream().map(MaterialBasisDto::map).collect(Collectors.toSet());
+            if (basisDtoList.size() == basisDtoSet.size()) {
+                // 同步到wms中
+                wmsServiceClient.materialBasis(materialBasisList);
+                return CommonResult.success(true, "操作成功");
+            } else {
+                return CommonResult.failed("操作失败,勾选的数据在同一个工厂下的物料编码不能相同");
+            }
         }
-        return CommonResult.failed("操作失败");
+        return CommonResult.failed("操作失败,插入数据不能为空");
     }
 
     /**

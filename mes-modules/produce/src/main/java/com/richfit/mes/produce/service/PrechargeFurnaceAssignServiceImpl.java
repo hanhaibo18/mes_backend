@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -8,6 +9,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
+import com.richfit.mes.common.model.base.Device;
 import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
@@ -31,6 +33,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Collectors;
 
 /**
@@ -131,7 +134,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                         trackAssignPersonMapper.insert(person);
                     }
                     //保存预装炉派工信息
-                    constructFurnaceAssignInfo(assign, furnaceId, trackItem, trackHead, furnaceAssignId);
+                    constructFurnaceAssignInfo(assign, furnaceId, trackItem, trackHead, furnaceAssignId,new PrechargeFurnaceAssign());
                     //保存工序信息
                     trackItemService.updateById(trackItem);
 
@@ -152,6 +155,107 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
             return true;
         } catch (Exception e) {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
+
+
+    /**
+     * 编辑配炉派工信息
+     * @param assign
+     * @param furnaceAssignId
+     * @return
+     */
+    @Override
+    public boolean updateFurnaceAssign(Assign assign, String furnaceAssignId) {
+        //获取request
+        try {
+            //要派工的工序
+            QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+            trackItemQueryWrapper.eq("precharge_furnace_assign_id", furnaceAssignId);
+            List<TrackItem> itemList = trackItemService.list(trackItemQueryWrapper);
+            if (CollectionUtil.isEmpty(itemList)) {
+                throw new GlobalException("未找到可派工的工序", ResultCode.FAILED);
+            }
+            List<String> tiIds = itemList.stream().map(item -> item.getId()).collect(Collectors.toList());
+
+            List<Assign> assigns = trackAssignService.list(new QueryWrapper<Assign>().in("ti_id", tiIds));
+
+            //设备code添加
+            Device device = baseServiceClient.getDeviceById(assign.getDeviceId()).getData();
+            //根据前端传的assignPersons 构造userId和emplName
+            dealUserIdAndEmplNameByAssignPersons(assign);
+            for (Assign oldAssign: assigns) {
+                TrackItem trackItem = trackItemService.getById(oldAssign.getTiId());
+                if (trackItem.getIsExistQualityCheck() == 1 && trackItem.getIsQualityComplete() == 1) {
+                    throw  new GlobalException("跟单工序【" + trackItem.getOptName() + "】已质检完成，报工无法取消！",ResultCode.FAILED);
+                }
+                if (trackItem.getIsExistScheduleCheck() == 1 && trackItem.getIsScheduleComplete() == 1) {
+                    throw  new GlobalException("跟单工序【" + trackItem.getOptName() + "】已调度完成，报工无法取消！",ResultCode.FAILED);
+                }
+                if (null != trackItem) {
+                    if (trackItem.getAssignableQty() < (assign.getQty() - oldAssign.getQty())) {
+                        throw  new GlobalException(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty(),ResultCode.FAILED);
+                    }
+                }
+                // 设置派工时间，人员，工序可派工数
+                if (null != SecurityUtils.getCurrentUser()) {
+                    oldAssign.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
+                    oldAssign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+                }
+                oldAssign.setAssignTime(new Date());
+                oldAssign.setAvailQty(assign.getQty());
+                oldAssign.setUserId(assign.getUserId());
+                oldAssign.setDeviceName(assign.getDeviceName());
+                oldAssign.setDeviceId(assign.getDeviceId());
+                oldAssign.setUserId(assign.getUserId());
+                oldAssign.setEmplName(assign.getEmplName());
+                if(!ObjectUtil.isEmpty(device)){
+                    oldAssign.setDeviceCode(device.getCode());
+                }
+                oldAssign.setPriority(assign.getPriority());
+                oldAssign.setRemark(assign.getRemark());
+                oldAssign.setRemark(assign.getRemark());
+                boolean bool = trackAssignService.updateById(oldAssign);
+                QueryWrapper<AssignPerson> queryWrapper = new QueryWrapper<AssignPerson>();
+                queryWrapper.eq("assign_id", oldAssign.getId());
+                trackAssignPersonMapper.delete(queryWrapper);
+                for (AssignPerson person : assign.getAssignPersons()) {
+                    person.setModifyTime(new Date());
+                    person.setAssignId(oldAssign.getId());
+                    trackAssignPersonMapper.insert(person);
+                }
+                trackItem.setAssignableQty(trackItem.getAssignableQty() - (assign.getQty() - oldAssign.getQty()));
+                trackItemService.updateById(trackItem);
+            }
+            //更新预装炉派工信息
+            PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getById(itemList.get(0).getPrechargeFurnaceAssignId());
+            constructFurnaceAssignInfo(assign,prechargeFurnaceAssign.getFurnaceId(),null,null,null,prechargeFurnaceAssign);
+            return true;
+        } catch (Exception e) {
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
+    }
+
+    private void dealUserIdAndEmplNameByAssignPersons(Assign assign) {
+        //处理派工人员信息  (前端没有处理userId 和userName  assignPerson为派工人列表)
+        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !CollectionUtil.isEmpty(assign.getAssignPersons())) {
+            StringBuilder userId = new StringBuilder();
+            StringBuilder userName = new StringBuilder();
+            for (AssignPerson assignPerson : assign.getAssignPersons()) {
+                if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
+                    userId.append(",");
+                    userName.append(",");
+                }
+                userId.append(assignPerson.getUserId());
+                userName.append(assignPerson.getUserName());
+            }
+            assign.setUserId(String.valueOf(userId));
+            assign.setEmplName(String.valueOf(userName));
+        }
+        boolean isAllUser = assign.getUserId().contains("/") ? true : false;
+        if (isAllUser) {
+            assign.setUserId("/");
+            assign.setEmplName("/");
         }
     }
 
@@ -176,35 +280,49 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         return trackItems;
     }
 
-    private void constructFurnaceAssignInfo(@RequestBody Assign assign, Long furnaceId, TrackItem trackItem, TrackHead trackHead, String furnaceAssignId) {
+    //构造派工信息
+    private void constructFurnaceAssignInfo(@RequestBody Assign assign, Long furnaceId, TrackItem trackItem, TrackHead trackHead, String furnaceAssignId,PrechargeFurnaceAssign prechargeFurnaceAssign) {
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(furnaceId);
         //预装炉派工表
-        PrechargeFurnaceAssign prechargeFurnaceAssign = new PrechargeFurnaceAssign();
-        prechargeFurnaceAssign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
-        prechargeFurnaceAssign.setAssignTime(new Date());
-        prechargeFurnaceAssign.setFurnaceId(furnaceId);
-        prechargeFurnaceAssign.setAssignSiteId(assign.getSiteId());
-        prechargeFurnaceAssign.setAssignSiteName(assign.getSiteName());
+        //为空表示新增
+        if(StringUtils.isNullOrEmpty(prechargeFurnaceAssign.getId())){
+            prechargeFurnaceAssign.setFurnaceId(furnaceId);
+            prechargeFurnaceAssign.setOptType(trackItem.getOptType());
+            prechargeFurnaceAssign.setTexture(trackHead.getTexture());
+            prechargeFurnaceAssign.setWorkblankType(trackHead.getWorkblankType());
+            prechargeFurnaceAssign.setIngotCase(trackItem.getIngotCase());
+            prechargeFurnaceAssign.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel());
+            prechargeFurnaceAssign.setBranchCode(trackItem.getBranchCode());
+            prechargeFurnaceAssign.setTenantId(trackItem.getTenantId());
+            prechargeFurnaceAssign.setId(furnaceAssignId);
+        }
+        prechargeFurnaceAssign.setSiteId(assign.getSiteId());
+        prechargeFurnaceAssign.setSiteName(assign.getSiteName());
+        prechargeFurnaceAssign.setDeviceId(assign.getDeviceId());
+        prechargeFurnaceAssign.setDeviceName(assign.getDeviceName());
         prechargeFurnaceAssign.setAssignUser(assign.getUserId());
         prechargeFurnaceAssign.setAssignUserName(assign.getEmplName());
-        prechargeFurnaceAssign.setOptType(trackItem.getOptType());
-        prechargeFurnaceAssign.setTexture(trackHead.getTexture());
-        prechargeFurnaceAssign.setWorkblankType(trackHead.getWorkblankType());
-        prechargeFurnaceAssign.setIngotCase(trackItem.getIngotCase());
-        prechargeFurnaceAssign.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel());
-        prechargeFurnaceAssign.setSmeltingEquipment(assign.getDeviceName());
-        prechargeFurnaceAssign.setBranchCode(trackItem.getBranchCode());
-        prechargeFurnaceAssign.setTenantId(trackItem.getTenantId());
-        prechargeFurnaceAssign.setId(furnaceAssignId);
+        prechargeFurnaceAssign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+        prechargeFurnaceAssign.setAssignTime(new Date());
+        prechargeFurnaceAssign.setQty(assign.getQty());
+        prechargeFurnaceAssign.setPriority(assign.getPriority());
+        prechargeFurnaceAssign.setRemark(assign.getRemark());
         prechargeFurnaceAssignService.saveOrUpdate(prechargeFurnaceAssign);
         //预装炉派工id
-        trackItem.setPrechargeFurnaceAssignId(prechargeFurnaceAssign.getId());
+        if(!ObjectUtil.isEmpty(trackItem)){
+            trackItem.setPrechargeFurnaceAssignId(prechargeFurnaceAssign.getId());
+        }
+
         //预装炉派工人员信息
+        //先删除
+        prechargeFurnaceAssignPersonService.remove(new QueryWrapper<PrechargeFurnaceAssignPerson>().eq("precharge_furnace_assign_id",prechargeFurnaceAssign.getId()));
+        //再保存
         for (AssignPerson person : assign.getAssignPersons()) {
             PrechargeFurnaceAssignPerson prechargeFurnaceAssignPerson = new PrechargeFurnaceAssignPerson();
             prechargeFurnaceAssignPerson.setPrechargeFurnaceAssignId(prechargeFurnaceAssign.getId());
             prechargeFurnaceAssignPerson.setPrechargeFurnaceId(furnaceId);
             prechargeFurnaceAssignPerson.setUserId(person.getUserId());
+            prechargeFurnaceAssignPerson.setUserName(person.getUserName());
             prechargeFurnaceAssignPersonService.save(prechargeFurnaceAssignPerson);
         }
     }
@@ -216,7 +334,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
      * @param trackItem
      * @param trackHead
      */
-    private void constructAssignInfo(@RequestBody Assign assign, TrackItem trackItem, TrackHead trackHead) {
+    private void constructAssignInfo(Assign assign, TrackItem trackItem, TrackHead trackHead) {
         assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
         if (null != SecurityUtils.getCurrentUser()) {
             assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
@@ -242,25 +360,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
             assign.setTenantId(trackHead.getTenantId());
         }
         //处理派工人员信息  (前端没有处理userId 和userName  assignPerson为派工人列表)
-        if (StringUtils.isNullOrEmpty(assign.getUserId()) && !CollectionUtil.isEmpty(assign.getAssignPersons())) {
-            StringBuilder userId = new StringBuilder();
-            StringBuilder userName = new StringBuilder();
-            for (AssignPerson assignPerson : assign.getAssignPersons()) {
-                if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
-                    userId.append(",");
-                    userName.append(",");
-                }
-                userId.append(assignPerson.getUserId());
-                userName.append(assignPerson.getUserName());
-            }
-            assign.setUserId(String.valueOf(userId));
-            assign.setEmplName(String.valueOf(userName));
-        }
-        boolean isAllUser = assign.getUserId().contains("/") ? true : false;
-        if (isAllUser) {
-            assign.setUserId("/");
-            assign.setEmplName("/");
-        }
+        dealUserIdAndEmplNameByAssignPersons(assign);
     }
 }
 

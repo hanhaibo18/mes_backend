@@ -1,7 +1,10 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author HanHaiBo
@@ -17,6 +20,10 @@ public class PrechargeFurnaceAssignPerson extends BaseEntity<PrechargeFurnaceAss
      * 配送人id
      */
     private String userId;
+    /**
+     * 配送人name
+     */
+    private String userName;
     /**
      * 预装炉派工id
      */
