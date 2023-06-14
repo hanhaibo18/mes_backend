@@ -241,6 +241,6 @@ public class Certificate extends BaseEntity<Certificate> {
 
     @TableField(exist = false)
     @ApiModelProperty(value = "数量")
-    private String trackHeadFlowNumber;
+    private Integer trackHeadFlowNumber;
 
 }
