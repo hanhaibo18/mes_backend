@@ -233,7 +233,7 @@ public class PublicServiceImpl implements PublicService {
      **/
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean activationProcess(Map<String, String> map){
+    public Boolean activationProcess(Map<String, String> map) {
         //倒序获取工序列表
         QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
         currentTrackItem.eq("flow_id", map.get("flowId"));
@@ -256,13 +256,15 @@ public class PublicServiceImpl implements PublicService {
             //不修改最后状态
             return true;
         }
-        //修改当前工序状态
-        for (TrackItem trackItem : currentTrackItemList) {
-            trackItem.setIsCurrent(0);
-            trackItemService.updateById(trackItem);
-        }
+
+        //最后一道工序不修改状态不进行下工序激活
         boolean activation = false;
         if (!currentTrackItemList.isEmpty() && currentTrackItemList.get(0).getNextOptSequence() != 0) {
+            //修改当前工序状态
+            for (TrackItem trackItem : currentTrackItemList) {
+                trackItem.setIsCurrent(0);
+                trackItemService.updateById(trackItem);
+            }
             //激活下工序
             activation = activation(currentTrackItemList.get(0));
         }
@@ -380,7 +382,7 @@ public class PublicServiceImpl implements PublicService {
 
         String[] userIds = assignGet.getData().getUserId().split(",");
         String[] userNames = assignGet.getData().getUserName().split(",");
-        for (int i=0;i<userIds.length;i++) {
+        for (int i = 0; i < userIds.length; i++) {
             AssignPerson assignPerson = new AssignPerson();
             assignPerson.setUserId(userIds[i]);
             assignPerson.setUserName(userNames[i]);
@@ -431,7 +433,7 @@ public class PublicServiceImpl implements PublicService {
             List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
             for (TrackItem trackItemEntity : trackItemList) {
                 //冶炼车间下工序装炉
-                if ("7".equals(trackHead.getClasses())){
+                if ("7".equals(trackHead.getClasses())) {
                     trackItemEntity.setPrechargeFurnaceId(item.getPrechargeFurnaceId());
                 }
                 trackItemEntity.setIsCurrent(1);
@@ -448,9 +450,9 @@ public class PublicServiceImpl implements PublicService {
 
         //特殊工序流转下车间
         String nextOptWork = "";
-        if(OptTypeEnum.KX_OPERATION.getStateId().equals(trackItem.getOptType())){
+        if (OptTypeEnum.KX_OPERATION.getStateId().equals(trackItem.getOptType())) {
             nextOptWork = "BOMCO_RG_YL";
-            certificateService.headMoveToNextBranch(trackItem.getTrackHeadId(),nextOptWork,trackItem);
+            certificateService.headMoveToNextBranch(trackItem.getTrackHeadId(), nextOptWork, trackItem);
         }
         return true;
     }
@@ -482,11 +484,11 @@ public class PublicServiceImpl implements PublicService {
         }
     }
 
-    private boolean verifyParallel(int originalOptSequence, String flowId) {
+    private boolean verifyParallel(int originalOptSequence, String TrackHeadId) {
         boolean verify = false;
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper();
         queryWrapper.eq("original_opt_sequence", originalOptSequence);
-        queryWrapper.eq("flow_id", flowId);
+        queryWrapper.eq("track_head_id", TrackHeadId);
         List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
         if (trackItemList.size() > 1) {
             //过滤并行工序中是否存在未最终完成的工序
@@ -498,5 +500,4 @@ public class PublicServiceImpl implements PublicService {
         }
         return verify;
     }
-
 }
