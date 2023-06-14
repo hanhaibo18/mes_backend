@@ -245,7 +245,7 @@ public class PublicServiceImpl implements PublicService {
             throw new GlobalException("当前跟单工序异常，没有找到当前工序！", ResultCode.FAILED);
         }
         //判断所有并行工序是否全部最终完成
-        if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getTrackHeadId())) {
+        if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getFlowId())) {
             return false;
         }
         //过滤最终完成数据,获取未最终完成数据
@@ -484,16 +484,16 @@ public class PublicServiceImpl implements PublicService {
         }
     }
 
-    private boolean verifyParallel(int originalOptSequence, String TrackHeadId) {
+    private boolean verifyParallel(int originalOptSequence, String flowId) {
         boolean verify = false;
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper();
         queryWrapper.eq("original_opt_sequence", originalOptSequence);
-        queryWrapper.eq("track_head_id", TrackHeadId);
+        queryWrapper.eq("flow_id", flowId);
         List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
         if (trackItemList.size() > 1) {
             //过滤并行工序中是否存在未最终完成的工序
             long count = trackItemList.stream().filter(item -> "0".equals(item.getIsFinalComplete())).count();
-            //没有未完成为true
+            //并行工序最终完成状态数量 == 0 表示并行工序全部完成
             verify = count == 0;
         } else {
             verify = true;
