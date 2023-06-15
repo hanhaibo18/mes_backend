@@ -56,5 +56,13 @@ public interface ProduceDrillingRectificationService extends IService<ProduceDri
      */
     ProduceDrillingRectificationVO queryDetail(String id);
 
+    /**
+     * 删除未提交的单据
+     *
+     * @param id
+     * @return
+     */
+    CommonResult delete(String id);
+
 
 }

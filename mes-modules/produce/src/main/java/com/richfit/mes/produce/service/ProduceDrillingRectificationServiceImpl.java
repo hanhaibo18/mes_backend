@@ -138,6 +138,23 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
         produceDrillingRectificationVO.setProduceDrillingRectificationFileList(produceDrillingRectificationFileVOS);
         return produceDrillingRectificationVO;
     }
+
+    @Override
+    public CommonResult delete(String id) {
+        LambdaQueryWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        produceDrillingRectificationLambdaQueryWrapper.eq(ProduceDrillingRectification::getId, id);
+        ProduceDrillingRectification produceDrillingRectification = produceDrillingRectificationMapper.selectOne(produceDrillingRectificationLambdaQueryWrapper);
+        if (!produceDrillingRectification.getStatus().equals(RectificationStatusEnum.W.getCode())) {
+            return CommonResult.failed("只能删除未提交的单据");
+        }
+        //删除主表数据
+        produceDrillingRectificationMapper.delete(produceDrillingRectificationLambdaQueryWrapper);
+        //删除附件表数据
+        LambdaQueryWrapper<ProduceDrillingRectificationFile> produceDrillingRectificationFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        produceDrillingRectificationFileLambdaQueryWrapper.eq(ProduceDrillingRectificationFile::getOrderNo, id);
+        produceDrillingRectificationfileMapper.delete(produceDrillingRectificationFileLambdaQueryWrapper);
+        return CommonResult.success(true);
+    }
 }
 
 
