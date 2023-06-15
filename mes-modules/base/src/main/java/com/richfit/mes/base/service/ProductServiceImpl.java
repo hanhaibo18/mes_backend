@@ -222,41 +222,16 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
         if (CollectionUtils.isNotEmpty(productList)) {
             List<MaterialBasis> materialBasisList = new ArrayList<>(productList.size());
-            materialConvert(materialBasisList , productList);
+            for (Product product : productList) {
+                String tenantErpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
+                MaterialBasis materialBasis = new MaterialBasis(product, tenantErpCode);
+                materialBasisList.add(materialBasis);
+            }
             // 同步到wms中
             wmsServiceClient.materialBasis(materialBasisList);
             return CommonResult.success(true, "操作成功");
         }
         return CommonResult.failed("操作失败,插入数据不能为空");
-    }
-
-    private static void materialConvert(List<MaterialBasis> materialBasisList,List<Product> productList) {
-        for (Product product : productList) {
-            MaterialBasis materialBasis = new MaterialBasis(product);
-            // 工厂
-            materialBasis.setWorkCode(SecurityUtils.getCurrentUser().getTenantErpCode());
-            if (!StringUtils.isNullOrEmpty(materialBasis.getProduceType())) {
-                // 制造类型
-                materialBasis.setProduceType(ObjectTypeEnum.getMessage(materialBasis.getProduceType()));
-            }
-            if (!StringUtils.isNullOrEmpty(materialBasis.getMaterialType())) {
-                // 物料类型
-                materialBasis.setMaterialType(MaterialTypeEnum.getMessage(materialBasis.getMaterialType()));
-            }
-            if (!StringUtils.isNullOrEmpty(materialBasis.getTrackingMode())) {
-                // 跟踪方式
-                materialBasis.setTrackingMode(TrackTypeEnum.getMessage(materialBasis.getTrackingMode()));
-            }
-            if (!StringUtils.isNullOrEmpty(materialBasis.getTrackingMode())) {
-                // 关键件
-                materialBasis.setCrucialFlag(MessageEnum.getMessage(Integer.parseInt(materialBasis.getCrucialFlag())));
-            }
-            if (!StringUtils.isNullOrEmpty(materialBasis.getDeliveryFlag())) {
-                // 实物配送
-                materialBasis.setDeliveryFlag(MessageEnum.getMessage(Integer.parseInt(materialBasis.getDeliveryFlag())));
-            }
-            materialBasisList.add(materialBasis);
-        }
     }
 
     /**
