@@ -23,5 +23,5 @@ public interface InventoryService extends IService<Certificate> {
      * @Author: zhiqiang.lu
      * @Date: 2023/05/26 16:27
      **/
-    void handOver(List<Certificate> certificate,List<Product> products,List<TrackFlow> trackFlows);
+    void handOver(List<Certificate> certificate);
 }

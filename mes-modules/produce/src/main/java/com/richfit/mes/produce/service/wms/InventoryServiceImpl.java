@@ -30,7 +30,7 @@ public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certifi
     public WmsThreeServiceClient wmsThreeServiceClient;
 
     @Override
-    public void handOver(List<Certificate> certificateList, List<Product> products, List<TrackFlow> trackFlows) {
+    public void handOver(List<Certificate> certificateList) {
         List<ApplyListUpload> applyListUploads = new ArrayList<>();
         for (Certificate certificate : certificateList) {
             if (!Certificate.IS_DELIVERY_TO_WAREHOUSE_1.equals(certificate.getIsDeliveryToWarehouse())) {
@@ -40,7 +40,7 @@ public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certifi
                 } else {
                     certificate.setIsDeliveryToWarehouse("1");
                     certificate.setDeliveryToWarehouseMessage("操作成功");
-                    ApplyListUpload applyListUpload = new ApplyListUpload(certificate,products,trackFlows);
+                    ApplyListUpload applyListUpload = new ApplyListUpload(certificate);
                     applyListUploads.add(applyListUpload);
                 }
             } else {

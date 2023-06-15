@@ -91,6 +91,10 @@ public class ApplyListUpload implements Serializable {
 
     }
 
+    public ApplyListUpload(Certificate certificate) {
+
+    }
+
     public ApplyListUpload(Certificate certificate, List<Product> products,List<TrackFlow> trackFlows) {
         this.id = certificate.getId();
         this.applyNum = UUID.randomUUID().toString().replaceAll("-", "");
