@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
  * @Description 物料服务
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
 
     @Autowired
@@ -210,27 +211,31 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     /**
      * 勾选物料同步到wms
      *
-     * @param ids
-     * @return
+     * @param products
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveWmsSync(List<String> ids) {
-        List<Product> productList = productMapper.selectBatchIds(ids);
-        if (CollectionUtils.isEmpty(productList)) {
+    public CommonResult<Boolean> saveWmsSync(List<Product> products) {
+        if (CollectionUtils.isEmpty(products)) {
             return CommonResult.failed("未勾选中物料数据");
         }
-        if (CollectionUtils.isNotEmpty(productList)) {
-            List<MaterialBasis> materialBasisList = new ArrayList<>(productList.size());
-            materialConvert(materialBasisList , productList);
-            // 同步到wms中
-            wmsServiceClient.materialBasis(materialBasisList);
-            return CommonResult.success(true, "操作成功");
+        List<MaterialBasis> materialBasisList = new ArrayList<>(products.size());
+        materialConvert(materialBasisList, products);
+        // 同步到wms中
+        CommonResult commonResult = wmsServiceClient.materialBasis(materialBasisList);
+        if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
+            for (Product product : products) {
+                product.setSynchronousRegime(1);
+            }
+        } else {
+            for (Product product : products) {
+                product.setSynchronousRegime(2);
+            }
         }
-        return CommonResult.failed("操作失败,插入数据不能为空");
+        this.updateBatchById(products);
+        return CommonResult.success(true, "操作成功");
     }
 
-    private static void materialConvert(List<MaterialBasis> materialBasisList,List<Product> productList) {
+    private static void materialConvert(List<MaterialBasis> materialBasisList, List<Product> productList) {
         for (Product product : productList) {
             MaterialBasis materialBasis = new MaterialBasis(product);
             // 工厂

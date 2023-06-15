@@ -36,7 +36,7 @@ public interface ProductService extends IService<Product> {
      * @param ids
      * @return
      */
-    CommonResult<Boolean> saveWmsSync(List<String> ids);
+    CommonResult<Boolean> saveWmsSync(List<Product> ids);
 
 
     /**
