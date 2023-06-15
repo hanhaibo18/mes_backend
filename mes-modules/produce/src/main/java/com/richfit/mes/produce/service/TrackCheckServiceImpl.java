@@ -138,7 +138,7 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
             completeQueryWrapper.in("ti_id", list);
             List<TrackComplete> completeList = trackCompleteService.list(completeQueryWrapper);
             //获取所有人员信息
-            List<String> collect = completeList.stream().map(TrackComplete::getCompleteBy).collect(Collectors.toList());
+            List<String> collect = completeList.stream().map(TrackComplete::getUserId).collect(Collectors.toList());
             Map<String, TenantUserVo> userAccountList = systemServiceClient.queryByUserAccountList(collect);
             completeList.forEach(complete -> {
                 if (userAccountList.get(complete.getUserId()) != null) {
@@ -159,7 +159,7 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
                 item.setTexture(trackHead.getTexture());
                 item.setPartsName(trackHead.getMaterialName());
                 item.setBatchNo(trackHead.getBatchNo());
-                String userName = completeUserList.get(item.getId()).stream().map(TrackComplete::getUserId).collect(Collectors.joining(","));
+                String userName = completeUserList.get(item.getId()).stream().map(TrackComplete::getUserId).distinct().collect(Collectors.joining(","));
                 item.setUserName(userName);
             }
             return CommonResult.success(assigns);
