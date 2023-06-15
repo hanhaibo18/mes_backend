@@ -543,5 +543,6 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String blankSpecifi;
 
-
+    @TableField(exist = false)
+    private String userName;
 }
