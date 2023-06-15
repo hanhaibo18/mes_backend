@@ -16,19 +16,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 功能描述:工时管理
+ * 功能描述:库存管理
  *
  * @Author: zhiqiang.lu
  * @Date: 2023/05/26 16:27
  **/
 @Slf4j
-@Api(value = "合格证管理", tags = {"合格证管理"})
+@Api(value = "库存管理", tags = {"库存管理"})
 @RestController
 @RequestMapping("/api/produce/wms/inventory")
 public class InventoryController {
-
-    @Autowired
-    CertificateService certificateService;
 
     @Autowired
     InventoryService inventoryService;
