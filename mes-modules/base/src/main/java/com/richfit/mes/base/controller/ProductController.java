@@ -12,6 +12,8 @@ import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.base.service.ProductionBomService;
 import com.richfit.mes.base.service.RouterService;
+import com.richfit.mes.base.service.wms.MaterialService;
+import com.richfit.mes.base.service.wms.MaterialServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
@@ -72,6 +74,9 @@ public class ProductController extends BaseController {
 
     @Autowired
     private RouterService routerService;
+
+    @Autowired
+    private MaterialService materialService;
 
     @ApiOperation(value = "根据excel导入物料")
     @PostMapping("/importMaterialByExcle")
@@ -722,8 +727,9 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "根据勾选数据同步到wms", notes = "根据勾选数据同步到wms")
     @PostMapping("/save_wms_sync")
-    public CommonResult<Boolean> saveWmsSync(@RequestBody List<Product> products) {
-        return productService.saveWmsSync(products);
+    public CommonResult<String> saveWmsSync(@RequestBody List<Product> products) {
+        materialService.sync(products);
+        return CommonResult.success("操作完成");
     }
 
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")
