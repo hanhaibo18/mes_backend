@@ -44,6 +44,7 @@ public class MaterialServiceImpl implements MaterialService {
         List<MaterialBasis> materialBasisList = new ArrayList<>(products.size());
         for (Product product : products) {
             MaterialBasis materialBasis = new MaterialBasis(product);
+            materialBasis.setWorkCode(erpCode);
             materialBasisList.add(materialBasis);
         }
         // 同步到wms中
