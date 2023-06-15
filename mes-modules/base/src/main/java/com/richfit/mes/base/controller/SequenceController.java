@@ -466,7 +466,7 @@ public class SequenceController extends BaseController {
 
         QueryWrapper<Product> queryWrapperProduct = new QueryWrapper<Product>();
         queryWrapperProduct.eq("tenant_id", router.getTenantId());
-        queryWrapperProduct.eq("drawing_no", router.getRouterNo());
+        DrawingNoUtil.queryLike(queryWrapperProduct, "drawing_no", router.getRouterNo());
         queryWrapperProduct.eq("material_type", "3");
         List<Product> products = productService.list(queryWrapperProduct);
         map.put("sequences", setOptCodeAndName(sequences));
