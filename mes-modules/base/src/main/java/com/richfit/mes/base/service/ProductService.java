@@ -40,4 +40,12 @@ public interface ProductService extends IService<Product> {
 
     Page<InventoryReturn> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture);
 
+    /**
+     * 功能描述: 定时同步接口
+     *
+     * @Author: xinYu.hou
+     * @Date: 2023/6/9 15:27
+     * @return: void
+     **/
+    void synchronizedMaterial();
 }
