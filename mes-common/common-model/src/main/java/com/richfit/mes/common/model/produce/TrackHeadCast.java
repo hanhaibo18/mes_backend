@@ -13,25 +13,43 @@ import java.math.BigDecimal;
 @Data
 public class TrackHeadCast extends BaseEntity<TrackHeadCast> {
 
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 跟单id
+     */
+    private String headId;
     /**
      * 钢水重量
      */
-    private BigDecimal moltenSteel;
+    private BigDecimal weightMolten;
 
     /**
      * 工艺保温时间
      */
-    private Double processHoldingTime;
+    private Double processHoldTime;
+    /**
+     * 试棒型号
+     */
+    private String testBar;
 
     /**
      * 工艺浇铸温度
      */
-    private String pouringTemperature;
-
+    private String pourTemp;
     /**
-     * 工艺浇铸速度
+     * 浇筑时间
      */
-    private String pouringRate;
+    private String pourTime;
+    /**
+     * 毛坯调质
+     */
+    private String blankControl;
+    /**
+     * 毛坯探伤
+     */
+    private String blankInspect;
 
     /**
      * 工厂代码
@@ -43,5 +61,4 @@ public class TrackHeadCast extends BaseEntity<TrackHeadCast> {
      */
     private String tenantId;
 
-    private static final long serialVersionUID = 1L;
 }
