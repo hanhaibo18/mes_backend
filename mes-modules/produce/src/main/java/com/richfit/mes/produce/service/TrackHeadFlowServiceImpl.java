@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.produce.TrackFlow;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,5 +49,16 @@ public class TrackHeadFlowServiceImpl extends ServiceImpl<TrackFlowMapper, Track
         QueryWrapper<TrackFlow> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("track_head_id", trackHeadId);
         return this.list(queryWrapper);
+    }
+
+    @Override
+    public List<TrackFlow> selectFlowList(Map<String, String> map) {
+        List<TrackFlow> trackFlows = new ArrayList<>();
+        List<TrackHead> trackHeads = trackFlowMapper.selectTrackFlowList(map);
+        for (TrackHead trackHead : trackHeads) {
+            TrackFlow trackFlow = JSON.parseObject(JSON.toJSONString(trackHead), TrackFlow.class);
+            trackFlows.add(trackFlow);
+        }
+        return trackFlows;
     }
 }
