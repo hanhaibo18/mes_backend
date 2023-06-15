@@ -2,7 +2,9 @@ package com.richfit.mes.produce.service.wms;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Certificate;
+import com.richfit.mes.common.model.produce.TrackFlow;
 
 import java.util.List;
 
@@ -21,5 +23,5 @@ public interface InventoryService extends IService<Certificate> {
      * @Author: zhiqiang.lu
      * @Date: 2023/05/26 16:27
      **/
-    void handOver(List<Certificate> certificate);
+    void handOver(List<Certificate> certificate,List<Product> products,List<TrackFlow> trackFlows);
 }

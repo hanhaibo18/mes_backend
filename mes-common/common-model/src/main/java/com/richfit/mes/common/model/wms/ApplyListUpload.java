@@ -102,7 +102,7 @@ public class ApplyListUpload implements Serializable {
         this.batchNo = certificate.getBatchNo();
         this.createBy = certificate.getCreateBy();
         this.createTime = certificate.getCreateTime();
-        List<ApplyLineList> lineList = new ArrayList<>(products.size());
+        this.lineList = new ArrayList<>(products.size());
         int i = 0;
         for (Product product : products) {
             ApplyLineList applyLineList = new ApplyLineList();
@@ -126,6 +126,7 @@ public class ApplyListUpload implements Serializable {
                 applyLineProductList.setQuantity(trackFlow.getNumber());
                 list.add(applyLineProductList);
             }
+            applyLineList.setLineList(list);
             lineList.add(applyLineList);
         }
     }

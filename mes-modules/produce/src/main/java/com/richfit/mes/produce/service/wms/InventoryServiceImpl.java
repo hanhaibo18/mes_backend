@@ -3,11 +3,11 @@ package com.richfit.mes.produce.service.wms;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Certificate;
-import com.richfit.mes.common.model.produce.WmsResult;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.wms.ApplyListUpload;
 import com.richfit.mes.produce.dao.CertificateMapper;
-import com.richfit.mes.produce.provider.WmsServiceClient;
 import com.richfit.mes.produce.provider.WmsThreeServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certifi
     public WmsThreeServiceClient wmsThreeServiceClient;
 
     @Override
-    public void handOver(List<Certificate> certificateList) {
+    public void handOver(List<Certificate> certificateList, List<Product> products, List<TrackFlow> trackFlows) {
         List<ApplyListUpload> applyListUploads = new ArrayList<>();
         for (Certificate certificate : certificateList) {
             if (!Certificate.IS_DELIVERY_TO_WAREHOUSE_1.equals(certificate.getIsDeliveryToWarehouse())) {
@@ -40,7 +40,7 @@ public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certifi
                 } else {
                     certificate.setIsDeliveryToWarehouse("1");
                     certificate.setDeliveryToWarehouseMessage("操作成功");
-                    ApplyListUpload applyListUpload = new ApplyListUpload(certificate);
+                    ApplyListUpload applyListUpload = new ApplyListUpload(certificate,products,trackFlows);
                     applyListUploads.add(applyListUpload);
                 }
             } else {
