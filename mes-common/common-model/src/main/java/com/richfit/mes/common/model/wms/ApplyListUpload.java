@@ -126,9 +126,9 @@ public class ApplyListUpload implements Serializable {
         this.applyNum = UUID.randomUUID().toString().replaceAll("-", "");
         if (certificate.getTenantId().equals(TENANT_ID)) {
             // 单据类型
-            this.transType = NORMAL_TYPE;
-        } else {
             this.transType = AUTO_TYPE;
+        } else {
+            this.transType = NORMAL_TYPE;
         }
         // 工厂
         this.workCode = tenantErpCode;
