@@ -9,6 +9,7 @@ import com.richfit.mes.common.model.produce.TrackFlow;
 import com.richfit.mes.common.model.wms.ApplyListUpload;
 import com.richfit.mes.produce.dao.CertificateMapper;
 import com.richfit.mes.produce.provider.WmsThreeServiceClient;
+import com.richfit.mes.produce.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,10 @@ import java.util.List;
  **/
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certificate> implements InventoryService {
+public class InventoryServiceImpl implements InventoryService {
+
+    @Autowired
+    public CertificateService certificateService;
 
     @Autowired
     public WmsThreeServiceClient wmsThreeServiceClient;
@@ -50,13 +54,13 @@ public class InventoryServiceImpl extends ServiceImpl<CertificateMapper, Certifi
         }
         CommonResult commonResult = wmsThreeServiceClient.applyListUpload(applyListUploads);
         if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
-            this.updateBatchById(certificateList);
+            certificateService.updateBatchById(certificateList);
         } else {
             for (Certificate certificate : certificateList) {
                 certificate.setIsDeliveryToWarehouse("2");
                 certificate.setDeliveryToWarehouseMessage(commonResult.getMessage());
             }
-            this.updateBatchById(certificateList);
+            certificateService.updateBatchById(certificateList);
         }
     }
 }

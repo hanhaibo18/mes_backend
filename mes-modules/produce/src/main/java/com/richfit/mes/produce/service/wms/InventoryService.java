@@ -14,7 +14,7 @@ import java.util.List;
  * @Author: zhiqiang.lu
  * @Date: 2023/05/26 16:27
  **/
-public interface InventoryService extends IService<Certificate> {
+public interface InventoryService {
     /**
      * 功能描述:上交库存
      *
