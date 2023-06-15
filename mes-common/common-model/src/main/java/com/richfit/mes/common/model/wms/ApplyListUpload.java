@@ -152,6 +152,7 @@ public class ApplyListUpload implements Serializable {
         this.lineList = new ArrayList<>(products.size());
         int i = 0;
         for (Product product : products) {
+            //TODO  这个判断有社么意义吗？
             if (this.id.equals(certificate.getId())) {
                 ApplyLineList applyLineList = new ApplyLineList();
                 // 申请单id
@@ -186,6 +187,7 @@ public class ApplyListUpload implements Serializable {
                 applyLineList.setMaterialDesc(product.getProductName());
                 List<ApplyLineProductList> list = new ArrayList<>(trackFlows.size());
                 for (TrackFlow trackFlow: trackFlows) {
+                    //TODO  这个判断有社么意义吗？
                     if (applyLineList.getId().equals(certificate.getId())) {
                         ApplyLineProductList applyLineProductList = new ApplyLineProductList();
                         // 申请单行id
