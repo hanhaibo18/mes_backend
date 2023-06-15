@@ -221,46 +221,45 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         if (CollectionUtils.isEmpty(productList)) {
             return CommonResult.failed("未勾选中物料数据");
         }
-        // 查询所有的租户信息
-        Map<String, Tenant> tenantMap = systemServiceClient.queryTenantAllList().getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
-        Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(e -> e.getId(), product -> product, (value1, value2) -> value2));
         if (CollectionUtils.isNotEmpty(productList)) {
-            List<MaterialBasis> materialBasisList = new ArrayList<>();
-            for (Product product : productList) {
-                MaterialBasis materialBasis = new MaterialBasis();
-                materialBasis.setWorkCode(tenantMap.get(product.getTenantId()).getTenantErpCode());
-                materialBasis.setMaterialNum(productMap.get(product.getId()).getMaterialNo());
-                materialBasis.setMaterialDesc(productMap.get(product.getId()).getMaterialDesc());
-                materialBasis.setUnit(productMap.get(product.getId()).getUnit());
-                materialBasis.setCrucialFlag(productMap.get(product.getId()).getIsKeyPart());
-                materialBasis.setTrackingMode(productMap.get(product.getId()).getTrackType());
-                materialBasis.setPartsMaterial(productMap.get(product.getId()).getTexture());
-                materialBasis.setSpec(productMap.get(product.getId()).getSpecification());
-                if (productMap.get(product.getId()).getWeight() == null) {
-                    materialBasis.setSingleWeight(null);
-                } else {
-                    materialBasis.setSingleWeight(productMap.get(product.getId()).getWeight().toString());
-                }
-                materialBasis.setDeliveryFlag(productMap.get(product.getId()).getIsEdgeStore());
-                materialBasis.setMaterialType(MaterialTypeEnum.getName(productMap.get(product.getId()).getMaterialType()));
-                materialBasis.setWorkshop(productMap.get(product.getId()).getBranchCode());
-                materialBasisList.add(materialBasis);
-                //修改物料同步状态
-                product.setSynchronousRegime(1);
-                this.updateById(product);
-            }
-            List<MaterialBasisDto> basisDtoList = materialBasisList.stream().map(MaterialBasisDto::map).collect(Collectors.toList());
-            Set<MaterialBasisDto> basisDtoSet = materialBasisList.stream().map(MaterialBasisDto::map).collect(Collectors.toSet());
-            if (basisDtoList.size() == basisDtoSet.size()) {
-                // 同步到wms中
-                wmsServiceClient.materialBasis(materialBasisList);
-                return CommonResult.success(true, "操作成功");
-            } else {
-                return CommonResult.failed("操作失败,勾选的数据在同一个工厂下的物料编码不能相同");
-            }
+            List<MaterialBasis> materialBasisList = new ArrayList<>(productList.size());
+            materialConvert(materialBasisList, productList);
+            // 同步到wms中
+            wmsServiceClient.materialBasis(materialBasisList);
+            return CommonResult.success(true, "操作成功");
         }
         return CommonResult.failed("操作失败,插入数据不能为空");
     }
+
+    private static void materialConvert(List<MaterialBasis> materialBasisList, List<Product> productList) {
+        for (Product product : productList) {
+            MaterialBasis materialBasis = new MaterialBasis(product);
+            // 工厂
+            materialBasis.setWorkCode(SecurityUtils.getCurrentUser().getTenantErpCode());
+            if (!StringUtils.isNullOrEmpty(materialBasis.getProduceType())) {
+                // 制造类型
+                materialBasis.setProduceType(ObjectTypeEnum.getMessage(materialBasis.getProduceType()));
+            }
+            if (!StringUtils.isNullOrEmpty(materialBasis.getMaterialType())) {
+                // 物料类型
+                materialBasis.setMaterialType(MaterialTypeEnum.getMessage(materialBasis.getMaterialType()));
+            }
+            if (!StringUtils.isNullOrEmpty(materialBasis.getTrackingMode())) {
+                // 跟踪方式
+                materialBasis.setTrackingMode(TrackTypeEnum.getMessage(materialBasis.getTrackingMode()));
+            }
+            if (!StringUtils.isNullOrEmpty(materialBasis.getTrackingMode())) {
+                // 关键件
+                materialBasis.setCrucialFlag(MessageEnum.getMessage(Integer.parseInt(materialBasis.getCrucialFlag())));
+            }
+            if (!StringUtils.isNullOrEmpty(materialBasis.getDeliveryFlag())) {
+                // 实物配送
+                materialBasis.setDeliveryFlag(MessageEnum.getMessage(Integer.parseInt(materialBasis.getDeliveryFlag())));
+            }
+            materialBasisList.add(materialBasis);
+        }
+    }
+
 
     /**
      * 查询库存
