@@ -196,6 +196,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "是否自动派工", dataType = "Integer")
     private Integer isAutoSchedule;
+    @ApiModelProperty(value = "模型配送状态0已申请未配送1已配送 2已退库", dataType = "Integer")
+    private Integer modelStatus;
 
 
     /**

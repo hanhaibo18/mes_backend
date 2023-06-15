@@ -130,6 +130,9 @@ public class HotModelStoreController extends BaseController {
         if (StringUtils.isNotEmpty(hotModelStorQueryVo.getModelTexture())) {
             queryWrapper.like("model_texture", hotModelStorQueryVo.getModelTexture());
         }
+        if (StringUtils.isNotEmpty(hotModelStorQueryVo.getVersion())) {
+            queryWrapper.eq("version", hotModelStorQueryVo.getVersion());
+        }
         queryWrapper.eq("tenant_id", hotModelStorQueryVo.getTenantId());
         //排序工具
         OrderUtil.query(queryWrapper, hotModelStorQueryVo.getOrderCol(), hotModelStorQueryVo.getOrder());

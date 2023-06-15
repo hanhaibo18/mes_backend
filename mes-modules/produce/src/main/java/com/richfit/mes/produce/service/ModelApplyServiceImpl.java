@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -8,18 +9,17 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.HotModelStore;
-import com.richfit.mes.common.model.produce.TrackItem;
 import com.richfit.mes.common.model.produce.ModelApply;
+import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.entity.ModelApplyItem;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.ModelApplyMapper;
+import com.richfit.mes.produce.dao.TrackAssignMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +35,211 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
     private HotModelStoreService hotModelStoreService;
     @Autowired
     private ModelApplyMapper modelApplyMapper;
+    @Autowired
+    private ModelApplyItemService modelApplyItemService;
+    @Autowired
+    private TrackItemService trackItemService;
+    @Autowired
+    private TrackAssignMapper trackAssignMapper;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> applyModelNew(String branchCode, List<TrackItem> itemInfo) {
+        Date now = new Date();
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        if (CollectionUtils.isEmpty(itemInfo)) {
+            throw new GlobalException("请选择要请求模型的工序！", ResultCode.FAILED);
+        }
+        for (TrackItem trackItem : itemInfo) {
+            if (!"18".equals(trackItem.getOptType())) {
+                throw new GlobalException("只有造型工序可以申请模型！请重试", ResultCode.FAILED);
+            }
+            trackItem.setModelStatus(0);
+        }
+        //将工序按照图号版本号分组
+        Map<String, Map<String, List<TrackItem>>> groupByDrawNoAndVer = itemInfo.stream().collect(Collectors.groupingBy(TrackItem::getDrawingNo, Collectors.groupingBy(TrackItem::getOptVer)));
+        //检查版本号图号是否重复（重复添加数量和工序信息，不重复新增）
+        QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
+        groupByDrawNoAndVer.forEach((drawingNo, drawingNoMap) -> drawingNoMap.forEach((ver, item) -> {
+            int num = 0;
+            modelApplyQueryWrapper.eq("model_drawing_no", drawingNo).eq("model_version", ver)
+                    .eq("apply_status", 0);
+            ModelApply apply = this.getOne(modelApplyQueryWrapper);
+            //有同版本号图号的模型请求时，删除掉申请请求中已请求过的工序，并将没有申请过的数量加进去
+            if (!Objects.isNull(apply)) {
+                QueryWrapper<ModelApplyItem> modelApplyItemQueryWrapper = new QueryWrapper<>();
+                modelApplyItemQueryWrapper.eq("apply_id", apply.getId());
+                List<ModelApplyItem> modelApplyItemList = modelApplyItemService.list(modelApplyItemQueryWrapper);
+                Set<String> appliedItemIds = modelApplyItemList.stream().map(ModelApplyItem::getItemId).collect(Collectors.toSet());
+                item = item.stream().filter(thisItem -> !appliedItemIds.contains(thisItem.getId())).collect(Collectors.toList());
+                for (TrackItem trackItem : item) {
+                    num += trackItem.getAssignableQty() == null ? 0 : trackItem.getAssignableQty();
+                }
+                apply.setApplyNum(apply.getApplyNum() + num);
+                this.updateById(apply);
+            } else {
+                //如果没有模型请求，则新增模型请求
+                for (TrackItem trackItem : item) {
+                    num += trackItem.getAssignableQty() == null ? 0 : trackItem.getAssignableQty();
+                }
+                apply = new ModelApply();
+                apply.setTenantId(tenantId);
+                apply.setApplyNum(num);
+                apply.setApplyStatus(0);
+                apply.setBranchCode(branchCode);
+                apply.setModelVersion(ver);
+                apply.setModelDrawingNo(drawingNo);
+                apply.setApplyTime(now);
+                this.save(apply);
+            }
+            List<ModelApplyItem> modelApplyItems = new ArrayList<>();
+            for (TrackItem trackItem : item) {
+                ModelApplyItem modelApplyItem = new ModelApplyItem();
+                modelApplyItem.setItemId(trackItem.getId());
+                modelApplyItem.setApplyId(apply.getId());
+                modelApplyItems.add(modelApplyItem);
+            }
+            modelApplyItemService.saveBatch(modelApplyItems);
+        }));
+        trackItemService.updateBatchById(itemInfo);
+        return CommonResult.success(true, "模型请求成功！");
+    }
+
+    @Override
+    public CommonResult<Page<ModelApply>> getPageInfoNew(int applyStatus, String branchCode, String drawingNo, String startTime, String endTime, int page, int limit) {
+        QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
+        modelApplyQueryWrapper.eq("apply_status", applyStatus).eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        modelApplyQueryWrapper.apply("UNIX_TIMESTAMP(apply_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+        modelApplyQueryWrapper.apply("UNIX_TIMESTAMP(apply_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+        return CommonResult.success(this.page(new Page<ModelApply>(page, limit), modelApplyQueryWrapper));
+    }
+
+    @Override
+    public Boolean deliveryNew(String modelId, String modelApplyId) {
+        Date now = new Date();
+        String tenantId = SecurityUtils.getCurrentUser().getTenantId();
+        ModelApply modelApply = this.getById(modelApplyId);
+        HotModelStore model = hotModelStoreService.getById(modelId);
+        //配送模型是木制模，根据图号版本号修改所有铸钢车间是当前工序的同图号版本号的造型工序
+        if (model.getModelType() == 1) {
+            if (model.getNormalNum() < 1) {
+                throw new GlobalException("模型库数量不足！", ResultCode.FAILED);
+            }
+            reusableModels(now, tenantId, modelApply, model);
+        }
+        //一次性模型，需要匹配申请数量和当前库存数量
+        else if (model.getModelType() == 0) {
+            //若当前库存数大于申请数量，将所有申请工序调整为已配送
+            if (model.getNormalNum() <= 0) {
+                throw new GlobalException("该模型已没有库存！", ResultCode.FAILED);
+            } else if (model.getNormalNum() >= modelApply.getApplyNum()) {
+                adequateStock(now, modelApply, model);
+            } //当库存剩余小于申请数量时，需要将当前申请拆分，库存足够派送的部分为已派送，不够的部分为已申请
+            else {
+                understockOperation(modelId, now, modelApply, model);
+            }
+            this.updateById(modelApply);
+            hotModelStoreService.updateById(model);
+
+        }
+        return true;
+    }
+
+    private void reusableModels(Date now, String tenantId, ModelApply modelApply, HotModelStore model) {
+        model.setNormalNum(model.getNormalNum() - 1);
+        modelApply.setModelId(model.getId());
+        modelApply.setModelName(model.getModelName());
+        modelApply.setAssignNum(1);
+        modelApply.setModelType(1);
+        modelApply.setApplyStatus(1);
+        modelApply.setDeliveryTime(now);
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("is_current", 1).eq("drawing_no", model.getModelDrawingNo())
+                .eq("opt_ver", model.getVersion()).eq("tenant_id", tenantId)
+                .eq("branchCode", modelApply.getBranchCode()).eq("opt_type", 18);
+        List<TrackItem> trackItemList = trackItemService.list(trackItemQueryWrapper);
+        for (TrackItem trackItem : trackItemList) {
+            trackItem.setModelStatus(1);
+        }
+        trackItemService.updateBatchById(trackItemList);
+    }
+
+    private void adequateStock(Date now, ModelApply modelApply, HotModelStore model) {
+        model.setNormalNum(model.getNormalNum() - modelApply.getApplyNum());
+        modelApply.setModelId(model.getId());
+        modelApply.setModelName(model.getModelName());
+        modelApply.setAssignNum(modelApply.getApplyNum());
+        modelApply.setModelType(0);
+        modelApply.setApplyStatus(1);
+        modelApply.setDeliveryTime(now);
+        //修改申请过该模型的工序模型配送状态为已配送
+        QueryWrapper<ModelApplyItem> modelApplyItemQueryWrapper = new QueryWrapper<>();
+        modelApplyItemQueryWrapper.eq("apply_id", modelApply.getId());
+        List<ModelApplyItem> modelApplyItemList = modelApplyItemService.list(modelApplyItemQueryWrapper);
+        Set<String> itemIdSet = modelApplyItemList.stream().map(ModelApplyItem::getItemId).collect(Collectors.toSet());
+        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+        trackItemUpdateWrapper.set("model_status", 1).in("id", itemIdSet);
+        trackItemService.update(trackItemUpdateWrapper);
+    }
+
+    private void understockOperation(String modelId, Date now, ModelApply modelApply, HotModelStore model) {
+        QueryWrapper<ModelApplyItem> modelApplyItemQueryWrapper = new QueryWrapper<>();
+        modelApplyItemQueryWrapper.eq("apply_id", modelApply.getId());
+        List<ModelApplyItem> modelApplyItemList = modelApplyItemService.list(modelApplyItemQueryWrapper);
+        Set<String> itemIdSet = modelApplyItemList.stream().map(ModelApplyItem::getItemId).collect(Collectors.toSet());
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.in("id", itemIdSet).orderByAsc("plan_end_time").orderByDesc("plan_end_time")
+                .isNull("plan_end_time");
+        List<TrackItem> trackItemList = trackAssignMapper.getPageAssignsHot(trackItemQueryWrapper);
+        List<TrackItem> assignItemList = new ArrayList<>();
+        Integer normalNum = model.getNormalNum();
+        Integer assignNum = 0;
+        for (TrackItem item : trackItemList) {
+            if (normalNum == 0) {
+                break;
+            }
+            if (item.getAssignableQty() <= normalNum) {
+                assignNum += item.getAssignableQty();
+                normalNum -= item.getAssignableQty();
+                assignItemList.add(item);
+            }
+        }
+        if (CollectionUtils.isEmpty(assignItemList)) {
+            throw new GlobalException("剩余数量不足以完成一个跟单！", ResultCode.FAILED);
+        }
+        modelApply.setApplyNum(modelApply.getApplyNum() - assignNum);
+        model.setNormalNum(model.getNormalNum() - assignNum);
+        QueryWrapper<ModelApplyItem> modelApplyItemQueryWrapperDelete = new QueryWrapper<>();
+        modelApplyItemQueryWrapperDelete.eq("apply_id", modelApply.getId()).
+                in("item_id", assignItemList.stream().map(TrackItem::getId));
+        modelApplyItemService.remove(modelApplyItemQueryWrapperDelete);
+        //新建一个已配送的模型请求
+        ModelApply modelApplyNew = new ModelApply();
+        modelApplyNew.setModelType(0);
+        modelApplyNew.setTenantId(modelApply.getTenantId());
+        modelApplyNew.setBranchCode(modelApply.getBranchCode());
+        modelApplyNew.setModelId(modelId);
+        modelApplyNew.setModelName(model.getModelName());
+        modelApplyNew.setModelDrawingNo(modelApply.getModelDrawingNo());
+        modelApplyNew.setApplyNum(assignNum);
+        modelApplyNew.setAssignNum(assignNum);
+        modelApplyNew.setModelVersion(model.getVersion());
+        modelApplyNew.setApplyStatus(1);
+        modelApplyNew.setApplyTime(modelApply.getApplyTime());
+        modelApplyNew.setDeliveryTime(now);
+        this.save(modelApplyNew);
+        List<ModelApplyItem> modelApplyItems = new ArrayList<>();
+        for (TrackItem trackItem : assignItemList) {
+            ModelApplyItem modelApplyItem = new ModelApplyItem();
+            modelApplyItem.setApplyId(modelApplyNew.getId());
+            modelApplyItem.setItemId(trackItem.getId());
+            modelApplyItems.add(modelApplyItem);
+        }
+        modelApplyItemService.saveBatch(modelApplyItems);
+        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+        trackItemUpdateWrapper.set("model_status", 1).in("id", assignItemList.stream().map(TrackItem::getId));
+        trackItemService.update(trackItemUpdateWrapper);
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -59,8 +264,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
             //一次性的模型查询该工序是否已经申请过模型请求
             if (modelInfo.getModelType() != null && modelInfo.getModelType().equals(0)) {
                 QueryWrapper<ModelApply> applyWrapper = new QueryWrapper<>();
-                applyWrapper.eq("tenant_id", tenantId).eq("model_drawing_no", trackItem.getDrawingNo())
-                        .eq("item_id", trackItem.getId()).eq("model_version", trackItem.getOptVer());
+                applyWrapper.eq("tenant_id", tenantId).eq("model_drawing_no", trackItem.getDrawingNo()).eq("item_id", trackItem.getId()).eq("model_version", trackItem.getOptVer());
                 List<ModelApply> applyList = this.list(applyWrapper);
                 //如果申请过继续下一条
                 if (CollectionUtils.isNotEmpty(applyList)) {
@@ -71,8 +275,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
             //可重复的模型查询该模型是否被申请过且没有退库
             if (modelInfo.getModelType() != null && modelInfo.getModelType().equals(1)) {
                 QueryWrapper<ModelApply> applyWrapper = new QueryWrapper<>();
-                applyWrapper.eq("tenant_id", tenantId).eq("model_id", modelInfo.getId())
-                        .ne("apply_status", 2);
+                applyWrapper.eq("tenant_id", tenantId).eq("model_id", modelInfo.getId()).ne("apply_status", 2);
                 List<ModelApply> applyList = this.list(applyWrapper);
                 if (CollectionUtils.isNotEmpty(applyList)) {
                     appliedList.add(trackItem);
@@ -82,8 +285,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
             //可重复模型查询是否有退库过的
             if (modelInfo.getModelType() != null && modelInfo.getModelType().equals(1)) {
                 QueryWrapper<ModelApply> applyWrapper = new QueryWrapper<>();
-                applyWrapper.eq("tenant_id", tenantId).eq("model_id", modelInfo.getId())
-                        .eq("apply_status", 2);
+                applyWrapper.eq("tenant_id", tenantId).eq("model_id", modelInfo.getId()).eq("apply_status", 2);
                 ModelApply apply = this.getOne(applyWrapper);
                 if (apply != null) {
                     apply.setDeliveryTime(null);
@@ -125,8 +327,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
             if (modelApply.getModelType() != null && modelApply.getModelType().equals(0)) {
                 //根据图号和版本号获取库存信息
                 QueryWrapper<HotModelStore> hotModelStoreQueryWrapper = new QueryWrapper<>();
-                hotModelStoreQueryWrapper.eq("tenant_id", tenantId).eq("model_drawing_no", modelApply.getModelDrawingNo())
-                        .eq("version", modelApply.getModelVersion());
+                hotModelStoreQueryWrapper.eq("tenant_id", tenantId).eq("model_drawing_no", modelApply.getModelDrawingNo()).eq("version", modelApply.getModelVersion());
                 HotModelStore modelInfo = hotModelStoreService.getOne(hotModelStoreQueryWrapper);
                 if (modelInfo == null || modelInfo.getNormalNum() <= 0) {
                     throw new GlobalException("库存数量不足！", ResultCode.FAILED);
@@ -135,9 +336,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
                 modelInfo.setNormalNum(Math.max(modelInfo.getNormalNum() - modelApply.getApplyNum(), 0));
                 //拿到未配送的申请列表,更改配送状态为已配送
                 QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
-                modelApplyQueryWrapper.eq("tenant_id", tenantId).eq("branch_code", modelApply.getBranchCode())
-                        .eq("model_drawing_no", modelApply.getModelDrawingNo()).eq("model_version", modelApply.getModelVersion())
-                        .eq("apply_status", 0).orderByAsc("plan_finish_time");
+                modelApplyQueryWrapper.eq("tenant_id", tenantId).eq("branch_code", modelApply.getBranchCode()).eq("model_drawing_no", modelApply.getModelDrawingNo()).eq("model_version", modelApply.getModelVersion()).eq("apply_status", 0).orderByAsc("plan_finish_time");
                 List<ModelApply> notDeliveryApplyList = this.list(modelApplyQueryWrapper);
                 if (CollectionUtils.isNotEmpty(notDeliveryApplyList)) {
                     for (int i = 0; i < (modelInfo.getNormalNum() > modelApply.getApplyNum() ? modelApply.getApplyNum() : modelInfo.getNormalNum()); i++) {
@@ -151,9 +350,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
             //如果模型是木制模 直接修改状态为已配送
             if (modelApply.getModelType() != null && modelApply.getModelType().equals(1)) {
                 QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
-                modelApplyQueryWrapper.eq("tenant_id", tenantId).eq("branch_code", modelApply.getBranchCode())
-                        .eq("model_drawing_no", modelApply.getModelDrawingNo()).eq("model_version", modelApply.getModelVersion())
-                        .eq("apply_status", 0);
+                modelApplyQueryWrapper.eq("tenant_id", tenantId).eq("branch_code", modelApply.getBranchCode()).eq("model_drawing_no", modelApply.getModelDrawingNo()).eq("model_version", modelApply.getModelVersion()).eq("apply_status", 0);
                 ModelApply apply = this.getOne(modelApplyQueryWrapper);
                 if (apply != null) {
                     apply.setApplyStatus(1);
@@ -173,9 +370,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
                 throw new GlobalException("气化模不可退库！", ResultCode.FAILED);
             }
             QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
-            modelApplyQueryWrapper.eq("tenant_id", modelApply.getTenantId()).eq("branch_code", modelApply.getBranchCode())
-                    .eq("model_drawing_no", modelApply.getModelDrawingNo()).eq("model_version", modelApply.getModelVersion())
-                    .eq("model_type", 1);
+            modelApplyQueryWrapper.eq("tenant_id", modelApply.getTenantId()).eq("branch_code", modelApply.getBranchCode()).eq("model_drawing_no", modelApply.getModelDrawingNo()).eq("model_version", modelApply.getModelVersion()).eq("model_type", 1);
             ModelApply apply = this.getOne(modelApplyQueryWrapper);
             apply.setApplyStatus(2);
             updateList.add(apply);
