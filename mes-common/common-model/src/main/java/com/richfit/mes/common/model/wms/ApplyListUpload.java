@@ -109,29 +109,34 @@ public class ApplyListUpload implements Serializable {
         this.lineList = new ArrayList<>(products.size());
         int i = 0;
         for (Product product : products) {
-            ApplyLineList applyLineList = new ApplyLineList();
-            applyLineList.setApplyId(UUID.randomUUID().toString().replaceAll("-", ""));
-            applyLineList.setId(this.id);
-            applyLineList.setLineNum(i ++);
-            applyLineList.setDrawingNo(certificate.getDrawingNo());
-            applyLineList.setMaterialNum(certificate.getMaterialNo());
-            applyLineList.setMaterialDesc(certificate.getMaterialName());
-            applyLineList.setUnit(product.getUnit());
-            applyLineList.setQuantity(certificate.getNumber());
-            applyLineList.setMaterialType(product.getMaterialType());
-            applyLineList.setCrucialFlag(product.getIsKeyPart());
-            applyLineList.setTrackingMode(product.getTrackType());
-            applyLineList.setMaterialDesc(product.getProductName());
-            List<ApplyLineProductList> list = new ArrayList<>(trackFlows.size());
-            for (TrackFlow trackFlow: trackFlows) {
-                ApplyLineProductList applyLineProductList = new ApplyLineProductList();
-                applyLineProductList.setApplyLineId(certificate.getId());
-                applyLineProductList.setProductNum(trackFlow.getProductNo());
-                applyLineProductList.setQuantity(trackFlow.getNumber());
-                list.add(applyLineProductList);
+            if (this.id.equals(certificate.getId())) {
+                ApplyLineList applyLineList = new ApplyLineList();
+                applyLineList.setApplyId(UUID.randomUUID().toString().replaceAll("-", ""));
+                applyLineList.setId(this.id);
+                applyLineList.setLineNum(i ++);
+                applyLineList.setDrawingNo(certificate.getDrawingNo());
+                applyLineList.setMaterialNum(certificate.getMaterialNo());
+                applyLineList.setMaterialDesc(certificate.getMaterialName());
+                applyLineList.setUnit(product.getUnit());
+                applyLineList.setQuantity(certificate.getNumber());
+                applyLineList.setMaterialType(product.getMaterialType());
+                applyLineList.setCrucialFlag(product.getIsKeyPart());
+                applyLineList.setTrackingMode(product.getTrackType());
+                applyLineList.setMaterialDesc(product.getProductName());
+                List<ApplyLineProductList> list = new ArrayList<>(trackFlows.size());
+                for (TrackFlow trackFlow: trackFlows) {
+                    if (applyLineList.getId().equals(certificate.getId())) {
+                        ApplyLineProductList applyLineProductList = new ApplyLineProductList();
+                        applyLineProductList.setApplyLineId(certificate.getId());
+                        applyLineProductList.setProductNum(trackFlow.getProductNo());
+                        applyLineProductList.setQuantity(trackFlow.getNumber());
+                        list.add(applyLineProductList);
+                    }
+                }
+                applyLineList.setLineList(list);
+                lineList.add(applyLineList);
             }
-            applyLineList.setLineList(list);
-            lineList.add(applyLineList);
+
         }
     }
 }
