@@ -371,6 +371,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ", dataType = "Integer")
     private Integer isLongPeriod;
     @TableField(exist = false)
+    @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ")
+    private String longPeriod;
+    @TableField(exist = false)
     @ApiModelProperty(value = "计划完成时间 ", dataType = "Date")
     private Date planEndTime;
     @TableField(exist = false)

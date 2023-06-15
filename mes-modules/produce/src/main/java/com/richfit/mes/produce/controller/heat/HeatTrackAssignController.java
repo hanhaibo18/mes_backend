@@ -337,6 +337,8 @@ public class HeatTrackAssignController extends BaseController {
             for (TrackItem trackItem : itemList) {
                 //是否冶炼配炉
                 trackItem.setIfPrechargeFurnace(Strings.isBlank(trackItem.getPrechargeFurnaceAssignId()) ? "否" : "是");
+                //是否长周期：0：：否；1：：是；
+                trackItem.setLongPeriod(trackItem.getIsLongPeriod() == 1 ? "是" : "否");
                 LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 trackHeadLambdaQueryWrapper.eq(TrackHead::getId, trackItem.getTrackHeadId());
                 TrackHead trackHead = trackHeadMapper.selectOne(trackHeadLambdaQueryWrapper);
@@ -347,7 +349,7 @@ public class HeatTrackAssignController extends BaseController {
                     "工序类型", "材质", "单重（KG）", "钢水（KG）", "炉号", "长周期", "优先级", "计划完成时间", "备注"};
 
             String[] fieldNames = {"trackHeadId", "ifPrechargeFurnace", "projectName", "workNo", "productName", "productNo", "drawingNo", "routerVer", "sequenceOrderBy", "optNo", "optName",
-                    "optType", "texture", "weight", "weightMolten", "prechargeFurnaceId", "isLongPeriod", "priority", "planEndTime", "--"};
+                    "optType", "texture", "weight", "weightMolten", "prechargeFurnaceId", "longPeriod", "priority", "planEndTime", "--"};
 
 
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
