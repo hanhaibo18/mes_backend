@@ -300,10 +300,14 @@ public class TrackHeadController extends BaseController {
                                                                   @ApiParam(value = "条数") @RequestParam(required = false) int limit,
                                                                   @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
                                                                   @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter,
-                                                                  @ApiParam(value = "是否绑定合格证") @RequestParam(required = false) boolean noCertNo) {
+                                                                  @ApiParam(value = "是否绑定合格证") @RequestParam(required = false) boolean noCertNo,
+                                                                  @ApiParam(value = "毛坯类型") @RequestParam(required = false) String workblankType) {
         QueryWrapper<TrackHead> queryWrapper = new QueryWrapper<TrackHead>();
         if (!StringUtils.isNullOrEmpty(classes)) {
-            queryWrapper.ge("classes", classes);
+            queryWrapper.eq("classes", classes);
+        }
+        if (!StringUtils.isNullOrEmpty(workblankType)) {
+            queryWrapper.eq("workblank_type", workblankType);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             TimeUtil.queryStartTime(queryWrapper, startTime);
@@ -447,11 +451,12 @@ public class TrackHeadController extends BaseController {
                                 @ApiParam(value = "条数") @RequestParam(required = false) int limit,
                                 @ApiParam(value = "跟单分类：1机加  2装配 3热处理 4钢结构") @RequestParam(required = false) String classes,
                                 @ApiParam(value = "是否绑定工艺") @RequestParam(required = false) String isBindRouter,
+                                @ApiParam(value = "毛坯类型") @RequestParam(required = false) String workblankType,
                                 HttpServletResponse rsp) {
         try {
             List<TrackHeadPublicVo> records = this.selectTrackHead(startTime, endTime, startDate, endDate, id, trackNo, drawingNo, productionOrder, workPlanId, workPlanNo, productNo, materialNo, status, batchNo,
                     workNo,
-                    trackType, approvalStatus, order, orderCol, isTestBar, routerId, branchCode, tenantId, page, limit, classes, isBindRouter, false).getData().getRecords();
+                    trackType, approvalStatus, order, orderCol, isTestBar, routerId, branchCode, tenantId, page, limit, classes, isBindRouter, false,workblankType).getData().getRecords();
 
 
             for (TrackHeadPublicVo record : records) {
