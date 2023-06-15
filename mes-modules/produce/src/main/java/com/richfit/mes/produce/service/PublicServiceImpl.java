@@ -6,7 +6,7 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
-import com.richfit.mes.common.model.base.OperationAssign;
+import com.richfit.mes.common.model.base.RouterOptAssign;
 import com.richfit.mes.common.model.base.Sequence;
 import com.richfit.mes.common.model.produce.Assign;
 import com.richfit.mes.common.model.produce.AssignPerson;
@@ -355,7 +355,7 @@ public class PublicServiceImpl implements PublicService {
         TrackItem trackItem = trackItemService.getById(map.get("trackItemId"));
         TrackHead trackHead = trackHeadService.getById(map.get("trackHeadId"));
         CommonResult<Sequence> sequence = baseServiceClient.querySequenceById(trackItem.getOptName(), trackItem.getBranchCode());
-        CommonResult<OperationAssign> assignGet = baseServiceClient.assignGet(sequence.getData().getOptName(), trackHead.getBranchCode());
+        CommonResult<RouterOptAssign> assignGet = baseServiceClient.assignGet(trackHead.getDrawingNo(), sequence.getData().getOptName(), trackHead.getBranchCode());
         if (null == assignGet.getData()) {
             throw new GlobalException("未查询到自动派工信息", ResultCode.FAILED);
         }
