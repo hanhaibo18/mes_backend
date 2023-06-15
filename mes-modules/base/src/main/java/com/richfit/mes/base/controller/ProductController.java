@@ -26,6 +26,7 @@ import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.common.security.annotation.Inner;
@@ -219,8 +220,8 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "分页查询物料", notes = "根据图号、物料编码等参数分页查询物料")
     @GetMapping("/product")
-    public CommonResult<IPage<Product>> selectProduct(@ApiParam(value = "页码", required = true) @RequestParam(defaultValue = "1") int page,
-                                                      @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit,
+    public CommonResult<IPage<Product>> selectProduct(@ApiParam(value = "页码", required = true) @RequestParam int page,
+                                                      @ApiParam(value = "条数", required = true) @RequestParam int limit,
                                                       @ApiParam(value = "图号") @RequestParam(required = false) Integer synchronousRegime,
                                                       @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
                                                       @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
@@ -249,21 +250,9 @@ public class ProductController extends BaseController {
         if (synchronousRegime != null) {
             queryWrapper.eq("p.synchronous_regime", synchronousRegime);
         }
-        if (!StringUtils.isNullOrEmpty(orderCol)) {
-            if (!StringUtils.isNullOrEmpty(order)) {
-                if (order.equals("desc")) {
-                    queryWrapper.orderByDesc("p." + StrUtil.toUnderlineCase(orderCol));
-                } else if (order.equals("asc")) {
-                    queryWrapper.orderByAsc("p." + StrUtil.toUnderlineCase(orderCol));
-                }
-            } else {
-                queryWrapper.orderByDesc("p." + StrUtil.toUnderlineCase(orderCol));
-            }
-        } else {
-            queryWrapper.orderByDesc("p.modify_time");
-        }
         //只查询当前租户下的物料数据
         queryWrapper.eq("p.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        OrderUtil.query(queryWrapper, orderCol, order);
         IPage<Product> result = productService.selectProduct(new Page<Product>(page, limit), queryWrapper);
         return CommonResult.success(result, PRODUCT_SUCCESS_MESSAGE);
     }
