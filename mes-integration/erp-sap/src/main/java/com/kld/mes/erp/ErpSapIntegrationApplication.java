@@ -34,9 +34,6 @@ public class ErpSapIntegrationApplication {
      */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        df.setTimeZone(tz);
         return builder -> builder
                 .deserializerByType(String.class, new StdScalarDeserializer<String>(String.class) {
                     @Override
@@ -45,6 +42,6 @@ public class ErpSapIntegrationApplication {
                         // 去除前后空格
                         return org.springframework.util.StringUtils.trimWhitespace(jsonParser.getValueAsString());
                     }
-                }).dateFormat(df);
+                });
     }
 }
