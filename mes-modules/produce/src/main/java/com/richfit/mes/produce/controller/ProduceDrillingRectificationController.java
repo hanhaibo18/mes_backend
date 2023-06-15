@@ -5,6 +5,7 @@ import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.base.BaseController;
 import com.richfit.mes.common.model.produce.ProduceDrillingRectification;
 import com.richfit.mes.produce.entity.ProduceDrillingRectificationDTO;
+import com.richfit.mes.produce.entity.ProduceDrillingRectificationVO;
 import com.richfit.mes.produce.service.ProduceDrillingRectificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,5 +53,18 @@ public class ProduceDrillingRectificationController extends BaseController {
     public CommonResult returnBack(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
         produceDrillingRectificationService.returnBack(id);
         return CommonResult.success("已撤回");
+    }
+
+    @ApiOperation(value = "提交整改信息")
+    @GetMapping("/commit")
+    public CommonResult commit(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
+        produceDrillingRectificationService.commit(id);
+        return CommonResult.success("已撤回");
+    }
+
+    @ApiOperation(value = "查看单据详情 ")
+    @GetMapping("/detail")
+    public CommonResult<ProduceDrillingRectificationVO> queryDetail(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
+        return CommonResult.success(produceDrillingRectificationService.queryDetail(id));
     }
 }
