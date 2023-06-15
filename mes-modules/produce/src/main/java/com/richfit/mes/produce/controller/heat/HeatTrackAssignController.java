@@ -2,6 +2,7 @@ package com.richfit.mes.produce.controller.heat;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,6 +15,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.TrackHeadPublicVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -58,6 +60,8 @@ public class HeatTrackAssignController extends BaseController {
     public BaseServiceClient baseServiceClient;
     @Autowired
     public ModelApplyService modelApplyService;
+    @Autowired
+    public TrackHeadMapper trackHeadMapper;
 
     @ApiOperation(value = "未装炉生产查询-（热处理）")
     @PostMapping("/query_not_produce")
@@ -253,6 +257,7 @@ public class HeatTrackAssignController extends BaseController {
         queryWrapper.eq(!StringUtils.isNullOrEmpty(optName), "opt_name", optName);
         queryWrapper.eq(!StringUtils.isNullOrEmpty(workNo), "work_no", workNo);
         queryWrapper.ne("is_schedule", 1);
+        queryWrapper.isNotNull("precharge_furnace_id");
 
         //排序
         if (StringUtils.isNullOrEmpty(orderCol)) {
@@ -332,13 +337,17 @@ public class HeatTrackAssignController extends BaseController {
             for (TrackItem trackItem : itemList) {
                 //是否冶炼配炉
                 trackItem.setIfPrechargeFurnace(Strings.isBlank(trackItem.getPrechargeFurnaceAssignId()) ? "否" : "是");
+                LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                trackHeadLambdaQueryWrapper.eq(TrackHead::getId, trackItem.getTrackHeadId());
+                TrackHead trackHead = trackHeadMapper.selectOne(trackHeadLambdaQueryWrapper);
+                trackItem.setTrackNo(trackHead.getTrackNo());
             }
 
-            String[] columnHeaders = {"序号", "跟单号", "冶炼配炉", "项目名称", "工作号", "产品名称", "产品编号", "图号", "工艺版本号", "工序顺序号", "工序号", "工序名称",
+            String[] columnHeaders = {"跟单号", "冶炼配炉", "项目名称", "工作号", "产品名称", "产品编号", "图号", "工艺版本号", "工序顺序号", "工序号", "工序名称",
                     "工序类型", "材质", "单重（KG）", "钢水（KG）", "炉号", "长周期", "优先级", "计划完成时间", "备注"};
 
-            String[] fieldNames = {"id", "trackHeadId", "ifPrechargeFurnace", "projectName", "workNo", "productName", "productNo", "drawingNo", "versions", "originalOptSequence", "optSequence", "optName",
-                    "optType", "texture", "pieceWeight", "weightMolten", "prechargeFurnaceId", "isLongPeriod", "priority", "planEndTime", "--"};
+            String[] fieldNames = {"trackHeadId", "ifPrechargeFurnace", "projectName", "workNo", "productName", "productNo", "drawingNo", "routerVer", "sequenceOrderBy", "optNo", "optName",
+                    "optType", "texture", "weight", "weightMolten", "prechargeFurnaceId", "isLongPeriod", "priority", "planEndTime", "--"};
 
 
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
