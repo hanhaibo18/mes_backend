@@ -26,5 +26,11 @@ public interface ModelApplyService extends IService<ModelApply> {
     CommonResult<Page<ModelApply>> getPageInfo(int sign, String branchCode, String drawingNo, String startTime, String endTime, int page, int limit);
 
     Boolean deliveryActive(List<HotModelStore> hotModelStoreList);
+
+    CommonResult<Boolean> applyModelNew(String branchCode, List<TrackItem> itemInfo);
+
+    CommonResult<Page<ModelApply>> getPageInfoNew(int sign, String branchCode, String drawingNo, String startTime, String endTime, int page, int limit);
+
+    Boolean deliveryNew(String modelId, String modelApplyId);
 }
 

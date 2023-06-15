@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ProduceDrillingRectification;
 import com.richfit.mes.produce.entity.ProduceDrillingRectificationDTO;
+import com.richfit.mes.produce.entity.ProduceDrillingRectificationVO;
 
 /**
  * @author llh
@@ -37,6 +38,23 @@ public interface ProduceDrillingRectificationService extends IService<ProduceDri
      * @return
      */
     CommonResult returnBack(String id);
+
+    /**
+     * 提交整改单据
+     *
+     * @param id
+     * @return
+     */
+    CommonResult commit(String id);
+
+
+    /**
+     * 查询单据详情
+     *
+     * @param id
+     * @return
+     */
+    ProduceDrillingRectificationVO queryDetail(String id);
 
 
 }

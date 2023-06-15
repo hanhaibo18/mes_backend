@@ -8,10 +8,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ProduceDrillingRectification;
 import com.richfit.mes.common.model.produce.ProduceDrillingRectificationFile;
+import com.richfit.mes.produce.dao.ProduceDrillingRectificationFileMapper;
 import com.richfit.mes.produce.dao.ProduceDrillingRectificationMapper;
 import com.richfit.mes.produce.enmus.RectificationStatusEnum;
 import com.richfit.mes.produce.entity.ProduceDrillingRectificationDTO;
 import com.richfit.mes.produce.entity.ProduceDrillingRectificationFileDTO;
+import com.richfit.mes.produce.entity.ProduceDrillingRectificationFileVO;
+import com.richfit.mes.produce.entity.ProduceDrillingRectificationVO;
 import com.richfit.mes.produce.utils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -33,6 +37,9 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
 
     @Autowired
     private ProduceDrillingRectificationMapper produceDrillingRectificationMapper;
+
+    @Autowired
+    private ProduceDrillingRectificationFileMapper produceDrillingRectificationfileMapper;
 
     @Autowired
     private ProduceDrillingRectificationFileService produceDrillingRectificationFileService;
@@ -52,6 +59,8 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(produceDrillingRectificationDTO.getPartName()), ProduceDrillingRectification::getPartName, produceDrillingRectificationDTO.getPartName());
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(produceDrillingRectificationDTO.getSource()), ProduceDrillingRectification::getSource, produceDrillingRectificationDTO.getSource());
         baseProductReceiptLambdaQueryWrapper.eq(StringUtils.isNotEmpty(produceDrillingRectificationDTO.getType()), ProduceDrillingRectification::getType, produceDrillingRectificationDTO.getType());
+        baseProductReceiptLambdaQueryWrapper.like(StringUtils.isNotEmpty(produceDrillingRectificationDTO.getDutyUnit()), ProduceDrillingRectification::getDutyUnit, produceDrillingRectificationDTO.getDutyUnit());
+        baseProductReceiptLambdaQueryWrapper.like(StringUtils.isNotEmpty(produceDrillingRectificationDTO.getRectificationUnit()), ProduceDrillingRectification::getRectificationUnit, produceDrillingRectificationDTO.getRectificationUnit());
         Page<ProduceDrillingRectification> produceDrillingRectificationPage = produceDrillingRectificationMapper.selectPage(page, baseProductReceiptLambdaQueryWrapper);
         return produceDrillingRectificationPage;
     }
@@ -71,6 +80,7 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
                 ProduceDrillingRectificationFile produceDrillingRectificationFile = new ProduceDrillingRectificationFile();
                 BeanUtils.copyBeanProp(produceDrillingRectificationFile, produceDrillingRectificationFileDTO);
                 produceDrillingRectificationFile.setId(UUID.randomUUID().toString().replace("-", ""));
+                produceDrillingRectificationFile.setOrderNo(produceDrillingRectification.getId());
                 produceDrillingRectificationFiles.add(produceDrillingRectificationFile);
             }
             produceDrillingRectificationFileService.saveBatch(produceDrillingRectificationFiles);
@@ -80,11 +90,53 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
 
     @Override
     public CommonResult returnBack(String id) {
+        LambdaQueryWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        produceDrillingRectificationLambdaQueryWrapper.eq(ProduceDrillingRectification::getId, id);
+        ProduceDrillingRectification produceDrillingRectification = produceDrillingRectificationMapper.selectOne(produceDrillingRectificationLambdaQueryWrapper);
+        if (produceDrillingRectification.getStatus().equals(RectificationStatusEnum.N.getCode())) {
+            return CommonResult.failed("已关闭的单据不能撤回");
+        }
         LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        //修改状态为“未提交”
         produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.W.getCode());
         produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, id);
         produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
         return CommonResult.success(true);
+    }
+
+    @Override
+    public CommonResult commit(String id) {
+        LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        //修改状态为“已提交”
+        produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.Y.getCode());
+        produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, id);
+        produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
+        return CommonResult.success(true);
+    }
+
+    @Override
+    public ProduceDrillingRectificationVO queryDetail(String id) {
+        //结果对象
+        ProduceDrillingRectificationVO produceDrillingRectificationVO = new ProduceDrillingRectificationVO();
+        ArrayList<ProduceDrillingRectificationFileVO> produceDrillingRectificationFileVOS = new ArrayList<>();
+        LambdaQueryWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        produceDrillingRectificationLambdaQueryWrapper.eq(ProduceDrillingRectification::getId, id);
+        //主表信息
+        ProduceDrillingRectification produceDrillingRectification = produceDrillingRectificationMapper.selectOne(produceDrillingRectificationLambdaQueryWrapper);
+        BeanUtils.copyBeanProp(produceDrillingRectificationVO, produceDrillingRectification);
+        //附件信息
+        LambdaQueryWrapper<ProduceDrillingRectificationFile> produceDrillingRectificationFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        produceDrillingRectificationFileLambdaQueryWrapper.eq(ProduceDrillingRectificationFile::getOrderNo, id);
+        List<ProduceDrillingRectificationFile> produceDrillingRectificationFiles = produceDrillingRectificationfileMapper.selectList(produceDrillingRectificationFileLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(produceDrillingRectificationFiles)) {
+            for (ProduceDrillingRectificationFile produceDrillingRectificationFile : produceDrillingRectificationFiles) {
+                ProduceDrillingRectificationFileVO produceDrillingRectificationFileVO = new ProduceDrillingRectificationFileVO();
+                BeanUtils.copyBeanProp(produceDrillingRectificationFileVO, produceDrillingRectificationFile);
+                produceDrillingRectificationFileVOS.add(produceDrillingRectificationFileVO);
+            }
+        }
+        produceDrillingRectificationVO.setProduceDrillingRectificationFileList(produceDrillingRectificationFileVOS);
+        return produceDrillingRectificationVO;
     }
 }
 

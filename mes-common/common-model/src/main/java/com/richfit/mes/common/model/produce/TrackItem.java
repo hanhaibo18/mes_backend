@@ -196,6 +196,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "是否自动派工", dataType = "Integer")
     private Integer isAutoSchedule;
+    @ApiModelProperty(value = "模型配送状态0已申请未配送1已配送 2已退库", dataType = "Integer")
+    private Integer modelStatus;
 
 
     /**
@@ -370,6 +372,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ", dataType = "Integer")
     private Integer isLongPeriod;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ")
+    private String longPeriod;
     @TableField(exist = false)
     @ApiModelProperty(value = "计划完成时间 ", dataType = "Date")
     private Date planEndTime;
