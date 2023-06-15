@@ -209,63 +209,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     /**
-     * 勾选物料同步到wms
-     *
-     * @param products
-     */
-    @Override
-    public CommonResult<Boolean> saveWmsSync(List<Product> products) {
-        if (CollectionUtils.isEmpty(products)) {
-            return CommonResult.failed("未勾选中物料数据");
-        }
-        List<MaterialBasis> materialBasisList = new ArrayList<>(products.size());
-        materialConvert(materialBasisList, products);
-        // 同步到wms中
-        CommonResult commonResult = wmsServiceClient.materialBasis(materialBasisList);
-        if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
-            for (Product product : products) {
-                product.setSynchronousRegime(1);
-            }
-        } else {
-            for (Product product : products) {
-                product.setSynchronousRegime(2);
-            }
-        }
-        this.updateBatchById(products);
-        return CommonResult.success(true, "操作成功");
-    }
-
-    private static void materialConvert(List<MaterialBasis> materialBasisList, List<Product> productList) {
-        for (Product product : productList) {
-            MaterialBasis materialBasis = new MaterialBasis(product);
-            // 工厂
-            materialBasis.setWorkCode(SecurityUtils.getCurrentUser().getTenantErpCode());
-            if (!StringUtils.isNullOrEmpty(materialBasis.getProduceType())) {
-                // 制造类型
-                materialBasis.setProduceType(ObjectTypeEnum.getMessage(materialBasis.getProduceType()));
-            }
-            if (!StringUtils.isNullOrEmpty(materialBasis.getMaterialType())) {
-                // 物料类型
-                materialBasis.setMaterialType(MaterialTypeEnum.getMessage(materialBasis.getMaterialType()));
-            }
-            if (!StringUtils.isNullOrEmpty(materialBasis.getTrackingMode())) {
-                // 跟踪方式
-                materialBasis.setTrackingMode(TrackTypeEnum.getMessage(materialBasis.getTrackingMode()));
-            }
-            if (!StringUtils.isNullOrEmpty(materialBasis.getTrackingMode())) {
-                // 关键件
-                materialBasis.setCrucialFlag(MessageEnum.getMessage(Integer.parseInt(materialBasis.getCrucialFlag())));
-            }
-            if (!StringUtils.isNullOrEmpty(materialBasis.getDeliveryFlag())) {
-                // 实物配送
-                materialBasis.setDeliveryFlag(MessageEnum.getMessage(Integer.parseInt(materialBasis.getDeliveryFlag())));
-            }
-            materialBasisList.add(materialBasis);
-        }
-    }
-
-
-    /**
      * 查询库存
      *
      * @param inventoryQuery

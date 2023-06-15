@@ -31,15 +31,6 @@ public interface ProductService extends IService<Product> {
     CommonResult importMaterialExcel(MultipartFile file);
 
     /**
-     * 同步选中物料数据物料到wms
-     *
-     * @param ids
-     * @return
-     */
-    CommonResult<Boolean> saveWmsSync(List<Product> ids);
-
-
-    /**
      * MES实时查询WMS库存
      *
      * @param inventoryQuery
