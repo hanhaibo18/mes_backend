@@ -274,5 +274,10 @@ public class BaseServiceClientFallbackImpl implements BaseServiceClient {
         return null;
     }
 
+    @Override
+    public CommonResult<RouterOptAssign> routerAssignGet(String routerNo, String optName, String branchCode) {
+        return null;
+    }
+
 
 }
