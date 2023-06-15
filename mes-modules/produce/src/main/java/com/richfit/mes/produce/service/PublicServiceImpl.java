@@ -484,16 +484,16 @@ public class PublicServiceImpl implements PublicService {
         }
     }
 
-    private boolean verifyParallel(int originalOptSequence, String TrackHeadId) {
+    private boolean verifyParallel(int originalOptSequence, String flowId) {
         boolean verify = false;
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper();
         queryWrapper.eq("original_opt_sequence", originalOptSequence);
-        queryWrapper.eq("track_head_id", TrackHeadId);
+        queryWrapper.eq("flow_id", flowId);
         List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
         if (trackItemList.size() > 1) {
             //过滤并行工序中是否存在未最终完成的工序
             long count = trackItemList.stream().filter(item -> "0".equals(item.getIsFinalComplete())).count();
-            //没有未完成为true
+            //并行工序最终完成状态数量 == 0 表示并行工序全部完成
             verify = count == 0;
         } else {
             verify = true;
