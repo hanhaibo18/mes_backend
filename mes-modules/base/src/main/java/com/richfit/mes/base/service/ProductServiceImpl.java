@@ -223,7 +223,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
         if (CollectionUtils.isNotEmpty(productList)) {
             List<MaterialBasis> materialBasisList = new ArrayList<>(productList.size());
-            materialConvert(materialBasisList, productList);
+            materialConvert(materialBasisList , productList);
             // 同步到wms中
             wmsServiceClient.materialBasis(materialBasisList);
             return CommonResult.success(true, "操作成功");
@@ -231,7 +231,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return CommonResult.failed("操作失败,插入数据不能为空");
     }
 
-    private static void materialConvert(List<MaterialBasis> materialBasisList, List<Product> productList) {
+    private static void materialConvert(List<MaterialBasis> materialBasisList,List<Product> productList) {
         for (Product product : productList) {
             MaterialBasis materialBasis = new MaterialBasis(product);
             // 工厂
