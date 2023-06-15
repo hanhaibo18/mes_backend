@@ -37,9 +37,6 @@ public class WmsIntegrationApplication {
      */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
-        TimeZone tz = TimeZone.getTimeZone("GMT+8");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        df.setTimeZone(tz);
         return builder -> builder
                 .deserializerByType(String.class, new StdScalarDeserializer<String>(String.class) {
                     @Override
@@ -48,6 +45,6 @@ public class WmsIntegrationApplication {
                         // 去除前后空格
                         return org.springframework.util.StringUtils.trimWhitespace(jsonParser.getValueAsString());
                     }
-                }).dateFormat(df);
+                });
     }
 }
