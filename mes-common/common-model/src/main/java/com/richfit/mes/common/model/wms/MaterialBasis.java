@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.wms;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.richfit.mes.common.model.base.Product;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -104,4 +105,23 @@ public class MaterialBasis implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    public MaterialBasis() {
+
+    }
+
+    public MaterialBasis(Product product) {
+        this.materialNum = product.getMaterialNo();
+        this.materialDesc = product.getMaterialDesc();
+        this.unit = product.getUnit();
+        this.crucialFlag = product.getIsKeyPart();
+        this.trackingMode = product.getTrackType();
+        this.partsMaterial = product.getTexture();
+        this.spec = product.getSpecification();
+        this.singleWeight = String.valueOf(product.getWeight());
+        this.deliveryFlag = product.getIsEdgeStore();
+        this.produceType = product.getObjectType();
+        this.materialType = product.getMaterialType();
+        this.workshop = product.getBranchCode();
+        this.field1 = product.getRemark();
+    }
 }
