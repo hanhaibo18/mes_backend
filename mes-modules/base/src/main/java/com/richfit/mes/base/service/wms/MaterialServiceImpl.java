@@ -51,10 +51,12 @@ public class MaterialServiceImpl implements MaterialService {
         if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
             for (Product product : products) {
                 product.setSynchronousRegime(1);
+                product.setSynchronousMessage("同步成功");
             }
         } else {
             for (Product product : products) {
                 product.setSynchronousRegime(2);
+                product.setSynchronousMessage(commonResult.getMessage());
             }
         }
         productService.updateBatchById(products);
