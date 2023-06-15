@@ -13,6 +13,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 /**
  * @author sun
@@ -31,9 +34,14 @@ public class SystemServiceApplication {
         SpringApplication.run(SystemServiceApplication.class, args);
     }
 
-    //json参数去空格
+    /**
+     * 全局返回json格式化
+     */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        df.setTimeZone(tz);
         return builder -> builder
                 .deserializerByType(String.class, new StdScalarDeserializer<String>(String.class) {
                     @Override
@@ -42,6 +50,6 @@ public class SystemServiceApplication {
                         // 去除前后空格
                         return org.springframework.util.StringUtils.trimWhitespace(jsonParser.getValueAsString());
                     }
-                });
+                }).dateFormat(df);
     }
 }
