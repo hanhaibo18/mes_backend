@@ -231,7 +231,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 
 
     @Override
-    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol, String holdStatus, String drawingNo) throws ParseException {
+    public IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol, String holdStatus, String drawingNo, String workNo) throws ParseException {
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isNullOrEmpty(trackNo)) {
             trackNo = trackNo.replaceAll(" ", "");
@@ -276,6 +276,7 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
         if (StrUtil.isNotBlank(drawingNo)) {
             DrawingNoUtil.queryLike(queryWrapper, "drawing_no", drawingNo);
         }
+        queryWrapper.like(StrUtil.isNotBlank(workNo), "work_no", workNo);
         //增加工序过滤（新要求，屏蔽）
 //        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
 //        queryWrapper.eq("u.classes", classes);
