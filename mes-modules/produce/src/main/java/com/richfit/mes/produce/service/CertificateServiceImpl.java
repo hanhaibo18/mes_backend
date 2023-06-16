@@ -77,6 +77,8 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
     private TrackHeadFlowService trackHeadFlowService;
     @Autowired
     private BaseServiceClient baseServiceClient;
+    @Autowired
+    private TrackHeadCastService trackHeadCastService;
 
     @Override
     public IPage<Certificate> selectCertificate(Page<Certificate> page, QueryWrapper<Certificate> query) {
@@ -313,6 +315,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
      * 根据工序合格证在对应车间开具跟单
      * @param certificate ,trackItem
      */
+    @Transactional(rollbackFor = Exception.class)
     public void autoCreateTrackHeadByCertificate(Certificate certificate){
         //查询合格证
         QueryWrapper<TrackCertificate> trackCertificateQueryWrapper = new QueryWrapper<>();
@@ -332,10 +335,22 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         BeanUtil.copyProperties(trackHead,newTrackHead,new String[]{"id","modifyTime","modifyBy","routerId","classes","status"});
         newTrackHead.setBranchCode(branchCode);
         newTrackHead.setTenantId(tenantId);
-        newTrackHead.setStatus("0"); //初始状态
         newTrackHead.setClasses("7"); //冶炼车间
         newTrackHead.setStatus("0"); //跟单状态设置为初始
         trackHeadService.save(newTrackHead);
+        //保存到冶炼车间 铸件跟单的工艺信息（因为只匹配了冶炼车间的工艺的工艺路线，但是工艺的信息还是沿用之前铸钢车间的）
+        if("7".equals(newTrackHead.getClasses())){
+            String routerId = trackHead.getRouterId();
+            List<Router> routers = baseServiceClient.getRouterByIdAndBranchCode(Arrays.asList(routerId +"_"+ trackHead.getBranchCode())).getData();
+            if(!CollectionUtil.isEmpty(routers)){
+                Router router = routers.get(0);
+                TrackHeadCast trackHeadCast = new TrackHeadCast();
+                BeanUtil.copyProperties(router,trackHeadCast,new String[]{"id","branchCode","tenantId","remark"});
+                trackHeadCast.setBranchCode(branchCode);
+                trackHeadCast.setHeadId(newTrackHead.getId());
+                trackHeadCastService.save(trackHeadCast);
+            }
+        }
         //创建跟单产品信息flow
         List<TrackFlow> trackFlows = trackHeadFlowService.list(new QueryWrapper<TrackFlow>().eq("track_head_id", trackHead.getId()));
         for (TrackFlow trackFlow : trackFlows) {

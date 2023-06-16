@@ -387,40 +387,13 @@ public class TrackHeadController extends BaseController {
         IPage<TrackHeadPublicVo> trackHeadPublicVoIPage = trackHeadService.queryPage(new Page<>(page, limit), queryWrapper);
         //冶炼、锻造、铸钢
         if(!StringUtils.isNullOrEmpty(classes) &&(classes.equals("4") || classes.equals("6") || classes.equals("7"))){
-            //工艺ids
-            List<String> routerIdAndBranchCodeList = new ArrayList<>(trackHeadPublicVoIPage.getRecords().stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
-            List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
-            if(!CollectionUtil.isEmpty(getRouter)){
-                Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
-                //capp工艺属性赋值
-                for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
-                    Router router = routerMap.get(record.getRouterId()+"_"+record.getBranchCode());
-                    if(!ObjectUtil.isEmpty(router)){
-                        //锻造材料规格
-                        record.setBlankSpecifi(router.getBlankSpecifi());
-                        //锻造下料重量
-                        record.setBlankWeight(router.getBlankWeight());
-                        //材质
-                        record.setTexture(router.getTexture());
-                        //单重
-                        record.setWeight(router.getWeight());
-                        //钢水重量
-                        record.setWeightMolten(router.getWeightMolten());
-                        //工艺保温时间
-                        record.setProcessHoldTime(router.getProcessHoldTime());
-                        //浇筑温度
-                        record.setPourTemp(router.getPourTemp());
-                        //浇筑时间
-                        record.setPourTime(router.getPourTime());
-                        //试棒型号
-                        record.setTestBar(router.getTestBar());
-                    }
-                }
-            }
+            trackHeadService.headUpdateRouterInfo(classes, trackHeadPublicVoIPage);
         }
 
         return CommonResult.success(trackHeadPublicVoIPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
+
+
 
     @ApiOperation(value = "导出跟单信息", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单并导出")
     @GetMapping("/export_track_head")

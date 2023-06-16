@@ -412,4 +412,6 @@ public interface TrackHeadService extends IService<TrackHead> {
     void zGSaveHeadcheckInfo(TrackHeadPublicDto trackHead);
 
     void beforeSaveItemDeal(List<TrackItem> trackItems);
+
+    void headUpdateRouterInfo(String classes, IPage<TrackHeadPublicVo> trackHeadPublicVoIPage);
 }
