@@ -340,7 +340,9 @@ public class HeatTrackAssignController extends BaseController {
                 //是否冶炼配炉
                 trackItem.setIfPrechargeFurnace(Strings.isBlank(trackItem.getPrechargeFurnaceAssignId()) ? "否" : "是");
                 //是否长周期：0：：否；1：：是；
-                trackItem.setLongPeriod(trackItem.getIsLongPeriod() == 1 ? "是" : "否");
+                if (Objects.nonNull(trackItem.getIsLongPeriod())) {
+                    trackItem.setLongPeriod(trackItem.getIsLongPeriod() == 1 ? "是" : "否");
+                }
                 LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 trackHeadLambdaQueryWrapper.eq(TrackHead::getId, trackItem.getTrackHeadId());
                 TrackHead trackHead = trackHeadMapper.selectOne(trackHeadLambdaQueryWrapper);
@@ -350,7 +352,7 @@ public class HeatTrackAssignController extends BaseController {
             String[] columnHeaders = {"跟单号", "冶炼配炉", "项目名称", "工作号", "产品名称", "产品编号", "图号", "工艺版本号", "工序顺序号", "工序号", "工序名称",
                     "工序类型", "材质", "单重（KG）", "钢水（KG）", "炉号", "长周期", "优先级", "计划完成时间", "备注"};
 
-            String[] fieldNames = {"trackHeadId", "ifPrechargeFurnace", "projectName", "workNo", "productName", "productNo", "drawingNo", "routerVer", "sequenceOrderBy", "optNo", "optName",
+            String[] fieldNames = {"trackNo", "ifPrechargeFurnace", "projectName", "workNo", "productName", "productNo", "drawingNo", "routerVer", "sequenceOrderBy", "optNo", "optName",
                     "optType", "texture", "weight", "weightMolten", "prechargeFurnaceId", "longPeriod", "priority", "planEndTime", "--"};
 
 
