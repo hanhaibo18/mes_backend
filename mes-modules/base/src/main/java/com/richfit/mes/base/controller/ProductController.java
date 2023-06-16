@@ -714,12 +714,6 @@ public class ProductController extends BaseController {
         return CommonResult.success(result.getRecords());
     }
 
-    @ApiOperation(value = "根据勾选数据同步到wms", notes = "根据勾选数据同步到wms")
-    @PostMapping("/save_wms_sync")
-    public CommonResult<Boolean> saveWmsSync(@RequestBody List<String> ids) {
-        return productService.saveWmsSync(ids);
-    }
-
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")
     @PostMapping("/select_inventory")
     public CommonResult<List<InventoryReturn>> selectInventory(@RequestBody InventoryQuery inventoryQuery) {
