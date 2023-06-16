@@ -250,6 +250,6 @@ public class Plan extends BaseEntity<Plan> {
     private String inchargeWorkshopName;
     @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ", dataType = "String")
     @TableField(exist = false)
-    private String isLongPeriod;
+    private Integer isLongPeriod;
 
 }
