@@ -203,7 +203,7 @@ public class Plan extends BaseEntity<Plan> {
     private String productName;
 
     @TableField(exist = false)
-    @ApiModelProperty(value = "重量")
+    @ApiModelProperty(value = "单重")
     private String weight;
 
     @TableField(exist = false)
@@ -223,9 +223,12 @@ public class Plan extends BaseEntity<Plan> {
     private Date submitOrderTime;
 
     @TableField(exist = false)
-    @ApiModelProperty(value = "单重KG")
+    @ApiModelProperty(value = "单重KG(废弃)")
     private String pieceWeight;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "锻件重量")
+    private String forgWeight;
     @TableField(exist = false)
     @ApiModelProperty(value = "钢水KG")
     private String steelWaterWeight;
@@ -247,6 +250,6 @@ public class Plan extends BaseEntity<Plan> {
     private String inchargeWorkshopName;
     @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ", dataType = "String")
     @TableField(exist = false)
-    private String isLongPeriod;
+    private Integer isLongPeriod;
 
 }

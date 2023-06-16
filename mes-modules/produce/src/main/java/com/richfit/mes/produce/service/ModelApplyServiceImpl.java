@@ -164,7 +164,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
         trackItemQueryWrapper.eq("is_current", 1).eq("drawing_no", model.getModelDrawingNo())
                 .eq("opt_ver", model.getVersion()).eq("tenant_id", tenantId)
-                .eq("branchCode", modelApply.getBranchCode()).eq("opt_type", 18).ne("model_type", 0);
+                .eq("branch_code", modelApply.getBranchCode()).eq("opt_type", 18).ne("model_type", 0);
         List<TrackItem> trackItemList = trackItemService.list(trackItemQueryWrapper);
         for (TrackItem trackItem : trackItemList) {
             trackItem.setModelStatus(1);

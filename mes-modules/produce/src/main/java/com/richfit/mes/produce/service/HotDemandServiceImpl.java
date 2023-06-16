@@ -506,8 +506,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             planExtend.setSampleNum(0);//实样数量
             planExtend.setDemandId(hotDemand.getId());//需求表id
             planExtend.setPlanId(plan.getId());//生产计划id
-            planExtend.setWeight(hotDemand.getWeight());//重量
-            planExtend.setPieceWeight(hotDemand.getPieceWeight());//单重
+            planExtend.setWeight(hotDemand.getWeight());//单重
+            planExtend.setPieceWeight(hotDemand.getPieceWeight());//单重(废弃)
             planExtend.setSteelWaterWeight(hotDemand.getSteelWaterWeight());//钢水重
             planExtend.setDemandTime(hotDemand.getDemandTime());//需求日期
             planExtend.setSubmitBy(hotDemand.getSubmitBy());//提单人

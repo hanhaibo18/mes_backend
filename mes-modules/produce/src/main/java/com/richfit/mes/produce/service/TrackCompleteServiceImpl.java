@@ -133,6 +133,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
     @Autowired
     private TrackCertificateService trackCertificateService;
+    @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
 
     @Resource
     private TrackAssemblyService assemblyService;
@@ -1406,21 +1408,62 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if ("15".equals(prechargeFurnaceAssign.getOptType())) {
             //变更炼钢作业记录
             UpdateWrapper<RecordsOfSteelmakingOperations> steelmakingOperationsUpdateWrapper = new UpdateWrapper<>();
-            steelmakingOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId).set("status", null);
+            steelmakingOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId);
             recordsOfSteelmakingOperationsService.update(steelmakingOperationsUpdateWrapper);
         } else if ("16".equals(prechargeFurnaceAssign.getOptType())) {
             //变更炼浇注作业记录
             UpdateWrapper<RecordsOfPourOperations> pourOperationsUpdateWrapper = new UpdateWrapper<>();
-            pourOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId).set("status", null);
+            pourOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId);
             recordsOfPourOperationsService.update(pourOperationsUpdateWrapper);
         }
-        //设置原记录审核状态为null
-        prechargeFurnaceAssign.setRecordStatus(null);
-        prechargeFurnaceAssignService.updateById(prechargeFurnaceAssign);
+        //重置原预装炉派工信息为未开工
+        UpdateWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignUpdateWrapper = new UpdateWrapper<>();
+        prechargeFurnaceAssignUpdateWrapper.eq("id", prechargeFurnaceAssign.getId()).set("record_status", null)
+                .set("is_doing", PrechargeFurnace.NO_START_WORK).set("start_doing_user", null);
+        prechargeFurnaceAssignService.update(prechargeFurnaceAssignUpdateWrapper);
+        //重置原预装炉为未开工
+        UpdateWrapper<PrechargeFurnace> prechargeFurnaceUpdateWrapper = new UpdateWrapper<>();
+        prechargeFurnaceUpdateWrapper.eq("id", prechargeFurnaceAssign.getFurnaceId()).set("status", PrechargeFurnace.NO_START_WORK)
+                .set("step_status", PrechargeFurnace.NO_START_WORK).set("start_work_by", null);
+        prechargeFurnaceService.update(prechargeFurnaceUpdateWrapper);
+        //设置开工
+        List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_assign_id", prechargeFurnaceAssign.getId()));
+        List<String> itemIds = items.stream().map(TrackItem::getId).collect(Collectors.toList());
+        List<String> headIds = items.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
+        List<String> flowIds = items.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
+        //将跟单状态改为在制
+        UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+        trackHeadUpdateWrapper.set("status", "0")
+                .eq("status", "1")
+                .in("id", headIds);
+        trackHeadService.update(trackHeadUpdateWrapper);
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.set("status", "0")
+                .eq("status", "1")
+                .in("id", flowIds);
+        trackHeadFlowService.update(update);
+        UpdateWrapper<Assign> assignUpdate;
+        assignUpdate = new UpdateWrapper<>();
+        assignUpdate.set("state", "0")
+                .eq("state", "1")
+                .in("ti_id", itemIds);
+        trackAssignService.update(assignUpdate);
+        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+        trackItemUpdateWrapper.set("is_doing", 0)
+                .set("start_doing_time", null)
+                .set("start_doing_user", null)
+                .eq("is_doing", 1)
+                .in("id", itemIds);
+        trackItemService.update(trackItemUpdateWrapper);
         //根据派工信息和变更后预装炉id新建派工信息
         List<Long> ids = new ArrayList<>();
         ids.add(afterId);
-        return prechargeFurnaceAssignService.furnaceAssign(assign, ids);
+        prechargeFurnaceAssignService.furnaceAssign(assign, ids);
+        QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+        prechargeFurnaceAssignQueryWrapper.eq("furnace_id", afterId).eq("complete_status", 0).last("limit 1");
+        PrechargeFurnaceAssign newPrechargeAssign = prechargeFurnaceAssignService.getOne(prechargeFurnaceAssignQueryWrapper);
+        newPrechargeAssign.setRecordStatus(2);
+        return prechargeFurnaceAssignService.updateById(newPrechargeAssign);
     }
 
     @Override
