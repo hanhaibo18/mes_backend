@@ -67,4 +67,11 @@ public class ProduceDrillingRectificationController extends BaseController {
     public CommonResult<ProduceDrillingRectificationVO> queryDetail(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
         return CommonResult.success(produceDrillingRectificationService.queryDetail(id));
     }
+
+    @ApiOperation(value = "删除未提交的单据 ")
+    @GetMapping("/delete")
+    public CommonResult delete(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
+        produceDrillingRectificationService.delete(id);
+        return CommonResult.success("删除成功");
+    }
 }

@@ -56,6 +56,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -2275,6 +2276,50 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             List<TrackHead> testBarNos = getTestBarNo(trackHead.getTexture(), trackHead.getTestBar(), trackHead.getBranchCode(), trackHead.getTestBarNo());
             if (!CollectionUtil.isEmpty(testBarNos)) {
                 throw new GlobalException("试棒编码已存在", ResultCode.FAILED);
+            }
+        }
+    }
+
+    /**
+     * 热工跟单赋值工艺属性
+     * @param classes
+     * @param trackHeadPublicVoIPage
+     */
+    @Override
+    public void headUpdateRouterInfo(String classes, IPage<TrackHeadPublicVo> trackHeadPublicVoIPage) {
+        //工艺ids
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackHeadPublicVoIPage.getRecords().stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
+        if(!CollectionUtil.isEmpty(getRouter)){
+            Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+            //capp工艺属性赋值
+            for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
+                //冶炼车间的铸件 匹配从铸钢车间过来的工艺信息
+                if("7".equals(classes) && "1".equals(record.getWorkblankType())){
+                    continue;
+                }else{
+                    Router router = routerMap.get(record.getRouterId()+"_"+record.getBranchCode());
+                    if(!ObjectUtil.isEmpty(router)){
+                        //锻造材料规格
+                        record.setBlankSpecifi(router.getBlankSpecifi());
+                        //锻造下料重量
+                        record.setBlankWeight(router.getBlankWeight());
+                        //材质
+                        record.setTexture(router.getTexture());
+                        //单重
+                        record.setWeight(router.getWeight());
+                        //钢水重量
+                        record.setWeightMolten(router.getWeightMolten());
+                        //工艺保温时间
+                        record.setProcessHoldTime(router.getProcessHoldTime());
+                        //浇筑温度
+                        record.setPourTemp(router.getPourTemp());
+                        //浇筑时间
+                        record.setPourTime(router.getPourTime());
+                        //试棒型号
+                        record.setTestBar(router.getTestBar());
+                    }
+                }
             }
         }
     }

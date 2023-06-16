@@ -19,6 +19,6 @@ public class Knockout extends BaseEntity<Knockout> {
     //跟单工序id
     protected String itemId;
     //热风机开启时间
-    protected Date fanStartTime;
+    protected String fanStartTime;
 }
 
