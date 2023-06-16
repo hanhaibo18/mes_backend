@@ -23,7 +23,7 @@ import java.util.List;
 @Slf4j
 @Api(value = "物料管理", tags = {"物料管理"})
 @RestController
-@RequestMapping("/api/produce/wms/material")
+@RequestMapping("/api/base/wms/material")
 public class MaterialController {
 
     @Autowired
