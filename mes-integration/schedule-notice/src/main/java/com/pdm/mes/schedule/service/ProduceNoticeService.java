@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.pdm.mes.schedule.entity.domain.ProduceNotice;
 import com.pdm.mes.schedule.entity.request.SaleProductionSchedulingRequest;
 
+import java.io.InputStream;
 import java.util.List;
 
 
@@ -19,4 +20,13 @@ public interface ProduceNoticeService extends IService<ProduceNotice> {
      * @return
      */
     boolean saveBatchNotice(List<SaleProductionSchedulingRequest> schedulingList);
+
+    /**
+     * 上传文件流
+     * @param inputStream
+     * @param fileName
+     * @return
+     * @throws Exception
+     */
+    String uploadFile(InputStream inputStream, String fileName) throws Exception;
 }
