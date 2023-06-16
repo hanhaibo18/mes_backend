@@ -147,21 +147,4 @@ public class MaterialBasis implements Serializable {
         //备注
         this.field1 = product.getRemark();
     }
-
-    public MaterialBasis(Product product, String erpCode) {
-        this.materialNum = product.getMaterialNo();
-        this.materialDesc = product.getMaterialDesc();
-        this.unit = product.getUnit();
-        this.crucialFlag = product.getIsKeyPart();
-        this.trackingMode = product.getTrackType();
-        this.partsMaterial = product.getTexture();
-        this.spec = product.getSpecification();
-        this.singleWeight = String.valueOf(product.getWeight());
-        this.deliveryFlag = product.getIsEdgeStore();
-        this.produceType = product.getObjectType();
-        this.materialType = product.getMaterialType();
-        this.workshop = product.getBranchCode();
-        this.field1 = product.getRemark();
-        this.workCode = erpCode;
-    }
 }
