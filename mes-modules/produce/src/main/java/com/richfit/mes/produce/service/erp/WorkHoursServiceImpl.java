@@ -46,13 +46,19 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
     ErpServiceClient erpServiceClient;
 
     @Override
-    public CommonResult<Object> push(Certificate certificate) {
+    public void push(Certificate certificate) {
         if (!Certificate.IS_SENG_WORK_HOUR_1.equals(certificate.getIsSendWorkHour())) {
             if (!Certificate.NEXT_OPT_WORK_BOMCO_SC.equals(certificate.getNextOptWork())) {
-                return CommonResult.failed(certificate.getCertificateNo() + ":非生产入库合格证不进行工时推送;");
+                certificate.setIsSendWorkHour("2");
+                certificate.setSendWorkHourMessage("非生产入库合格证不进行工时推送");
+                this.updateById(certificate);
+                return;
             }
             if (Certificate.IS_SENG_WORK_HOUR_1.equals(certificate.getIsSendWorkHour())) {
-                return CommonResult.failed(certificate.getCertificateNo() + ":已经推送过工时的不进行工时推送;");
+                certificate.setIsSendWorkHour("2");
+                certificate.setSendWorkHourMessage("已经推送过工时的不进行工时推送");
+                this.updateById(certificate);
+                return;
             }
             QueryWrapper<TrackHead> queryWrapperTrackHead = new QueryWrapper<>();
             queryWrapperTrackHead.eq("certificate_no", certificate.getCertificateNo());
@@ -67,14 +73,21 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
                 }
                 certificate.setTrackCertificates(trackCertificates);
                 CommonResult<Object> commonResult = this.toErp(certificate);
-                if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
-                    return CommonResult.failed(commonResult.getMessage());
+                if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
+                    certificate.setIsSendWorkHour("1");
+                    certificate.setSendWorkHourMessage("操作成功");
+                    this.updateById(certificate);
+                } else {
+                    certificate.setIsSendWorkHour("2");
+                    certificate.setSendWorkHourMessage(commonResult.getMessage());
+                    this.updateById(certificate);
                 }
             } else {
-                return CommonResult.failed(certificate.getCertificateNo() + ":没有找到该合格证的跟单信息;");
+                certificate.setIsSendWorkHour("2");
+                certificate.setSendWorkHourMessage("没有找到该合格证的跟单信息");
+                this.updateById(certificate);
             }
         }
-        return CommonResult.success("操作成功");
     }
 
     public CommonResult<Object> toErp(Certificate certificate) {

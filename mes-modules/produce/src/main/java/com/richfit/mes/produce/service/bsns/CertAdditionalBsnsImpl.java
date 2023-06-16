@@ -56,23 +56,25 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     @Override
     public void doAdditionalBsns(Certificate certificate) {
         if (needScjk(certificate)) {
-            List<Certificate> certificateList = new ArrayList<>();
-            certificateList.add(certificate);
-            inventoryService.handOver(certificateList);
+            try {
+                List<Certificate> certificateList = new ArrayList<>();
+                certificateList.add(certificate);
+                inventoryService.handOver(certificateList);
+            } catch (Exception e) {
+                certificate.setIsDeliveryToWarehouse("2");
+                certificate.setDeliveryToWarehouseMessage(e.getMessage());
+            }
             String companyCode = Objects.requireNonNull(SecurityUtils.getCurrentUser()).getCompanyCode();
             //根据数据字段配置，判断推送哪个系统
             if (Tenant.COMPANYCODE_BEISHI.equals(companyCode)) {
                 //推送北石
                 pushWorkHourToBs(certificate);
             } else {
-                CommonResult<Object> commonResultGS = workHoursService.push(certificate);
-                //推送宝石
-                if (commonResultGS.getStatus() == ResultCode.SUCCESS.getCode()) {
-                    certificate.setIsSendWorkHour("1");
-                    certificate.setSendWorkHourMessage("操作成功");
-                } else {
+                try {
+                    workHoursService.push(certificate);
+                } catch (Exception e) {
                     certificate.setIsSendWorkHour("2");
-                    certificate.setSendWorkHourMessage(commonResultGS.getMessage());
+                    certificate.setSendWorkHourMessage(e.getMessage());
                 }
             }
         }
