@@ -54,6 +54,8 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         for (TrackItem trackItem : itemInfo) {
             if (!"18".equals(trackItem.getOptType())) {
                 throw new GlobalException("只有造型工序可以申请模型！请重试", ResultCode.FAILED);
+            } else if (trackItem.getApplyStatus() == 1) {
+                throw new GlobalException("已配送的工序不可重复申请！", ResultCode.FAILED);
             }
             trackItem.setModelStatus(0);
         }
@@ -123,6 +125,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deliveryNew(String modelId, String modelApplyId) {
         Date now = new Date();
         String tenantId = SecurityUtils.getCurrentUser().getTenantId();
@@ -146,10 +149,9 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
             else {
                 understockOperation(modelId, now, modelApply, model);
             }
-            this.updateById(modelApply);
-            hotModelStoreService.updateById(model);
-
         }
+        this.updateById(modelApply);
+        hotModelStoreService.updateById(model);
         return true;
     }
 
@@ -164,7 +166,8 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
         trackItemQueryWrapper.eq("is_current", 1).eq("drawing_no", model.getModelDrawingNo())
                 .eq("opt_ver", model.getVersion()).eq("tenant_id", tenantId)
-                .eq("branch_code", modelApply.getBranchCode()).eq("opt_type", 18).ne("model_type", 0);
+                .eq("branch_code", modelApply.getBranchCode()).eq("opt_type", 18)
+                .and(wrapper -> wrapper.isNull("model_type").or().ne("model_type", 0));
         List<TrackItem> trackItemList = trackItemService.list(trackItemQueryWrapper);
         for (TrackItem trackItem : trackItemList) {
             trackItem.setModelStatus(1);
@@ -197,9 +200,9 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         List<ModelApplyItem> modelApplyItemList = modelApplyItemService.list(modelApplyItemQueryWrapper);
         Set<String> itemIdSet = modelApplyItemList.stream().map(ModelApplyItem::getItemId).collect(Collectors.toSet());
         QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
-        trackItemQueryWrapper.in("id", itemIdSet).orderByAsc("plan_end_time").orderByDesc("plan_end_time")
-                .isNull("plan_end_time");
+        trackItemQueryWrapper.in("id", itemIdSet);
         List<TrackItem> trackItemList = trackAssignMapper.getPageAssignsHot(trackItemQueryWrapper);
+        trackItemList = trackItemList.stream().sorted(Comparator.nullsLast(Comparator.comparing(TrackItem::getPlanEndTime))).collect(Collectors.toList());
         List<TrackItem> assignItemList = new ArrayList<>();
         Integer normalNum = model.getNormalNum();
         Integer assignNum = 0;
@@ -220,7 +223,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         model.setNormalNum(model.getNormalNum() - assignNum);
         QueryWrapper<ModelApplyItem> modelApplyItemQueryWrapperDelete = new QueryWrapper<>();
         modelApplyItemQueryWrapperDelete.eq("apply_id", modelApply.getId()).
-                in("item_id", assignItemList.stream().map(TrackItem::getId));
+                in("item_id", assignItemList.stream().map(TrackItem::getId).collect(Collectors.toSet()));
         modelApplyItemService.remove(modelApplyItemQueryWrapperDelete);
         //新建一个已配送的模型请求
         ModelApply modelApplyNew = new ModelApply();
@@ -246,7 +249,8 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         }
         modelApplyItemService.saveBatch(modelApplyItems);
         UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
-        trackItemUpdateWrapper.set("model_status", 1).set("model_type", 0).in("id", assignItemList.stream().map(TrackItem::getId));
+        trackItemUpdateWrapper.set("model_status", 1).set("model_type", 0).in("id", assignItemList.stream()
+                .map(TrackItem::getId).collect(Collectors.toSet()));
         trackItemService.update(trackItemUpdateWrapper);
     }
 
@@ -374,6 +378,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean sendBack(List<ModelApply> modelApplyList) {
+        Date now = new Date();
         List<ModelApply> updateList = new ArrayList<>();
         for (ModelApply modelApply : modelApplyList) {
             if (modelApply.getModelType() != null && modelApply.getModelType().equals(0)) {
@@ -383,6 +388,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
             modelApplyQueryWrapper.eq("tenant_id", modelApply.getTenantId()).eq("branch_code", modelApply.getBranchCode()).eq("model_drawing_no", modelApply.getModelDrawingNo()).eq("model_version", modelApply.getModelVersion()).eq("model_type", 1);
             ModelApply apply = this.getOne(modelApplyQueryWrapper);
             apply.setApplyStatus(2);
+            apply.setBackTime(now);
             updateList.add(apply);
             updateItemList(apply);
         }
