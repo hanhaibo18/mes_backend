@@ -110,9 +110,13 @@ public class WorkHoursServiceImpl extends ServiceImpl<CertificateMapper, Certifi
             for (TrackCertificate trackCertificate : certificate.getTrackCertificates()) {
                 TrackHead trackHead = trackHeadService.getById(trackCertificate.getThId());
                 List<TrackItem> trackItems = trackItemService.queryTrackItemByTrackNo(trackCertificate.getThId());
-                CommonResult<Object> commonResult = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), trackHead.getNumber(), unit);
-                if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
-                    return CommonResult.failed(certificate.getCertificateNo() + ":【" + "跟单号：" + trackHead.getTrackNo() + ":" + commonResult.getMessage() + "】;");
+                try {
+                    CommonResult<Object> commonResult = erpServiceClient.certWorkHourPush(trackItems, erpCode, trackHead.getProductionOrder(), trackHead.getNumber(), unit);
+                    if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
+                        return CommonResult.failed(certificate.getCertificateNo() + ":【" + "跟单号：" + trackHead.getTrackNo() + ":" + commonResult.getMessage() + "】;");
+                    }
+                } catch (Exception e) {
+                    return CommonResult.failed(e.getMessage());
                 }
             }
             return CommonResult.success("操作成功");

@@ -83,13 +83,21 @@ public class InventoryServiceImpl implements InventoryService {
         if (CollectionUtils.isEmpty(applyListUploads)) {
             return;
         }
-        CommonResult commonResult = wmsThreeServiceClient.applyListUpload(applyListUploads);
-        if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
-            certificateService.updateBatchById(certificateList);
-        } else {
+        try {
+            CommonResult commonResult = wmsThreeServiceClient.applyListUpload(applyListUploads);
+            if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
+                certificateService.updateBatchById(certificateList);
+            } else {
+                for (Certificate certificate : certificateList) {
+                    certificate.setIsDeliveryToWarehouse("2");
+                    certificate.setDeliveryToWarehouseMessage(commonResult.getMessage());
+                }
+                certificateService.updateBatchById(certificateList);
+            }
+        } catch (Exception e) {
             for (Certificate certificate : certificateList) {
                 certificate.setIsDeliveryToWarehouse("2");
-                certificate.setDeliveryToWarehouseMessage(commonResult.getMessage());
+                certificate.setDeliveryToWarehouseMessage(e.getMessage());
             }
             certificateService.updateBatchById(certificateList);
         }
