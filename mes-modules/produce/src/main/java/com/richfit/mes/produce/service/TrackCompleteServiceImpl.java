@@ -133,6 +133,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private PrechargeFurnaceAssignService prechargeFurnaceAssignService;
     @Autowired
     private TrackCertificateService trackCertificateService;
+    @Autowired
+    private TrackHeadFlowService trackHeadFlowService;
 
     @Resource
     private TrackAssemblyService assemblyService;
@@ -1414,9 +1416,46 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             pourOperationsUpdateWrapper.eq("precharge_furnace_id", beforeId).set("precharge_furnace_id", afterId).set("status", null);
             recordsOfPourOperationsService.update(pourOperationsUpdateWrapper);
         }
-        //设置原记录审核状态为null
+        //重置原预装炉派工信息为未开工
         prechargeFurnaceAssign.setRecordStatus(null);
+        prechargeFurnaceAssign.setIsDoing(PrechargeFurnace.NO_START_WORK);
+        prechargeFurnaceAssign.setStartDoingUser(null);
         prechargeFurnaceAssignService.updateById(prechargeFurnaceAssign);
+        //重置原预装炉为未开工
+        PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceAssign.getFurnaceId());
+        prechargeFurnace.setStatus(PrechargeFurnace.NO_START_WORK);
+        prechargeFurnace.setStepStatus(PrechargeFurnace.NO_START_WORK);
+        prechargeFurnace.setStartWorkBy(null);
+        prechargeFurnaceService.updateById(prechargeFurnace);
+        //设置开工
+        List<TrackItem> items = trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_assign_id", prechargeFurnaceAssign.getId()));
+        List<String> itemIds = items.stream().map(TrackItem::getId).collect(Collectors.toList());
+        List<String> headIds = items.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
+        List<String> flowIds = items.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
+        //将跟单状态改为在制
+        UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+        trackHeadUpdateWrapper.set("status", "0")
+                .eq("status", "1")
+                .in("id", headIds);
+        trackHeadService.update(trackHeadUpdateWrapper);
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.set("status", "0")
+                .eq("status", "1")
+                .in("id", flowIds);
+        trackHeadFlowService.update(update);
+        UpdateWrapper<Assign> assignUpdate;
+        assignUpdate = new UpdateWrapper<>();
+        assignUpdate.set("state", "0")
+                .eq("state", "1")
+                .in("ti_id", itemIds);
+        trackAssignService.update(assignUpdate);
+        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+        trackItemUpdateWrapper.set("is_doing", 0)
+                .set("start_doing_time", null)
+                .set("start_doing_user", null)
+                .eq("is_doing", 1)
+                .in("id", itemIds);
+        trackItemService.update(trackItemUpdateWrapper);
         //根据派工信息和变更后预装炉id新建派工信息
         List<Long> ids = new ArrayList<>();
         ids.add(afterId);
