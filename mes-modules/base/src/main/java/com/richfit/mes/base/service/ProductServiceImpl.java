@@ -208,6 +208,33 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     /**
+     * 勾选物料同步到wms
+     *
+     * @param ids
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Boolean> saveWmsSync(List<String> ids) {
+        List<Product> productList = productMapper.selectBatchIds(ids);
+        if (CollectionUtils.isEmpty(productList)) {
+            return CommonResult.failed("未勾选中物料数据");
+        }
+        if (CollectionUtils.isNotEmpty(productList)) {
+            List<MaterialBasis> materialBasisList = new ArrayList<>(productList.size());
+            for (Product product : productList) {
+                String tenantErpCode = SecurityUtils.getCurrentUser().getTenantErpCode();
+                MaterialBasis materialBasis = new MaterialBasis(product, tenantErpCode);
+                materialBasisList.add(materialBasis);
+            }
+            // 同步到wms中
+            wmsServiceClient.materialBasis(materialBasisList);
+            return CommonResult.success(true, "操作成功");
+        }
+        return CommonResult.failed("操作失败,插入数据不能为空");
+    }
+
+    /**
      * 查询库存
      *
      * @param inventoryQuery
