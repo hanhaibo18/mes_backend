@@ -39,6 +39,10 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.richfit.mes</groupId>
+            <artifactId>common-oss</artifactId>
+        </dependency>
     </dependencies>
 
 

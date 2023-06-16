@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +35,9 @@ public class ProduceNoticeServiceImpl extends ServiceImpl<ProduceNoticeMapper, P
 
     @Autowired
     private ProduceMesPdmAttachmentService produceMesPdmAttachmentService;
+
+    @Autowired
+    private FastDfsService fastDfsService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -57,6 +61,11 @@ public class ProduceNoticeServiceImpl extends ServiceImpl<ProduceNoticeMapper, P
         });
         boolean flag = produceNoticeService.saveBatch(produceNoticeList);
         return flag ? true: false;
+    }
+
+    public String uploadFile(InputStream inputStream,String fileName) throws Exception {
+        int size = inputStream.available();
+        return fastDfsService.uploadFile(inputStream,size,fileName);
     }
 
     private SaleProduceAttachmentDto convert(List<SaleProductionSchedulingRequest> requestList) {
