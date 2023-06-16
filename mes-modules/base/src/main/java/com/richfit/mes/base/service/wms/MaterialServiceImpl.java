@@ -6,6 +6,7 @@ import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.produce.Certificate;
 import com.richfit.mes.common.model.wms.MaterialBasis;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,19 +47,27 @@ public class MaterialServiceImpl implements MaterialService {
             MaterialBasis materialBasis = new MaterialBasis(product, erpCode);
             materialBasisList.add(materialBasis);
         }
-        // 同步到wms中
-        CommonResult commonResult = wmsServiceClient.materialBasis(materialBasisList);
-        if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
-            for (Product product : products) {
-                product.setSynchronousRegime(1);
-                product.setSynchronousMessage("同步成功");
+        try {
+            // 同步到wms中
+            CommonResult commonResult = wmsServiceClient.materialBasis(materialBasisList);
+            if (commonResult.getStatus() == ResultCode.SUCCESS.getCode()) {
+                for (Product product : products) {
+                    product.setSynchronousRegime(1);
+                    product.setSynchronousMessage("同步成功");
+                }
+            } else {
+                for (Product product : products) {
+                    product.setSynchronousRegime(2);
+                    product.setSynchronousMessage(commonResult.getMessage());
+                }
             }
-        } else {
+            productService.updateBatchById(products);
+        } catch (Exception e) {
             for (Product product : products) {
                 product.setSynchronousRegime(2);
-                product.setSynchronousMessage(commonResult.getMessage());
+                product.setSynchronousMessage(e.getMessage());
             }
+            productService.updateBatchById(products);
         }
-        productService.updateBatchById(products);
     }
 }
