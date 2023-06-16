@@ -30,8 +30,8 @@ public class MaterialController {
     MaterialService materialService;
 
     @ApiOperation(value = "根据勾选数据同步到wms", notes = "根据勾选数据同步到wms")
-    @PostMapping("/save_wms_sync")
-    public CommonResult<String> saveWmsSync(@RequestBody List<Product> products) {
+    @PostMapping("/sync")
+    public CommonResult<String> sync(@RequestBody List<Product> products) {
         materialService.sync(products);
         return CommonResult.success("操作完成");
     }
