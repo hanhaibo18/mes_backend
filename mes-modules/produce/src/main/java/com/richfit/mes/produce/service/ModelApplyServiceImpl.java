@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -109,8 +110,15 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
     public CommonResult<Page<ModelApply>> getPageInfoNew(int applyStatus, String branchCode, String drawingNo, String startTime, String endTime, int page, int limit) {
         QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
         modelApplyQueryWrapper.eq("apply_status", applyStatus).eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        modelApplyQueryWrapper.apply("UNIX_TIMESTAMP(apply_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
-        modelApplyQueryWrapper.apply("UNIX_TIMESTAMP(apply_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+        if (!StringUtils.isNullOrEmpty(startTime)) {
+            modelApplyQueryWrapper.apply("UNIX_TIMESTAMP(apply_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
+        }
+        if (!StringUtils.isNullOrEmpty(endTime)) {
+            modelApplyQueryWrapper.apply("UNIX_TIMESTAMP(apply_time) <= UNIX_TIMESTAMP('" + endTime + " 23:59:59')");
+        }
+        if (!StringUtils.isNullOrEmpty(drawingNo)) {
+            modelApplyQueryWrapper.eq("model_drawing_no", drawingNo);
+        }
         return CommonResult.success(this.page(new Page<ModelApply>(page, limit), modelApplyQueryWrapper));
     }
 
@@ -156,10 +164,11 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
         trackItemQueryWrapper.eq("is_current", 1).eq("drawing_no", model.getModelDrawingNo())
                 .eq("opt_ver", model.getVersion()).eq("tenant_id", tenantId)
-                .eq("branchCode", modelApply.getBranchCode()).eq("opt_type", 18);
+                .eq("branchCode", modelApply.getBranchCode()).eq("opt_type", 18).ne("model_type", 0);
         List<TrackItem> trackItemList = trackItemService.list(trackItemQueryWrapper);
         for (TrackItem trackItem : trackItemList) {
             trackItem.setModelStatus(1);
+            trackItem.setModelType(1);
         }
         trackItemService.updateBatchById(trackItemList);
     }
@@ -178,7 +187,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         List<ModelApplyItem> modelApplyItemList = modelApplyItemService.list(modelApplyItemQueryWrapper);
         Set<String> itemIdSet = modelApplyItemList.stream().map(ModelApplyItem::getItemId).collect(Collectors.toSet());
         UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
-        trackItemUpdateWrapper.set("model_status", 1).in("id", itemIdSet);
+        trackItemUpdateWrapper.set("model_status", 1).set("model_type", 0).in("id", itemIdSet);
         trackItemService.update(trackItemUpdateWrapper);
     }
 
@@ -237,7 +246,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         }
         modelApplyItemService.saveBatch(modelApplyItems);
         UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
-        trackItemUpdateWrapper.set("model_status", 1).in("id", assignItemList.stream().map(TrackItem::getId));
+        trackItemUpdateWrapper.set("model_status", 1).set("model_type", 0).in("id", assignItemList.stream().map(TrackItem::getId));
         trackItemService.update(trackItemUpdateWrapper);
     }
 
@@ -363,6 +372,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean sendBack(List<ModelApply> modelApplyList) {
         List<ModelApply> updateList = new ArrayList<>();
         for (ModelApply modelApply : modelApplyList) {
@@ -374,8 +384,17 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
             ModelApply apply = this.getOne(modelApplyQueryWrapper);
             apply.setApplyStatus(2);
             updateList.add(apply);
+            updateItemList(apply);
         }
         return this.updateBatchById(updateList);
+    }
+
+    private void updateItemList(ModelApply apply) {
+        UpdateWrapper<TrackItem> trackItemQueryWrapper = new UpdateWrapper<>();
+        trackItemQueryWrapper.eq("tenant_id", apply.getTenantId()).eq("branch_code", apply.getBranchCode())
+                .eq("opt_type", 18).eq("is_current", 1).eq("model_status", 1).eq("model_type", 1)
+                .set("model_status", 2);
+        trackItemService.update(trackItemQueryWrapper);
     }
 
     @Override
