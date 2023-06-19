@@ -235,6 +235,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                     PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
                     if (!ObjectUtil.isEmpty(prechargeFurnace)) {
                         prechargeFurnace.setAssignStatus(0);
+                        prechargeFurnace.setOptType(nextItem.getOptType());
+                        prechargeFurnace.setOptName(nextItem.getOptName());
                         prechargeFurnaceService.updateById(prechargeFurnace);
                     }
                 } else {
