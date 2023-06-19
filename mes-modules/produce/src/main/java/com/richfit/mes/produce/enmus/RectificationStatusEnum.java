@@ -13,9 +13,8 @@ public enum RectificationStatusEnum {
     W("0", "未提报"),
     Y("1", "已提报"),
     N("2", "已关闭"),
-
-
-    ;
+    RECTIFICATION_UNIT_DONE("3", "整改单位提交，待整改检验"),
+    HAVE_CHECK("4", "整改检验通过");
 
     private final String code;
 
