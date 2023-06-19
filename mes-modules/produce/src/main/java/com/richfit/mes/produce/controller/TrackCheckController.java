@@ -338,56 +338,8 @@ public class TrackCheckController extends BaseController {
     @ApiOperation(value = "批量调度审核(新)", notes = "批量调度审核")
     @PostMapping("/batchAddSchedule")
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> batchAddSchedule(@RequestBody BatchAddScheduleDto batchAddScheduleDto, HttpServletRequest request) {
-        if (null == batchAddScheduleDto) {
-            return CommonResult.failed("参数不能为空！");
-        }
-        if (null == batchAddScheduleDto.getTiId()) {
-            return CommonResult.failed("工序ID列表不能为空！");
-        }
-        if (StringUtils.isNullOrEmpty(batchAddScheduleDto.getNextBranchCode()) || "/".equals(batchAddScheduleDto.getNextBranchCode())) {
-            batchAddScheduleDto.setNextBranchCode(batchAddScheduleDto.getBranchCode());
-        }
-        boolean bool = false;
-        for (String tiId : batchAddScheduleDto.getTiId()) {
-            //正常调度审核业务
-            TrackItem trackItem = trackItemService.getById(tiId);
-            trackItem.setModifyTime(new Date());
-            trackItem.setScheduleCompleteTime(new Date());
-            trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
-            trackItem.setScheduleCompleteResult(batchAddScheduleDto.getResult());
-            trackItem.setIsPrepare(batchAddScheduleDto.getIsPrepare());
-            trackItem.setIsScheduleComplete(1);
-            //查询质检规则
-            UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("ti_id", trackItem.getId()).set("is_prepare", batchAddScheduleDto.getIsPrepare());
-            trackCompleteService.update(updateWrapper);
-            QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
-            completeQueryWrapper.eq("ti_id", trackItem.getId());
-            List<TrackComplete> list = trackCompleteService.list(completeQueryWrapper);
-            if (null != batchAddScheduleDto.getNextBranchCode()) {
-                trackItem.setBranchCode(batchAddScheduleDto.getNextBranchCode());
-            }
-            bool = trackItemService.updateById(trackItem);
-            if (bool) {
-                //保存操作记录
-                actionService.saveAction(ActionUtil.buildAction
-                        (batchAddScheduleDto.getBranchCode(), "4", "2",
-                                "调度审核，跟单号：" + (list.isEmpty() ? "null" : list.get(0).getTrackNo()) + "，下车间编码：" + batchAddScheduleDto.getNextBranchCode(),
-                                OperationLogAspect.getIpAddress(request)));
-            }
-            Map<String, String> map = new HashMap<>(3);
-            map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackItem.getTrackHeadId());
-            map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackItem.getId());
-            map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-            publicService.publicUpdateState(map, PublicCodeEnum.DISPATCH.getCode());
-        }
-        if (bool) {
-            return CommonResult.success(true, "操作成功！");
-        } else {
-            return CommonResult.failed("操作失败，请重试！");
-        }
-
+    public CommonResult<Boolean> batchAddSchedule(@RequestBody BatchAddScheduleDto batchAddScheduleDto) {
+        return trackCheckService.batchAddSchedule(batchAddScheduleDto);
     }
 
     @ApiOperation(value = "回滚质检审核", notes = "回滚质检审核")
