@@ -17,12 +17,9 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.Role;
 import com.richfit.mes.common.model.sys.TenantUser;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
-import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.RecordsOfPourOperationsMapper;
-import com.richfit.mes.produce.dao.TrackAssignMapper;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
@@ -35,7 +32,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -461,7 +461,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         assignQueryWrapper.eq("ti_id", items.get(0).getId()).last("limit 1");
         Assign assign = trackAssignService.getOne(assignQueryWrapper);
         QueryWrapper<AssignPerson> assignPersonQueryWrapper = new QueryWrapper<>();
-        assignPersonQueryWrapper.eq("assign_id",assign.getId());
+        assignPersonQueryWrapper.eq("assign_id", assign.getId());
         List<AssignPerson> assignPeople = trackAssignPersonService.list(assignPersonQueryWrapper);
         assign.setAssignPersons(assignPeople);
 
@@ -522,7 +522,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
                     assign.getBranchCode(),
                     assign.getTenantId());
         }
-        if (assign.getState() == 1){
+        if (assign.getState() == 1) {
             List<String> headIds = trackItemList.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
             List<String> flowIds = trackItemList.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
             //将跟单状态改为在制
@@ -555,17 +555,33 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteItem(List<String> itemIds) {
-        //根据工序id找到派工信息
-        QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
-        assignQueryWrapper.in("ti_id", itemIds);
-        List<Assign> assignList = trackAssignService.list(assignQueryWrapper);
-        if (CollectionUtils.isEmpty(assignList)){
-            throw new GlobalException("没有找到该工序的派工信息！",ResultCode.FAILED);
+    public Boolean deleteItem(List<String> itemIds, Long prechargeFurnaceId) {
+        QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_current", 1).eq("precharge_furnace_id", prechargeFurnaceId);
+        List<TrackItem> list = trackItemService.list(queryWrapper);
+        if (list != null && list.size() <= itemIds.size()) {
+            throw new GlobalException("不能删除预装炉中所有工序！", ResultCode.FAILED);
         }
-        Set<String> assignIds = assignList.stream().map(Assign::getId).collect(Collectors.toSet());
-        String[] ids = (String[]) assignIds.toArray(new String[assignIds.size()]);
-        trackAssignService.deleteAssignYl(ids);
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        List<TrackItem> lastTrackItems = null;
+        for (String itemId : itemIds) {
+            TrackItem trackItem = trackItemService.getById(itemId);
+            QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+            trackItemQueryWrapper.eq("flow_id", trackItem.getFlowId()).eq("next_opt_sequence", trackItem.getOriginalOptSequence());
+            lastTrackItems = trackItemService.list(trackItemQueryWrapper);
+            //重置当前工序（浇注工序）信息
+            trackItemService.resetStatus(itemId, 5, request);
+            //回退至上工序（炼钢工序）
+            trackItemService.backSequence(trackItem.getFlowId());
+            //重置当前（炼钢）
+            for (TrackItem lastTrackItem : lastTrackItems) {
+                trackItemService.resetStatus(lastTrackItem.getId(), 5, request);
+            }
+            UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+            trackItemUpdateWrapper.set("precharge_furnace_id", null).set("precharge_furnace_assign_id", null)
+                    .eq("flow_id", trackItem.getFlowId()).eq("next_opt_sequence", trackItem.getOriginalOptSequence());
+            trackItemService.update(trackItemUpdateWrapper);
+        }
         return true;
     }
 

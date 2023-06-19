@@ -477,6 +477,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String syncStatus;
 
     @ApiModelProperty(value = "预装炉id", dataType = "String")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Long prechargeFurnaceId;
 
 
@@ -523,6 +524,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String ingotCase;
 
     @ApiModelProperty(value = "预装炉派工id")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String prechargeFurnaceAssignId;
 
     @ApiModelProperty(value = "是否冶炼配炉::是；否")

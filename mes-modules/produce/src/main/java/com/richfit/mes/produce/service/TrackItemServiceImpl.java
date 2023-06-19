@@ -537,6 +537,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         updateWrapperOld.eq("is_current", 1);
         updateWrapperOld.orderByDesc("opt_sequence");
         updateWrapperOld.set("is_current", 0);
+        updateWrapperOld.set("precharge_furnace_id", null).set("precharge_furnace_assign_id", null);
         this.update(updateWrapperOld);
         // 将上道工序is_current设为1
         UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
@@ -921,13 +922,13 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
     public List<TrackItem> getTrackItemList(Wrapper<TrackItem> wrapper) {
         List<TrackItem> trackItemList = trackItemMapper.getTrackItemList(wrapper);
         //工艺ids
-        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackItemList.stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackItemList.stream().map(item -> item.getRouterId() + "_" + item.getBranchCode()).collect(Collectors.toSet()));
         List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
-        if(!CollectionUtil.isEmpty(getRouter)){
-            Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+        if (!CollectionUtil.isEmpty(getRouter)) {
+            Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId() + "_" + item.getBranchCode(), Function.identity()));
             for (TrackItem trackItem : trackItemList) {
-                Router router = routerMap.get(trackItem.getRouterId()+"_"+trackItem.getBranchCode());
-                if(ObjectUtil.isEmpty(router)){
+                Router router = routerMap.get(trackItem.getRouterId() + "_" + trackItem.getBranchCode());
+                if (ObjectUtil.isEmpty(router)) {
                     trackItem.setWeightMolten(router.getWeightMolten());
                     trackItem.setTexture(router.getTexture());
                 }

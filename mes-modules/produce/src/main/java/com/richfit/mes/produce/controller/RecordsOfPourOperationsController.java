@@ -137,8 +137,8 @@ public class RecordsOfPourOperationsController extends ApiController {
 
     @ApiOperation(value = "根据工序id列表移除预装炉", notes = "根据工序id列表移除预装炉")
     @DeleteMapping("delete_item")
-    public CommonResult<Boolean> deleteItem(@RequestBody List<String> itemIds){
-        return CommonResult.success(recordsOfPourOperationsService.deleteItem(itemIds));
+    public CommonResult<Boolean> deleteItem(@RequestBody List<String> itemIds, @RequestParam Long prechargeFurnaceId) {
+        return CommonResult.success(recordsOfPourOperationsService.deleteItem(itemIds, prechargeFurnaceId));
     }
 
 
