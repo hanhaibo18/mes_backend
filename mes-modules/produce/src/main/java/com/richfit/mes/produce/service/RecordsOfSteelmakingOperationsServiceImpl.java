@@ -111,8 +111,12 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
         if (prechargeFurnace == null) {
             throw new GlobalException("没有找到预装炉信息！", ResultCode.FAILED);
         }
+        //根据预装炉信息查找炼钢工序派工信息
+        QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignQueryWrapper = new QueryWrapper<>();
+        prechargeFurnaceAssignQueryWrapper.eq("furnace_id", prechargeFurnaceId).eq("opt_type", "15").last("limit 1");
+        PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getOne(prechargeFurnaceAssignQueryWrapper);
         recordsOfSteelmakingOperations.setTypeOfSteel(prechargeFurnace.getTypeOfSteel());
-        recordsOfSteelmakingOperations.setSmeltingEquipment(prechargeFurnace.getSmeltingEquipment());
+        recordsOfSteelmakingOperations.setSmeltingEquipment(prechargeFurnaceAssign.getDeviceName());
         UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
         assignUpdateWrapper.eq("furnace_id", prechargeFurnaceId).eq("opt_type", "15").set("record_status", 2);
         prechargeFurnaceAssignService.update(assignUpdateWrapper);
