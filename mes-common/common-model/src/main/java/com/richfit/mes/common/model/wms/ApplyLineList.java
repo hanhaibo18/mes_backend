@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 
  * apply_line_list 申请单上传 行数据
  */
 @Data
@@ -62,12 +61,12 @@ public class ApplyLineList implements Serializable {
     private Integer quantity;
 
     /**
-     *  物料类型
+     * 物料类型
      */
     private String materialType;
 
     /**
-     *  跟踪方式
+     * 跟踪方式
      */
     private String trackingMode;
 
@@ -89,11 +88,12 @@ public class ApplyLineList implements Serializable {
 
     }
 
-    public ApplyLineList(Certificate certificate, Product product, List<TrackFlow> trackFlows ) {
+    public ApplyLineList(Certificate certificate, Product product, List<TrackFlow> trackFlows) {
+        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
         // 申请单id
-        this.applyId = UUID.randomUUID().toString().replaceAll("-", "");
+        this.applyId = certificate.getId();
         // id
-        this.id = certificate.getId();
+        this.id = uuid;
         // 行项目
         this.lineNum = 1;
         // 图号
@@ -120,7 +120,7 @@ public class ApplyLineList implements Serializable {
         }
         this.lineList = new ArrayList<>(trackFlows.size());
         for (TrackFlow trackFlow : trackFlows) {
-            ApplyLineProductList applyLineProductList = new ApplyLineProductList(certificate, trackFlow);
+            ApplyLineProductList applyLineProductList = new ApplyLineProductList(trackFlow, uuid);
             lineList.add(applyLineProductList);
         }
 
