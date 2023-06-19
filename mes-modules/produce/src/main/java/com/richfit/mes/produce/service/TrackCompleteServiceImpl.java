@@ -227,7 +227,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             //冶炼车间预装炉重复利用，特有字段下工序装炉，若该字段不为空则修改预装炉状态为未派工
             if (completeDto.getNextFurnace() != null && completeDto.getNextFurnace()) {
                 QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
-                itemQueryWrapper.eq("track_head_id", trackItem.getTrackHeadId());
+                itemQueryWrapper.eq("flow_id", trackItem.getFlowId());
                 itemQueryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
                 TrackItem nextItem = trackItemService.getOne(itemQueryWrapper);
                 if (!ObjectUtil.isEmpty(nextItem)) {
