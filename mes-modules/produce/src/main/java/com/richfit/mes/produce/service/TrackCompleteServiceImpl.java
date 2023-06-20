@@ -871,7 +871,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Transactional(rollbackFor = Exception.class)
-    private void removeNextBranchInfo(TrackItem trackItem) {
+    public void removeNextBranchInfo(TrackItem trackItem) {
         QueryWrapper<TrackCertificate> certificateQueryWrapper = new QueryWrapper<>();
         certificateQueryWrapper.eq("ti_id", trackItem.getId());
         TrackCertificate trackCertificate = trackCertificateService.getOne(certificateQueryWrapper);
@@ -1346,10 +1346,14 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     }
 
     @Override
-    public Map<String, Object> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol) {
+    public Page<PrechargeFurnace> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol,String assignStatus) {
         QueryWrapper<PrechargeFurnace> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("workblank_type", workblankType).eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
-                .eq("branch_code", branchCode).ne("status", 2);
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(workblankType),"workblank_type", workblankType)
+                    .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
+                    .eq("branch_code", branchCode)
+                //只查询炼钢工序
+                    .eq("opt_type",15)
+                    .eq(!StringUtils.isNullOrEmpty(assignStatus),"assign_status", assignStatus);
         if (prechargeFurnaceId != null) {
             queryWrapper.eq("id", prechargeFurnaceId);
         }
@@ -1368,18 +1372,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.orderByDesc("modify_time");
         }
-        List<PrechargeFurnace> prechargeFurnaces = prechargeFurnaceService.list(queryWrapper);
+        return  prechargeFurnaceService.page(new Page<>(page, limit), queryWrapper);
 
-        Page<PrechargeFurnace> total = prechargeFurnaceService.page(new Page<>(page, limit), queryWrapper);
-        //原预装炉列表展示已派工的预装炉
-        List<PrechargeFurnace> before = prechargeFurnaces.stream().filter(x -> x.getAssignStatus() == 1).collect(Collectors.toList());
-        //变更后的预装炉列表展示未派工的预装炉
-        List<PrechargeFurnace> after = prechargeFurnaces.stream().filter(x -> x.getAssignStatus() == 0).collect(Collectors.toList());
-        Map<String, Object> result = new HashMap<>();
-        result.put("total", total);
-        result.put("before", before);
-        result.put("after", after);
-        return result;
     }
 
     @Override
