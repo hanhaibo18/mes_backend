@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
@@ -219,7 +220,13 @@ public class PublicServiceImpl implements PublicService {
         if (!StringUtils.isNullOrEmpty(trackHead.getWorkPlanId())) {
             planService.planData(trackHead.getWorkPlanId());
         }
-        return this.activationProcess(map);
+        boolean activation = false;
+        if("7".equals(trackHead.getClasses())){
+            activation = this.hotYlActivationProcess(map);
+        }else{
+            activation = this.activationProcess(map);
+        }
+        return activation;
     }
 
     @Autowired
@@ -248,6 +255,7 @@ public class PublicServiceImpl implements PublicService {
         if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getFlowId())) {
             return false;
         }
+
         //过滤最终完成数据,获取未最终完成数据
         List<TrackItem> collect = currentTrackItemList.stream().filter(item -> item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
         //判断是最后一道工序 和 没有未完工/未开工数据 调用跟单状态修改
@@ -267,6 +275,87 @@ public class PublicServiceImpl implements PublicService {
             }
             //激活下工序
             activation = activation(currentTrackItemList.get(0));
+        }
+        return activation;
+    }
+
+    /**
+     * 功能描述: 冶炼配炉激活工序
+     * 配炉中跟单工序的状态必须保证状态统一，故在调度的时候需要判断配炉的跟单全部走到激活下工序步骤采取统一去激活
+     * @Author: 任泽文
+     * @Date: 2023/6/20 15:08
+     **/
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean hotYlActivationProcess(Map<String, String> map) {
+        TrackItem trackItem = trackItemService.getById(String.valueOf(map.get("trackItemId")));
+        //冶炼车间配炉工序(判断所有并行工序是否全部最终完成)
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("precharge_furnace_id",trackItem.getPrechargeFurnaceId())
+                             .eq("is_current", 1)
+                             .orderByDesc("sequence_order_by");
+        List<TrackItem> samePrechargeItems = trackItemService.list(trackItemQueryWrapper);
+        //配炉里各个跟单工序,并行工序是否最终完成
+        boolean isParallel = true;
+        //要激活下工序的配炉跟单
+        List<List<TrackItem>> trackItemLists = new ArrayList<>();
+        //是否可以激活下工序的标识
+        boolean isActivation = true;
+        for (TrackItem prechargeItem : samePrechargeItems) {
+            //倒序获取工序列表
+            QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
+            currentTrackItem.eq("flow_id", prechargeItem.getFlowId());
+            currentTrackItem.eq("is_current", 1);
+            currentTrackItem.orderByDesc("sequence_order_by");
+            List<TrackItem> currentTrackItemList = trackItemService.list(currentTrackItem);
+            //判断还有没有下工序
+            if (CollectionUtils.isEmpty(currentTrackItemList)) {
+                throw new GlobalException("配炉里跟单异常，没有找到当前工序！", ResultCode.FAILED);
+            }
+            //判断所有并行工序是否全部最终完成(没有最终完成 跳出并且返回false)
+            if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getFlowId())) {
+                isParallel = false;
+                break;
+            }
+
+            //过滤最终完成数据,获取未最终完成数据
+            List<TrackItem> collect = currentTrackItemList.stream().filter(item -> item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
+            //判断是最后一道工序 和 没有未完工/未开工数据 调用跟单状态修改
+            if (currentTrackItemList.get(0).getNextOptSequence() == 0 && CollectionUtils.isEmpty(collect)) {
+                trackHeadService.trackHeadFinish(prechargeItem.getFlowId());
+            }else{
+                trackItemLists.add(currentTrackItemList);
+                //激活前校验当前跟单多产品是否全部完成 全部完成 获取所有循环执行下工序激活
+                QueryWrapper<TrackItem> queryWrapperItemList = new QueryWrapper();
+                queryWrapperItemList.eq("track_head_id", currentTrackItemList.get(0).getTrackHeadId());
+                queryWrapperItemList.eq("original_opt_sequence", currentTrackItemList.get(0).getOriginalOptSequence());
+                List<TrackItem> itemList = trackItemService.list(queryWrapperItemList);
+                //不查询传入工序,查询相同optSequence的其他工序 并且没最终完成的
+                List<TrackItem> notIsFinalCompleteList = itemList.stream().filter(item -> item.getOriginalOptSequence().equals(trackItem.getOriginalOptSequence()) && !item.getId().equals(trackItem.getId()) && item.getIsFinalComplete().equals("0")).collect(Collectors.toList());
+                //有其他工序没有最终完成 终止整个配炉子激活下工序流程
+                if (!CollectionUtils.isEmpty(notIsFinalCompleteList)) {
+                    isActivation = false;
+                    break;
+                }
+            }
+        }
+
+        //激活配炉里的跟单工序下工序
+        boolean activation = false;
+        if(isParallel && !CollectionUtil.isEmpty(trackItemLists)){
+            for (List<TrackItem> trackItemList : trackItemLists) {
+                //最后一道工序不修改状态不进行下工序激活
+                if (!trackItemList.isEmpty() && trackItemList.get(0).getNextOptSequence() != 0) {
+                    //修改当前工序状态
+                    for (TrackItem currTrackItem : trackItemList) {
+                        currTrackItem.setIsCurrent(0);
+                        trackItemService.updateById(currTrackItem);
+                    }
+                }
+            }
+            if(isActivation){
+                //激活下工序
+                activation = hotYlactivation(trackItemLists);
+            }
         }
         return activation;
     }
@@ -447,13 +536,46 @@ public class PublicServiceImpl implements PublicService {
                 }
             }
         }
-
         //特殊工序流转下车间
         String nextOptWork = "";
         if (OptTypeEnum.KX_OPERATION.getStateId().equals(trackItem.getOptType())) {
             nextOptWork = "BOMCO_RG_YL";
             certificateService.headMoveToNextBranch(trackItem.getTrackHeadId(), nextOptWork, trackItem);
         }
+        return true;
+    }
+
+    /**
+     * 功能描述: 冶炼配炉跟单激活
+     *
+     * @Author: 任泽文
+     * @Date: 2023/6/20 15:08
+     **/
+    @Transactional(rollbackFor = Exception.class)
+    public boolean hotYlactivation(List<List<TrackItem>> trackItemLists) {
+        for (List<TrackItem> itemList : trackItemLists) {
+            for (TrackItem item : itemList) {
+                //激活下工序
+                QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("flow_id", item.getFlowId());
+                queryWrapper.eq("original_opt_sequence", item.getNextOptSequence());
+                List<TrackItem> trackItemList = trackItemService.list(queryWrapper);
+                for (TrackItem trackItemEntity : trackItemList) {
+                    //冶炼车间下工序装炉
+                    trackItemEntity.setPrechargeFurnaceId(item.getPrechargeFurnaceId());
+                    trackItemEntity.setIsCurrent(1);
+                    trackItemEntity.setModifyTime(new Date());
+                    trackItemService.updateById(trackItemEntity);
+                    if (trackItemEntity.getIsAutoSchedule() != null && 1 == trackItemEntity.getIsAutoSchedule()) {
+                        Map<String, String> map = new HashMap<>(2);
+                        map.put("trackItemId", trackItemEntity.getId());
+                        map.put("trackHeadId", trackItemEntity.getTrackHeadId());
+                        automaticProcess(map);
+                    }
+                }
+            }
+        }
+
         return true;
     }
 
