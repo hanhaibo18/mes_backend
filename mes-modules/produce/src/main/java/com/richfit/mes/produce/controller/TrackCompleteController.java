@@ -964,8 +964,8 @@ public class TrackCompleteController extends BaseController {
 
     @ApiOperation(value = "新增报工(新)", notes = "新增报工(新)")
     @PostMapping("/saveComplete")
-    public CommonResult<Boolean> saveComplete(@RequestBody List<CompleteDto> completeDto, HttpServletRequest request) {
-        return trackCompleteService.saveComplete(completeDto, request);
+    public CommonResult<Boolean> saveComplete(@RequestBody List<CompleteDto> completeDto) {
+        return trackCompleteService.saveComplete(completeDto);
     }
 
     @ApiOperation(value = "保存报工(新)", notes = "保存报工(新)")

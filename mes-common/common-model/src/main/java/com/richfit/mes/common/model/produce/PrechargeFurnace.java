@@ -111,4 +111,7 @@ public class PrechargeFurnace {
     @ApiModelProperty(value = "工序类型", dataType = "String")
     private String optType;
 
+    @ApiModelProperty(value = "是否调度确认", dataType = "Integer")
+    private Integer isExistScheduleCheck;
+
 }
