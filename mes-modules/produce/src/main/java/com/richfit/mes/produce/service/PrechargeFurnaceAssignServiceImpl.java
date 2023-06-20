@@ -100,11 +100,8 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                 String furnaceAssignId = UUID.randomUUID().toString().replaceAll("-", "");
                 for (TrackItem trackItem : itemList) {
                     TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-                    //派工数量校验
-                    if (trackItem.getAssignableQty() < assign.getQty()) {
-                        throw new GlobalException(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty(), ResultCode.FAILED);
-                    }
-                    trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
+                    assign.setQty(trackItem.getAssignableQty());
+                    trackItem.setAssignableQty(0);
                     //可派工数量为0时 工序变为已派工状态
                     if (0 == trackItem.getAssignableQty()) {
                         trackItem.setIsSchedule(1);
