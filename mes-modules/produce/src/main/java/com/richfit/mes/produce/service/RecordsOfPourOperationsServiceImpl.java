@@ -443,8 +443,10 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             throw new GlobalException("该预装炉当前没有工序！", ResultCode.FAILED);
         }
         QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
-        itemQueryWrapper.eq("is_current", 1).eq("opt_type", trackItemList.get(0).getOptType()).isNull("precharge_furnace_id")
-                .eq("branch_code", trackItemList.get(0).getBranchCode()).eq("tenant_id", trackItemList.get(0).getTenantId());
+        itemQueryWrapper.eq("is_current", 1).eq("opt_type", "15").isNull("precharge_furnace_id")
+                .eq("branch_code", trackItemList.get(0).getBranchCode())
+                .eq("tenant_id", trackItemList.get(0).getTenantId())
+                .eq("is_exist_schedule_check", trackItemList.get(0).getIsExistScheduleCheck());
         return trackItemService.page(new Page<>(page, limit), itemQueryWrapper);
     }
 
@@ -654,6 +656,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         List<TrackItem> trackItemList = trackItemService.listByIds(itemIds);
         //派工
         for (TrackItem trackItem : trackItemList) {
+            assign.setQty(trackItem.getAssignableQty());
             TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
             //派工数量校验
             if (trackItem.getAssignableQty() < assign.getQty()) {

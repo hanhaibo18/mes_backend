@@ -314,6 +314,40 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             throw new GlobalException("必须要选择添加预装炉的工序", ResultCode.FAILED);
         }
         PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
+        if (!PrechargeFurnace.STATE_WKG.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("只能添加未开工的预装炉的工序", ResultCode.FAILED);
+        }
+        for (Assign assign : assignList) {
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("id", assign.getTiId());
+            updateWrapper.set("precharge_furnace_id", assign.getPrechargeFurnaceId());
+            trackItemService.update(updateWrapper);
+        }
+        prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+        //数量和钢水重量赋值
+        int num = 0;
+        double totalMoltenSteel = 0.0;
+        for (Assign assign : assignList) {
+            num+=ObjectUtil.isEmpty(assign.getNumber())?0:assign.getNumber();
+            totalMoltenSteel+=StringUtils.isEmpty(assign.getWeightMolten())?0.0:Double.parseDouble(assign.getWeightMolten());
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getNum()) && num>0){
+            prechargeFurnace.setNum(prechargeFurnace.getNum()+num);
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getTotalMoltenSteel()) && totalMoltenSteel>0){
+            prechargeFurnace.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel()+totalMoltenSteel);
+        }
+        this.updateById(prechargeFurnace);
+        return prechargeFurnace;
+    }
+
+    @Override
+    public PrechargeFurnace addTrackItemHotYl(List<Assign> assignList) {
+        //预装炉未开工状态
+        if (assignList.isEmpty()) {
+            throw new GlobalException("必须要选择添加预装炉的工序", ResultCode.FAILED);
+        }
+        PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
         if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus())) {
             throw new GlobalException("已完工不能进行添加", ResultCode.FAILED);
         }
@@ -413,6 +447,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         this.updateById(prechargeFurnace);
         return prechargeFurnace;
     }
+
     @Override
     public PrechargeFurnace deleteTrackItem(List<Assign> assignList) {
         //预装炉未开工状态
@@ -422,6 +457,42 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
         if (!PrechargeFurnace.STATE_WKG.equals(prechargeFurnace.getStatus())) {
             throw new GlobalException("只能删除未开工的预装炉的工序", ResultCode.FAILED);
+        }
+        for (Assign assign : assignList) {
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("id", assign.getTiId());
+            updateWrapper.set("precharge_furnace_id", null);
+            trackItemService.update(updateWrapper);
+        }
+        prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+        //设备类型赋值
+        prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
+        //数量和钢水重量赋值
+        int num = 0;
+        double totalMoltenSteel = 0.0;
+        for (Assign assign : assignList) {
+            num+=ObjectUtil.isEmpty(assign.getNumber())?0:assign.getNumber();
+            totalMoltenSteel+=StringUtils.isEmpty(assign.getWeightMolten())?0.0:Double.parseDouble(assign.getWeightMolten());
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getNum()) && num>0){
+            prechargeFurnace.setNum(prechargeFurnace.getNum()-num);
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getTotalMoltenSteel()) && totalMoltenSteel>0){
+            prechargeFurnace.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel()-totalMoltenSteel);
+        }
+        this.updateById(prechargeFurnace);
+        return prechargeFurnace;
+    }
+
+    @Override
+    public PrechargeFurnace deleteTrackItemYl(List<Assign> assignList) {
+        //预装炉未开工状态
+        if (assignList.isEmpty()) {
+            throw new GlobalException("必须要选择删除预装炉的工序", ResultCode.FAILED);
+        }
+        PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
+        if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("不能删除已完工的预装炉的工序", ResultCode.FAILED);
         }
         for (Assign assign : assignList) {
             LambdaQueryWrapper<TrackItem> queryWrapper = new LambdaQueryWrapper<>();
@@ -597,4 +668,5 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             }
         }
     }
+
 }
