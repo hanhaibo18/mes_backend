@@ -180,7 +180,7 @@ public class HeatTrackAssignController extends BaseController {
             queryWrapper.eq("a.workblank_type", workblankType);
             //过滤工序名为“炼钢”工序的；
             if ("1".equals(workblankType)) {
-                queryWrapper.eq("a.opt_name", "炼钢");
+                queryWrapper.eq("a.opt_sequence", 1);
             }
         }
 
