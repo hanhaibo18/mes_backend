@@ -411,6 +411,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                 prechargeFurnaceAssignLambdaQueryWrapper.eq(PrechargeFurnaceAssign::getFurnaceId, assignList.get(0).getPrechargeFurnaceId())
                         .ne(PrechargeFurnaceAssign::getIsDoing, PrechargeFurnace.END_START_WORK);
                 PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignMapper.selectOne(prechargeFurnaceAssignLambdaQueryWrapper);
+                //工序预装炉派工id赋值
                 trackItem.setPrechargeFurnaceAssignId(prechargeFurnaceAssign.getId());
                 trackAssignService.save(assign);
                 //保存工序信息
@@ -501,26 +502,35 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             if (trackItem.getIsCurrent() != 1) {
                 throw new GlobalException("只能删除当前工序", ResultCode.FAILED);
             }
+            if (trackItem.getOptSequence() != 1) {
+                throw new GlobalException("只能移除第一道工序", ResultCode.FAILED);
+            }
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
             updateWrapper.eq("id", assign.getTiId());
             updateWrapper.set("precharge_furnace_id", null);
             trackItemService.update(updateWrapper);
         }
+
+
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
         //设备类型赋值
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
+
+
+
+
         //数量和钢水重量赋值
         int num = 0;
         double totalMoltenSteel = 0.0;
         for (Assign assign : assignList) {
-            num+=ObjectUtil.isEmpty(assign.getNumber())?0:assign.getNumber();
-            totalMoltenSteel+=StringUtils.isEmpty(assign.getWeightMolten())?0.0:Double.parseDouble(assign.getWeightMolten());
+            num += ObjectUtil.isEmpty(assign.getNumber()) ? 0 : assign.getNumber();
+            totalMoltenSteel += StringUtils.isEmpty(assign.getWeightMolten()) ? 0.0 : Double.parseDouble(assign.getWeightMolten());
         }
-        if(!ObjectUtil.isEmpty(prechargeFurnace.getNum()) && num>0){
-            prechargeFurnace.setNum(prechargeFurnace.getNum()-num);
+        if (!ObjectUtil.isEmpty(prechargeFurnace.getNum()) && num > 0) {
+            prechargeFurnace.setNum(prechargeFurnace.getNum() - num);
         }
-        if(!ObjectUtil.isEmpty(prechargeFurnace.getTotalMoltenSteel()) && totalMoltenSteel>0){
-            prechargeFurnace.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel()-totalMoltenSteel);
+        if (!ObjectUtil.isEmpty(prechargeFurnace.getTotalMoltenSteel()) && totalMoltenSteel > 0) {
+            prechargeFurnace.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel() - totalMoltenSteel);
         }
         this.updateById(prechargeFurnace);
         return prechargeFurnace;
