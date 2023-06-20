@@ -483,8 +483,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
                 plan.setModifyTime(new Date());
                 plan.setDrawNoName("");//图号名称
                 plan.setMaterialName(hotDemand.getDemandName());//零件名称
-                plan.setInchargeWorkshopName(hotDemand.getInchargeWorkshopName());
-                plan.setInchargeWorkshop(hotDemand.getInchargeWorkshop());
+                plan.setInchargeWorkshopName(hotDemand.getInchargeWorkshopName());//加工车间名称
+                plan.setInchargeWorkshop(hotDemand.getInchargeWorkshop());//加工车间编码
                 planService.save(plan);
                 //扩展字段保存
                 this.saveExtend(hotDemand, plan);
