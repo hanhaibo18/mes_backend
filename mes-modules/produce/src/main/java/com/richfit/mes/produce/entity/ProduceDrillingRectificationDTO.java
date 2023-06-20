@@ -117,7 +117,7 @@ public class ProduceDrillingRectificationDTO extends PageDto implements Serializ
      * 问题描述
      */
     @ApiModelProperty(value = "问题描述")
-    private String desc;
+    private String detail;
 
     /**
      * branchCode

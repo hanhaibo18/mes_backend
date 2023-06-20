@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author zhiqiang.lu
@@ -168,7 +167,21 @@ public class PrechargeFurnaceController extends BaseController {
         }
         queryWrapper.eq("branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-
+        //根据状态查询
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getStatus())) {
+            if (dispatchingDto.getStatus().equals("0")) {
+                queryWrapper.eq("assign_status", "0");
+            }
+            if (dispatchingDto.getStatus().equals("-1")) {
+                queryWrapper.eq("status", "0");
+            }
+            if (dispatchingDto.getStatus().equals("1")) {
+                queryWrapper.eq("status", "1");
+            }
+            if (dispatchingDto.getStatus().equals("2")) {
+                queryWrapper.eq("status", "2");
+            }
+        }
         Page<PrechargeFurnace> page = prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
         return CommonResult.success(page);
     }
