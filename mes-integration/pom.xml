@@ -22,6 +22,7 @@
         <module>dnc-bs</module>
         <module>plm-tc</module>
         <module>schedule-notice</module>
+        <module>attachment</module>
         <!--  这个加的时候代码没提交 服务器启动不了了      <module>pdm-bs</module>-->
     </modules>
     <dependencies>

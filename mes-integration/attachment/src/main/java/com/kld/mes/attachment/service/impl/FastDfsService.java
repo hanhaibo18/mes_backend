@@ -1,4 +1,4 @@
-package com.pdm.mes.schedule.service.impl;
+package com.kld.mes.attachment.service.impl;
 
 import com.github.tobato.fastdfs.domain.fdfs.GroupState;
 import com.github.tobato.fastdfs.domain.fdfs.MetaData;
