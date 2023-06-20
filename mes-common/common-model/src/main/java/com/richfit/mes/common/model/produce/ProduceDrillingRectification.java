@@ -118,7 +118,7 @@ public class ProduceDrillingRectification implements Serializable {
      * 问题描述
      */
     @ApiModelProperty(value = "问题描述")
-    private String desc;
+    private String detail;
 
     /**
      * branchCode

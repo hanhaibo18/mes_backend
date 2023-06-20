@@ -15,10 +15,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.OptNameUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.dao.PrechargeFurnaceMapper;
-import com.richfit.mes.produce.dao.TrackAssignMapper;
-import com.richfit.mes.produce.dao.TrackHeadMapper;
-import com.richfit.mes.produce.dao.TrackItemMapper;
+import com.richfit.mes.produce.dao.*;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.*;
@@ -43,6 +40,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
 
     @Autowired
     private TrackHeadMapper trackHeadMapper;
+
+    @Autowired
+    private PrechargeFurnaceAssignMapper prechargeFurnaceAssignMapper;
 
     @Autowired
     private TrackItemService trackItemService;
@@ -73,6 +73,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
 
     @Autowired
     private TrackAssignService trackAssignService;
+
+    @Autowired
+    private TrackAssignPersonMapper assignPersonMapper;
 
     @Override
     public void furnaceCharging(List<Assign> assignList, String tempWork) {
@@ -320,13 +323,14 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             updateWrapper.set("precharge_furnace_id", assign.getPrechargeFurnaceId());
             trackItemService.update(updateWrapper);
         }
-        //已开工之后添加工序,该工序需要集成派工信息
+        //派工或已开工之后添加工序,该工序需要集成派工及开工信息
+        //已经派工，工序继承当前的派工信息；
         if (prechargeFurnace.getAssignStatus() == 1) {
             Assign assign = new Assign();
             //派工信息继承；
             //查询出当前配炉工序信息；
-            LambdaQueryWrapper<TrackItem> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(TrackItem::getPrechargeFurnaceId, assignList.get(0).getPrechargeFurnaceId()).eq(TrackItem::getIsCurrent, 1);
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("precharge_furnace_id", assignList.get(0).getPrechargeFurnaceId()).eq("is_current", 1).isNotNull("precharge_furnace_assign_id");
             List<TrackItem> trackItems = trackItemMapper.selectList(queryWrapper);
             if (CollectionUtils.isNotEmpty(trackItems)) {
                 TrackItem trackItem = trackItems.get(0);
@@ -336,6 +340,10 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                 assignLambdaQueryWrapper.eq(Assign::getTiId, trackItem.getId());
                 assign = trackAssignMapper.selectOne(assignLambdaQueryWrapper);
             }
+            //获取所有派工人员的集合
+            LambdaQueryWrapper<AssignPerson> assignPersonLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            assignPersonLambdaQueryWrapper.eq(AssignPerson::getAssignId,assign.getId());
+            List<AssignPerson> assignPeople = assignPersonMapper.selectList(assignPersonLambdaQueryWrapper);
             //处理工序信息；
             for (Assign assignExt : assignList) {
                 LambdaQueryWrapper<TrackItem> queryWrapper1 = new LambdaQueryWrapper<>();
@@ -364,9 +372,28 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                 }
                 //构造派工信息
                 constructAssignInfo(assign, trackItem, trackHead);
+                //处理预装炉派工信息
+                LambdaQueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                prechargeFurnaceAssignLambdaQueryWrapper.eq(PrechargeFurnaceAssign::getFurnaceId, assignList.get(0).getPrechargeFurnaceId())
+                        .ne(PrechargeFurnaceAssign::getIsDoing, PrechargeFurnace.END_START_WORK);
+                PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignMapper.selectOne(prechargeFurnaceAssignLambdaQueryWrapper);
+                trackItem.setPrechargeFurnaceAssignId(prechargeFurnaceAssign.getId());
                 trackAssignService.save(assign);
                 //保存工序信息
                 trackItemService.updateById(trackItem);
+                //派工人员信息修改；
+                constructAssignPersonInfo(assignPeople, assign);
+            }
+            //已经开工需要将工序的开工信息进行更新；
+            if (PrechargeFurnace.YES_START_WORK.equals(prechargeFurnace.getStatus())) {
+                //获取当前所有添加的工序信息
+                List<String> collect = assignList.stream().map(e -> e.getTiId()).collect(Collectors.toList());
+                LambdaQueryWrapper<TrackItem> queryWrapperItem = new LambdaQueryWrapper<>();
+                queryWrapperItem.in(TrackItem::getId, collect);
+                List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperItem);
+                if (CollectionUtils.isNotEmpty(trackItemList)) {
+                    constructStartWorkingInfo(trackItemList);
+                }
             }
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
@@ -510,13 +537,64 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         assign.setBranchCode(trackItem.getBranchCode());
         assign.setTenantId(trackItem.getTenantId());
         assign.setState(0);
-        if (com.mysql.cj.util.StringUtils.isNullOrEmpty(assign.getTrackId())) {
-            assign.setTrackNo(trackHead.getTrackNo());
-            assign.setTrackId(trackHead.getId());
-        }
+        assign.setTrackNo(trackHead.getTrackNo());
+        assign.setTrackId(trackHead.getId());
         if (com.mysql.cj.util.StringUtils.isNullOrEmpty(assign.getTenantId())) {
             assign.setTenantId(trackHead.getTenantId());
         }
     }
 
+    /**
+     * 构造开工信息
+     *
+     * @param trackItemList
+     */
+    private void constructStartWorkingInfo(List<TrackItem> trackItemList) {
+        List<String> itemIds = trackItemList.stream().map(TrackItem::getId).collect(Collectors.toList());
+        List<String> headIds = trackItemList.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
+        List<String> flowIds = trackItemList.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
+        //将跟单状态改为在制
+        UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+        trackHeadUpdateWrapper.set("status", "1")
+                .eq("status", "0")
+                .in("id", headIds);
+        trackHeadService.update(trackHeadUpdateWrapper);
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.set("status", "1")
+                .eq("status", "0")
+                .in("id", flowIds);
+        trackHeadFlowService.update(update);
+        UpdateWrapper<Assign> assignUpdate;
+        assignUpdate = new UpdateWrapper<>();
+        assignUpdate.set("state", "1")
+                .eq("state", "0")
+                .in("ti_id", itemIds);
+        trackAssignService.update(assignUpdate);
+        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+        trackItemUpdateWrapper.set("is_doing", 1)
+                .set("start_doing_time", new Date())
+                .set("start_doing_user", SecurityUtils.getCurrentUser().getUsername())
+                .eq("is_doing", 0)
+                .in("id", itemIds);
+        trackItemService.update(trackItemUpdateWrapper);
+    }
+
+    /**
+     * 构造派工人员信息
+     *
+     * @param assignPeople
+     * @param assign
+     */
+    private void constructAssignPersonInfo(List<AssignPerson> assignPeople, Assign assign) {
+        if (CollectionUtils.isNotEmpty(assignPeople)) {
+            for (AssignPerson assignPerson : assignPeople) {
+                AssignPerson assignPersonItem = new AssignPerson();
+                assignPersonItem.setAssignId(assign.getId());
+                assignPersonItem.setModifyTime(new Date());
+                assignPersonItem.setUserId(assignPerson.getUserId());
+                assignPersonItem.setUserName(assignPerson.getUserName());
+                assignPersonMapper.insert(assignPersonItem);
+            }
+        }
+    }
 }
