@@ -114,4 +114,8 @@ public class PrechargeFurnace {
     @ApiModelProperty(value = "是否调度确认", dataType = "Integer")
     private Integer isExistScheduleCheck;
 
+    @ApiModelProperty(value = "预装炉的状态0:未派工,-1 = 未开工 1= 已开工 2 = 已完工", dataType = "Integer")
+    @TableField(exist = false)
+    private String furnaceStatus;
+
 }

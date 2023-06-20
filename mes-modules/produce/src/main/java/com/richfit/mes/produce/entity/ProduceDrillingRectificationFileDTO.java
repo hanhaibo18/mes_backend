@@ -18,7 +18,7 @@ public class ProduceDrillingRectificationFileDTO implements Serializable {
      * id
      */
     @ApiModelProperty(value = "id")
-    private Integer id;
+    private String fileId;
 
     /**
      * 整改单号

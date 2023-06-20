@@ -53,6 +53,8 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
 
     PrechargeFurnace addTrackItemHot(List<Assign> assignList);
 
+    PrechargeFurnace addTrackItemHotYl(List<Assign> assignList);
+
     /**
      * 功能描述:装炉跟单工序删除
      *
@@ -62,6 +64,16 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
      * @return: PrechargeFurnace
      **/
     public PrechargeFurnace deleteTrackItem(List<Assign> assignList);
+
+    /**
+     * 功能描述:装炉跟单工序删除(冶炼车间)
+     *
+     * @param assignList
+     * @Author: zhiqiang.lu
+     * @Date: 2023/1/5 9:45
+     * @return: PrechargeFurnace
+     **/
+    public PrechargeFurnace deleteTrackItemYl(List<Assign> assignList);
 
     Boolean updateRecordStatus(Long id, String recordStatus);
 

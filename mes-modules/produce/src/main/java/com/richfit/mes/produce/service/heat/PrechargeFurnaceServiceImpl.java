@@ -340,6 +340,114 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         this.updateById(prechargeFurnace);
         return prechargeFurnace;
     }
+
+    @Override
+    public PrechargeFurnace addTrackItemHotYl(List<Assign> assignList) {
+        //预装炉未开工状态
+        if (assignList.isEmpty()) {
+            throw new GlobalException("必须要选择添加预装炉的工序", ResultCode.FAILED);
+        }
+        PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
+        if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("已完工不能进行添加", ResultCode.FAILED);
+        }
+        for (Assign assign : assignList) {
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("id", assign.getTiId());
+            updateWrapper.set("precharge_furnace_id", assign.getPrechargeFurnaceId());
+            trackItemService.update(updateWrapper);
+        }
+        //派工或已开工之后添加工序,该工序需要集成派工及开工信息
+        //已经派工，工序继承当前的派工信息；
+        if (prechargeFurnace.getAssignStatus() == 1) {
+            Assign assign = new Assign();
+            //派工信息继承；
+            //查询出当前配炉工序信息；
+            QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("precharge_furnace_id", assignList.get(0).getPrechargeFurnaceId()).eq("is_current", 1).isNotNull("precharge_furnace_assign_id");
+            List<TrackItem> trackItems = trackItemMapper.selectList(queryWrapper);
+            if (CollectionUtils.isNotEmpty(trackItems)) {
+                TrackItem trackItem = trackItems.get(0);
+                //查询派工信息
+                LambdaQueryWrapper<Assign> assignLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                assignLambdaQueryWrapper.eq(Assign::getTrackId, trackItem.getTrackHeadId());
+                assignLambdaQueryWrapper.eq(Assign::getTiId, trackItem.getId());
+                assign = trackAssignMapper.selectOne(assignLambdaQueryWrapper);
+            }
+            //获取所有派工人员的集合
+            LambdaQueryWrapper<AssignPerson> assignPersonLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            assignPersonLambdaQueryWrapper.eq(AssignPerson::getAssignId,assign.getId());
+            List<AssignPerson> assignPeople = assignPersonMapper.selectList(assignPersonLambdaQueryWrapper);
+            //处理工序信息；
+            for (Assign assignExt : assignList) {
+                LambdaQueryWrapper<TrackItem> queryWrapper1 = new LambdaQueryWrapper<>();
+                queryWrapper1.eq(TrackItem::getId, assignExt.getTiId());
+                TrackItem trackItem = trackItemMapper.selectOne(queryWrapper1);
+                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                //派工数量校验
+                if (trackItem.getAssignableQty() < assign.getQty()) {
+                    throw new GlobalException(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty(), ResultCode.FAILED);
+                }
+                trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
+                //可派工数量为0时 工序变为已派工状态
+                if (0 == trackItem.getAssignableQty()) {
+                    trackItem.setIsSchedule(1);
+                }
+                //设置派工设备
+                trackItem.setDeviceId(assign.getDeviceId());
+                if (!com.mysql.cj.util.StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
+                    //将跟单状态改为在制
+                    trackHead.setStatus("1");
+                    trackHeadService.updateById(trackHead);
+                    UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+                    update.set("status", "1");
+                    update.eq("id", trackItem.getFlowId());
+                    trackHeadFlowService.update(update);
+                }
+                //构造派工信息
+                constructAssignInfo(assign, trackItem, trackHead);
+                //处理预装炉派工信息
+                LambdaQueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                prechargeFurnaceAssignLambdaQueryWrapper.eq(PrechargeFurnaceAssign::getFurnaceId, assignList.get(0).getPrechargeFurnaceId())
+                        .ne(PrechargeFurnaceAssign::getIsDoing, PrechargeFurnace.END_START_WORK);
+                PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignMapper.selectOne(prechargeFurnaceAssignLambdaQueryWrapper);
+                trackItem.setPrechargeFurnaceAssignId(prechargeFurnaceAssign.getId());
+                trackAssignService.save(assign);
+                //保存工序信息
+                trackItemService.updateById(trackItem);
+                //派工人员信息修改；
+                constructAssignPersonInfo(assignPeople, assign);
+            }
+            //已经开工需要将工序的开工信息进行更新；
+            if (PrechargeFurnace.YES_START_WORK.equals(prechargeFurnace.getStatus())) {
+                //获取当前所有添加的工序信息
+                List<String> collect = assignList.stream().map(e -> e.getTiId()).collect(Collectors.toList());
+                LambdaQueryWrapper<TrackItem> queryWrapperItem = new LambdaQueryWrapper<>();
+                queryWrapperItem.in(TrackItem::getId, collect);
+                List<TrackItem> trackItemList = trackItemMapper.selectList(queryWrapperItem);
+                if (CollectionUtils.isNotEmpty(trackItemList)) {
+                    constructStartWorkingInfo(trackItemList);
+                }
+            }
+        }
+        prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+        //数量和钢水重量赋值
+        int num = 0;
+        double totalMoltenSteel = 0.0;
+        for (Assign assign : assignList) {
+            num+=ObjectUtil.isEmpty(assign.getNumber())?0:assign.getNumber();
+            totalMoltenSteel+=StringUtils.isEmpty(assign.getWeightMolten())?0.0:Double.parseDouble(assign.getWeightMolten());
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getNum()) && num>0){
+            prechargeFurnace.setNum(prechargeFurnace.getNum()+num);
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getTotalMoltenSteel()) && totalMoltenSteel>0){
+            prechargeFurnace.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel()+totalMoltenSteel);
+        }
+        this.updateById(prechargeFurnace);
+        return prechargeFurnace;
+    }
+
     @Override
     public PrechargeFurnace deleteTrackItem(List<Assign> assignList) {
         //预装炉未开工状态
@@ -351,6 +459,48 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             throw new GlobalException("只能删除未开工的预装炉的工序", ResultCode.FAILED);
         }
         for (Assign assign : assignList) {
+            UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("id", assign.getTiId());
+            updateWrapper.set("precharge_furnace_id", null);
+            trackItemService.update(updateWrapper);
+        }
+        prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+        //设备类型赋值
+        prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
+        //数量和钢水重量赋值
+        int num = 0;
+        double totalMoltenSteel = 0.0;
+        for (Assign assign : assignList) {
+            num+=ObjectUtil.isEmpty(assign.getNumber())?0:assign.getNumber();
+            totalMoltenSteel+=StringUtils.isEmpty(assign.getWeightMolten())?0.0:Double.parseDouble(assign.getWeightMolten());
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getNum()) && num>0){
+            prechargeFurnace.setNum(prechargeFurnace.getNum()-num);
+        }
+        if(!ObjectUtil.isEmpty(prechargeFurnace.getTotalMoltenSteel()) && totalMoltenSteel>0){
+            prechargeFurnace.setTotalMoltenSteel(prechargeFurnace.getTotalMoltenSteel()-totalMoltenSteel);
+        }
+        this.updateById(prechargeFurnace);
+        return prechargeFurnace;
+    }
+
+    @Override
+    public PrechargeFurnace deleteTrackItemYl(List<Assign> assignList) {
+        //预装炉未开工状态
+        if (assignList.isEmpty()) {
+            throw new GlobalException("必须要选择删除预装炉的工序", ResultCode.FAILED);
+        }
+        PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
+        if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus())) {
+            throw new GlobalException("不能删除已完工的预装炉的工序", ResultCode.FAILED);
+        }
+        for (Assign assign : assignList) {
+            LambdaQueryWrapper<TrackItem> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(TrackItem::getId, assign.getId());
+            TrackItem trackItem = trackItemService.getOne(queryWrapper);
+            if (trackItem.getIsCurrent() != 1) {
+                throw new GlobalException("只能删除当前工序", ResultCode.FAILED);
+            }
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
             updateWrapper.eq("id", assign.getTiId());
             updateWrapper.set("precharge_furnace_id", null);
@@ -433,6 +583,90 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         return this.updateById(prechargeFurnace);
     }
 
+    /**
+     * 派工构造派工信息
+     *
+     * @param assign
+     * @param trackItem
+     * @param trackHead
+     */
+    private void constructAssignInfo(Assign assign, TrackItem trackItem, TrackHead trackHead) {
+        assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+        if (null != SecurityUtils.getCurrentUser()) {
+            assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+            assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
+        }
+        CommonResult<TenantUserVo> user = systemServiceClient.queryByUserId(assign.getAssignBy());
+        assign.setAssignName(user.getData().getEmplName());
+        assign.setAssignTime(new Date());
+        assign.setModifyTime(new Date());
+        assign.setCreateTime(new Date());
+        assign.setAvailQty(assign.getQty());
+        assign.setFlowId(trackItem.getFlowId());
+        assign.setTiId(trackItem.getId());
+        assign.setClasses(trackHead.getClasses());
+        assign.setBranchCode(trackItem.getBranchCode());
+        assign.setTenantId(trackItem.getTenantId());
+        assign.setState(0);
+        assign.setTrackNo(trackHead.getTrackNo());
+        assign.setTrackId(trackHead.getId());
+        if (com.mysql.cj.util.StringUtils.isNullOrEmpty(assign.getTenantId())) {
+            assign.setTenantId(trackHead.getTenantId());
+        }
+    }
 
+    /**
+     * 构造开工信息
+     *
+     * @param trackItemList
+     */
+    private void constructStartWorkingInfo(List<TrackItem> trackItemList) {
+        List<String> itemIds = trackItemList.stream().map(TrackItem::getId).collect(Collectors.toList());
+        List<String> headIds = trackItemList.stream().map(TrackItem::getTrackHeadId).collect(Collectors.toList());
+        List<String> flowIds = trackItemList.stream().map(TrackItem::getFlowId).collect(Collectors.toList());
+        //将跟单状态改为在制
+        UpdateWrapper<TrackHead> trackHeadUpdateWrapper = new UpdateWrapper<>();
+        trackHeadUpdateWrapper.set("status", "1")
+                .eq("status", "0")
+                .in("id", headIds);
+        trackHeadService.update(trackHeadUpdateWrapper);
+        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+        update.set("status", "1")
+                .eq("status", "0")
+                .in("id", flowIds);
+        trackHeadFlowService.update(update);
+        UpdateWrapper<Assign> assignUpdate;
+        assignUpdate = new UpdateWrapper<>();
+        assignUpdate.set("state", "1")
+                .eq("state", "0")
+                .in("ti_id", itemIds);
+        trackAssignService.update(assignUpdate);
+        UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
+        trackItemUpdateWrapper.set("is_doing", 1)
+                .set("start_doing_time", new Date())
+                .set("start_doing_user", SecurityUtils.getCurrentUser().getUsername())
+                .eq("is_doing", 0)
+                .in("id", itemIds);
+        trackItemService.update(trackItemUpdateWrapper);
+    }
+
+    /**
+     * 构造派工人员信息
+     *
+     * @param assignPeople
+     * @param assign
+     */
+    private void constructAssignPersonInfo(List<AssignPerson> assignPeople, Assign assign) {
+        if (CollectionUtils.isNotEmpty(assignPeople)) {
+            for (AssignPerson assignPerson : assignPeople) {
+                AssignPerson assignPersonItem = new AssignPerson();
+                assignPersonItem.setAssignId(assign.getId());
+                assignPersonItem.setModifyTime(new Date());
+                assignPersonItem.setUserId(assignPerson.getUserId());
+                assignPersonItem.setUserName(assignPerson.getUserName());
+                assignPersonMapper.insert(assignPersonItem);
+            }
+        }
+    }
 
 }

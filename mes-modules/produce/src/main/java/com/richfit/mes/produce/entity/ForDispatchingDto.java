@@ -62,6 +62,6 @@ public class ForDispatchingDto extends QueryPageDto {
     @ApiModelProperty(value = "记录状态 0 未生成记录，3已生成记录， 1 审核通过,2 审核未通过", dataType = "String")
     private String recordStatus;
     @ApiModelProperty(value = "0:未派工,-1 = 未开工 1= 已开工 2 = 已完工", dataType = "String")
-    private String status;
+    private String furnaceStatus;
 
 }

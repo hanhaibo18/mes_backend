@@ -179,7 +179,9 @@ public class HeatTrackAssignController extends BaseController {
         if (!StringUtils.isNullOrEmpty(workblankType)) {
             queryWrapper.eq("a.workblank_type", workblankType);
             //过滤工序名为“炼钢”工序的；
-            queryWrapper.eq("a.opt_name", "炼钢");
+            if ("1".equals(workblankType)) {
+                queryWrapper.eq("a.opt_name", "炼钢");
+            }
         }
 
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
