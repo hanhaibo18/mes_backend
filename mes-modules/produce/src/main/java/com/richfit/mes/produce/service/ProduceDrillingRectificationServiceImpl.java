@@ -79,7 +79,6 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
             for (ProduceDrillingRectificationFileDTO produceDrillingRectificationFileDTO : produceDrillingRectificationDTO.getProduceDrillingRectificationFileDTOList()) {
                 ProduceDrillingRectificationFile produceDrillingRectificationFile = new ProduceDrillingRectificationFile();
                 BeanUtils.copyBeanProp(produceDrillingRectificationFile, produceDrillingRectificationFileDTO);
-                produceDrillingRectificationFile.setId(UUID.randomUUID().toString().replace("-", ""));
                 produceDrillingRectificationFile.setOrderNo(produceDrillingRectification.getId());
                 produceDrillingRectificationFiles.add(produceDrillingRectificationFile);
             }

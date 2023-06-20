@@ -21,7 +21,7 @@ public class ProduceDrillingRectificationDTO extends PageDto implements Serializ
      * id
      */
     @ApiModelProperty(value = "id")
-    private Integer id;
+    private String id;
 
     /**
      * 整改单编号

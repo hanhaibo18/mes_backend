@@ -23,7 +23,7 @@ public class ProduceDrillingRectificationFile implements Serializable {
     /**
      * id
      */
-    private String id;
+    private String fileId;
 
     /**
      * 整改单号

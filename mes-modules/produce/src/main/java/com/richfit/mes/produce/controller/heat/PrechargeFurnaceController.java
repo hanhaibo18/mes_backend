@@ -168,21 +168,34 @@ public class PrechargeFurnaceController extends BaseController {
         queryWrapper.eq("branch_code", dispatchingDto.getBranchCode());
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //根据状态查询
-        if (!StringUtils.isNullOrEmpty(dispatchingDto.getStatus())) {
-            if (dispatchingDto.getStatus().equals("0")) {
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getFurnaceStatus())) {
+            if (dispatchingDto.getFurnaceStatus().equals("0")) {
                 queryWrapper.eq("assign_status", "0");
             }
-            if (dispatchingDto.getStatus().equals("-1")) {
+            if (dispatchingDto.getFurnaceStatus().equals("-1")) {
                 queryWrapper.eq("status", "0");
             }
-            if (dispatchingDto.getStatus().equals("1")) {
+            if (dispatchingDto.getFurnaceStatus().equals("1")) {
                 queryWrapper.eq("status", "1");
             }
-            if (dispatchingDto.getStatus().equals("2")) {
+            if (dispatchingDto.getFurnaceStatus().equals("2")) {
                 queryWrapper.eq("status", "2");
             }
         }
         Page<PrechargeFurnace> page = prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
+        //页面展示状态处理
+        for (PrechargeFurnace record : page.getRecords()) {
+            if (record.getAssignStatus() == 0) {
+                record.setFurnaceStatus("0");
+            }
+            if (record.getAssignStatus() == 1) {
+                if ("0".equals(record.getStatus())) {
+                    record.setFurnaceStatus("-1");
+                } else {
+                    record.setFurnaceStatus(record.getStatus());
+                }
+            }
+        }
         return CommonResult.success(page);
     }
 
@@ -258,10 +271,22 @@ public class PrechargeFurnaceController extends BaseController {
         return CommonResult.success(prechargeFurnaceService.addTrackItemHot(assignList), "更新成功");
     }
 
+    @ApiOperation(value = "装炉跟单工序添加(热工冶炼车间)", tags = "装炉跟单工序添加(热工冶炼车间)")
+    @PostMapping("/add/track/item_hot/YL")
+    public CommonResult addTrackItemHotYl(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
+        return CommonResult.success(prechargeFurnaceService.addTrackItemHotYl(assignList), "更新成功");
+    }
+
     @ApiOperation(value = "装炉跟单工序删除", tags = "装炉跟单工序删除")
     @PostMapping("/delete/track/item")
     public CommonResult deleteTrackItem(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
         return CommonResult.success(prechargeFurnaceService.deleteTrackItem(assignList), "删除成功");
+    }
+
+    @ApiOperation(value = "装炉跟单工序删除(冶炼车间)", tags = "装炉跟单工序删除")
+    @PostMapping("/delete/track/item/YL")
+    public CommonResult deleteTrackItemYl(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
+        return CommonResult.success(prechargeFurnaceService.deleteTrackItemYl(assignList), "删除成功");
     }
 
     @ApiOperation(value = "冶炼配炉 根据材质分类合计钢水重量列表")
