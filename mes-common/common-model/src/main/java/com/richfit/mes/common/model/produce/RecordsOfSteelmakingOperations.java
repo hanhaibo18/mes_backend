@@ -50,6 +50,8 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     private Double shiHui;
     //配料总重（kg）
     private Double peiLiaoZongZhong;
+    //出钢量
+    private Double chuGangLiang;
     //工序1操作时间
     private String time1;
     //工序2操作时间

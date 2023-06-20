@@ -38,7 +38,7 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @Date: 2022/7/12 14:08
      * @return: Boolean
      **/
-    CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList, HttpServletRequest request);
+    CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList);
 
 
     /**

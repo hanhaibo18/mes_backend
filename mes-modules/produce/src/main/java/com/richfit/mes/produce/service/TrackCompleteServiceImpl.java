@@ -52,6 +52,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -209,7 +211,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList, HttpServletRequest request) {
+    public CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList) {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         //获取用户所属公司
         String companyCode = SecurityUtils.getCurrentUser().getCompanyCode();
         for (CompleteDto completeDto : completeDtoList) {
