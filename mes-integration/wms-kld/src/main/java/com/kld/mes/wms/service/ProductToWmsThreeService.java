@@ -39,8 +39,6 @@ public class ProductToWmsThreeService {
         Map<String, Object> params = convertArrayInput(materialBasisList);
         //调用上传接口
         String s = HttpRequest.post(mesToWmsUrl + "/uploadMat").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
-        System.out.println("--------------------------");
-        System.out.println(s);
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
         return result.getRetStatus().equals("Y") ? CommonResult.success(null, result.getRetMsg()) : CommonResult.failed(result.getRetMsg());
     }
@@ -107,7 +105,7 @@ public class ProductToWmsThreeService {
         String s = HttpRequest.post(mesToWmsUrl + "/getInventory").contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").form(params).execute().body();
         WmsResult result = JSONUtil.toBean(s, WmsResult.class);
 
-        if (result.getRetStatus().equals("N")) {
+        if (result.getRetStatus().equals("Y")) {
             JSONObject jsonObject = JSON.parseObject(s);
             String data = String.valueOf(jsonObject.get("data"));
             return CommonResult.success(JSONObject.parseArray(data, InventoryReturn.class), result.getRetMsg());
@@ -137,7 +135,7 @@ public class ProductToWmsThreeService {
         //加密后的16进制字符串
         String encryptString = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
         //传参
-        Map<String, Object> params = new HashMap<>(3);
+        Map<String, Object> params = new HashMap<>(1);
         params.put("i_data", encryptString);
         return params;
     }
@@ -155,7 +153,7 @@ public class ProductToWmsThreeService {
         //加密后的16进制字符串
         String encryptString = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
         //传参
-        Map<String, Object> params = new HashMap<>(3);
+        Map<String, Object> params = new HashMap<>(1);
         params.put("i_data", encryptString);
         return params;
     }
@@ -172,7 +170,7 @@ public class ProductToWmsThreeService {
         //加密后的16进制字符串
         String encryptString = AESUtil.encrypt(jsonStr, mesToWmsApiKey);
         //传参
-        Map<String, Object> params = new HashMap<>(3);
+        Map<String, Object> params = new HashMap<>(1);
         params.put("i_data", encryptString);
         return params;
     }

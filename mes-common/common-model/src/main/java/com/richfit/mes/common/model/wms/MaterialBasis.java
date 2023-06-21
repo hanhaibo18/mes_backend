@@ -125,7 +125,6 @@ public class MaterialBasis implements Serializable {
         if (StringUtils.isNotEmpty(product.getTrackType())) {
             this.trackingMode = TrackTypeEnum.getMessage(product.getTrackType());
         }
-        this.trackingMode = product.getTrackType();
         //材质
         this.partsMaterial = product.getTexture();
         //规格
