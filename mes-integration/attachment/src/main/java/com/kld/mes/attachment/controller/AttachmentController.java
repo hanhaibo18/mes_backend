@@ -1,10 +1,12 @@
 package com.kld.mes.attachment.controller;
 
 
+import com.kld.mes.attachment.common.Result;
 import com.kld.mes.attachment.service.AttachmentService;
 import com.richfit.mes.common.core.utils.FileUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,13 +30,16 @@ public class AttachmentController {
 
     @ApiOperation(value = "上传文件流", notes = "上传文件流")
     @PostMapping("/upload_file")
-    public String uploadFile(InputStream inputStream, String fileName) throws Exception {
-        return attachmentService.uploadFile(inputStream,fileName);
+    public Result<String> uploadFile(InputStream inputStream, String fileName) throws Exception {
+        if (StringUtils.isNotEmpty(fileName)) {
+            return Result.success(attachmentService.uploadFile(inputStream,fileName));
+        }
+        return Result.error("N","文件名不能为空");
     }
 
     @ApiOperation(value = "上传文件", notes = "测试：用来获取文件的路径")
     @PostMapping("/test_file")
-    public String uploadFile(@RequestParam("file") MultipartFile multipartFile) throws Exception {
+    public Result<String> uploadFile(@RequestParam("file") MultipartFile multipartFile) throws Exception {
         File file = null;
         // 临时文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());
@@ -47,6 +52,7 @@ public class AttachmentController {
             e.printStackTrace();
         }
         InputStream inputStream = new FileInputStream(file);
-        return attachmentService.uploadFile(inputStream,String.valueOf(tempName));
+
+        return Result.success(attachmentService.uploadFile(inputStream,String.valueOf(tempName)));
     }
 }

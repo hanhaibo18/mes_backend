@@ -1,5 +1,6 @@
 package com.pdm.mes.schedule.controller;
 
+import com.pdm.mes.schedule.common.Result;
 import com.pdm.mes.schedule.entity.request.SaleProductionSchedulingRequest;
 import com.pdm.mes.schedule.service.ProduceNoticeService;
 import io.swagger.annotations.Api;
@@ -21,8 +22,9 @@ public class ProduceNoticeController {
 
     @ApiOperation(value = "批量新增", notes = "批量新增排产单")
     @PostMapping("/save_batch_notice")
-    public boolean saveBatchNotice(@RequestBody List<SaleProductionSchedulingRequest> schedulingDtoList) {
-        return produceNoticeService.saveBatchNotice(schedulingDtoList);
+    public Result<?> saveBatchNotice(@RequestBody List<SaleProductionSchedulingRequest> schedulingDtoList) {
+        produceNoticeService.saveBatchNotice(schedulingDtoList);
+        return Result.success();
     }
 
 }
