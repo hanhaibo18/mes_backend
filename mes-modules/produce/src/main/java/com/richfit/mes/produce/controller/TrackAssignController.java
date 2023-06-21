@@ -19,6 +19,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.wms.MaterialRequisitionUpload;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
@@ -30,6 +31,7 @@ import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
+import com.richfit.mes.produce.provider.WmsThreeServiceClient;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
@@ -103,6 +105,9 @@ public class TrackAssignController extends BaseController {
     private String off;
     @Resource
     private TrackHeadMapper trackHeadMapper;
+
+    @Resource
+    private WmsThreeServiceClient wmsThreeServiceClient;
 
     /**
      * ***
@@ -380,20 +385,17 @@ public class TrackAssignController extends BaseController {
                         if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
-                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode(), sendWMSA);
-                        requestNoteService.saveRequestNoteNew(ingredient, trackHead, trackHead.getBranchCode());
-                        ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+                        List<MaterialRequisitionUpload> materialRequisitionUploads = assemble(trackItem, trackHead, trackHead.getBranchCode(), sendWMSA);
+                        requestNoteService.saveRequestNoteNew(materialRequisitionUploads, trackHead, trackHead.getBranchCode(), trackItem.getId());
+//                        ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+                        CommonResult commonResult = wmsThreeServiceClient.materialRequisitionUpload(materialRequisitionUploads);
 //                        ApplyListUpload ingredient = collect(trackItem, trackHead, trackHead.getBranchCode());
 //                        requestNoteService.saveRequestNoteInfo(ingredient, trackHead, trackItem, trackHead.getBranchCode());
 //                        List<ApplyListUpload> list = new ArrayList<>();
 //                        list.add(ingredient);
 //                        ApplicationResult application = wmsServiceClient.applyListUpload(list).getData();
-                        //请勿重复上传！
-                        boolean upload = !application.getRetMsg().contains("请勿重复上传");
-                        if ("N".equals(application.getRetCode()) && upload) {
-                            numberService.deleteApplicationNumberByItemId(trackItem.getId());
-                            log.error("仓储数据:" + ingredient);
-                            throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
+                        if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
+                            throw new GlobalException(commonResult.getMessage(), ResultCode.FAILED);
                         }
                     }
                 }
@@ -451,7 +453,7 @@ public class TrackAssignController extends BaseController {
     }
 
 
-    private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode, int sendState) {
+    private List<MaterialRequisitionUpload> assemble(TrackItem trackItem, TrackHead trackHead, String branchCode, int sendState) {
         //获取所有关键件
         QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
         assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
@@ -488,60 +490,12 @@ public class TrackAssignController extends BaseController {
         queryWrapper.eq("ti_id", trackItem.getId());
         //查询派工工位信息
         Assign assign = trackAssignService.getOne(queryWrapper);
-        //组装申请单信息
-        IngredientApplicationDto ingredient = new IngredientApplicationDto();
         //申请单号
         Long applicationNumber = numberService.acquireApplicationNumber(trackItem.getId(), branchCode);
-        ingredient.setSqd(applicationNumber + "@0");
-        //工厂编码
-        ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
-        //车间
-        ingredient.setCj(branchCode);
-        //车间名称
-        CommonResult<Branch> branch = baseServiceClient.selectBranchByCodeAndTenantId(branchCode, null);
-        ingredient.setCjName(branch.getData().getBranchName());
-        //工位
-        ingredient.setGw(assign.getSiteId());
-        //工位名称
-        ingredient.setGwName(assign.getSiteName());
-        //工序
-        ingredient.setGx(trackItem.getId());
-        //工序名称
-        ingredient.setGxName(trackItem.getOptName());
-        //生产订单编号
-        ingredient.setScdd(trackHead.getProductionOrder());
-        //跟单Id
-        ingredient.setGd(trackHead.getId());
-        //产品编号
-        ingredient.setCp(trackHead.getProductNo());
-        //产品名称
-        ingredient.setCpName(trackHead.getProductName());
-        //优先级
-        ingredient.setYxj(Integer.parseInt(trackHead.getPriority()));
-        //派工时间
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmss");
-        ingredient.setPgsj(format.format(new Date()));
-        //追加物料
-        List<LineList> lineLists = new ArrayList<>();
-//        List<String> numberList = assemblyList.stream().map(TrackAssembly::getMaterialNo).collect(Collectors.toList());
-//        List<Product> list = baseServiceClient.listByMaterialNoList(numberList);
-//        Map<String, String> materialNoMap = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Product::getProductName, (value1, value2) -> value2));
-        for (TrackAssembly trackAssembly : assemblyList) {
-            LineList lineList = new LineList();
-            //物料编码
-            lineList.setMaterialNum(trackAssembly.getMaterialNo());
-            //物料名称
-            lineList.setMaterialDesc(trackAssembly.getName());
-            //单位
-            lineList.setUnit("单位");
-            //数量
-            lineList.setQuantity(trackAssembly.getNumber());
-            //实物配送标识
-            lineList.setSwFlag(trackAssembly.getIsEdgeStore());
-            lineLists.add(lineList);
-        }
-        ingredient.setLineList(lineLists);
-        return ingredient;
+        List<MaterialRequisitionUpload> materialRequisitionUploadList = new ArrayList<>();
+        MaterialRequisitionUpload materialRequisitionUpload = new MaterialRequisitionUpload(assign, trackHead, assemblyList, branchCode, applicationNumber + "@0");
+        materialRequisitionUploadList.add(materialRequisitionUpload);
+        return materialRequisitionUploadList;
     }
 
     private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
