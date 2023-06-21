@@ -239,13 +239,13 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             recordsOfPourOperationsQueryWrapper.like("record_no", recordNo);
         }
         if (prechargeFurnaceId != null) {
-            recordsOfPourOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+            recordsOfPourOperationsQueryWrapper.like("precharge_furnace_id", prechargeFurnaceId);
         }
         if (!StringUtils.isNullOrEmpty(furnaceNo)) {
             recordsOfPourOperationsQueryWrapper.like("furnace_no", furnaceNo);
         }
         if (!StringUtils.isNullOrEmpty(typeOfSteel)) {
-            recordsOfPourOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
+            recordsOfPourOperationsQueryWrapper.like("type_of_steel", typeOfSteel);
         }
         buildQueryWrapper(ingotCase, startTime, endTime, status, recordsOfPourOperationsQueryWrapper);
         if (!StringUtils.isNullOrEmpty(orderCol)) {
@@ -275,16 +275,16 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             recordsOfPourOperationsQueryWrapper.like("record_no", recordNo);
         }
         if (prechargeFurnaceId != null) {
-            recordsOfPourOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+            recordsOfPourOperationsQueryWrapper.like("precharge_furnace_id", prechargeFurnaceId);
         }
         if (!StringUtils.isNullOrEmpty(furnaceNo)) {
             recordsOfPourOperationsQueryWrapper.like("furnace_no", furnaceNo);
         }
         if (!StringUtils.isNullOrEmpty(typeOfSteel)) {
-            recordsOfPourOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
+            recordsOfPourOperationsQueryWrapper.like("type_of_steel", typeOfSteel);
         }
         if (!StringUtils.isNullOrEmpty(ingotCase)) {
-            recordsOfPourOperationsQueryWrapper.eq("smelting_equipment", ingotCase);
+            recordsOfPourOperationsQueryWrapper.like("smelting_equipment", ingotCase);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             recordsOfPourOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");

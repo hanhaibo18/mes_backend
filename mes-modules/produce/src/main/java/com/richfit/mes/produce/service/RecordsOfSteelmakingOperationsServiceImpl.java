@@ -178,16 +178,16 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
             recordsOfSteelmakingOperationsQueryWrapper.like("record_no", recordNo);
         }
         if (prechargeFurnaceId != null) {
-            recordsOfSteelmakingOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+            recordsOfSteelmakingOperationsQueryWrapper.like("precharge_furnace_id", prechargeFurnaceId);
         }
         if (!StringUtils.isNullOrEmpty(furnaceNo)) {
             recordsOfSteelmakingOperationsQueryWrapper.like("furnace_no", furnaceNo);
         }
         if (!StringUtils.isNullOrEmpty(typeOfSteel)) {
-            recordsOfSteelmakingOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
+            recordsOfSteelmakingOperationsQueryWrapper.like("type_of_steel", typeOfSteel);
         }
         if (!StringUtils.isNullOrEmpty(smeltingEquipment)) {
-            recordsOfSteelmakingOperationsQueryWrapper.eq("smelting_equipment", smeltingEquipment);
+            recordsOfSteelmakingOperationsQueryWrapper.like("smelting_equipment", smeltingEquipment);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             recordsOfSteelmakingOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
@@ -226,16 +226,16 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
             recordsOfSteelmakingOperationsQueryWrapper.like("record_no", recordNo);
         }
         if (prechargeFurnaceId != null) {
-            recordsOfSteelmakingOperationsQueryWrapper.eq("precharge_furnace_id", prechargeFurnaceId);
+            recordsOfSteelmakingOperationsQueryWrapper.like("precharge_furnace_id", prechargeFurnaceId);
         }
         if (!StringUtils.isNullOrEmpty(furnaceNo)) {
             recordsOfSteelmakingOperationsQueryWrapper.like("furnace_no", furnaceNo);
         }
         if (!StringUtils.isNullOrEmpty(typeOfSteel)) {
-            recordsOfSteelmakingOperationsQueryWrapper.eq("type_of_steel", typeOfSteel);
+            recordsOfSteelmakingOperationsQueryWrapper.like("type_of_steel", typeOfSteel);
         }
         if (!StringUtils.isNullOrEmpty(smeltingEquipment)) {
-            recordsOfSteelmakingOperationsQueryWrapper.eq("smelting_equipment", smeltingEquipment);
+            recordsOfSteelmakingOperationsQueryWrapper.like("smelting_equipment", smeltingEquipment);
         }
         if (!StringUtils.isNullOrEmpty(startTime)) {
             recordsOfSteelmakingOperationsQueryWrapper.apply("UNIX_TIMESTAMP(operator_time) >= UNIX_TIMESTAMP('" + startTime + " 00:00:00')");
