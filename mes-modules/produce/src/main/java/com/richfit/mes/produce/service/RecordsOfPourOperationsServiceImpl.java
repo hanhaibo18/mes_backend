@@ -454,6 +454,14 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     @Transactional(rollbackFor = Exception.class)
     public Boolean addItem(Long prechargeFurnaceId, List<String> itemIds) {
         List<TrackItem> trackItems = trackItemService.listByIds(itemIds);
+        //更新itemIds为下工序的id
+        List<String> newItemIds = new ArrayList<>();
+        for (TrackItem trackItem : trackItems) {
+            QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+            trackItemQueryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence()).eq("flow_id", trackItem.getFlowId());
+            List<TrackItem> list = trackItemService.list(trackItemQueryWrapper);
+            newItemIds.addAll(list.stream().map(TrackItem::getId).collect(Collectors.toList()));
+        }
         //预装炉信息
         PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceId);
         for (TrackItem trackItem : trackItems) {
@@ -469,7 +477,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
                     .eq(PrechargeFurnaceAssign::getOptType, "15").last("limit 1");
             PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getOne(prechargeFurnaceAssignLambdaQueryWrapper);
             //构造派工信息
-            Assign assignInfoOfSteelmaking = getAssignInfoByPrechargeFurnaceIdAndOptType(prechargeFurnaceId, "15");
+            Assign assignInfoOfSteelmaking = getAssignInfoByPrechargeFurnaceIdAndOptType(prechargeFurnaceId, "15", itemIds);
             //进行派工和开工
             saveAssigenByAssigenInfoAndItemId(assignInfoOfSteelmaking, itemIds, prechargeFurnaceAssign);
             //构造报工信息
@@ -485,15 +493,15 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         }
         //继承浇注工序的派工
         {
-            //查找该预装炉炼钢工序的预装炉派工信息
+            //查找该预装炉浇注工序的预装炉派工信息
             LambdaQueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceAssignLambdaQueryWrapper = new LambdaQueryWrapper<>();
             prechargeFurnaceAssignLambdaQueryWrapper.eq(PrechargeFurnaceAssign::getFurnaceId, prechargeFurnaceId)
                     .eq(PrechargeFurnaceAssign::getOptType, "16").last("limit 1");
             PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getOne(prechargeFurnaceAssignLambdaQueryWrapper);
             //构造派工信息
-            Assign assignInfoOfSteelmaking = getAssignInfoByPrechargeFurnaceIdAndOptType(prechargeFurnaceId, "16");
+            Assign assignInfoOfSteelmaking = getAssignInfoByPrechargeFurnaceIdAndOptType(prechargeFurnaceId, "16", newItemIds);
             //进行派工和开工
-            saveAssigenByAssigenInfoAndItemId(assignInfoOfSteelmaking, itemIds, prechargeFurnaceAssign);
+            saveAssigenByAssigenInfoAndItemId(assignInfoOfSteelmaking, newItemIds, prechargeFurnaceAssign);
 
         }
 
@@ -623,7 +631,8 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
 
     private List<CompleteDto> buildComplateInfo(Long prechargeFurnaceId, List<String> itemIds, String optType) {
         LambdaQueryWrapper<TrackItem> trackItemLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        trackItemLambdaQueryWrapper.eq(TrackItem::getPrechargeFurnaceId, prechargeFurnaceId).eq(TrackItem::getOptType, optType);
+        trackItemLambdaQueryWrapper.eq(TrackItem::getPrechargeFurnaceId, prechargeFurnaceId).eq(TrackItem::getOptType, optType)
+                .notIn(TrackItem::getId, itemIds);
         List<TrackItem> trackItemList = trackItemService.list(trackItemLambdaQueryWrapper);
         if (CollectionUtils.isEmpty(trackItemList)) {
             throw new GlobalException("预装炉内没有工序编号为" + optType + "的工序！", ResultCode.FAILED);
@@ -642,7 +651,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             completeDto.setAssignId(assign.getId());
             completeDto.setNextFurnace(true);
             completeDto.setProdNo(trackItem.getProductNo());
-            completeDto.setQcPersonId(trackCompletes.get(0).getQualityCheckBy());
+            completeDto.setQcPersonId(trackCompletes.get(0).getUserId());
             completeDto.setTiId(itemId);
             completeDto.setTrackCompleteList(trackCompletes);
             completeDto.setTrackId(trackItem.getTrackHeadId());
@@ -742,9 +751,10 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         }
     }
 
-    private Assign getAssignInfoByPrechargeFurnaceIdAndOptType(Long prechargeFurnaceId, String optType) {
+    private Assign getAssignInfoByPrechargeFurnaceIdAndOptType(Long prechargeFurnaceId, String optType, List<String> notInId) {
         LambdaQueryWrapper<TrackItem> trackItemLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        trackItemLambdaQueryWrapper.eq(TrackItem::getPrechargeFurnaceId, prechargeFurnaceId).eq(TrackItem::getOptType, optType);
+        trackItemLambdaQueryWrapper.eq(TrackItem::getPrechargeFurnaceId, prechargeFurnaceId).eq(TrackItem::getOptType, optType)
+                .notIn(TrackItem::getId, notInId);
         List<TrackItem> trackItemList = trackItemService.list(trackItemLambdaQueryWrapper);
         if (CollectionUtils.isEmpty(trackItemList)) {
             throw new GlobalException("预装炉内没有工序类型编码为" + optType + "的工序", ResultCode.FAILED);

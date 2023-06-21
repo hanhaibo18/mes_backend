@@ -137,6 +137,8 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
     private TrackCertificateService trackCertificateService;
     @Autowired
     private TrackHeadFlowService trackHeadFlowService;
+    @Autowired
+    private TrackHeadCastService trackHeadCastService;
 
     @Resource
     private TrackAssemblyService assemblyService;
@@ -1329,31 +1331,54 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         if (CollectionUtils.isEmpty(itemList)) {
             throw new GlobalException("该配炉没有添加工序！", ResultCode.FAILED);
         }
-        for (TrackItem item : itemList) {
-            Router router = baseServiceClient.getRouter(item.getRouterId()).getData();
-            TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
-            QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
-            assignQueryWrapper.eq("ti_id", item.getId());
-            Assign assign = trackAssignService.getOne(assignQueryWrapper.last("limit 1"));
-            item.setWeightMolten(router == null ? "0" : router.getWeightMolten());
-            item.setPieceWeight(router == null ? "0" : String.valueOf(router.getWeight()));
-            item.setProductName(trackHead.getProductName());
-            item.setTrackNo(trackHead.getTrackNo());
-            item.setWorkNo(trackHead.getWorkNo());
-            item.setAssignId(assign == null ? null : assign.getId());
+        PrechargeFurnaceAssign prechargeFurnaceAssign = prechargeFurnaceAssignService.getById(prechargeFurnaceAssignId);
+        if ("1".equals(prechargeFurnaceAssign.getWorkblankType())) {
+            for (TrackItem item : itemList) {
+                QueryWrapper<TrackHeadCast> trackHeadCastQueryWrapper = new QueryWrapper<>();
+                trackHeadCastQueryWrapper.eq("head_id", item.getTrackHeadId()).last("limit 1");
+                TrackHeadCast trackHeadCast = trackHeadCastService.getOne(trackHeadCastQueryWrapper);
+                TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
+                QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
+                assignQueryWrapper.eq("ti_id", item.getId());
+                Assign assign = trackAssignService.getOne(assignQueryWrapper.last("limit 1"));
+                item.setWeightMolten(trackHeadCast == null ? "0" : String.valueOf(trackHeadCast.getWeightMolten()));
+                item.setPieceWeight(String.valueOf(trackHead.getWeight()));
+                item.setProductName(trackHead.getProductName());
+                item.setTrackNo(trackHead.getTrackNo());
+                item.setWorkNo(trackHead.getWorkNo());
+                item.setAssignId(assign == null ? null : assign.getId());
+                item.setTexture(trackHead.getTexture());
+                item.setPriority(String.valueOf(prechargeFurnaceAssign.getPriority()));
+            }
+        } else {
+            for (TrackItem item : itemList) {
+                Router router = baseServiceClient.getRouter(item.getRouterId()).getData();
+                TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
+                QueryWrapper<Assign> assignQueryWrapper = new QueryWrapper<>();
+                assignQueryWrapper.eq("ti_id", item.getId());
+                Assign assign = trackAssignService.getOne(assignQueryWrapper.last("limit 1"));
+                item.setWeightMolten(router == null ? "0" : router.getWeightMolten());
+                item.setPieceWeight(router == null ? "0" : String.valueOf(router.getWeight()));
+                item.setProductName(trackHead.getProductName());
+                item.setTrackNo(trackHead.getTrackNo());
+                item.setWorkNo(trackHead.getWorkNo());
+                item.setAssignId(assign == null ? null : assign.getId());
+                item.setTexture(trackHead.getTexture());
+                item.setPriority(String.valueOf(prechargeFurnaceAssign.getPriority()));
+            }
         }
         return itemList;
     }
 
     @Override
-    public Page<PrechargeFurnace> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol,String assignStatus) {
+    public Page<PrechargeFurnace> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol, String assignStatus) {
         QueryWrapper<PrechargeFurnace> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(!StringUtils.isNullOrEmpty(workblankType),"workblank_type", workblankType)
-                    .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
-                    .eq("branch_code", branchCode)
+        queryWrapper.eq(!StringUtils.isNullOrEmpty(workblankType), "workblank_type", workblankType)
+                .eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId())
+                .eq("branch_code", branchCode)
                 //只查询炼钢工序
-                    .eq("opt_type",15)
-                    .eq(!StringUtils.isNullOrEmpty(assignStatus),"assign_status", assignStatus);
+                .eq("opt_type", 15)
+                .eq(!StringUtils.isNullOrEmpty(assignStatus), "assign_status", assignStatus);
         if (prechargeFurnaceId != null) {
             queryWrapper.eq("id", prechargeFurnaceId);
         }
@@ -1372,7 +1397,7 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
         } else {
             queryWrapper.orderByDesc("modify_time");
         }
-        return  prechargeFurnaceService.page(new Page<>(page, limit), queryWrapper);
+        return prechargeFurnaceService.page(new Page<>(page, limit), queryWrapper);
 
     }
 
