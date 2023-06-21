@@ -32,7 +32,7 @@ public interface TrackAssignService extends IService<Assign> {
 
     IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);
 
-    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol, String holdStatus, String drawingNo) throws ParseException;
+    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol, String holdStatus, String drawingNo, String workNo) throws ParseException;
 
     /**
      * 功能描述: 根据跟单号查询 跟单工序
