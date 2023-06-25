@@ -61,6 +61,8 @@ public class HotModelStoreExportExcelVo extends BaseEntity<HotModelStoreExportEx
 
     @ApiModelProperty(value = "版本号", dataType = "String")
     private String version;
+    @ApiModelProperty(value = "模型材质 :木制、气化模", dataType = "String")
+    private String modelTexture;
     @ApiModelProperty(value = "页码 ", dataType = "String")
     private int page;
     @ApiModelProperty(value = "条数 ", dataType = "String")
