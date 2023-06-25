@@ -1,5 +1,5 @@
 
-package com.kld.mes.erp.entity.order;
+package com.kld.mes.erp.entity.order.select;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

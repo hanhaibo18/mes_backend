@@ -3,5 +3,5 @@
         elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED
 )
 
-package com.kld.mes.erp.entity.order;
+package com.kld.mes.erp.entity.order.select;
 
