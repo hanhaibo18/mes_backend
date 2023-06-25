@@ -174,6 +174,9 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             " <if test='workPlanId != null and workPlanId != \"\"'> " +
             "  and work_plan_id = #{workPlanId} " +
             " </if> " +
+            " <if test='isTestBar != null and isTestBar != \"\"'> " +
+            "  and is_test_bar = #{isTestBar} " +
+            " </if> " +
             " <if test='classes != null and classes != \"\"'> " +
             "  and classes = #{classes} " +
             " </if> " +

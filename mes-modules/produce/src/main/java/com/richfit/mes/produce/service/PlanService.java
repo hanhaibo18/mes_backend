@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.Plan;
@@ -128,4 +129,6 @@ public interface PlanService extends IService<Plan> {
     void planPackageStore(List<Plan> planList);
 
     CommonResult publish(List<String> planIdList);
+
+    List<Plan> selectList(QueryWrapper<Plan> queryWrapper);
 }

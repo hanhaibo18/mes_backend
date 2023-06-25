@@ -386,13 +386,12 @@ public class TrackHeadController extends BaseController {
         OrderUtil.query(queryWrapper, orderCol, order);
         IPage<TrackHeadPublicVo> trackHeadPublicVoIPage = trackHeadService.queryPage(new Page<>(page, limit), queryWrapper);
         //冶炼、锻造、铸钢
-        if(!StringUtils.isNullOrEmpty(classes) &&(classes.equals("4") || classes.equals("6") || classes.equals("7"))){
+        if (!StringUtils.isNullOrEmpty(classes) && (classes.equals("4") || classes.equals("6") || classes.equals("7"))) {
             trackHeadService.headUpdateRouterInfo(classes, trackHeadPublicVoIPage);
         }
 
         return CommonResult.success(trackHeadPublicVoIPage, TRACK_HEAD_SUCCESS_MESSAGE);
     }
-
 
 
     @ApiOperation(value = "导出跟单信息", notes = "根据跟单号、计划号、产品编号、物料编码以及跟单状态分页查询跟单并导出")
@@ -429,7 +428,7 @@ public class TrackHeadController extends BaseController {
         try {
             List<TrackHeadPublicVo> records = this.selectTrackHead(startTime, endTime, startDate, endDate, id, trackNo, drawingNo, productionOrder, workPlanId, workPlanNo, productNo, materialNo, status, batchNo,
                     workNo,
-                    trackType, approvalStatus, order, orderCol, isTestBar, routerId, branchCode, tenantId, page, limit, classes, isBindRouter, false,workblankType).getData().getRecords();
+                    trackType, approvalStatus, order, orderCol, isTestBar, routerId, branchCode, tenantId, page, limit, classes, isBindRouter, false, workblankType).getData().getRecords();
 
 
             for (TrackHeadPublicVo record : records) {
@@ -635,6 +634,7 @@ public class TrackHeadController extends BaseController {
             @ApiParam(value = "炉批号") @RequestParam(required = false) String batchNo,
             @ApiParam(value = "生成订单号") @RequestParam(required = false) String productionOrder,
             @ApiParam(value = "计划id") @RequestParam(required = false) String workPlanId,
+            @ApiParam(value = "计划id") @RequestParam(required = false) String isTestBar,
             @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode) throws Exception {
         Map<String, String> map = new HashMap<>();
         TrackFlow.param(startTime,
@@ -652,6 +652,7 @@ public class TrackHeadController extends BaseController {
                 batchNo,
                 productionOrder,
                 workPlanId,
+                isTestBar,
                 null,
                 branchCode,
                 SecurityUtils.getCurrentUser().getTenantId(), orderCol, order, map);
@@ -1137,16 +1138,16 @@ public class TrackHeadController extends BaseController {
 
     @ApiOperation(value = "根据图号 获取上次填写的跟单的产品号")
     @GetMapping("/getProductNoByDrawingNo")
-    public CommonResult<String>  getProductNoByDrawingNo(String drawingNo,String branchCode) {
-        List<TrackHead> trackHeads = trackHeadService.getProductNo(drawingNo,"", branchCode);
-        return CommonResult.success(CollectionUtil.isEmpty(trackHeads)?null:trackHeads.get(0).getProductNo());
+    public CommonResult<String> getProductNoByDrawingNo(String drawingNo, String branchCode) {
+        List<TrackHead> trackHeads = trackHeadService.getProductNo(drawingNo, "", branchCode);
+        return CommonResult.success(CollectionUtil.isEmpty(trackHeads) ? null : trackHeads.get(0).getProductNo());
     }
 
     @ApiOperation(value = "根据材质 试棒型号获取上次填写跟单的试棒编号")
     @GetMapping("/getTestBarNoByTextureAndTestBarNo")
-    public CommonResult<String>  getTestBarNoByTextureAndTestBarNo(String texture,String testBar,String branchCode) {
-        List<TrackHead> trackHeads = trackHeadService.getTestBarNo(texture, testBar, branchCode,"");
-        return CommonResult.success(CollectionUtil.isEmpty(trackHeads)?null:trackHeads.get(0).getTestBarNo());
+    public CommonResult<String> getTestBarNoByTextureAndTestBarNo(String texture, String testBar, String branchCode) {
+        List<TrackHead> trackHeads = trackHeadService.getTestBarNo(texture, testBar, branchCode, "");
+        return CommonResult.success(CollectionUtil.isEmpty(trackHeads) ? null : trackHeads.get(0).getTestBarNo());
     }
 
 }
