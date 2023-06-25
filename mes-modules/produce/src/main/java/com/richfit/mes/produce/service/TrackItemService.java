@@ -206,4 +206,11 @@ public interface TrackItemService extends IService<TrackItem> {
     DisqualificationItemVo queryDisqualificationByItem(String tiId, String branchCode);
 
     List<TrackItem> getTrackItemList(Wrapper<TrackItem> wrapper);
+
+    /**
+     * 冶炼车间工艺信息赋值
+     * @param trackItemList
+     * @return
+     */
+    List<TrackItem> ylItemListSetRouterInfo(List<TrackItem> trackItemList);
 }

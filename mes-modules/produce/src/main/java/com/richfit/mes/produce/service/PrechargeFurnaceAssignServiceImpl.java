@@ -260,20 +260,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
     public List assignedFurnaceItemList(String id) {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("precharge_furnace_assign_id",id);
-        List<TrackItem> trackItems = trackItemService.list(queryWrapper);
-        for (TrackItem trackItem : trackItems) {
-            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-            Router router = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
-            if(!Objects.isNull(router)){
-                trackItem.setPieceWeight(router.getPieceWeight());
-                trackItem.setWeightMolten(router.getWeightMolten());
-                trackItem.setTexture(router.getTexture());
-            }
-            trackItem.setRouterId(trackHead.getRouterId());
-            trackItem.setTrackNo(trackHead.getTrackNo());
-            trackItem.setWorkNo(trackHead.getWorkNo());
-            trackItem.setProductName(trackHead.getProductName());
-        }
+        List<TrackItem> trackItems = trackItemService.getTrackItemList(queryWrapper);
         return trackItems;
     }
 

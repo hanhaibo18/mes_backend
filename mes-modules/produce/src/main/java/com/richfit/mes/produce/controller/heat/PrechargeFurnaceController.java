@@ -321,7 +321,8 @@ public class PrechargeFurnaceController extends BaseController {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("is_current",1)
                 .eq("precharge_furnace_id",id);
-        return CommonResult.success(trackItemMapper.getTrackItemList(queryWrapper));
+        List<TrackItem> trackItemList = trackItemMapper.getTrackItemList(queryWrapper);
+        return CommonResult.success(trackItemService.ylItemListSetRouterInfo(trackItemList));
     }
 
     @ApiOperation(value = "配炉工序列表查询")
