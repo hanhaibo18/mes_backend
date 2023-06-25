@@ -2,7 +2,11 @@ package com.richfit.mes.produce.service.wms;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
+import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.Certificate;
+import com.richfit.mes.common.model.produce.TrackFlow;
+
+import java.util.List;
 
 /**
  * 功能描述:库存管理
@@ -10,7 +14,7 @@ import com.richfit.mes.common.model.produce.Certificate;
  * @Author: zhiqiang.lu
  * @Date: 2023/05/26 16:27
  **/
-public interface InventoryService extends IService<Certificate> {
+public interface InventoryService {
     /**
      * 功能描述:上交库存
      *
@@ -19,5 +23,5 @@ public interface InventoryService extends IService<Certificate> {
      * @Author: zhiqiang.lu
      * @Date: 2023/05/26 16:27
      **/
-    CommonResult<Object> handOver(Certificate certificate);
+    void handOver(List<Certificate> certificate);
 }

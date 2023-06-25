@@ -1,6 +1,7 @@
 package com.richfit.mes.common.model.wms;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.richfit.mes.common.model.produce.TrackAssembly;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -29,4 +30,9 @@ public class RequisitionLineInfoList implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    public RequisitionLineInfoList(TrackAssembly trackAssembly,String uuid) {
+        this.applyLineId = uuid;
+        this.productNum = trackAssembly.getProductNo();
+        this.quantity = String.valueOf(trackAssembly.getNumber());
+    }
 }

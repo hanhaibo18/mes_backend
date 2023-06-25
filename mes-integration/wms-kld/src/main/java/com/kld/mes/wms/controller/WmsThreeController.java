@@ -27,59 +27,59 @@ public class WmsThreeController {
 
     @ApiOperation(value = "MES物料基础数据同步接口", notes = "将MES系统物料基础数据实时同步到WMS系统")
     @PostMapping("/material_basis")
-    public CommonResult<WmsResult> materialBasis(@RequestBody List<MaterialBasis> materialBasisList) {
-        return new CommonResult(productToWmsThreeService.materialBasis(materialBasisList));
+    public CommonResult materialBasis(@RequestBody List<MaterialBasis> materialBasisList) {
+        return productToWmsThreeService.materialBasis(materialBasisList);
     }
 
     @ApiOperation(value = "MES报检单驳回WMS", notes = "MES系统支持对未入库的WMS报检单驳回，驳回成功上传WMS，上传成功，WMS系统报检单状态更新已退回，可查看驳回原因、驳回操作人和驳回日期，该报检单允许修改后重新提交")
     @PostMapping("/reject_inspection_doc")
-    public CommonResult<WmsResult> rejectInspectionDoc(@RequestBody RejectInspectionDoc rejectInspectionDoc) {
-        return new CommonResult(productToWmsThreeService.rejectInspectionDoc(rejectInspectionDoc));
+    public CommonResult rejectInspectionDoc(@RequestBody RejectInspectionDoc rejectInspectionDoc) {
+        return productToWmsThreeService.rejectInspectionDoc(rejectInspectionDoc);
     }
 
     @ApiOperation(value = "MES报检单质检结果上传WMS", notes = "MES系统将WMS报检单质检结果上传WMS，上传成功，WMS系统报检单状态更新已检验")
     @PostMapping("/inspection_doc_upload")
-    public CommonResult<WmsResult> inspectionDocUpload(@RequestBody InspectionDocUpload inspectionDocUpload) {
-        return new CommonResult(productToWmsThreeService.inspectionDocUpload(inspectionDocUpload));
+    public CommonResult inspectionDocUpload(@RequestBody InspectionDocUpload inspectionDocUpload) {
+        return productToWmsThreeService.inspectionDocUpload(inspectionDocUpload);
     }
 
     @ApiOperation(value = "MES申请单上传WMS（已上线）", notes = "将MES系统满足条件申请单上传WMS。提供上传WMS按钮，用户点击按钮可手动将申请单上传WMS系统")
     @PostMapping("/apply_list_upload")
-    public CommonResult<WmsResult> applyListUpload(@RequestBody List<ApplyListUpload> applyListUploads) {
-        return new CommonResult(productToWmsThreeService.applyListUpload(applyListUploads));
+    public CommonResult applyListUpload(@RequestBody List<ApplyListUpload> applyListUploads) {
+        return productToWmsThreeService.applyListUpload(applyListUploads);
     }
 
 
     @ApiOperation(value = "MES领料单上传WMS", notes = "将MES系统领料单上传WMS，若单据类型为自动出库时，WMS系统要检查各行项目物料的在该工厂下的库存数量能否满足领料数量，需全部行项目物料库存都满足时，WMS系统自动生成出库单，物资库存减少，调用WMS领料单出库信息上传MES接口")
     @PostMapping("/material_requisition_upload")
-    public CommonResult<WmsResult> materialRequisitionUpload(@RequestBody List<MaterialRequisitionUpload> materialRequisitionUploads) {
-        return new CommonResult(productToWmsThreeService.materialRequisitionUpload(materialRequisitionUploads));
+    public CommonResult materialRequisitionUpload(@RequestBody List<MaterialRequisitionUpload> materialRequisitionUploads) {
+        return productToWmsThreeService.materialRequisitionUpload(materialRequisitionUploads);
     }
 
 
     @ApiOperation(value = "MES领料单撤回上传WMS", notes = "MES系统将未出库的领料单撤回上传WMS，上传成功，WMS系统撤回的领料单或部分行项目删除")
     @PostMapping("/material_requisition_recall")
-    public CommonResult<WmsResult> materialRequisitionRecall(@RequestBody MaterialRequisitionRecall materialRequisitionRecall) {
-        return new CommonResult(productToWmsThreeService.materialRequisitionRecall(materialRequisitionRecall));
+    public CommonResult materialRequisitionRecall(@RequestBody MaterialRequisitionRecall materialRequisitionRecall) {
+        return productToWmsThreeService.materialRequisitionRecall(materialRequisitionRecall);
     }
 
 
     @ApiOperation(value = "MES计划清单锁定/解锁物资库存上传WMS", notes = "MES系统将锁定、释放的工厂锁定库存上传WMS")
     @PostMapping("/system_upload")
-    public CommonResult<WmsResult> systemUpload(@RequestBody SystemUpload systemUpload) {
-        return new CommonResult(productToWmsThreeService.systemUpload(systemUpload));
+    public CommonResult systemUpload(@RequestBody SystemUpload systemUpload) {
+        return productToWmsThreeService.systemUpload(systemUpload);
     }
 
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")
     @PostMapping("/inventory_query")
-    public CommonResult<List<InventoryReturn>> inventoryQuery(@RequestBody InventoryQuery inventoryQuery) {
-        return CommonResult.success(productToWmsThreeService.inventoryQuery(inventoryQuery));
+    public CommonResult inventoryQuery(@RequestBody InventoryQuery inventoryQuery) {
+        return productToWmsThreeService.inventoryQuery(inventoryQuery);
     }
 
     @ApiOperation(value = "MES接收/拒绝WMS出库单", notes = "车间人员确认物资无误，在MES系统整单接收则调用接口推送WMS更新单据状态已接收")
     @PostMapping("/accept_issue_note")
-    public CommonResult<WmsResult> acceptIssueNote(@RequestBody IssueNote issueNote) {
-        return new CommonResult(productToWmsThreeService.acceptIssueNote(issueNote));
+    public CommonResult acceptIssueNote(@RequestBody IssueNote issueNote) {
+        return productToWmsThreeService.acceptIssueNote(issueNote);
     }
 
 }

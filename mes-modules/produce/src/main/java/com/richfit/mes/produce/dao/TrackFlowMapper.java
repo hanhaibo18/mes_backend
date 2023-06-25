@@ -62,6 +62,9 @@ public interface TrackFlowMapper extends BaseMapper<TrackFlow> {
             "       and (certificate_no is null or certificate_no = '') " +
             "   </if>" +
             " </if> " +
+            " <if test='certificateNo != null and certificateNo != \"\"'> " +
+            "  and certificate_no = #{certificateNo} " +
+            " </if> " +
             " <if test='productNo != null and productNo != \"\"'> " +
             "  and product_no like concat('%',#{productNo},'%') " +
             " </if> " +

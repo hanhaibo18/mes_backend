@@ -1,4 +1,5 @@
 package com.richfit.mes.common.model.wms;
+
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.enums.MaterialTypeEnum;
@@ -11,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.Serializable;
 
 /**
- *
  * material_basis MES物料基础数据同步
  */
 @Data
@@ -125,7 +125,6 @@ public class MaterialBasis implements Serializable {
         if (StringUtils.isNotEmpty(product.getTrackType())) {
             this.trackingMode = TrackTypeEnum.getMessage(product.getTrackType());
         }
-        this.trackingMode = product.getTrackType();
         //材质
         this.partsMaterial = product.getTexture();
         //规格
