@@ -54,6 +54,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
     private TrackHeadFlowService trackHeadFlowService;
 
     @Autowired
+    private TrackFlowMapper trackFlowMapper;
+
+    @Autowired
     private TrackHeadService trackHeadService;
 
     @Autowired
@@ -70,6 +73,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
 
     @Autowired
     private TrackCompleteService trackCompleteService;
+
+    @Autowired
+    private TrackCompleteMapper trackCompleteMapper;
 
     @Autowired
     private TrackAssignService trackAssignService;
@@ -360,17 +366,14 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             trackItemService.update(updateWrapper);
         }
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
-        //获取毛坯类型
-        LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        trackHeadLambdaQueryWrapper.eq(TrackHead::getTrackNo,assignList.get(0).getTrackNo());
-        TrackHead trackHead = trackHeadMapper.selectList(trackHeadLambdaQueryWrapper).get(0);
-        if ("1".equals(trackHead.getWorkblankType())) {
+        //根据毛坯类型执行相应流程
+        if ("1".equals(prechargeFurnace.getWorkblankType())) {
             //铸件配炉
-            this.executeFoundryAdd(assignList,prechargeFurnace);
+            this.executeFoundryAddZj(assignList, prechargeFurnace);
         }
-        if ("2".equals(trackHead.getWorkblankType())) {
+        if ("2".equals(prechargeFurnace.getWorkblankType())) {
             //todo 钢锭的
-            this.executeFoundryAdd(assignList,prechargeFurnace);
+//            this.executeFoundryAddGd(assignList,prechargeFurnace);
         }
         //数量和钢水重量赋值
         int num = 0;
@@ -457,19 +460,14 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
 
         //获取毛坯类型
-        LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        trackHeadLambdaQueryWrapper.eq(TrackHead::getTrackNo,assignList.get(0).getTrackNo());
-        TrackHead trackHead = trackHeadMapper.selectList(trackHeadLambdaQueryWrapper).get(0);
-        if ("1".equals(trackHead.getWorkblankType())) {
+        if ("1".equals(prechargeFurnace.getWorkblankType())) {
             //铸件移除
-            this.executeFoundryRemove(assignList,prechargeFurnace);
+            this.executeFoundryRemoveZj(assignList, prechargeFurnace);
         }
-        if ("2".equals(trackHead.getWorkblankType())) {
-            //todo 钢锭的
-            this.executeFoundryRemove(assignList,prechargeFurnace);
+        if ("2".equals(prechargeFurnace.getWorkblankType())) {
+            //钢锭移除
+            this.executeFoundryRemoveGd(assignList, prechargeFurnace);
         }
-
-
         //数量和钢水重量赋值
         int num = 0;
         double totalMoltenSteel = 0.0;
@@ -550,7 +548,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
      * @param assignList
      * @param prechargeFurnace
      */
-    private void executeFoundryAdd(List<Assign> assignList, PrechargeFurnace prechargeFurnace) {
+    private void executeFoundryAddZj(List<Assign> assignList, PrechargeFurnace prechargeFurnace) {
         //派工或已开工之后添加工序,该工序需要集成派工及开工信息
         //已经派工，工序继承当前的派工信息；
         if (prechargeFurnace.getAssignStatus() == 1) {
@@ -629,40 +627,107 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
      * @param assignList
      * @param prechargeFurnace
      */
-    private void executeFoundryRemove(List<Assign> assignList, PrechargeFurnace prechargeFurnace) {
+    private void executeFoundryRemoveZj(List<Assign> assignList, PrechargeFurnace prechargeFurnace) {
+        //配炉已经派工走以下处理逻辑
+        if (prechargeFurnace.getAssignStatus() == 1) {
+            for (Assign assign : assignList) {
+                //查询工序信息；
+                LambdaQueryWrapper<TrackItem> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(TrackItem::getId, assign.getTiId());
+                TrackItem trackItem = trackItemMapper.selectOne(queryWrapper);
+                //查询跟单信息；
+                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
+                //查询派工信息；
+                LambdaQueryWrapper<Assign> assignLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                assignLambdaQueryWrapper.eq(Assign::getTrackId, trackItem.getTrackHeadId());
+                assignLambdaQueryWrapper.eq(Assign::getTiId, trackItem.getId());
+                assign = trackAssignMapper.selectOne(assignLambdaQueryWrapper);
+                //工序信息修改
+                trackItem.setAssignableQty(assign.getQty());
+                trackItem.setIsDoing(0);
+                trackItem.setIsSchedule(0);
+                trackItem.setPrechargeFurnaceAssignId(null);
+                trackItemService.updateById(trackItem);
+                //TrackFlow信息修改
+                UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
+                update.set("status", "0");
+                update.eq("id", trackItem.getFlowId());
+                trackHeadFlowService.update(update);
+                //跟单信息修改
+                trackHead.setStatus("0");
+                trackHeadService.updateById(trackHead);
+                //派工人信息删除
+                LambdaQueryWrapper<AssignPerson> assignPersonLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                assignPersonLambdaQueryWrapper.eq(AssignPerson::getAssignId, assign.getId());
+                assignPersonMapper.delete(assignPersonLambdaQueryWrapper);
+                //派工信息删除
+                trackAssignMapper.delete(assignLambdaQueryWrapper);
+            }
+        }
+    }
+
+    /**
+     * 钢锭派工后配炉移除工序；
+     *
+     * @param assignList
+     * @param prechargeFurnace
+     */
+    private void executeFoundryRemoveGd(List<Assign> assignList, PrechargeFurnace prechargeFurnace) {
         for (Assign assign : assignList) {
-            //查询工序信息；
-            LambdaQueryWrapper<TrackItem> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(TrackItem::getId, assign.getTiId());
-            TrackItem trackItem = trackItemMapper.selectOne(queryWrapper);
             //查询跟单信息；
-            TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-            //查询派工信息；
-            LambdaQueryWrapper<Assign> assignLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            assignLambdaQueryWrapper.eq(Assign::getTrackId, trackItem.getTrackHeadId());
-            assignLambdaQueryWrapper.eq(Assign::getTiId, trackItem.getId());
-            assign = trackAssignMapper.selectOne(assignLambdaQueryWrapper);
-            //工序信息修改
-            trackItem.setAssignableQty(assign.getQty());
-            trackItem.setIsSchedule(0);
-            trackItem.setPrechargeFurnaceAssignId(null);
-            trackItemService.updateById(trackItem);
+            TrackHead trackHead = trackHeadService.getById(assign.getTrackHeadId());
+            //处理前三道工序
+            for (int i = 1; i <= 3; i++) {
+                //根据工序号查询出对应的第几道序
+                LambdaQueryWrapper<TrackItem> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(TrackItem::getTrackHeadId, assign.getTrackHeadId());
+                queryWrapper.eq(TrackItem::getSequenceOrderBy, i);
+                TrackItem trackItem = trackItemMapper.selectOne(queryWrapper);
+                //查询出派工信息
+                LambdaQueryWrapper<Assign> assignLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                assignLambdaQueryWrapper.eq(Assign::getTrackId, trackItem.getTrackHeadId());
+                assignLambdaQueryWrapper.eq(Assign::getTiId, trackItem.getId());
+                assign = trackAssignMapper.selectOne(assignLambdaQueryWrapper);
+                //工序信息修改
+                trackItem.setAssignableQty(assign.getQty());
+                trackItem.setIsDoing(0);
+                trackItem.setIsSchedule(0);
+                //解除预装炉派工信息
+                trackItem.setPrechargeFurnaceAssignId(null);
+                //解除预装炉信息
+                trackItem.setPrechargeFurnaceId(null);
+                trackItemService.updateById(trackItem);
+                //移除跟单配炉状态；
+                UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
+                updateWrapper.eq("id", trackItem.getId());
+                updateWrapper.set("precharge_furnace_id", null);
+                trackItemService.update(updateWrapper);
+                //报工信息删除
+                LambdaQueryWrapper<TrackComplete> trackCompleteLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                trackCompleteLambdaQueryWrapper.eq(TrackComplete::getAssignId, assign.getId());
+                trackCompleteMapper.delete(trackCompleteLambdaQueryWrapper);
+                //派工人信息删除
+                LambdaQueryWrapper<AssignPerson> assignPersonLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                assignPersonLambdaQueryWrapper.eq(AssignPerson::getAssignId, assign.getId());
+                assignPersonMapper.delete(assignPersonLambdaQueryWrapper);
+                //派工信息删除
+                trackAssignMapper.delete(assignLambdaQueryWrapper);
+            }
             //TrackFlow信息修改
-            UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
-            update.set("status", "0");
-            update.eq("id", trackItem.getFlowId());
-            trackHeadFlowService.update(update);
+            LambdaUpdateWrapper<TrackFlow> update = new LambdaUpdateWrapper<>();
+            update.set(TrackFlow::getStatus, "0");
+            update.eq(TrackFlow::getTrackHeadId, trackHead.getId());
+            trackFlowMapper.update(null, update);
             //跟单信息修改
             trackHead.setStatus("0");
             trackHeadService.updateById(trackHead);
-            //派工人信息删除
-            LambdaQueryWrapper<AssignPerson> assignPersonLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            assignPersonLambdaQueryWrapper.eq(AssignPerson::getAssignId,assign.getId());
-            assignPersonMapper.delete(assignPersonLambdaQueryWrapper);
-            //派工信息删除
-            trackAssignMapper.delete(assignLambdaQueryWrapper);
         }
-        //todo 如果已经派工，需要移除派工信息；
+
+        //处理第四道 “炼钢”回滚逻辑；
+        //如果配炉已经派工，回滚逻辑同铸件，走铸件回滚逻辑；
+        if (prechargeFurnace.getAssignStatus() == 1) {
+            this.executeFoundryRemoveZj(assignList, prechargeFurnace);
+        }
     }
 
     /**
