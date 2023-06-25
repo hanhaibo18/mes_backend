@@ -39,10 +39,10 @@ public class FeedingServiceImpl implements FeedingService {
         FeedingResult feedingResult = new FeedingResult();
         switch (lgort) {
             case "BOMCO_BF_JM":
-                lgort = "2001";
+                lgort = "2000";
                 break;
             case "BOMCO_BF_JG":
-                lgort = "2000";
+                lgort = "2001";
                 break;
             case "BOMCO_ZS_JJCJ":
                 lgort = "3000";
