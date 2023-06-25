@@ -139,4 +139,50 @@ public class TrackFlow extends BaseEntity<TrackFlow> {
         map.put("orderCol", StrUtil.toUnderlineCase(orderCol));
         map.put("order", StrUtil.toUnderlineCase(order));
     }
+
+    public static void param(
+            String startDate,
+            String endDate,
+            String isExamineCardData,
+            String isCardData,
+            String templateCode,
+            String status,
+            String isCompletionData,
+            String isCertificate,
+            String productNo,
+            String trackNo,
+            String workNo,
+            String drawingNo,
+            String batchNo,
+            String productionOrder,
+            String workPlanId,
+            String isTestBar,
+            String classes,
+            String branchCode,
+            String tenantId,
+            String orderCol,
+            String order,
+            Map<String, String> map) {
+        TrackFlow.param(startDate,
+                endDate,
+                isExamineCardData,
+                isCardData,
+                templateCode,
+                status,
+                isCompletionData,
+                isCertificate,
+                productNo,
+                trackNo,
+                workNo,
+                drawingNo,
+                batchNo,
+                productionOrder,
+                workPlanId, classes,
+                branchCode,
+                tenantId,
+                orderCol,
+                order,
+                map);
+        map.put("isTestBar", isTestBar);
+    }
 }

@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.mysql.cj.util.StringUtils;
@@ -9,15 +10,13 @@ import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.base.RouterOptAssign;
 import com.richfit.mes.common.model.base.Sequence;
-import com.richfit.mes.common.model.produce.Assign;
-import com.richfit.mes.common.model.produce.AssignPerson;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.TrackAssignController;
 import com.richfit.mes.produce.enmus.OptTypeEnum;
 import com.richfit.mes.produce.enmus.PublicCodeEnum;
 import com.richfit.mes.produce.provider.BaseServiceClient;
+import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -225,8 +224,7 @@ public class PublicServiceImpl implements PublicService {
             activation = this.hotYlActivationProcess(map);
         }else{
             activation = this.activationProcess(map);
-        }
-        return activation;
+        }        return activation;
     }
 
     @Autowired
@@ -241,7 +239,7 @@ public class PublicServiceImpl implements PublicService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean activationProcess(Map<String, String> map) {
-        //倒序获取工序列表
+        //倒序获取工序列表api/produce/heat/assign/getPageAssignsByStatus
         QueryWrapper<TrackItem> currentTrackItem = new QueryWrapper<>();
         currentTrackItem.eq("flow_id", map.get("flowId"));
         currentTrackItem.eq("is_current", 1);
@@ -312,7 +310,11 @@ public class PublicServiceImpl implements PublicService {
                 throw new GlobalException("配炉里跟单异常，没有找到当前工序！", ResultCode.FAILED);
             }
             //判断所有并行工序是否全部最终完成(没有最终完成 跳出并且返回false)
-            if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getFlowId())) {
+            if (!verifyParallel(currentTrackItemList.get(0).getOriginalOptSequence(), currentTrackItemList.get(0).getFlowId()) && "1".equals(prechargeItem.getIsFinalComplete())) {
+                isParallel = false;
+                break;
+            }
+            if ("0".equals(prechargeItem.getIsFinalComplete())) {
                 isParallel = false;
                 break;
             }
@@ -535,7 +537,12 @@ public class PublicServiceImpl implements PublicService {
                     automaticProcess(map);
                 }
             }
+            if("7".equals(trackHead.getClasses())){
+                //配炉里的工序信息变更为下工序信息
+                prechargeFurnaceInfoNextItem(item);
+            }
         }
+
         //特殊工序流转下车间
         String nextOptWork = "";
         if (OptTypeEnum.KX_OPERATION.getStateId().equals(trackItem.getOptType())) {
@@ -544,6 +551,9 @@ public class PublicServiceImpl implements PublicService {
         }
         return true;
     }
+
+    @Autowired
+    private PrechargeFurnaceService prechargeFurnaceService;
 
     /**
      * 功能描述: 冶炼配炉跟单激活
@@ -573,6 +583,8 @@ public class PublicServiceImpl implements PublicService {
                         automaticProcess(map);
                     }
                 }
+                //配炉里的工序信息变更为下工序信息
+                prechargeFurnaceInfoNextItem(item);
             }
         }
 
@@ -621,5 +633,39 @@ public class PublicServiceImpl implements PublicService {
             verify = true;
         }
         return verify;
+    }
+
+    public void prechargeFurnaceInfoNextItem(TrackItem trackItem){
+        //冶炼车间预装炉重复利用，特有字段下工序装炉，若该字段不为空则修改预装炉状态为未派工
+        if (trackItem.getNextOptSequence() != null && trackItem.getNextOptSequence()!=0) {
+            QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
+            itemQueryWrapper.eq("flow_id", trackItem.getFlowId());
+            itemQueryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
+            TrackItem nextItem = trackItemService.getOne(itemQueryWrapper);
+            if (!ObjectUtil.isEmpty(nextItem)) {
+                //有下工序则修改预装炉状态为未派工
+                PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                if (!ObjectUtil.isEmpty(prechargeFurnace)) {
+                    prechargeFurnace.setAssignStatus(0);
+                    prechargeFurnace.setOptType(nextItem.getOptType());
+                    prechargeFurnace.setOptName(nextItem.getOptName());
+                    prechargeFurnaceService.updateById(prechargeFurnace);
+                }
+            } else {
+                //修改预装炉表状态为完工
+                if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
+                    PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                    prechargeFurnace.setStatus(PrechargeFurnace.END_START_WORK);
+                    prechargeFurnaceService.updateById(prechargeFurnace);
+                }
+            }
+        } else {
+            //修改预装炉表状态为完工
+            if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
+                PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
+                prechargeFurnace.setStatus(PrechargeFurnace.END_START_WORK);
+                prechargeFurnaceService.updateById(prechargeFurnace);
+            }
+        }
     }
 }

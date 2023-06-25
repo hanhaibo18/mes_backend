@@ -81,6 +81,7 @@ public class PlanController extends BaseController {
                                     @ApiParam(value = "工作号") @RequestParam(required = false) String workNo,
                                     @ApiParam(value = "图号") @RequestParam(required = false) String drawNo,
                                     @ApiParam(value = "零件名称") @RequestParam(required = false) String materialName,
+                                    @ApiParam(value = "冶炼车间定型") @RequestParam(required = false) String ingotCase,
                                     @ApiParam(value = "开始时间") @RequestParam(required = false) String startTime,
                                     @ApiParam(value = "结束时间") @RequestParam(required = false) String endTime,
                                     @ApiParam(value = "工厂代码") @RequestParam(required = false) String branchCode,
@@ -113,6 +114,9 @@ public class PlanController extends BaseController {
         if (!StringUtils.isNullOrEmpty(branchCode)) {
             queryWrapper.eq("branch_code", branchCode);
         }
+        if (!StringUtils.isNullOrEmpty(ingotCase)) {
+            queryWrapper.eq("ingot_case", ingotCase);
+        }
         //排序工具
         OrderUtil.query(queryWrapper, orderCol, order);
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
@@ -121,7 +125,7 @@ public class PlanController extends BaseController {
         queryWrapper.orderByDesc("priority");
         queryWrapper.orderByDesc("modify_time");
         PageHelper.startPage(page, limit);
-        List<Plan> planList = planService.list(queryWrapper);
+        List<Plan> planList = planService.selectList(queryWrapper);
         planService.planPackageExtend(planList);//完善扩展表信息
         PageInfo<Plan> planPageInfo = new PageInfo(planList);
         log.debug("plan page_missing return is [{}]", planPageInfo);

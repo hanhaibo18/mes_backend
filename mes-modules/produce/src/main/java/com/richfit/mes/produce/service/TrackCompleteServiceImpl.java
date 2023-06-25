@@ -229,37 +229,6 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
             }
             TrackItem trackItem = trackItemService.getById(completeDto.getTiId());
             trackItem.setPourTemperature(completeDto.getPourTemperature());
-            //冶炼车间预装炉重复利用，特有字段下工序装炉，若该字段不为空则修改预装炉状态为未派工
-            if (completeDto.getNextFurnace() != null && completeDto.getNextFurnace()) {
-                QueryWrapper<TrackItem> itemQueryWrapper = new QueryWrapper<>();
-                itemQueryWrapper.eq("flow_id", trackItem.getFlowId());
-                itemQueryWrapper.eq("original_opt_sequence", trackItem.getNextOptSequence());
-                TrackItem nextItem = trackItemService.getOne(itemQueryWrapper);
-                if (!ObjectUtil.isEmpty(nextItem)) {
-                    //有下工序则修改预装炉状态为未派工
-                    PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
-                    if (!ObjectUtil.isEmpty(prechargeFurnace)) {
-                        prechargeFurnace.setAssignStatus(0);
-                        prechargeFurnace.setOptType(nextItem.getOptType());
-                        prechargeFurnace.setOptName(nextItem.getOptName());
-                        prechargeFurnaceService.updateById(prechargeFurnace);
-                    }
-                } else {
-                    //修改预装炉表状态为完工
-                    if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
-                        PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
-                        prechargeFurnace.setStatus(END_START_WORK);
-                        prechargeFurnaceService.updateById(prechargeFurnace);
-                    }
-                }
-            } else {
-                //修改预装炉表状态为完工
-                if (!ObjectUtil.isEmpty(trackItem.getPrechargeFurnaceId())) {
-                    PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(trackItem.getPrechargeFurnaceId());
-                    prechargeFurnace.setStatus(END_START_WORK);
-                    prechargeFurnaceService.updateById(prechargeFurnace);
-                }
-            }
             //检验人
             trackItem.setQualityCheckBy(completeDto.getQcPersonId());
             //根据工序Id删除缓存表数据

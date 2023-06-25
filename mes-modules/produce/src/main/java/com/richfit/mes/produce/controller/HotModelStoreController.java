@@ -162,6 +162,9 @@ public class HotModelStoreController extends BaseController {
             if (hotModelStor.getModelType() != null) {
                 queryWrapper.eq("model_type", hotModelStor.getModelType());
             }
+            if (StringUtils.isNotEmpty(hotModelStor.getModelTexture())) {
+                queryWrapper.like("model_texture", hotModelStor.getModelTexture());
+            }
             queryWrapper.eq("tenant_id", hotModelStor.getTenantId());
             queryWrapper.orderByDesc("create_time");
             List<HotModelStore> list = hotModelStoreService.list(queryWrapper);
@@ -198,9 +201,9 @@ public class HotModelStoreController extends BaseController {
             String fileName = "模型库信息_" + format.format(new Date()) + ".xlsx";
 
 
-            String[] columnHeaders = {"模型名称", "模型类型", "模型数量(正常)", "模型图号", "货位号", "模型数量(报废)", "模型备注", "版本"};
+            String[] columnHeaders = {"模型名称", "模型类型", "模型数量(正常)", "模型图号", "货位号", "模型数量(报废)", "模型备注", "版本","模型材质"};
 
-            String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark", "version"};
+            String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark", "version","modelTexture"};
 
             //export
             ExcelUtils.exportExcel(fileName, hotModelStores, columnHeaders, fieldNames, rsp);
