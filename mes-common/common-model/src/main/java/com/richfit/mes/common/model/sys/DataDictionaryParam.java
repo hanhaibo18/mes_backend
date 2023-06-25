@@ -45,7 +45,6 @@ public class DataDictionaryParam extends BaseEntity<DataDictionaryParam> {
     private Integer invType;
 
     // 计量单位
-    @TableField(exist = false)
     private String unit;
 
     //库存数量
