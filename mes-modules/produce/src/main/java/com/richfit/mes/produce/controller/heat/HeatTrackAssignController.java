@@ -176,10 +176,10 @@ public class HeatTrackAssignController extends BaseController {
             queryWrapper.isNotNull("precharge_furnace_assign_id");
         }
         //根据毛坯类型查询
-        if (!StringUtils.isNullOrEmpty(workblankType)) {
-            queryWrapper.eq("a.workblank_type", workblankType);
-            //过滤工序名为“炼钢”工序的；
-            if ("1".equals(workblankType)) {
+        if ("7".equals(classes)) {
+            if (!StringUtils.isNullOrEmpty(workblankType)) {
+                queryWrapper.eq("a.workblank_type", workblankType);
+                //过滤出第一道工序
                 queryWrapper.eq("a.opt_sequence", 1);
             }
         }
