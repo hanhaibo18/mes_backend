@@ -1,13 +1,21 @@
 package com.richfit.mes.common.model.wms;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.richfit.mes.common.model.base.Product;
+import com.richfit.mes.common.model.enums.MaterialTypeEnum;
+import com.richfit.mes.common.model.enums.MessageEnum;
+import com.richfit.mes.common.model.enums.TrackTypeEnum;
+import com.richfit.mes.common.model.produce.Certificate;
+import com.richfit.mes.common.model.produce.TrackFlow;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * 
  * apply_line_list 申请单上传 行数据
  */
 @Data
@@ -50,15 +58,15 @@ public class ApplyLineList implements Serializable {
     /**
      * 申请单数量
      */
-    private Double quantity;
+    private Integer quantity;
 
     /**
-     *  物料类型
+     * 物料类型
      */
     private String materialType;
 
     /**
-     *  跟踪方式
+     * 跟踪方式
      */
     private String trackingMode;
 
@@ -75,4 +83,46 @@ public class ApplyLineList implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    public ApplyLineList() {
+
+    }
+
+    public ApplyLineList(Certificate certificate, Product product, List<TrackFlow> trackFlows) {
+        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+        // 申请单id
+        this.applyId = certificate.getId();
+        // id
+        this.id = uuid;
+        // 行项目
+        this.lineNum = 1;
+        // 图号
+        this.drawingNo = certificate.getDrawingNo();
+        // 物料号
+        this.materialNum = certificate.getMaterialNo();
+        // 物料名称
+        this.materialDesc = certificate.getMaterialName();
+        // 单位
+        this.unit = product.getUnit();
+        // 产品数量
+        this.quantity = certificate.getNumber();
+        // 物料类型
+        if (StringUtils.isNotEmpty(product.getMaterialType())) {
+            this.materialType = MaterialTypeEnum.getMessage(product.getMaterialType());
+        }
+        // 跟踪方式
+        if (StringUtils.isNotEmpty(product.getTrackType())) {
+            this.trackingMode = TrackTypeEnum.getMessage(product.getTrackType());
+        }
+        // 关键件
+        if (StringUtils.isNotEmpty(product.getIsKeyPart())) {
+            this.crucialFlag = MessageEnum.getMessage(product.getIsKeyPart());
+        }
+        this.lineList = new ArrayList<>(trackFlows.size());
+        for (TrackFlow trackFlow : trackFlows) {
+            ApplyLineProductList applyLineProductList = new ApplyLineProductList(trackFlow, uuid);
+            lineList.add(applyLineProductList);
+        }
+
+    }
 }

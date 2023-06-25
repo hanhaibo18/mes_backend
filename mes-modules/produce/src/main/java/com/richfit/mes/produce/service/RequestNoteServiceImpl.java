@@ -5,16 +5,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.model.base.Product;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.wms.ApplyListUpload;
+import com.richfit.mes.common.model.wms.MaterialRequisitionUpload;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.RequestNoteMapper;
 import com.richfit.mes.produce.provider.BaseServiceClient;
-import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -82,17 +83,18 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
     }
 
     @Override
-    public boolean saveRequestNoteNew(IngredientApplicationDto ingredient, TrackHead trackHead, String branchCode) {
+    public boolean saveRequestNoteNew(List<MaterialRequisitionUpload> materialRequisitionUploads, TrackHead trackHead, String branchCode, String tiId) {
+        MaterialRequisitionUpload requisitionUpload = materialRequisitionUploads.get(0);
         RequestNote requestNote = new RequestNote();
         requestNote.setId(UUID.randomUUID().toString().replace("-", ""));
         //跟单Id
-        requestNote.setTrackHeadId(ingredient.getGd());
+        requestNote.setTrackHeadId(trackHead.getId());
         //存入跟单编号
         requestNote.setTrackNo(trackHead.getTrackNo());
         //工序Id
-        requestNote.setTrackItemId(ingredient.getGx());
+        requestNote.setTrackItemId(tiId);
         //申请单号
-        requestNote.setRequestNoteNumber(ingredient.getSqd());
+        requestNote.setRequestNoteNumber(requisitionUpload.getApplyNum());
         //所属机构
         requestNote.setBranchCode(branchCode);
         //所属租户
@@ -107,7 +109,7 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
             RequestNoteDetail requestNoteDetail = new RequestNoteDetail();
             //申请单id
             requestNoteDetail.setNoteId(requestNote.getId());
-            requestNoteDetail.setRequestNoteNumber(ingredient.getSqd());
+            requestNoteDetail.setRequestNoteNumber(requisitionUpload.getApplyNum());
             requestNoteDetail.setMaterialNo(assembly.getMaterialNo());
             //根据物料号查询物料
             List<Product> list = baseServiceClient.listByMaterialNo(assembly.getMaterialNo());
@@ -117,7 +119,7 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
             requestNoteDetail.setDrawingNo(assembly.getDrawingNo());
             requestNoteDetail.setUnit(assembly.getUnit());
             requestNoteDetail.setNumber(Double.valueOf(assembly.getNumber()));
-            requestNoteDetail.setRequestNoteNumber(ingredient.getSqd());
+            requestNoteDetail.setRequestNoteNumber(requisitionUpload.getApplyNum());
             requestNoteDetail.setBranchCode(SecurityUtils.getCurrentUser().getBelongOrgId());
             requestNoteDetail.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
             requestNoteDetail.setIsNeedPicking(assembly.getIsNeedPicking());
@@ -129,7 +131,7 @@ public class RequestNoteServiceImpl extends ServiceImpl<RequestNoteMapper, Reque
     }
 
     @Override
-    public boolean saveRequestNoteInfo(ApplyListUpload applyListUpload, TrackHead trackHead,TrackItem trackItem, String branchCode) {
+    public boolean saveRequestNoteInfo(ApplyListUpload applyListUpload, TrackHead trackHead, TrackItem trackItem, String branchCode) {
         RequestNote requestNote = new RequestNote();
         //MES申请单ID 唯一
         requestNote.setId(applyListUpload.getId());

@@ -191,4 +191,5 @@ public class Certificate extends BaseEntity<Certificate> {
     @TableField(exist = false)
     @ApiModelProperty(value = "工序产品数量")
     private String itemNumber;
+
 }

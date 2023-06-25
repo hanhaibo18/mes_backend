@@ -130,6 +130,8 @@ public class Product extends BaseEntity<Product> {
     @ApiModelProperty(value = "同步状态")
     private Integer synchronousRegime;
 
+    @ApiModelProperty(value = "同步状态")
+    private String synchronousMessage;
 
     @TableField(exist = false)
     private Integer haveRouter;

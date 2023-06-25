@@ -34,7 +34,7 @@ public class WorkHoursController {
     @Autowired
     WorkHoursService workHoursService;
 
-    @ApiOperation(value = "自动推送工时", notes = "自动推送工时")
+    @ApiOperation(value = "推送工时", notes = "推送工时")
     @PostMapping("/push")
     public CommonResult<Object> push(@ApiParam(value = "合格证", required = true) @RequestBody List<Certificate> certificateList) {
         StringBuilder message = new StringBuilder();

@@ -1,10 +1,16 @@
 package com.richfit.mes.common.model.wms;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.richfit.mes.common.model.enums.MessageEnum;
+import com.richfit.mes.common.model.produce.TrackAssembly;
+import com.richfit.mes.common.model.produce.TrackHead;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 
@@ -77,4 +83,36 @@ public class RequisitionLineList implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    public RequisitionLineList(TrackHead trackHead, TrackAssembly trackAssembly, String uuid,int lineNum) {
+        this.applyId = uuid;
+        this.id = UUID.randomUUID().toString().replaceAll("-", "");
+        // 领料单行项目
+        this.lineNum = String.valueOf(lineNum);
+        // 产品名称
+        this.productName = trackHead.getProductName();
+        // 库存地点
+        this.invCode = null;
+        // 是否实物配送
+        this.deliveryFlag = trackAssembly.getIsEdgeStore();
+        // 物料编码
+        this.materialNum = trackAssembly.getMaterialNo();
+        // 物料名称
+        this.materialDesc = trackAssembly.getName();
+        // 计量单位
+        this.unit = trackAssembly.getUnit();
+        // 领用数量
+        this.quantity = null;
+        // 是否锁库库存
+        this.frozenFlag = "否";
+        // 关键件
+        if (StringUtils.isNotEmpty(trackAssembly.getIsKeyPart())) {
+            this.crucialFlag = MessageEnum.getMessage(trackAssembly.getIsKeyPart());
+        }
+        this.lineList = new ArrayList<>(1);
+        RequisitionLineInfoList info = new RequisitionLineInfoList(trackAssembly,uuid);
+        lineList.add(info);
+
+    }
+
 }

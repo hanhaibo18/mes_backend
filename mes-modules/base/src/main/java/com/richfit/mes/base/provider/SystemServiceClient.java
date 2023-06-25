@@ -70,6 +70,10 @@ public interface SystemServiceClient {
     @GetMapping("/api/sys/data_dictionary/data_dictionary_param")
     public CommonResult<List<DataDictionaryParam>> getDataDictionaryParamByBranchCode(@RequestParam("branchCode") String branchCode);
 
+    @ApiOperation(value = "查询所有的租户列表信息(包括内置)", notes = "查询所有启用的租户列表信息(包括内置)")
+    @GetMapping("/api/sys/tenant/query/tenant/list/inner_all")
+    public CommonResult<List<Tenant>> queryTenantAllList();
+
     /**
      * 功能描述:查询所有的租户列表信息
      *
@@ -79,9 +83,5 @@ public interface SystemServiceClient {
     @ApiOperation(value = "查询所有的租户列表信息", notes = "查询所有启用的租户列表信息")
     @GetMapping("/api/sys/tenant/query/tenant/list/inner")
     public CommonResult<List<Tenant>> queryTenantList(@RequestHeader(value = SecurityConstants.FROM) String header);
-
-    @ApiOperation(value = "查询所有的租户列表信息(包括内置)", notes = "查询所有启用的租户列表信息(包括内置)")
-    @GetMapping("/api/sys/tenant/query/tenant/list/inner_all")
-    public CommonResult<List<Tenant>> queryTenantAllList();
 
 }

@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,14 +56,13 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
     @Override
     public void doAdditionalBsns(Certificate certificate) {
         if (needScjk(certificate)) {
-            CommonResult<Object> commonResultJK = inventoryService.handOver(certificate);
-            //推送宝石
-            if (commonResultJK.getStatus() == ResultCode.SUCCESS.getCode()) {
-                certificate.setIsDeliveryToWarehouse("1");
-                certificate.setDeliveryToWarehouseMessage("操作成功");
-            } else {
+            try {
+                List<Certificate> certificateList = new ArrayList<>();
+                certificateList.add(certificate);
+                inventoryService.handOver(certificateList);
+            } catch (Exception e) {
                 certificate.setIsDeliveryToWarehouse("2");
-                certificate.setDeliveryToWarehouseMessage(commonResultJK.getMessage());
+                certificate.setDeliveryToWarehouseMessage(e.getMessage());
             }
             String companyCode = Objects.requireNonNull(SecurityUtils.getCurrentUser()).getCompanyCode();
             //根据数据字段配置，判断推送哪个系统
@@ -70,14 +70,11 @@ public class CertAdditionalBsnsImpl extends AbstractCertAdditionalBsns {
                 //推送北石
                 pushWorkHourToBs(certificate);
             } else {
-                CommonResult<Object> commonResultGS = workHoursService.push(certificate);
-                //推送宝石
-                if (commonResultGS.getStatus() == ResultCode.SUCCESS.getCode()) {
-                    certificate.setIsSendWorkHour("1");
-                    certificate.setSendWorkHourMessage("操作成功");
-                } else {
+                try {
+                    workHoursService.push(certificate);
+                } catch (Exception e) {
                     certificate.setIsSendWorkHour("2");
-                    certificate.setSendWorkHourMessage(commonResultGS.getMessage());
+                    certificate.setSendWorkHourMessage(e.getMessage());
                 }
             }
         }

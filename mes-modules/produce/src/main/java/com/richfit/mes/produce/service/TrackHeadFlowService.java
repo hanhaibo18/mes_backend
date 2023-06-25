@@ -42,4 +42,14 @@ public interface TrackHeadFlowService extends IService<TrackFlow> {
      * @return: 数量
      **/
     List<TrackFlow> queryTrackFlowListByTrackHeadId(String trackHeadId);
+
+    /**
+     * 功能描述: 查询跟单与生产线视图
+     *
+     * @param map 查询条件
+     * @return 返回视图列表
+     * @author zhiqiang.lu
+     * @date 2022.8.25
+     */
+    List<TrackFlow> selectFlowList(Map<String, String> map);
 }
