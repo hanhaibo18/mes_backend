@@ -24,7 +24,9 @@ public class FtpPropertiesConfig {
     /**
      * 端口
      */
-    private String port;
+    private String downPort;
+
+    private String uploadPort;
 
     /**
      * 登陆用户名

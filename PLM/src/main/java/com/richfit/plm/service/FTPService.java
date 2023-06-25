@@ -1,6 +1,8 @@
 package com.richfit.plm.service;
 
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author HanHaiBo
@@ -8,4 +10,8 @@ import org.springframework.http.ResponseEntity;
  */
 public interface FTPService {
     ResponseEntity<byte[]> downloadFiles(String filePath);
+
+    ResponseEntity<ByteArrayResource> downloadFile(String filePath);
+
+    void uploadFile(MultipartFile file, String filePath);
 }

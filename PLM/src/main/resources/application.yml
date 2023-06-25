@@ -2,7 +2,8 @@ server:
   port: 8080
 ftp:
   server:
-    host: 10.134.100.105
-    port: 21
+    host: 192.168.2.48
+    downPort: 22
+    uploadPort: 21
     userName: administrator
-    password: Shanxi@2022
+    password: Abcd123456-1

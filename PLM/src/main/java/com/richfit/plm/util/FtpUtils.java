@@ -1,6 +1,7 @@
 package com.richfit.plm.util;
 
 import com.richfit.plm.config.FtpPropertiesConfig;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -8,12 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -32,6 +31,21 @@ public class FtpUtils {
     //注入ftp配置
     @Autowired
     private FtpPropertiesConfig ftpConfig;
+
+    public static void uploadFile(MultipartFile file, String filePath) {
+        FTPClient ftpClient = null;
+        try {
+            ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getUploadPort(),
+                    ftpPropertiesConfig.getUserName(), ftpPropertiesConfig.getPassword());
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            ftpClient.enterLocalPassiveMode();
+            ftpClient.storeFile(filePath, file.getInputStream());
+            ftpClient.logout();
+            ftpClient.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @PostConstruct
     public void init() {
@@ -101,7 +115,7 @@ public class FtpUtils {
         FTPFile[] files = null;
         FTPClient ftpClient = null;
         try {
-            ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getPort(),
+            ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getDownPort(),
                     ftpPropertiesConfig.getUserName(), ftpPropertiesConfig.getPassword());
             // 判断是否存在该目录
             if (!ftpClient.changeWorkingDirectory(path)) {
@@ -124,7 +138,7 @@ public class FtpUtils {
     public static InputStream getFTPFileStream(String filePath, String fileName) throws IOException {
         FTPClient ftpClient = null;
         try {
-            ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getPort(),
+            ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getDownPort(),
                     ftpPropertiesConfig.getUserName(), ftpPropertiesConfig.getPassword());
             // 判断是否存在该目录
             if (!ftpClient.changeWorkingDirectory(filePath)) {
@@ -206,7 +220,7 @@ public class FtpUtils {
         List<InputStream> fileStreams = new ArrayList<>();
         FTPClient ftpClient = null;
         try {
-            ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getPort(),
+            ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getDownPort(),
                     ftpPropertiesConfig.getUserName(), ftpPropertiesConfig.getPassword());
             // 判断是否存在该目录
             if (!ftpClient.changeWorkingDirectory(filePath)) {
@@ -227,6 +241,35 @@ public class FtpUtils {
             disConnection(ftpClient);
         }
         return fileStreams;
+    }
+
+    public static byte[] downloadFile(String path) {
+        FTPClient ftpClient = new FTPClient();
+        byte[] fileData = new byte[0];
+        try {
+            ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getDownPort(),
+                    ftpPropertiesConfig.getUserName(), ftpPropertiesConfig.getPassword());
+
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            ftpClient.retrieveFile(path, outputStream);
+
+            ftpClient.logout();
+            ftpClient.disconnect();
+
+            fileData = outputStream.toByteArray();
+            outputStream.close();
+
+            // 将fileData作为响应返回给前端进行下载
+            // 这里你可以使用适合你的Web框架或技术进行处理
+
+            System.out.println("文件下载成功！");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return fileData;
     }
 
     public static ByteArrayOutputStream mergeInputStreams(List<InputStream> inputStreams) throws IOException {

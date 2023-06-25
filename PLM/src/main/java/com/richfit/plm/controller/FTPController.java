@@ -2,11 +2,10 @@ package com.richfit.plm.controller;
 
 import com.richfit.plm.service.FTPService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author HanHaiBo
@@ -18,8 +17,18 @@ public class FTPController {
     @Autowired
     private FTPService ftpService;
 
-    @GetMapping("/download")
+    @GetMapping("/download_files")
     public ResponseEntity<byte[]> downloadFiles(@RequestParam String filePath) {
         return ftpService.downloadFiles(filePath);
+    }
+
+    @GetMapping("/download_file")
+    public ResponseEntity<ByteArrayResource> downloadFile(@RequestParam String filePath) {
+        return ftpService.downloadFile(filePath);
+    }
+
+    @PostMapping("upload_file")
+    public void uploadFile(MultipartFile file, String filePath) {
+        ftpService.uploadFile(file, filePath);
     }
 }

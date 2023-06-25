@@ -2,14 +2,21 @@ package com.richfit.plm.service.impl;
 
 import com.richfit.plm.service.FTPService;
 import com.richfit.plm.util.FtpUtils;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -36,5 +43,36 @@ public class FTPServiceImpl implements FTPService {
         } catch (IOException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @Override
+    public ResponseEntity<ByteArrayResource> downloadFile(String filePath) {
+        Path path = Paths.get(filePath);
+        String fileName = path.getFileName().toString();
+        System.out.println(fileName);
+        String encodedFileName = null;
+        try {
+            encodedFileName = URLEncoder.encode(fileName, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        byte[] byteData = FtpUtils.downloadFile(filePath);
+        if (byteData == null) {
+            return ResponseEntity.notFound().build();
+        }
+        ByteArrayResource resource = new ByteArrayResource(byteData);
+        // 设置HTTP头部
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.add("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
+    }
+
+    @Override
+    public void uploadFile(MultipartFile file, String filePath) {
+        FtpUtils.uploadFile(file,filePath);
     }
 }
