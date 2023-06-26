@@ -51,14 +51,15 @@ public class ProduceDrillingRectificationController extends BaseController {
 
     @ApiOperation(value = "撤回整改信息")
     @GetMapping("/returnBack")
-    public CommonResult returnBack(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
-        produceDrillingRectificationService.returnBack(id);
+    public CommonResult returnBack(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id,
+                                   @ApiParam(value = "操作菜单") @RequestParam(value = "menuType") String menuType) {
+        produceDrillingRectificationService.returnBack(id, menuType);
         return CommonResult.success("已撤回");
     }
 
     @ApiOperation(value = "提交整改信息")
     @PostMapping("/commit")
-    public CommonResult commit(@ApiParam(value = "编辑整改单据") @RequestBody ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
+    public CommonResult commit(@ApiParam(value = "提交整改单据") @RequestBody ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
         produceDrillingRectificationService.commit(produceDrillingRectificationDTO);
         return CommonResult.success("已提交");
     }

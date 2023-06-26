@@ -8,9 +8,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.ProduceDrillingRectification;
 import com.richfit.mes.common.model.produce.ProduceDrillingRectificationFile;
+import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.ProduceDrillingRectificationFileMapper;
 import com.richfit.mes.produce.dao.ProduceDrillingRectificationMapper;
 import com.richfit.mes.produce.enmus.RectificationStatusEnum;
+import com.richfit.mes.produce.enmus.RectificationUnitEnum;
 import com.richfit.mes.produce.entity.ProduceDrillingRectificationDTO;
 import com.richfit.mes.produce.entity.ProduceDrillingRectificationFileDTO;
 import com.richfit.mes.produce.entity.ProduceDrillingRectificationFileVO;
@@ -60,8 +62,8 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
         baseProductReceiptLambdaQueryWrapper.like(StringUtils.isNotEmpty(produceDrillingRectificationDTO.getRectificationUnit()), ProduceDrillingRectification::getRectificationUnit, produceDrillingRectificationDTO.getRectificationUnit());
         Page<ProduceDrillingRectification> produceDrillingRectificationPage = produceDrillingRectificationMapper.selectPage(page, baseProductReceiptLambdaQueryWrapper);
         for (ProduceDrillingRectification record : produceDrillingRectificationPage.getRecords()) {
-            record.setDutyUnitList(Arrays.asList(record.getDutyUnit()));
-            record.setRectificationUnitList(Arrays.asList(record.getRectificationUnit()));
+            record.setDutyUnitList(StringUtils.isNotBlank(record.getDutyUnit()) ? Arrays.asList(record.getDutyUnit().split(",")) : new ArrayList<>());
+            record.setRectificationUnitList(StringUtils.isNotBlank(record.getRectificationUnit()) ? Arrays.asList(record.getRectificationUnit().split(",")) : new ArrayList<>());
         }
         return produceDrillingRectificationPage;
     }
@@ -116,33 +118,89 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
     }
 
     @Override
-    public CommonResult returnBack(String id) {
+    public CommonResult returnBack(String id, String menuType) {
         LambdaQueryWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaQueryWrapper = new LambdaQueryWrapper<>();
         produceDrillingRectificationLambdaQueryWrapper.eq(ProduceDrillingRectification::getId, id);
         ProduceDrillingRectification produceDrillingRectification = produceDrillingRectificationMapper.selectOne(produceDrillingRectificationLambdaQueryWrapper);
-        if (produceDrillingRectification.getStatus().equals(RectificationStatusEnum.N.getCode())) {
-            return CommonResult.failed("已关闭的单据不能撤回");
+        //钻机撤回逻辑；
+        if (RectificationUnitEnum.A.getCode().equals(menuType)) {
+            if (produceDrillingRectification.getStatus().equals(RectificationStatusEnum.RECTIFICATION_UNIT_DONE.getCode())) {
+                return CommonResult.failed("整改单位已经处理，不能提交");
+            }
+            LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            //修改状态为“未提交”
+            //数据清除
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.W.getCode());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getDutyUnit, null);
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getRectificationUnit, null);
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getMeasure, null);
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getOptName, null);
+            produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, id);
+            produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
         }
-        LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        //修改状态为“未提交”
-        produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.W.getCode());
-        produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, id);
-        produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
+        //整改单位撤回；
+        if (RectificationUnitEnum.C.getCode().equals(menuType)) {
+            if (produceDrillingRectification.getStatus().equals(RectificationStatusEnum.HAVE_CHECK.getCode())) {
+                return CommonResult.failed("已整改检验，无法撤回");
+            }
+            //修改状态
+            LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.Y.getCode());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getRebackUser, null);
+            produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, id);
+            produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
+        }
+        //整改检验撤回
+        if (RectificationUnitEnum.C.getCode().equals(menuType)) {
+            if (produceDrillingRectification.getStatus().equals(RectificationStatusEnum.N.getCode())) {
+                return CommonResult.failed("提单人已关单，无法撤回");
+            }
+            //修改状态
+            LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.RECTIFICATION_UNIT_DONE.getCode());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getCheckUser, null);
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getResult, null);
+            produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, id);
+            produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
+        }
         return CommonResult.success(true);
     }
 
     @Override
     public CommonResult commit(ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
-        LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        //修改状态为“已提交”
-        produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.Y.getCode());
-        produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getDutyUnit, produceDrillingRectificationDTO.getDutyUnit());
-        produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getRectificationUnit, produceDrillingRectificationDTO.getRectificationUnit());
-        produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getMeasure, produceDrillingRectificationDTO.getMeasure());
-        produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getOptId, produceDrillingRectificationDTO.getOptId());
-        produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getOptName, produceDrillingRectificationDTO.getOptName());
-        produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, produceDrillingRectificationDTO.getId());
-        produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
+        //钻机提交
+        if (RectificationUnitEnum.A.getCode().equals(produceDrillingRectificationDTO.getMenuType())) {
+            LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            //修改状态为“已提交”
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.Y.getCode());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getDutyUnit, produceDrillingRectificationDTO.getDutyUnit());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getRectificationUnit, produceDrillingRectificationDTO.getRectificationUnit());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getMeasure, produceDrillingRectificationDTO.getMeasure());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getOptId, produceDrillingRectificationDTO.getOptId());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getOptName, produceDrillingRectificationDTO.getOptName());
+            produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, produceDrillingRectificationDTO.getId());
+            produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
+        }
+        //整改单位提交
+        if (RectificationUnitEnum.C.getCode().equals(produceDrillingRectificationDTO.getMenuType())) {
+            LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            //修改状态为“已提交”
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getRebackUser, produceDrillingRectificationDTO.getRebackUser());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.RECTIFICATION_UNIT_DONE.getCode());
+            produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, produceDrillingRectificationDTO.getId());
+            produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
+        }
+        //整改质检提交
+        if (RectificationUnitEnum.D.getCode().equals(produceDrillingRectificationDTO.getMenuType())) {
+            LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            //修改状态为“已提交”
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getRebackUser, produceDrillingRectificationDTO.getRebackUser());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.HAVE_CHECK.getCode());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getCheckUser, produceDrillingRectificationDTO.getCheckUser());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getResult, produceDrillingRectificationDTO.getResult());
+            produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, produceDrillingRectificationDTO.getId());
+            produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
+        }
         return CommonResult.success(true);
     }
 
@@ -156,8 +214,11 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
         //主表信息
         ProduceDrillingRectification produceDrillingRectification = produceDrillingRectificationMapper.selectOne(produceDrillingRectificationLambdaQueryWrapper);
         BeanUtils.copyBeanProp(produceDrillingRectificationVO, produceDrillingRectification);
-        produceDrillingRectificationVO.setDutyUnit(Arrays.asList(produceDrillingRectification.getDutyUnit()));
-        produceDrillingRectificationVO.setRectificationUnit(Arrays.asList(produceDrillingRectification.getRectificationUnit()));
+        produceDrillingRectificationVO.setDutyUnit(StringUtils.isNotBlank(produceDrillingRectification.getDutyUnit()) ? Arrays.asList(produceDrillingRectification.getDutyUnit().split(",")) : new ArrayList<>());
+        produceDrillingRectificationVO.setRectificationUnit(StringUtils.isNotBlank(produceDrillingRectification.getRectificationUnit()) ? Arrays.asList(produceDrillingRectification.getRectificationUnit().split(",")) : new ArrayList<>());
+        produceDrillingRectificationVO.setSource(StringUtils.isNotBlank(produceDrillingRectification.getSource()) ? Arrays.asList(produceDrillingRectification.getSource().split(",")) : new ArrayList<>());
+        produceDrillingRectificationVO.setType(StringUtils.isNotBlank(produceDrillingRectification.getType()) ? Arrays.asList(produceDrillingRectification.getType().split(",")) : new ArrayList<>());
+        produceDrillingRectificationVO.setOptName(StringUtils.isNotBlank(produceDrillingRectification.getOptName()) ? Arrays.asList(produceDrillingRectification.getOptName().split(",")) : new ArrayList<>());
         //附件信息
         LambdaQueryWrapper<ProduceDrillingRectificationFile> produceDrillingRectificationFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
         produceDrillingRectificationFileLambdaQueryWrapper.eq(ProduceDrillingRectificationFile::getOrderNo, id);

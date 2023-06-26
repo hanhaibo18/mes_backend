@@ -146,6 +146,12 @@ public class ProduceDrillingRectificationDTO extends PageDto implements Serializ
     private String status;
 
     /**
+     * 操作菜单
+     */
+    @ApiModelProperty(value = "操作菜单:1:钻机；2：责任单位；3：整改单位；4：质检")
+    private String menuType;
+
+    /**
      * 附件集合
      */
     @ApiModelProperty(value = "附件集合")

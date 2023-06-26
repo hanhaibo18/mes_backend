@@ -7,20 +7,19 @@ package com.richfit.mes.produce.enmus;
  * @date 2022/10/31
  * @apiNote
  */
-public enum RectificationStatusEnum {
+public enum RectificationUnitEnum {
 
 
-    W("0", "钻机未提报"),
-    Y("1", "钻机已提报"),
-    N("2", "钻机已关闭"),
-    RECTIFICATION_UNIT_DONE("3", "整改单位提交，待整改检验"),
-    HAVE_CHECK("4", "整改检验已提交");
+    A("1", "钻机"),
+    B("2", "责任单位"),
+    C("3", "整改单位"),
+    D("4", "质检");
 
     private final String code;
 
     private final String name;
 
-    private RectificationStatusEnum(String code, String name) {
+    private RectificationUnitEnum(String code, String name) {
         this.code = code;
         this.name = name;
     }
@@ -33,8 +32,8 @@ public enum RectificationStatusEnum {
         return name;
     }
 
-    public static RectificationStatusEnum getSenderEnum(String stateId) {
-        for (RectificationStatusEnum recipientsEnum : RectificationStatusEnum.values()) {
+    public static RectificationUnitEnum getSenderEnum(String stateId) {
+        for (RectificationUnitEnum recipientsEnum : RectificationUnitEnum.values()) {
             if (recipientsEnum.code.equals(stateId)) {
                 return recipientsEnum;
             }
@@ -43,7 +42,7 @@ public enum RectificationStatusEnum {
     }
 
     public static String getName(String stateId) {
-        for (RectificationStatusEnum recipientsEnum : RectificationStatusEnum.values()) {
+        for (RectificationUnitEnum recipientsEnum : RectificationUnitEnum.values()) {
             if (recipientsEnum.code.equals(stateId)) {
                 return recipientsEnum.getName();
             }
@@ -52,7 +51,7 @@ public enum RectificationStatusEnum {
     }
 
     public static String getCode(String name) {
-        for (RectificationStatusEnum recipientsEnum : RectificationStatusEnum.values()) {
+        for (RectificationUnitEnum recipientsEnum : RectificationUnitEnum.values()) {
             if (recipientsEnum.name.equals(name)) {
                 return recipientsEnum.getCode();
             }

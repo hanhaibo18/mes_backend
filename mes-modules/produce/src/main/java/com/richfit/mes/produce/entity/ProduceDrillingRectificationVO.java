@@ -55,13 +55,13 @@ public class ProduceDrillingRectificationVO implements Serializable {
      * 整改来源
      */
     @ApiModelProperty(value = "整改来源")
-    private String source;
+    private List<String> source;
 
     /**
      * 类别
      */
     @ApiModelProperty(value = "类别")
-    private String type;
+    private List<String> type;
 
     /**
      * 责任单位
@@ -79,13 +79,13 @@ public class ProduceDrillingRectificationVO implements Serializable {
      * 整改工序id
      */
     @ApiModelProperty(value = "整改工序id")
-    private String optId;
+    private List<String> optId;
 
     /**
      * 整改工序名称
      */
     @ApiModelProperty(value = "整改工序名称")
-    private String optName;
+    private List<String> optName;
 
     /**
      * 整改措施

@@ -43,9 +43,10 @@ public interface ProduceDrillingRectificationService extends IService<ProduceDri
      * 撤回整改单据
      *
      * @param id
+     * @param menuType
      * @return
      */
-    CommonResult returnBack(String id);
+    CommonResult returnBack(String id, String menuType);
 
     /**
      * 提交整改单据
