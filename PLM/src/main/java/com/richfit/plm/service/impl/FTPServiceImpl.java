@@ -76,6 +76,11 @@ public class FTPServiceImpl implements FTPService {
 
     @Override
     public void uploadFile(MultipartFile file, String filePath) {
-        FtpUtils.uploadFile(file, filePath);
+        try {
+            System.out.println(filePath + file.getOriginalFilename());
+            FtpUtils.uploadFile(file, filePath);
+        } catch (IOException e) {
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
     }
 }

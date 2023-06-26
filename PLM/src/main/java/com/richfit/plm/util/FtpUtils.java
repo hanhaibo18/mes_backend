@@ -34,18 +34,35 @@ public class FtpUtils {
     @Autowired
     private FtpPropertiesConfig ftpConfig;
 
-    public static void uploadFile(MultipartFile file, String filePath) {
+    public static void uploadFile(MultipartFile file, String filePath) throws IOException {
         FTPClient ftpClient = null;
         try {
             ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getUploadPort(),
                     ftpPropertiesConfig.getUserName(), ftpPropertiesConfig.getPassword());
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             ftpClient.enterLocalPassiveMode();
-            ftpClient.storeFile(filePath, file.getInputStream());
-            ftpClient.logout();
-            ftpClient.disconnect();
+            // 检查远程路径是否存在，不存在则递归创建
+            createRemoteDirectory(ftpClient, filePath);
+            System.out.println("创建路径成功");
+            String remoteFilePath = filePath + "/" + file.getOriginalFilename();
+            ftpClient.storeFile(remoteFilePath, file.getInputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        } finally {
+            if (ftpClient.isConnected()) {
+                ftpClient.logout();
+                ftpClient.disconnect();
+            }
+        }
+    }
+
+    private static void createRemoteDirectory(FTPClient ftpClient, String remotePath) throws IOException {
+        String[] directories = remotePath.split("/");
+        for (String directory : directories) {
+            if (!directory.isEmpty() && !ftpClient.changeWorkingDirectory(directory)) {
+                ftpClient.makeDirectory(directory);
+                ftpClient.changeWorkingDirectory(directory);
+            }
         }
     }
 

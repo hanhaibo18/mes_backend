@@ -28,8 +28,8 @@ public class FTPController {
         return ftpService.downloadFile(filePath);
     }
 
-    @PostMapping("upload_file")
-    public void uploadFile(MultipartFile file, String filePath) {
+    @PostMapping("/upload_file")
+    public void uploadFile(MultipartFile file, @RequestParam String filePath) {
         ftpService.uploadFile(file, filePath);
     }
 }
