@@ -24,7 +24,7 @@ public class FTPController {
 //    }
 
     @GetMapping("/download_file")
-    public CommonResult<ResponseEntity<ByteArrayResource>> downloadFile(@RequestParam String filePath) {
+    public ResponseEntity<ByteArrayResource> downloadFile(@RequestParam String filePath) {
         return ftpService.downloadFile(filePath);
     }
 

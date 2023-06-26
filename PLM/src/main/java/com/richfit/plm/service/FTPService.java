@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface FTPService {
     ResponseEntity<byte[]> downloadFiles(String filePath);
 
-    CommonResult<ResponseEntity<ByteArrayResource>> downloadFile(String filePath);
+    ResponseEntity<ByteArrayResource> downloadFile(String filePath);
 
     void uploadFile(MultipartFile file, String filePath);
 }
