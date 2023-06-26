@@ -11,8 +11,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
-import com.richfit.mes.produce.dao.TrackItemMapper;
 import com.richfit.mes.produce.entity.CompleteDto;
 import com.richfit.mes.produce.service.PrechargeFurnaceAssignPersonService;
 import com.richfit.mes.produce.service.PrechargeFurnaceAssignService;
@@ -25,9 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * (PrechargeFurnaceAssign)表控制层
@@ -76,7 +74,7 @@ public class PrechargeFurnaceAssignController extends ApiController {
 
     @ApiOperation(value = "配炉已派工列表查询")
     @GetMapping("/assigned_furnace_page_list")
-    public CommonResult<Page> assignedFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType){
+    public CommonResult<Page> assignedFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType,String orderCol,String order){
         QueryWrapper<PrechargeFurnaceAssign> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceQueryWrapper.eq("branch_code",branchCode)
                 .eq(!ObjectUtil.isEmpty(id),"furnace_id",id)
@@ -85,6 +83,7 @@ public class PrechargeFurnaceAssignController extends ApiController {
                 .le(!StringUtils.isNullOrEmpty(endTime),"date_format(assign_time, '%Y-%m-%d')", endTime)
                 .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType)
                 .eq("assign_by", SecurityUtils.getCurrentUser().getUsername());
+        OrderUtil.query(prechargeFurnaceQueryWrapper,orderCol,order);
         Page<PrechargeFurnaceAssign> prechargeFurnaceAssigns = prechargeFurnaceAssignService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper);
         if (null != prechargeFurnaceAssigns.getRecords()) {
             for (PrechargeFurnaceAssign prechargeFurnaceAssign : prechargeFurnaceAssigns.getRecords()) {

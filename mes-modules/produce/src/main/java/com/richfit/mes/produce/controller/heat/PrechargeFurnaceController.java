@@ -304,7 +304,7 @@ public class PrechargeFurnaceController extends BaseController {
 
     @ApiOperation(value = "配炉未派工列表查询")
     @GetMapping("/assign_furnace_page_list")
-    public CommonResult<Page> assignFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType){
+    public CommonResult<Page> assignFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType,String order,String orderCol){
         QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceQueryWrapper.eq("branch_code",branchCode)
                 .eq(!ObjectUtil.isEmpty(id),"id",id)
@@ -313,6 +313,7 @@ public class PrechargeFurnaceController extends BaseController {
                 .le(!StringUtils.isNullOrEmpty(endTime),"date_format(create_time, '%Y-%m-%d')", endTime)
                 .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType)
                 .eq("assign_status",0);
+        OrderUtil.query(prechargeFurnaceQueryWrapper,orderCol,order);
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper));
     }
 
