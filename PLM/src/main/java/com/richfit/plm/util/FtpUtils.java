@@ -1,5 +1,7 @@
 package com.richfit.plm.util;
 
+import com.richfit.plm.common.ResultCode;
+import com.richfit.plm.common.exception.GlobalException;
 import com.richfit.plm.config.FtpPropertiesConfig;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -267,7 +269,7 @@ public class FtpUtils {
 
             System.out.println("文件下载成功！");
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
         return fileData;
     }

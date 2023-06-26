@@ -1,5 +1,8 @@
 package com.richfit.plm.service.impl;
 
+import com.richfit.plm.common.CommonResult;
+import com.richfit.plm.common.ResultCode;
+import com.richfit.plm.common.exception.GlobalException;
 import com.richfit.plm.service.FTPService;
 import com.richfit.plm.util.FtpUtils;
 import org.springframework.core.io.ByteArrayResource;
@@ -46,7 +49,7 @@ public class FTPServiceImpl implements FTPService {
     }
 
     @Override
-    public ResponseEntity<ByteArrayResource> downloadFile(String filePath) {
+    public CommonResult<ResponseEntity<ByteArrayResource>> downloadFile(String filePath) {
         Path path = Paths.get(filePath);
         String fileName = path.getFileName().toString();
         System.out.println(fileName);
@@ -54,11 +57,11 @@ public class FTPServiceImpl implements FTPService {
         try {
             encodedFileName = URLEncoder.encode(fileName, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
         byte[] byteData = FtpUtils.downloadFile(filePath);
         if (byteData == null) {
-            return ResponseEntity.notFound().build();
+            return CommonResult.failed(ResultCode.FAILED, "获取文件失败！");
         }
         ByteArrayResource resource = new ByteArrayResource(byteData);
         // 设置HTTP头部
@@ -66,13 +69,13 @@ public class FTPServiceImpl implements FTPService {
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.add("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
 
-        return ResponseEntity.ok()
+        return CommonResult.success(ResponseEntity.ok()
                 .headers(headers)
-                .body(resource);
+                .body(resource));
     }
 
     @Override
     public void uploadFile(MultipartFile file, String filePath) {
-        FtpUtils.uploadFile(file,filePath);
+        FtpUtils.uploadFile(file, filePath);
     }
 }

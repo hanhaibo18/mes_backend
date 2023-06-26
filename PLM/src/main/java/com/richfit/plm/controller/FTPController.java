@@ -1,5 +1,6 @@
 package com.richfit.plm.controller;
 
+import com.richfit.plm.common.CommonResult;
 import com.richfit.plm.service.FTPService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -17,13 +18,13 @@ public class FTPController {
     @Autowired
     private FTPService ftpService;
 
-    @GetMapping("/download_files")
-    public ResponseEntity<byte[]> downloadFiles(@RequestParam String filePath) {
-        return ftpService.downloadFiles(filePath);
-    }
+//    @GetMapping("/download_files")
+//    public ResponseEntity<byte[]> downloadFiles(@RequestParam String filePath) {
+//        return ftpService.downloadFiles(filePath);
+//    }
 
     @GetMapping("/download_file")
-    public ResponseEntity<ByteArrayResource> downloadFile(@RequestParam String filePath) {
+    public CommonResult<ResponseEntity<ByteArrayResource>> downloadFile(@RequestParam String filePath) {
         return ftpService.downloadFile(filePath);
     }
 

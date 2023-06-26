@@ -1,5 +1,6 @@
 package com.richfit.plm.service;
 
+import com.richfit.plm.common.CommonResult;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface FTPService {
     ResponseEntity<byte[]> downloadFiles(String filePath);
 
-    ResponseEntity<ByteArrayResource> downloadFile(String filePath);
+    CommonResult<ResponseEntity<ByteArrayResource>> downloadFile(String filePath);
 
     void uploadFile(MultipartFile file, String filePath);
 }
