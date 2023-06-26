@@ -36,6 +36,7 @@ public interface DisqualificationMapper extends BaseMapper<Disqualification> {
     IPage<Disqualification> query(@Param("page") Page page, @Param(Constants.WRAPPER) Wrapper<Disqualification> wrapper);
 
     @Select("SELECT \n" +
+            "\tdis.type,\n" +
             "\tdis.create_time,\n" +
             "\tdis.branch_code,\n" +
             "\tdis.process_sheet_no,\n" +
