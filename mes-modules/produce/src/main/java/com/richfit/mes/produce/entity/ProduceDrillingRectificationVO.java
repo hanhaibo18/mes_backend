@@ -67,13 +67,13 @@ public class ProduceDrillingRectificationVO implements Serializable {
      * 责任单位
      */
     @ApiModelProperty(value = "责任单位")
-    private String dutyUnit;
+    private List<String> dutyUnit;
 
     /**
      * 整改单位
      */
     @ApiModelProperty(value = "整改单位")
-    private String rectificationUnit;
+    private List<String> rectificationUnit;
 
     /**
      * 整改工序id
@@ -115,7 +115,7 @@ public class ProduceDrillingRectificationVO implements Serializable {
      * 问题描述
      */
     @ApiModelProperty(value = "问题描述")
-    private String desc;
+    private String detail;
 
     /**
      * branchCode
@@ -146,7 +146,7 @@ public class ProduceDrillingRectificationVO implements Serializable {
      * 附件信息
      */
     @ApiModelProperty(value = "附件信息集合")
-    private List<ProduceDrillingRectificationFileVO> produceDrillingRectificationFileList;
+    private List<ProduceDrillingRectificationFileVO> produceDrillingRectificationFileDTOList;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

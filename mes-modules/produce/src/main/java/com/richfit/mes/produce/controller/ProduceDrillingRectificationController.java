@@ -37,14 +37,14 @@ public class ProduceDrillingRectificationController extends BaseController {
 
     @ApiOperation(value = "新增整改信息")
     @PostMapping("/insert")
-    public CommonResult insertRectification(@ApiParam(value = "新增交接单据") @RequestBody ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
+    public CommonResult insertRectification(@ApiParam(value = "新增整改单据") @RequestBody ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
         produceDrillingRectificationService.insertRectification(produceDrillingRectificationDTO);
         return CommonResult.success("添加成功");
     }
 
     @ApiOperation(value = "编辑整改信息")
     @PostMapping("/edit")
-    public CommonResult editReceipt(@ApiParam(value = "编辑交接单据") @RequestBody ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
+    public CommonResult editReceipt(@ApiParam(value = "编辑整改单据") @RequestBody ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
         produceDrillingRectificationService.editReceipt(produceDrillingRectificationDTO);
         return CommonResult.success("修改成功");
     }
@@ -57,10 +57,10 @@ public class ProduceDrillingRectificationController extends BaseController {
     }
 
     @ApiOperation(value = "提交整改信息")
-    @GetMapping("/commit")
-    public CommonResult commit(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
-        produceDrillingRectificationService.commit(id);
-        return CommonResult.success("已撤回");
+    @PostMapping("/commit")
+    public CommonResult commit(@ApiParam(value = "编辑整改单据") @RequestBody ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
+        produceDrillingRectificationService.commit(produceDrillingRectificationDTO);
+        return CommonResult.success("已提交");
     }
 
     @ApiOperation(value = "查看单据详情 ")
