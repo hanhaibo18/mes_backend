@@ -4,9 +4,12 @@ import com.richfit.plm.common.CommonResult;
 import com.richfit.plm.service.FTPService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * @author HanHaiBo
@@ -18,10 +21,10 @@ public class FTPController {
     @Autowired
     private FTPService ftpService;
 
-//    @GetMapping("/download_files")
-//    public ResponseEntity<byte[]> downloadFiles(@RequestParam String filePath) {
-//        return ftpService.downloadFiles(filePath);
-//    }
+    @PostMapping("/download_files")
+    public ResponseEntity<InputStreamResource> downloadFiles(@RequestBody List<String> filePaths) {
+        return ftpService.downloadFiles(filePaths);
+    }
 
     @GetMapping("/download_file")
     public ResponseEntity<ByteArrayResource> downloadFile(@RequestParam String filePath) {

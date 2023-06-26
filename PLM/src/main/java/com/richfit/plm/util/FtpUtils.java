@@ -3,6 +3,7 @@ package com.richfit.plm.util;
 import com.richfit.plm.common.ResultCode;
 import com.richfit.plm.common.exception.GlobalException;
 import com.richfit.plm.config.FtpPropertiesConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -10,6 +11,10 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,7 +48,7 @@ public class FtpUtils {
             ftpClient.enterLocalPassiveMode();
             // 检查远程路径是否存在，不存在则递归创建
             createRemoteDirectory(ftpClient, filePath);
-            System.out.println("创建路径成功");
+            log.info("创建路径成功");
             String remoteFilePath = filePath + "/" + file.getOriginalFilename();
             ftpClient.storeFile(remoteFilePath, file.getInputStream());
         } catch (IOException e) {
@@ -65,6 +70,110 @@ public class FtpUtils {
             }
         }
     }
+
+    public static ResponseEntity<InputStreamResource> downloadFiles(List<String> filePaths, File tempFile) {
+        FTPClient ftpClient = null;
+        try (FileOutputStream fos = new FileOutputStream(tempFile);
+             ZipOutputStream zipOut = new ZipOutputStream(fos)) {
+
+            // 连接 FTP 服务器
+            ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getDownPort(),
+                    ftpPropertiesConfig.getUserName(), ftpPropertiesConfig.getPassword());
+            ftpClient.enterLocalPassiveMode();
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+            // 下载文件并将其添加到 ZIP
+            for (String filePath : filePaths) {
+                if (!isFileExists(ftpClient, filePath)) {
+                    log.error("文件不存在！");
+                    continue;
+                }
+                String fileName = getFileNameFromPath(filePath);
+                InputStream inputStream = ftpClient.retrieveFileStream(filePath);
+                if (inputStream != null) {
+                    addToZip(fileName, inputStream, zipOut);
+                    ftpClient.completePendingCommand();
+                    inputStream.close();
+                }
+            }
+
+            ftpClient.logout();
+            ftpClient.disconnect();
+
+            zipOut.close();
+            fos.close();
+
+            // 将 ZIP 文件作为响应返回给前端
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(tempFile));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=files.zip");
+            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(tempFile.length())
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(resource);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(null);
+        } finally {
+            // 关闭连接和删除临时文件
+            try {
+                ftpClient.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            tempFile.delete();
+        }
+    }
+
+    private static boolean isFileExists(FTPClient ftpClient, String filePath) {
+        boolean fileExists = false;
+        try {
+            // 获取目录路径和文件名
+            log.info(filePath);
+            String[] pathParts = filePath.split("/");
+            filePath = filePath.substring(0, filePath.lastIndexOf("/"));
+            String filename = pathParts[pathParts.length - 1];
+            ftpClient.changeWorkingDirectory("/");
+            boolean changeResult = ftpClient.changeWorkingDirectory(filePath);
+            if (!changeResult) {
+                throw new GlobalException("切换目录失败！", ResultCode.FAILED);
+            }
+            // 获取目录下的文件列表
+            String[] files = ftpClient.listNames();
+            if (files != null) {
+                for (String file : files) {
+                    if (file.equals(filename)) {
+                        fileExists = true;
+                        break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return fileExists;
+    }
+
+    private static void addToZip(String fileName, InputStream inputStream, ZipOutputStream zipOut) throws IOException {
+        ZipEntry zipEntry = new ZipEntry(fileName);
+        zipOut.putNextEntry(zipEntry);
+
+        byte[] bytes = new byte[1024];
+        int length;
+        while ((length = inputStream.read(bytes)) >= 0) {
+            zipOut.write(bytes, 0, length);
+        }
+    }
+
+    private static String getFileNameFromPath(String filePath) {
+        return filePath.substring(filePath.lastIndexOf('/') + 1);
+    }
+
 
     @PostConstruct
     public void init() {
@@ -263,11 +372,15 @@ public class FtpUtils {
     }
 
     public static byte[] downloadFile(String path) {
-        FTPClient ftpClient = new FTPClient();
-        byte[] fileData = new byte[0];
+        FTPClient ftpClient = null;
+        byte[] fileData = null;
         try {
             ftpClient = login(ftpPropertiesConfig.getHost(), ftpPropertiesConfig.getDownPort(),
                     ftpPropertiesConfig.getUserName(), ftpPropertiesConfig.getPassword());
+            if (!isFileExists(ftpClient, path)) {
+                log.error("文件不存在！");
+                throw new GlobalException("该路径不正确！：" + path, ResultCode.FAILED);
+            }
 
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
@@ -284,7 +397,7 @@ public class FtpUtils {
             // 将fileData作为响应返回给前端进行下载
             // 这里你可以使用适合你的Web框架或技术进行处理
 
-            System.out.println("文件下载成功！");
+            log.info("文件下载成功！");
         } catch (IOException e) {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }

@@ -6,16 +6,14 @@ import com.richfit.plm.common.exception.GlobalException;
 import com.richfit.plm.service.FTPService;
 import com.richfit.plm.util.FtpUtils;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -30,22 +28,16 @@ import java.util.List;
 public class FTPServiceImpl implements FTPService {
 
     @Override
-    public ResponseEntity<byte[]> downloadFiles(String filePath) {
+    public ResponseEntity<InputStreamResource> downloadFiles(List<String> filePaths) {
+        // 创建临时文件
+        File tempFile;
         try {
-            List<InputStream> allFileStreams = FtpUtils.getAllFileStreams(filePath);
-            ByteArrayOutputStream outputStream = FtpUtils.mergeInputStreams(allFileStreams);
-            byte[] zipBytes = FtpUtils.createZipFile(outputStream);
-            outputStream.close();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "file.zip");
-
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(zipBytes);
+            tempFile = File.createTempFile("temp", ".zip");
         } catch (IOException e) {
-            return ResponseEntity.notFound().build();
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(null);
         }
+        return FtpUtils.downloadFiles(filePaths, tempFile);
     }
 
     @Override
@@ -61,7 +53,7 @@ public class FTPServiceImpl implements FTPService {
         }
         byte[] byteData = FtpUtils.downloadFile(filePath);
         if (byteData == null) {
-            throw new GlobalException("获取文件失败！",ResultCode.FAILED);
+            throw new GlobalException("获取文件失败！", ResultCode.FAILED);
         }
         ByteArrayResource resource = new ByteArrayResource(byteData);
         // 设置HTTP头部
