@@ -88,6 +88,33 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
     }
 
     @Override
+    public CommonResult editReceipt(ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
+        //主表信息更改
+        LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        ProduceDrillingRectification produceDrillingRectification = new ProduceDrillingRectification();
+        BeanUtils.copyBeanProp(produceDrillingRectification, produceDrillingRectificationDTO);
+        produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, produceDrillingRectificationDTO.getId());
+        produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
+        //附件表数据删除
+        LambdaQueryWrapper<ProduceDrillingRectificationFile> produceDrillingRectificationFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        produceDrillingRectificationFileLambdaQueryWrapper.eq(ProduceDrillingRectificationFile::getOrderNo,produceDrillingRectificationDTO.getId());
+        produceDrillingRectificationfileMapper.delete(produceDrillingRectificationFileLambdaQueryWrapper);
+        //更新数据
+        //附件信息入库；
+        ArrayList<ProduceDrillingRectificationFile> produceDrillingRectificationFiles = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(produceDrillingRectificationDTO.getProduceDrillingRectificationFileDTOList())) {
+            for (ProduceDrillingRectificationFileDTO produceDrillingRectificationFileDTO : produceDrillingRectificationDTO.getProduceDrillingRectificationFileDTOList()) {
+                ProduceDrillingRectificationFile produceDrillingRectificationFile = new ProduceDrillingRectificationFile();
+                BeanUtils.copyBeanProp(produceDrillingRectificationFile, produceDrillingRectificationFileDTO);
+                produceDrillingRectificationFile.setOrderNo(produceDrillingRectification.getId());
+                produceDrillingRectificationFiles.add(produceDrillingRectificationFile);
+            }
+            produceDrillingRectificationFileService.saveBatch(produceDrillingRectificationFiles);
+        }
+        return CommonResult.success(true);
+    }
+
+    @Override
     public CommonResult returnBack(String id) {
         LambdaQueryWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaQueryWrapper = new LambdaQueryWrapper<>();
         produceDrillingRectificationLambdaQueryWrapper.eq(ProduceDrillingRectification::getId, id);

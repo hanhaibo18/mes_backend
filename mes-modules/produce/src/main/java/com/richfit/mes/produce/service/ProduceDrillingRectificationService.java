@@ -32,6 +32,14 @@ public interface ProduceDrillingRectificationService extends IService<ProduceDri
     CommonResult insertRectification(ProduceDrillingRectificationDTO produceDrillingRectificationDTO);
 
     /**
+     * 编辑整改单据
+     *
+     * @param produceDrillingRectificationDTO
+     * @return
+     */
+    CommonResult editReceipt(ProduceDrillingRectificationDTO produceDrillingRectificationDTO);
+
+    /**
      * 撤回整改单据
      *
      * @param id

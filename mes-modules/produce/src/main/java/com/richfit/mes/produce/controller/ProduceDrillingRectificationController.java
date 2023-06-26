@@ -45,6 +45,7 @@ public class ProduceDrillingRectificationController extends BaseController {
     @ApiOperation(value = "编辑整改信息")
     @PostMapping("/edit")
     public CommonResult editReceipt(@ApiParam(value = "编辑交接单据") @RequestBody ProduceDrillingRectificationDTO produceDrillingRectificationDTO) {
+        produceDrillingRectificationService.editReceipt(produceDrillingRectificationDTO);
         return CommonResult.success("修改成功");
     }
 
