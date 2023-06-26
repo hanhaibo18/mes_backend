@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @Api("PDM plm-tc接口")
 @RestController
+//TODO  这个是什么接口  是否要进行细化
 @RequestMapping("/api/integration/plm")
 public class ProductToPdmController {
 

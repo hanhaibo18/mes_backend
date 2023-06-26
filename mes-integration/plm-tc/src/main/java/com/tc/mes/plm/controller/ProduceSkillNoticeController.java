@@ -14,6 +14,7 @@ import java.util.List;
 
 @Api("技术通知单")
 @RestController
+//TODO  路径不对 /api/integration/plm/skill_notice
 @RequestMapping("/api/produce/skill_notice")
 public class ProduceSkillNoticeController {
 

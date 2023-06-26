@@ -22,6 +22,7 @@ import java.util.UUID;
 
 @Api("附件")
 @RestController
+//TODO  路径不对 /api/integration/attachment
 @RequestMapping("/api/sys/attachment")
 public class AttachmentController {
 

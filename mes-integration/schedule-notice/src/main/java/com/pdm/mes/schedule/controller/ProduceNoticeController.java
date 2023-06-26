@@ -14,6 +14,7 @@ import java.util.List;
 
 @Api("排产单")
 @RestController
+//TODO  路径不对 /api/integration/notice
 @RequestMapping("/api/produce/notice")
 public class ProduceNoticeController {
 
