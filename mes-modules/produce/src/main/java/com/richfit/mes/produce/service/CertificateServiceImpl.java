@@ -316,7 +316,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
      * @param certificate ,trackItem
      */
     @Transactional(rollbackFor = Exception.class)
-    public void autoCreateTrackHeadByCertificate(Certificate certificate) {
+    public void autoCreateTrackHeadByCertificate(Certificate certificate) throws Exception {
         //查询合格证
         QueryWrapper<TrackCertificate> trackCertificateQueryWrapper = new QueryWrapper<>();
         trackCertificateQueryWrapper.eq("certificate_id", certificate.getId());
@@ -332,7 +332,10 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
         //创建跟单信息
         TrackHead trackHead = trackHeadService.getById(thId);
         TrackHead newTrackHead = new TrackHead();
-        BeanUtil.copyProperties(trackHead, newTrackHead, new String[]{"id", "modifyTime", "modifyBy", "routerId", "classes", "status"});
+        BeanUtil.copyProperties(trackHead, newTrackHead, new String[]{"id", "modifyTime", "modifyBy", "routerId", "classes", "status","trackNo"});
+        //下车间跟单号
+        String trackNo = Code.valueOnUpdate("track_no", SecurityUtils.getCurrentUser().getTenantId(), branchCode, codeRuleService);
+        newTrackHead.setTrackNo(trackNo);
         newTrackHead.setBranchCode(branchCode);
         newTrackHead.setTenantId(tenantId);
         newTrackHead.setClasses("7"); //冶炼车间
