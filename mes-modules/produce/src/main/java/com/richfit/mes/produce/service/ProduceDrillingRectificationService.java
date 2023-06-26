@@ -50,10 +50,10 @@ public interface ProduceDrillingRectificationService extends IService<ProduceDri
     /**
      * 提交整改单据
      *
-     * @param id
+     * @param produceDrillingRectificationDTO
      * @return
      */
-    CommonResult commit(String id);
+    CommonResult commit(ProduceDrillingRectificationDTO produceDrillingRectificationDTO);
 
 
     /**

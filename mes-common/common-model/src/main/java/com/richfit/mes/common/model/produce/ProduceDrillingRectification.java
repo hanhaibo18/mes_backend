@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -147,4 +148,18 @@ public class ProduceDrillingRectification implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    /**
+     * 责任单位
+     */
+    @ApiModelProperty(value = "责任单位")
+    @TableField(exist = false)
+    private List<String> dutyUnitList;
+
+    /**
+     * 整改单位
+     */
+    @ApiModelProperty(value = "整改单位")
+    @TableField(exist = false)
+    private List<String> rectificationUnitList;
 }

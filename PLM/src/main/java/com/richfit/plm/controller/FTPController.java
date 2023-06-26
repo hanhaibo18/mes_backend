@@ -24,12 +24,12 @@ public class FTPController {
 //    }
 
     @GetMapping("/download_file")
-    public CommonResult<ResponseEntity<ByteArrayResource>> downloadFile(@RequestParam String filePath) {
+    public ResponseEntity<ByteArrayResource> downloadFile(@RequestParam String filePath) {
         return ftpService.downloadFile(filePath);
     }
 
-    @PostMapping("upload_file")
-    public void uploadFile(MultipartFile file, String filePath) {
+    @PostMapping("/upload_file")
+    public void uploadFile(MultipartFile file, @RequestParam String filePath) {
         ftpService.uploadFile(file, filePath);
     }
 }

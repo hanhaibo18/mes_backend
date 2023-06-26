@@ -49,7 +49,7 @@ public class FTPServiceImpl implements FTPService {
     }
 
     @Override
-    public CommonResult<ResponseEntity<ByteArrayResource>> downloadFile(String filePath) {
+    public ResponseEntity<ByteArrayResource> downloadFile(String filePath) {
         Path path = Paths.get(filePath);
         String fileName = path.getFileName().toString();
         System.out.println(fileName);
@@ -61,7 +61,7 @@ public class FTPServiceImpl implements FTPService {
         }
         byte[] byteData = FtpUtils.downloadFile(filePath);
         if (byteData == null) {
-            return CommonResult.failed(ResultCode.FAILED, "获取文件失败！");
+            throw new GlobalException("获取文件失败！",ResultCode.FAILED);
         }
         ByteArrayResource resource = new ByteArrayResource(byteData);
         // 设置HTTP头部
@@ -69,13 +69,18 @@ public class FTPServiceImpl implements FTPService {
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.add("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
 
-        return CommonResult.success(ResponseEntity.ok()
+        return ResponseEntity.ok()
                 .headers(headers)
-                .body(resource));
+                .body(resource);
     }
 
     @Override
     public void uploadFile(MultipartFile file, String filePath) {
-        FtpUtils.uploadFile(file, filePath);
+        try {
+            System.out.println(filePath + file.getOriginalFilename());
+            FtpUtils.uploadFile(file, filePath);
+        } catch (IOException e) {
+            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
+        }
     }
 }
