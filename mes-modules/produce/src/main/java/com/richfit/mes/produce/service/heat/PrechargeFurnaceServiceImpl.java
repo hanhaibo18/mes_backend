@@ -143,26 +143,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("is_current", 1)
                 .eq("precharge_furnace_id", id);
-        List<TrackItem> list = trackItemService.list(queryWrapper);
-        for (TrackItem trackItem : list) {
-            //查询跟单信息
-            LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            trackHeadLambdaQueryWrapper.eq(TrackHead::getId, trackItem.getTrackHeadId());
-            TrackHead trackHead = trackHeadMapper.selectOne(trackHeadLambdaQueryWrapper);
-            trackItem.setTexture(trackHead.getTexture());
-            trackItem.setWorkNo(trackHead.getWorkNo());
-            trackItem.setProductName(trackHead.getProductName());
-            trackItem.setTrackNo(trackHead.getTrackNo());
-            //查询工艺信息
-            Router data = baseServiceClient.getRouter(trackHead.getRouterId()).getData();
-            trackItem.setPieceWeight(Objects.nonNull(data) ? String.valueOf(data.getWeight()) : "");
-            trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
-            //查询锭型信息
-            List<String> ingotCaseByItemId = trackHeadMapper.getIngotCaseByItemId(trackItem.getId());
-            trackItem.setIngotCase(CollectionUtils.isNotEmpty(ingotCaseByItemId) ? ingotCaseByItemId.get(0) : "");
-            trackItem.setWeightMolten(Objects.nonNull(data) ? data.getWeightMolten() : "");
-        }
-        return list;
+        return trackItemService.ylItemListSetRouterInfo(trackItemService.getTrackItemList(queryWrapper));
     }
 
     /**

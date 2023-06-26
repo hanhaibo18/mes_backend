@@ -193,14 +193,16 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
             }
             //调度完成
             if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
+                if("0".equals(isScheduleComplete)){
+                    queryWrapper.eq("is_current", 1);
+                }
                 queryWrapper.eq("is_schedule_complete", Integer.parseInt(isScheduleComplete));
             }
             if ("1".equals(isExistScheduleCheck)) {
                 queryWrapper.and(wrapper -> wrapper.eq("is_quality_complete", 1).or().eq("is_exist_quality_check", 0));
 //                queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
-            queryWrapper.eq("is_current", 1)
-                    .eq("is_operation_complete", 1);
+            queryWrapper.eq("is_operation_complete", 1);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
             //收集跟单分流表id 调度审核用

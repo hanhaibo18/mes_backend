@@ -62,6 +62,8 @@ public class HeatTrackAssignController extends BaseController {
     public ModelApplyService modelApplyService;
     @Autowired
     public TrackHeadMapper trackHeadMapper;
+    @Autowired
+    public TrackItemService trackItemService;
 
     @ApiOperation(value = "未装炉生产查询-（热处理）")
     @PostMapping("/query_not_produce")
@@ -185,14 +187,10 @@ public class HeatTrackAssignController extends BaseController {
         }
 
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
+        pageAssignsHot.setRecords(trackItemService.ylItemListSetRouterInfo(pageAssignsHot.getRecords()));
         for (TrackItem data : pageAssignsHot.getRecords()) {
             //默认未配送
             data.setApplyStatus(0);
-            Router router = baseServiceClient.getRouter(data.getRouterId()).getData();
-            if (!ObjectUtil.isEmpty(router)) {
-                data.setWeightMolten(router.getWeightMolten());
-                data.setBlankSpecifi(router.getBlankSpecifi());
-            }
             //模型配送状态
             String modelDrawingNo = data.getDrawingNo();
             String optVer = data.getOptVer();
@@ -273,14 +271,11 @@ public class HeatTrackAssignController extends BaseController {
             OrderUtil.query(queryWrapper, orderCol, StringUtils.isNullOrEmpty(order) ? "desc" : order);
         }
 
-        List<TrackItem> pageAssignsHot = trackAssignService.getAssignsHot(queryWrapper);
+        List<TrackItem> pageAssignsHot = trackItemService.ylItemListSetRouterInfo(trackAssignService.getAssignsHot(queryWrapper));
+
         for (TrackItem data : pageAssignsHot) {
             //默认未配送
             data.setApplyStatus(0);
-            Router router = baseServiceClient.getRouter(data.getRouterId()).getData();
-            if (!ObjectUtil.isEmpty(router)) {
-                data.setWeightMolten(router.getWeightMolten());
-            }
             //模型配送状态
             String modelDrawingNo = data.getDrawingNo();
             String optVer = data.getOptVer();
