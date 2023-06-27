@@ -188,27 +188,6 @@ public class HeatTrackAssignController extends BaseController {
 
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
         pageAssignsHot.setRecords(trackItemService.ylItemListSetRouterInfo(pageAssignsHot.getRecords()));
-        for (TrackItem data : pageAssignsHot.getRecords()) {
-            //默认未配送
-            data.setApplyStatus(0);
-            //模型配送状态
-            String modelDrawingNo = data.getDrawingNo();
-            String optVer = data.getOptVer();
-            QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
-            modelApplyQueryWrapper.eq("model_drawing_no", modelDrawingNo)
-                    .eq("model_version", optVer);
-            List<ModelApply> modelApplyList = modelApplyService.list(modelApplyQueryWrapper);
-            if (modelApplyList.size() == 0) {
-                continue;
-            }
-            //一次性的
-            List<ModelApply> mode = modelApplyList.stream().filter(item -> data.getId().equals(item.getItemId())).collect(Collectors.toList());
-            if (!CollectionUtil.isEmpty(mode)) {
-                data.setApplyStatus(mode.get(0).getApplyStatus());
-            } else {
-                data.setApplyStatus(modelApplyList.get(0).getApplyStatus());
-            }
-        }
 
         return CommonResult.success(pageAssignsHot, "操作成功！");
     }
@@ -272,28 +251,6 @@ public class HeatTrackAssignController extends BaseController {
         }
 
         List<TrackItem> pageAssignsHot = trackItemService.ylItemListSetRouterInfo(trackAssignService.getAssignsHot(queryWrapper));
-
-        for (TrackItem data : pageAssignsHot) {
-            //默认未配送
-            data.setApplyStatus(0);
-            //模型配送状态
-            String modelDrawingNo = data.getDrawingNo();
-            String optVer = data.getOptVer();
-            QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
-            modelApplyQueryWrapper.eq("model_drawing_no", modelDrawingNo)
-                    .eq("model_version", optVer);
-            List<ModelApply> modelApplyList = modelApplyService.list(modelApplyQueryWrapper);
-            if (modelApplyList.size() == 0) {
-                continue;
-            }
-            //一次性的
-            List<ModelApply> mode = modelApplyList.stream().filter(item -> data.getId().equals(item.getItemId())).collect(Collectors.toList());
-            if (!CollectionUtil.isEmpty(mode)) {
-                data.setApplyStatus(mode.get(0).getApplyStatus());
-            } else {
-                data.setApplyStatus(modelApplyList.get(0).getApplyStatus());
-            }
-        }
         return pageAssignsHot;
     }
 

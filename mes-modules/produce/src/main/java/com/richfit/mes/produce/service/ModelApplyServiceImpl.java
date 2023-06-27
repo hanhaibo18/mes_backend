@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -54,7 +55,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
         for (TrackItem trackItem : itemInfo) {
             if (!"18".equals(trackItem.getOptType())) {
                 throw new GlobalException("只有造型工序可以申请模型！请重试", ResultCode.FAILED);
-            } else if (trackItem.getApplyStatus() == 1) {
+            } else if (!ObjectUtil.isEmpty(trackItem.getModelStatus()) && trackItem.getModelStatus() == 1) {
                 throw new GlobalException("已配送的工序不可重复申请！", ResultCode.FAILED);
             }
             trackItem.setModelStatus(0);
