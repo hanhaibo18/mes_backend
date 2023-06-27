@@ -1,14 +1,14 @@
 package com.pdm.mes.schedule.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pdm.mes.schedule.entity.domain.ProduceMesPdmAttachment;
+import com.pdm.mes.schedule.entity.domain.NoticeAttachment;
 import com.pdm.mes.schedule.entity.domain.ProduceNotice;
 import com.pdm.mes.schedule.entity.dto.SaleProduceAttachmentDto;
 import com.pdm.mes.schedule.entity.dto.SaleProductionSchedulingDto;
 import com.pdm.mes.schedule.entity.request.SaleProductionSchedulingRequest;
 import com.pdm.mes.schedule.entity.vo.SaleProduceNoticeVo;
 import com.pdm.mes.schedule.mapper.ProduceNoticeMapper;
-import com.pdm.mes.schedule.service.ProduceMesPdmAttachmentService;
+import com.pdm.mes.schedule.service.NoticeAttachmentService;
 import com.pdm.mes.schedule.service.ProduceNoticeService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -34,20 +34,16 @@ public class ProduceNoticeServiceImpl extends ServiceImpl<ProduceNoticeMapper, P
     private ProduceNoticeService produceNoticeService;
 
     @Autowired
-    private ProduceMesPdmAttachmentService produceMesPdmAttachmentService;
+    private NoticeAttachmentService noticeAttachmentService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean saveBatchNotice(List<SaleProductionSchedulingRequest> schedulingList) {
-        if (CollectionUtils.isEmpty(schedulingList)) {
-            return false;
-        }
         SaleProduceAttachmentDto convert = convert(schedulingList);
-        List<ProduceMesPdmAttachment> attachmentList = convert.getAttachmentList();
+        List<NoticeAttachment> attachmentList = convert.getAttachmentList();
         if (!CollectionUtils.isEmpty(attachmentList)) {
-            produceMesPdmAttachmentService.saveBatch(attachmentList);
+            noticeAttachmentService.saveBatch(attachmentList);
         }
-
         List<SaleProductionSchedulingDto> dtoList = convert.getSchedulingDtoList();
         List<SaleProduceNoticeVo> voList = convertVo(dtoList);
         List<ProduceNotice> produceNoticeList = new ArrayList<>();
@@ -62,7 +58,7 @@ public class ProduceNoticeServiceImpl extends ServiceImpl<ProduceNoticeMapper, P
 
     private SaleProduceAttachmentDto convert(List<SaleProductionSchedulingRequest> requestList) {
         List<SaleProductionSchedulingDto> schedulingDtoList = new ArrayList<>(requestList.size());
-        List<ProduceMesPdmAttachment> attachmentList = new ArrayList<>();
+        List<NoticeAttachment> attachmentList = new ArrayList<>();
         requestList.forEach(e -> {
             String uuid = UUID.randomUUID().toString().replaceAll("-", "");
             SaleProductionSchedulingDto schedulingDto = new SaleProductionSchedulingDto();
@@ -79,10 +75,17 @@ public class ProduceNoticeServiceImpl extends ServiceImpl<ProduceNoticeMapper, P
             schedulingDto.setDrawNo(e.getDraw_no());
             schedulingDtoList.add(schedulingDto);
             e.getRelation_id().forEach(f -> {
-                ProduceMesPdmAttachment attachment = new ProduceMesPdmAttachment();
-                attachment.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-                attachment.setTableId(uuid);
-                attachment.setFileUrl(f);
+                NoticeAttachment attachment = new NoticeAttachment();
+                attachment.setAttachmentId(f);
+                attachment.setNoticeId(uuid);
+                attachment.setType("1");
+                attachmentList.add(attachment);
+            });
+            e.getRelation_note_id().forEach(d -> {
+                NoticeAttachment attachment = new NoticeAttachment();
+                attachment.setAttachmentId(d);
+                attachment.setNoticeId(uuid);
+                attachment.setType("2");
                 attachmentList.add(attachment);
             });
         });

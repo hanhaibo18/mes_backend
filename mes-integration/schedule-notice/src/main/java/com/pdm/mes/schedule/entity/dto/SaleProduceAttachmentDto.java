@@ -1,6 +1,6 @@
 package com.pdm.mes.schedule.entity.dto;
 
-import com.pdm.mes.schedule.entity.domain.ProduceMesPdmAttachment;
+import com.pdm.mes.schedule.entity.domain.NoticeAttachment;
 import lombok.Data;
 
 import java.util.List;
@@ -15,5 +15,5 @@ public class SaleProduceAttachmentDto {
     /**
      * PDM附件
      */
-    List<ProduceMesPdmAttachment> attachmentList;
+    List<NoticeAttachment> attachmentList;
 }

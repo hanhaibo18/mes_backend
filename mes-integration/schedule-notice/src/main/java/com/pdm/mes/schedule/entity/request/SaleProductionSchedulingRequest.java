@@ -41,7 +41,7 @@ public class SaleProductionSchedulingRequest {
     private Date delivery_time;
 
     /**
-     *附件
+     *排产单附件
      */
     private List<String> relation_id;
 
@@ -64,5 +64,10 @@ public class SaleProductionSchedulingRequest {
      *图号
      */
     private String draw_no;
+
+    /**
+     * 排产清单附件
+     */
+    private List<String> relation_note_id;
 
 }
