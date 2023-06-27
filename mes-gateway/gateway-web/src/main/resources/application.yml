@@ -43,8 +43,13 @@ spring:
           uri: lb://wms-service
           predicates:
             - Path=/api/integration/wms/**
+        - id: integration-notice-route
+          uri: lb://notice-service
+          predicates:
+            - Path=/api/integration/notice/**
 secure:
   ignore:
+    key: 14df8d45b8eb450b803ff8fe288d0ec4
     urls: #安全路径白名单
       - /
       - /error

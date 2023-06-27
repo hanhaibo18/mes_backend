@@ -8,6 +8,7 @@ import com.richfit.mes.gateway.web.config.FilterIgnorePropertiesConfig;
 import com.richfit.mes.gateway.web.service.PermissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,9 @@ import java.util.List;
 @Configuration
 @Slf4j
 public class AccessGatewayFilter implements GlobalFilter {
+
+    @Value("secure.ignore.key")
+    private String secureIgnoreKey;
 
     private AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -57,6 +61,9 @@ public class AccessGatewayFilter implements GlobalFilter {
         if (ignoreAuthentication(url)) {
             return chain.filter(exchange);
         }
+        if (secureIgnoreKey.equals(authentication)) {
+            return chain.filter(exchange);
+        }
         //调用签权服务
         if (permissionService.permission(authentication, url, method)) {
             ServerHttpRequest.Builder builder = request.mutate();
@@ -75,8 +82,8 @@ public class AccessGatewayFilter implements GlobalFilter {
      */
     private boolean ignoreAuthentication(String url) {
         List<String> ignoreUrls = filterIgnorePropertiesConfig.getUrls();
-        for (String ignoreUrl:ignoreUrls){
-            if(pathMatcher.match(ignoreUrl, url)){
+        for (String ignoreUrl : ignoreUrls) {
+            if (pathMatcher.match(ignoreUrl, url)) {
                 return true;
             }
         }
