@@ -10,9 +10,10 @@ package com.richfit.mes.produce.enmus;
 public enum RectificationStatusEnum {
 
 
-    W("0", "钻机未提报"),
-    Y("1", "钻机已提报"),
-    N("2", "钻机已关闭"),
+    MANAGE_NOT("9", "开具人未提报"),
+    MANAGE_HAVE("10", "开具人已提报"),
+    Y("1", "办理单位已提报"),
+    N("2", "开具人已关闭"),
     RECTIFICATION_UNIT_DONE("3", "整改单位提交，待整改检验"),
     HAVE_CHECK("4", "整改检验已提交");
 

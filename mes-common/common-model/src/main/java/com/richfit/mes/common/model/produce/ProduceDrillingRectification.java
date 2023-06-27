@@ -10,6 +10,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 
 /**
  * @author wcy
@@ -23,6 +24,7 @@ public class ProduceDrillingRectification implements Serializable {
     /**
      * id
      */
+    @Id
     private String id;
 
     /**
@@ -140,6 +142,36 @@ public class ProduceDrillingRectification implements Serializable {
     private String status;
 
     /**
+     * 办理单位
+     */
+    @ApiModelProperty(value = "办理单位")
+    private String manageUnit;
+
+    /**
+     * 开具人是否提报
+     */
+    @ApiModelProperty(value = "开具人是否提报")
+    private String isSendCommit;
+
+    /**
+     * 办理单位是否提报
+     */
+    @ApiModelProperty(value = "办理单位是否提报")
+    private String isUnitCommit;
+
+    /**
+     * 整改单位是否提报
+     */
+    @ApiModelProperty(value = "整改单位是否提报")
+    private String isUpdateCommit;
+
+    /**
+     * 整改检验是否提报
+     */
+    @ApiModelProperty(value = "整改检验是否提报")
+    private String isCheckCommit;
+
+    /**
      * 提报日期
      */
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
@@ -162,4 +194,18 @@ public class ProduceDrillingRectification implements Serializable {
     @ApiModelProperty(value = "整改单位")
     @TableField(exist = false)
     private List<String> rectificationUnitList;
+
+    /**
+     * 整改来源
+     */
+    @ApiModelProperty(value = "整改来源")
+    @TableField(exist = false)
+    private List<String> sourceList;
+
+    /**
+     * 类别
+     */
+    @ApiModelProperty(value = "类别")
+    @TableField(exist = false)
+    private List<String> typeList;
 }
