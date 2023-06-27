@@ -795,6 +795,8 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             //重置当前（炼钢）
             for (TrackItem lastTrackItem : lastTrackItems) {
                 trackItemService.resetStatus(lastTrackItem.getId(), 5, request);
+                UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("id", lastTrackItem.getId()).set("fulance_back", 1);
             }
             UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
             trackItemUpdateWrapper.set("precharge_furnace_id", null).set("precharge_furnace_assign_id", null)

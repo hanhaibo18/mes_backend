@@ -557,4 +557,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
 
     @TableField(exist = false)
     private String workblankType;
+
+    @ApiModelProperty(value = "退炉状态")
+    private Integer fulanceBack;
 }
