@@ -71,7 +71,13 @@ public class ProduceDrillingRectificationController extends BaseController {
 
     @ApiOperation(value = "删除未提交的单据 ")
     @GetMapping("/delete")
-    public CommonResult delete(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
-        return produceDrillingRectificationService.deleteInfo(id);
+    public CommonResult deleteBill(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
+        return produceDrillingRectificationService.deleteBill(id);
+    }
+
+    @ApiOperation(value = "关闭处理单据 ")
+    @GetMapping("/closeBill")
+    public CommonResult closeBill(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
+        return produceDrillingRectificationService.closeBill(id);
     }
 }
