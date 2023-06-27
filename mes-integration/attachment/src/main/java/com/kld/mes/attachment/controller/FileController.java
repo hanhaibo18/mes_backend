@@ -22,8 +22,8 @@ import java.util.UUID;
 
 @Api("附件")
 @RestController
-@RequestMapping("/api/integration/sys/attachment")
-public class AttachmentController {
+@RequestMapping("/api/integration/attachment/file")
+public class FileController {
 
     @Autowired
     private AttachmentService attachmentService;
@@ -39,7 +39,7 @@ public class AttachmentController {
 
     @ApiOperation(value = "上传文件", notes = "测试：用来获取文件的路径")
     @PostMapping("/test_file")
-    public Result<String> uploadFile(@RequestParam("file") MultipartFile multipartFile) throws Exception {
+    public Result<String> uploadTest(@RequestParam("file") MultipartFile multipartFile) throws Exception {
         File file = null;
         // 临时文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());

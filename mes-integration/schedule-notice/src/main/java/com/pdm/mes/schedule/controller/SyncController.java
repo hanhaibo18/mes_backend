@@ -15,8 +15,8 @@ import java.util.List;
 
 @Api("排产单")
 @RestController
-@RequestMapping("/api/integration/produce/notice")
-public class ProduceNoticeController {
+@RequestMapping("/api/integration/notice/sync")
+public class SyncController {
 
     @Autowired
     private ProduceNoticeService produceNoticeService;

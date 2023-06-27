@@ -1,10 +1,10 @@
 package com.richfit.plm.service.impl;
 
-import com.richfit.plm.common.CommonResult;
 import com.richfit.plm.common.ResultCode;
 import com.richfit.plm.common.exception.GlobalException;
 import com.richfit.plm.service.FTPService;
 import com.richfit.plm.util.FtpUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -13,9 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.List;
  * @date 2023/6/14 10:22
  */
 @Service
+@Slf4j
 public class FTPServiceImpl implements FTPService {
 
     @Override
@@ -34,7 +36,7 @@ public class FTPServiceImpl implements FTPService {
         try {
             tempFile = File.createTempFile("temp", ".zip");
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return ResponseEntity.badRequest().body(null);
         }
         return FtpUtils.downloadFiles(filePaths, tempFile);

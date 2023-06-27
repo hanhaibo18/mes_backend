@@ -7,3 +7,5 @@ ftp:
     uploadPort: 21
     userName: administrator
     password: Abcd123456-1
+logging:
+  config: classpath:logback-spring.xml
