@@ -93,6 +93,7 @@ public class ModelApplyServiceImpl extends ServiceImpl<ModelApplyMapper, ModelAp
                 apply.setModelVersion(ver);
                 apply.setModelDrawingNo(drawingNo);
                 apply.setApplyTime(now);
+                apply.setModelName(item.get(0).getMaterialName());
                 this.save(apply);
             }
             List<ModelApplyItem> modelApplyItems = new ArrayList<>();
