@@ -2,7 +2,7 @@ server:
   port: ${SERVER_PORT:8021}
 spring:
   application:
-    name: schedule-notice-service
+    name: notice-service
   cloud:
     nacos:
       username: nacos
@@ -18,15 +18,6 @@ spring:
     url: jdbc:${DATASOURCE_DBTYPE:mysql}://${DATASOURCE_HOST:11.54.85.62}:${DATASOURCE_PORT:3306}/${DB_SYSTEM:mes_produce}?characterEncoding=UTF-8&useUnicode=true&useSSL=false&allowPublicKeyRetrieval=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=CTT
     username: ${DATASOURCE_USERNAME:mes_produce}
     password: ${DATASOURCE_PASSWORD:Mes_produce@mes}
-    servlet:
-      multipart:
-        # 单个文件的大小
-        max-file-size: 10MB
-        # 单次请求的文件的总大小
-        max-request-size: 100MB
-    jackson:
-      time-zone: GMT+8
-
 # Mybatis-plus
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
@@ -35,6 +26,7 @@ mybatis-plus:
       table-prefix: produce_
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
 ribbon:
   ConnectTimeout: 1200000 #ribbon 链接超时时长
   ReadTimeout: 1200000 #ribbon 读取超时时长

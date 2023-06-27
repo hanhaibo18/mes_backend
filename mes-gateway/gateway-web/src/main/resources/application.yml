@@ -44,7 +44,7 @@ spring:
           predicates:
             - Path=/api/integration/wms/**
         - id: integration-notice-route
-          uri: lb://schedule-notice-service
+          uri: lb://notice-service
           predicates:
             - Path=/api/integration/notice/**
 secure:
