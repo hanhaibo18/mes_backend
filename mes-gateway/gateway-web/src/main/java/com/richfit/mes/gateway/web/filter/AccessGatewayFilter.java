@@ -33,8 +33,8 @@ import java.util.List;
 @Slf4j
 public class AccessGatewayFilter implements GlobalFilter {
 
-    @Value("secure.ignore.key")
-    private String secureIgnoreKey;
+    @Value("${secure.ignore.authorization}")
+    private String secureIgnoreAuthorization;
 
     private AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -61,7 +61,7 @@ public class AccessGatewayFilter implements GlobalFilter {
         if (ignoreAuthentication(url)) {
             return chain.filter(exchange);
         }
-        if (secureIgnoreKey.equals(authentication)) {
+        if (secureIgnoreAuthorization.equals(authentication)) {
             return chain.filter(exchange);
         }
         //调用签权服务

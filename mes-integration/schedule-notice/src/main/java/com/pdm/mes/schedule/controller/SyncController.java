@@ -28,8 +28,13 @@ public class SyncController {
             return Result.error("N", "排产单不能为空");
         }
         boolean flag = produceNoticeService.saveBatchNotice(schedulingDtoList);
-        return flag ? Result.success() : Result.error("N","同步失败,请稍后再试");
+        return flag ? Result.success() : Result.error("N", "同步失败,请稍后再试");
 
     }
 
+    @ApiOperation(value = "测试", notes = "测试")
+    @GetMapping("/test")
+    public Result<?> test() {
+        return Result.success("测试成功");
+    }
 }
