@@ -173,10 +173,15 @@ public class PlanController extends BaseController {
             queryWrapper.ne("status", 2);
         }
         if (!StringUtils.isNullOrEmpty(planDto.getProjType())) {
-            queryWrapper.like("proj_type", planDto.getProjType());//计划类型 1新制  2 返修'
+            //计划类型 1新制  2 返修'
+            queryWrapper.like("proj_type", planDto.getProjType());
+        }
+        if (!StringUtils.isNullOrEmpty(planDto.getDrawNoName())) {
+            queryWrapper.like("draw_no_name", planDto.getDrawNoName());
         }
         if (!StringUtils.isNullOrEmpty(planDto.getSource())) {
-            queryWrapper.eq("source", planDto.getSource());//来源  1 分公司计划  2车间计划
+            //来源  1 分公司计划  2车间计划
+            queryWrapper.eq("source", planDto.getSource());
         }
         if (!StringUtils.isNullOrEmpty(planDto.getBranchCode())) {
             queryWrapper.eq("branch_code", planDto.getBranchCode());
@@ -198,7 +203,8 @@ public class PlanController extends BaseController {
         OrderUtil.query(queryWrapper, planDto.getOrderCol(), planDto.getOrder());
         IPage<Plan> planList = planService.page(new Page(queryDto.getPage(), queryDto.getLimit()), queryWrapper);
         planService.planPackageRouter(planList.getRecords());
-        planService.planPackageExtend(planList.getRecords());//完善扩展表信息
+        //完善扩展表信息
+        planService.planPackageExtend(planList.getRecords());
         return CommonResult.success(planList);
     }
 
@@ -388,8 +394,8 @@ public class PlanController extends BaseController {
     @ApiOperation(value = "导入计划--锻造车间", notes = "根据Excel文档导入计划--锻造车间")
     @ApiImplicitParam(name = "file", value = "Excel文件流", required = true, dataType = "MultipartFile", paramType = "path")
     @PostMapping("/import_excel_DZ")
-    public CommonResult importExcelDZ(@RequestParam("file") MultipartFile file, HttpServletRequest request,String branchCode) throws IOException {
-        planService.importPlanDZ(file, request,branchCode);
+    public CommonResult importExcelDZ(@RequestParam("file") MultipartFile file, HttpServletRequest request, String branchCode) throws IOException {
+        planService.importPlanDZ(file, request, branchCode);
         return CommonResult.success(null);
     }
 

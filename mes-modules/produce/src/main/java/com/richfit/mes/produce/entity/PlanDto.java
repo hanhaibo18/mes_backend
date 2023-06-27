@@ -31,6 +31,11 @@ public class PlanDto extends BasePageDto<PlanDto> {
      * 图号
      */
     private String drawNo;
+
+    /**
+     * 产品名称
+     */
+    private String drawNoName;
     /**
      * 开始时间
      */
