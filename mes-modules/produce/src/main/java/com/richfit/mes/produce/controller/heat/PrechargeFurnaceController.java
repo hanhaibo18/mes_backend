@@ -166,7 +166,9 @@ public class PrechargeFurnaceController extends BaseController {
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkblankType())) {
             queryWrapper.eq("workblank_type", dispatchingDto.getWorkblankType());
         }
-        queryWrapper.eq("branch_code", dispatchingDto.getBranchCode());
+        if(!StringUtils.isNullOrEmpty(dispatchingDto.getBranchCode())){
+            queryWrapper.eq("branch_code", dispatchingDto.getBranchCode());
+        }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //根据状态查询
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getFurnaceStatus())) {
