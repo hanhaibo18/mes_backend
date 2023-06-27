@@ -337,7 +337,7 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
     }
 
     @Override
-    public CommonResult deleteInfo(String id) {
+    public CommonResult deleteBill(String id) {
         LambdaQueryWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaQueryWrapper = new LambdaQueryWrapper<>();
         produceDrillingRectificationLambdaQueryWrapper.eq(ProduceDrillingRectification::getId, id);
         ProduceDrillingRectification produceDrillingRectification = produceDrillingRectificationMapper.selectOne(produceDrillingRectificationLambdaQueryWrapper);
@@ -350,6 +350,20 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
         LambdaQueryWrapper<ProduceDrillingRectificationFile> produceDrillingRectificationFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
         produceDrillingRectificationFileLambdaQueryWrapper.eq(ProduceDrillingRectificationFile::getOrderNo, id);
         produceDrillingRectificationfileMapper.delete(produceDrillingRectificationFileLambdaQueryWrapper);
+        return CommonResult.success(true);
+    }
+
+    @Override
+    public CommonResult closeBill(String id) {
+        LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaQueryWrapper = new LambdaUpdateWrapper<>();
+        produceDrillingRectificationLambdaQueryWrapper.eq(ProduceDrillingRectification::getId, id);
+        ProduceDrillingRectification produceDrillingRectification = produceDrillingRectificationMapper.selectOne(produceDrillingRectificationLambdaQueryWrapper);
+        if (!produceDrillingRectification.getStatus().equals(RectificationStatusEnum.HAVE_CHECK.getCode())) {
+            return CommonResult.failed("未质检不能进行关单");
+        }
+        produceDrillingRectificationLambdaQueryWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.N.getCode());
+        //修改主表状态
+        produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaQueryWrapper);
         return CommonResult.success(true);
     }
 }

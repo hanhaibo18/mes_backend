@@ -71,7 +71,16 @@ public interface ProduceDrillingRectificationService extends IService<ProduceDri
      * @param id
      * @return
      */
-    CommonResult deleteInfo(String id);
+    CommonResult deleteBill(String id);
+
+    /**
+     * 关闭处理单
+     *
+     * @param id
+     * @return
+     */
+    CommonResult closeBill(String id);
+
 
 
 }
