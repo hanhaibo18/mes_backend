@@ -15,7 +15,6 @@ import org.springframework.data.annotation.Id;
 /**
  * @author wcy
  * 钻机整改单据
- *
  * @TableName produce_drilling_rectification
  */
 @TableName(value = "produce_drilling_rectification")
@@ -177,6 +176,12 @@ public class ProduceDrillingRectification implements Serializable {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "提报日期")
     private Date createDate;
+
+    /**
+     * 创建人
+     */
+    @ApiModelProperty(value = "创建人")
+    private String createUser;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

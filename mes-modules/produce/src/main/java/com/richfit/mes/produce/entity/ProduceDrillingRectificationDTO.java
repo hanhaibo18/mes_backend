@@ -152,7 +152,7 @@ public class ProduceDrillingRectificationDTO extends PageDto implements Serializ
     /**
      * 操作菜单
      */
-    @ApiModelProperty(value = "操作菜单:1:钻机；2：责任单位；3：整改单位；4：质检")
+    @ApiModelProperty(value = "操作菜单:1:钻机；2：责任单位；3：整改单位；4：质检；5：开具")
     private String menuType;
 
     /**
