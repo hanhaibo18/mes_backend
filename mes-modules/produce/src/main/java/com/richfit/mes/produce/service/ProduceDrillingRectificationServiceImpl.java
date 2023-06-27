@@ -128,6 +128,7 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
             record.setRectificationUnitList(StringUtils.isNotBlank(record.getRectificationUnit()) ? Arrays.asList(record.getRectificationUnit().split(",")) : new ArrayList<>());
             record.setSourceList(StringUtils.isNotBlank(record.getSource()) ? Arrays.asList(record.getSource().split(",")) : new ArrayList<>());
             record.setTypeList(StringUtils.isNotBlank(record.getType()) ? Arrays.asList(record.getType().split(",")) : new ArrayList<>());
+            record.setOptList(StringUtils.isNotBlank(record.getOptName()) ? Arrays.asList(record.getOptName().split(",")) : new ArrayList<>());
         }
         return produceDrillingRectificationPage;
     }
