@@ -17,9 +17,9 @@ import java.util.TimeZone;
 
 @MapperScan("com/pdm/mes/schedule/mapper")
 @SpringBootApplication
-public class ScheduleNoticeApplication {
+public class MarketingApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ScheduleNoticeApplication.class, args);
+        SpringApplication.run(MarketingApplication.class, args);
     }
 
     /**
