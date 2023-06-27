@@ -140,7 +140,11 @@ public class ProduceDrillingRectificationDTO extends PageDto implements Serializ
     private String endTime;
 
     /**
-     * 区分是新增还是提交：新增状态为：未提报；提交状态为：已提报
+     * "0", "钻机未提报"
+     * "1", "钻机已提报"
+     * "2", "钻机已关闭"
+     * "3", "整改单位提交，待整改检验"
+     * "4", "整改检验已提交"
      */
     @ApiModelProperty(value = "区分是新增还是提交：新增状态为：未提报；提交状态为：已提报")
     private String status;
@@ -150,6 +154,12 @@ public class ProduceDrillingRectificationDTO extends PageDto implements Serializ
      */
     @ApiModelProperty(value = "操作菜单:1:钻机；2：责任单位；3：整改单位；4：质检")
     private String menuType;
+
+    /**
+     * 办理单位
+     */
+    @ApiModelProperty(value = "办理单位")
+    private String manageUnit;
 
     /**
      * 附件集合

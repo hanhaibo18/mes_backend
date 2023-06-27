@@ -50,7 +50,7 @@ public interface SystemServiceClient {
     public CommonResult<Tenant> tenantById(@RequestParam String id);
 
     /**
-     * 功能描述: 根据组织机构获取质检人员
+     * 功能描述: 根据组织机构获取 质检人员
      *
      * @param branchCode
      * @Author: xinYu.hou

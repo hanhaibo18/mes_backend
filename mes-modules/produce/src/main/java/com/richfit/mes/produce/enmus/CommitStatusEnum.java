@@ -1,26 +1,23 @@
 package com.richfit.mes.produce.enmus;
 
 /**
- * 整改单据状态
+ * 提报状态
  *
  * @author wcy
  * @date 2022/10/31
  * @apiNote
  */
-public enum RectificationUnitEnum {
+public enum CommitStatusEnum {
 
 
-    A("1", "办理单位"),
-    B("2", "责任单位"),
-    C("3", "整改单位"),
-    D("4", "质检"),
-    E("5", "开具");
+    NOT("0", "未提报"),
+    YES("1", "已提报");
 
     private final String code;
 
     private final String name;
 
-    private RectificationUnitEnum(String code, String name) {
+    private CommitStatusEnum(String code, String name) {
         this.code = code;
         this.name = name;
     }
@@ -33,8 +30,8 @@ public enum RectificationUnitEnum {
         return name;
     }
 
-    public static RectificationUnitEnum getSenderEnum(String stateId) {
-        for (RectificationUnitEnum recipientsEnum : RectificationUnitEnum.values()) {
+    public static CommitStatusEnum getSenderEnum(String stateId) {
+        for (CommitStatusEnum recipientsEnum : CommitStatusEnum.values()) {
             if (recipientsEnum.code.equals(stateId)) {
                 return recipientsEnum;
             }
@@ -43,7 +40,7 @@ public enum RectificationUnitEnum {
     }
 
     public static String getName(String stateId) {
-        for (RectificationUnitEnum recipientsEnum : RectificationUnitEnum.values()) {
+        for (CommitStatusEnum recipientsEnum : CommitStatusEnum.values()) {
             if (recipientsEnum.code.equals(stateId)) {
                 return recipientsEnum.getName();
             }
@@ -52,7 +49,7 @@ public enum RectificationUnitEnum {
     }
 
     public static String getCode(String name) {
-        for (RectificationUnitEnum recipientsEnum : RectificationUnitEnum.values()) {
+        for (CommitStatusEnum recipientsEnum : CommitStatusEnum.values()) {
             if (recipientsEnum.name.equals(name)) {
                 return recipientsEnum.getCode();
             }

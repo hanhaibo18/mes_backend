@@ -171,13 +171,13 @@ public class PrechargeFurnaceController extends BaseController {
         //根据状态查询
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getFurnaceStatus())) {
             if (dispatchingDto.getFurnaceStatus().equals("0")) {
-                queryWrapper.eq("assign_status", "0");
+                queryWrapper.eq("assign_status", "0").eq("status", "0");
             }
             if (dispatchingDto.getFurnaceStatus().equals("-1")) {
-                queryWrapper.eq("status", "0");
+                queryWrapper.eq("status", "0").eq("assign_status", "1");
             }
             if (dispatchingDto.getFurnaceStatus().equals("1")) {
-                queryWrapper.eq("status", "1");
+                queryWrapper.eq("status", "1").eq("assign_status", "1");
             }
             if (dispatchingDto.getFurnaceStatus().equals("2")) {
                 queryWrapper.eq("status", "2");
@@ -195,6 +195,9 @@ public class PrechargeFurnaceController extends BaseController {
                 } else {
                     record.setFurnaceStatus(record.getStatus());
                 }
+            }
+            if ("2".equals(record.getStatus())) {
+                record.setFurnaceStatus("2");
             }
         }
         return CommonResult.success(page);

@@ -53,8 +53,7 @@ public class ProduceDrillingRectificationController extends BaseController {
     @GetMapping("/returnBack")
     public CommonResult returnBack(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id,
                                    @ApiParam(value = "操作菜单") @RequestParam(value = "menuType") String menuType) {
-        produceDrillingRectificationService.returnBack(id, menuType);
-        return CommonResult.success("已撤回");
+        return CommonResult.success(produceDrillingRectificationService.returnBack(id, menuType));
     }
 
     @ApiOperation(value = "提交整改信息")
@@ -73,7 +72,6 @@ public class ProduceDrillingRectificationController extends BaseController {
     @ApiOperation(value = "删除未提交的单据 ")
     @GetMapping("/delete")
     public CommonResult delete(@ApiParam(value = "整改单据id") @RequestParam(value = "id") String id) {
-        produceDrillingRectificationService.delete(id);
-        return CommonResult.success("删除成功");
+        return produceDrillingRectificationService.deleteInfo(id);
     }
 }
