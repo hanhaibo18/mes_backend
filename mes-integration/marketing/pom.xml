@@ -9,9 +9,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>notice</artifactId>
+    <artifactId>marketing</artifactId>
     <name>${project.artifactId}</name>
-    <description>仓储接口-昆仑数智条码系统版</description>
+    <description>营销接口-昆仑数智</description>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -15,7 +15,7 @@ import java.util.List;
 
 @Api("排产单")
 @RestController
-@RequestMapping("/api/integration/notice/sync")
+@RequestMapping("/api/integration/marketing/notice")
 public class SyncController {
 
     @Autowired
