@@ -364,7 +364,10 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             updateWrapper.set("precharge_furnace_id", assign.getPrechargeFurnaceId());
             trackItemService.update(updateWrapper);
         }
-        prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+        //工序信息过滤
+        prechargeFurnace.setOptName(optNames(assignList));
+        //设置工艺信息
+        this.setRouter(assignList);
         //根据毛坯类型执行相应流程
         if ("1".equals(prechargeFurnace.getWorkblankType())) {
             if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus()) ||
@@ -452,7 +455,9 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             updateWrapper.set("precharge_furnace_id", null);
             trackItemService.update(updateWrapper);
         }
-        prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
+
+        //设置工艺数据
+        this.setRouter(assignList);
         //设备类型赋值；
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
 
@@ -468,6 +473,15 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         if ("2".equals(prechargeFurnace.getWorkblankType())) {
             //钢锭移除
             this.executeFoundryRemoveGd(assignList, prechargeFurnace);
+            //如果全部移除，配炉工序名置空；
+            LambdaQueryWrapper<TrackItem> trackItemLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            trackItemLambdaQueryWrapper.eq(TrackItem::getPrechargeFurnaceId, assignList.get(0).getPrechargeFurnaceId());
+            List<TrackItem> trackItemList = trackItemMapper.selectList(trackItemLambdaQueryWrapper);
+            if (CollectionUtils.isEmpty(trackItemList)) {
+                LambdaUpdateWrapper<PrechargeFurnace> prechargeFurnaceLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                prechargeFurnaceLambdaUpdateWrapper.set(PrechargeFurnace::getOptName, null);
+                prechargeFurnaceLambdaUpdateWrapper.eq(PrechargeFurnace::getId, assignList.get(0).getPrechargeFurnaceId());
+            }
         }
         //数量和钢水重量赋值
         int num = 0;
