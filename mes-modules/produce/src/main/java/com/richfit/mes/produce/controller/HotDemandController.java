@@ -167,7 +167,10 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
             queryWrapper.orderByAsc(hotDemandParam.getOrderByColumns());
         }
-        //queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        if (hotDemandParam.getProduceRatifyState() == null){
+            queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        }
+
         //排序工具
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
