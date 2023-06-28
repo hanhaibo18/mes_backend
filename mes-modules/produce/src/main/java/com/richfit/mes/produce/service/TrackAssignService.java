@@ -26,13 +26,13 @@ public interface TrackAssignService extends IService<Assign> {
 
     IPage<TrackItem> getPageAssignsHot(Page page, QueryWrapper<TrackItem> qw);
 
-    List<TrackItem> getAssignsHot( QueryWrapper<TrackItem> qw);
+    List<TrackItem> getAssignsHot(QueryWrapper<TrackItem> qw);
 
     IPage<TrackItem> getPageAssignsByStatusAndTrack(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);
 
     IPage<TrackItem> getPageAssignsByStatusAndRouter(Page page, @Param("name") String name, QueryWrapper<TrackItem> qw, String orderCol, String order, List<String> excludeOrderCols);
 
-    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol,String holdStatus) throws ParseException;
+    IPage<Assign> queryPage(Page page, String siteId, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String productNo, String classes, String order, String orderCol, String holdStatus, String drawingNo, String workNo) throws ParseException;
 
     /**
      * 功能描述: 根据跟单号查询 跟单工序
@@ -113,6 +113,7 @@ public interface TrackAssignService extends IService<Assign> {
 
     /**
      * 铸钢车间已派工查询
+     *
      * @param dispatchingDto
      * @return
      */
@@ -131,6 +132,7 @@ public interface TrackAssignService extends IService<Assign> {
     /**
      * 功能描述:派工查询
      * 任泽文将代码逻辑移到service 未改动
+     *
      * @param id
      * @param tiId
      * @param state
@@ -145,6 +147,7 @@ public interface TrackAssignService extends IService<Assign> {
     /**
      * 功能描述:删除派工
      * 任泽文将代码逻辑移到service 未改动
+     *
      * @param ids
      * @return
      */
@@ -153,10 +156,11 @@ public interface TrackAssignService extends IService<Assign> {
 
     /**
      * 锻造根据工时标准计算额定工时
+     *
      * @param trackHead
      * @param trackItem
      */
-    void calculationSinglePieceHours(TrackHead trackHead,TrackItem trackItem);
+    void calculationSinglePieceHours(TrackHead trackHead, TrackItem trackItem);
 
     boolean deleteAssignYl(String[] ids);
 }

@@ -543,5 +543,8 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String blankSpecifi;
 
+    @ApiModelProperty(value = "用户名称")
+    @TableField(exist = false)
+    private String userName;
 
 }

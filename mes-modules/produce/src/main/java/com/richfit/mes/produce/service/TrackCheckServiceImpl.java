@@ -7,10 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
-import com.richfit.mes.common.model.produce.TrackCheck;
-import com.richfit.mes.common.model.produce.TrackFlow;
-import com.richfit.mes.common.model.produce.TrackHead;
-import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.common.model.produce.*;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
@@ -134,6 +132,26 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
             queryWrapper.eq("is_current", 1);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
+            //查询所有报工数据
+            List<String> list = assigns.getRecords().stream().map(TrackItem::getId).collect(Collectors.toList());
+            //没查询到报工数据不进行查询
+            Map<String, List<TrackComplete>> completeUserList = new HashMap<>();
+            if (CollectionUtils.isNotEmpty(list)) {
+                QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
+                completeQueryWrapper.in("ti_id", list);
+                List<TrackComplete> completeList = trackCompleteService.list(completeQueryWrapper);
+                //获取所有人员信息
+                List<String> collect = completeList.stream().map(TrackComplete::getUserId).collect(Collectors.toList());
+                Map<String, TenantUserVo> userAccountList = systemServiceClient.queryByUserAccountList(collect);
+                completeList.forEach(complete -> {
+                    if (userAccountList.get(complete.getUserId()) != null) {
+                        complete.setUserId(userAccountList.get(complete.getUserId()).getEmplName());
+                    }
+                });
+                //根据工序ID分组报工信息
+                completeUserList = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
+            }
+            //根据工序ID分组报
             for (TrackItem item : assigns.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(item.getTrackHeadId());
                 item.setTrackNo(trackHead.getTrackNo());
@@ -145,12 +163,17 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
                 item.setTexture(trackHead.getTexture());
                 item.setPartsName(trackHead.getMaterialName());
                 item.setBatchNo(trackHead.getBatchNo());
+                if (null != completeUserList.get(item.getId())) {
+                    String userName = completeUserList.get(item.getId()).stream().map(TrackComplete::getUserId).distinct().collect(Collectors.joining(","));
+                    item.setUserName(userName);
+                }
             }
             return CommonResult.success(assigns);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
     }
+
 
     @Override
     public CommonResult<IPage<TrackItem>> queryDispatchPage(int page, int limit, String isExistScheduleCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo, String order, String orderCol) {
