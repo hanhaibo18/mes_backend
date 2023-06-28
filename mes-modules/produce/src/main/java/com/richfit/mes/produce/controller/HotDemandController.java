@@ -167,6 +167,7 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
             queryWrapper.orderByAsc(hotDemandParam.getOrderByColumns());
         }
+        //批准生产状态是需求确认页面特有参数,为空时是需求提报页面发送的请求,需要做租户间数据隔离查询
         if (hotDemandParam.getProduceRatifyState() == null){
             queryWrapper.eq("tenant_id",currentUser.getTenantId());
         }
