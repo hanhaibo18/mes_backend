@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -368,7 +369,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         //工序信息过滤
         prechargeFurnace.setOptName(optNames(assignList));
         //设置工艺信息
-        this.setRouter(assignList);
+        this.ylItemListSetRouterInfo(assignList);
         //根据毛坯类型执行相应流程
         if ("1".equals(prechargeFurnace.getWorkblankType())) {
             if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus()) ||
@@ -457,8 +458,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             trackItemService.update(updateWrapper);
         }
 
-        //设置工艺数据
-        this.setRouter(assignList);
+        //设置工艺信息
+        this.ylItemListSetRouterInfo(assignList);
         //设备类型赋值；
         prechargeFurnace.setTypeCode(assignList.get(0).getTypeCode());
 
@@ -472,8 +473,10 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             this.executeFoundryRemoveZj(assignList, prechargeFurnace);
         }
         if ("2".equals(prechargeFurnace.getWorkblankType())) {
-            //钢锭移除
-            this.executeFoundryRemoveGd(assignList, prechargeFurnace);
+            //钢锭炼钢工序移除
+            if(prechargeFurnace.getOptName().equals("炼钢")){
+                this.executeFoundryRemoveGd(assignList, prechargeFurnace);
+            }
             //如果全部移除，配炉工序名置空；
             LambdaQueryWrapper<TrackItem> trackItemLambdaQueryWrapper = new LambdaQueryWrapper<>();
             trackItemLambdaQueryWrapper.eq(TrackItem::getPrechargeFurnaceId, assignList.get(0).getPrechargeFurnaceId());
@@ -579,9 +582,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                 TrackItem trackItem = trackItems.get(0);
                 //查询出之前配炉中的工序的派工信息，给后续添加的工序的派工信息赋值；
                 LambdaQueryWrapper<Assign> assignLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                assignLambdaQueryWrapper.eq(Assign::getTrackId, trackItem.getTrackHeadId());
                 assignLambdaQueryWrapper.eq(Assign::getTiId, trackItem.getId());
-                assign = trackAssignMapper.selectOne(assignLambdaQueryWrapper);
+                assign = trackAssignMapper.selectList(assignLambdaQueryWrapper).get(0);
             }
             //获取所有派工人员的集合
             LambdaQueryWrapper<AssignPerson> assignPersonLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -733,9 +735,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                 TrackItem trackItem = trackItemMapper.selectOne(queryWrapper);
                 //查询出派工信息
                 LambdaQueryWrapper<Assign> assignLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                assignLambdaQueryWrapper.eq(Assign::getTrackId, trackItem.getTrackHeadId());
                 assignLambdaQueryWrapper.eq(Assign::getTiId, trackItem.getId());
-                assign = trackAssignMapper.selectOne(assignLambdaQueryWrapper);
+                assign = trackAssignMapper.selectList(assignLambdaQueryWrapper).get(0);
                 //工序信息修改
                 trackItem.setAssignableQty(assign.getQty());
                 trackItem.setIsDoing(0);
@@ -796,9 +797,8 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                 TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
                 //查询派工信息；
                 LambdaQueryWrapper<Assign> assignLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                assignLambdaQueryWrapper.eq(Assign::getTrackId, trackItem.getTrackHeadId());
                 assignLambdaQueryWrapper.eq(Assign::getTiId, trackItem.getId());
-                assign = trackAssignMapper.selectOne(assignLambdaQueryWrapper);
+                assign = trackAssignMapper.selectList(assignLambdaQueryWrapper).get(0);
                 //工序信息修改
                 trackItem.setAssignableQty(assign.getQty());
                 trackItem.setIsDoing(0);
@@ -955,6 +955,50 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                     item.getIsSchedule().equals(trackItems.get(0).getIsSchedule())).collect(Collectors.toList()).size();
             if(sameAssignNum != trackItems.size()){
                 throw new GlobalException("配炉中各个跟单工序派工状态不一致，无法进行操作！",ResultCode.FAILED);
+            }
+        }
+    }
+
+    @Autowired
+    private TrackHeadCastService trackHeadCastService;
+
+    /**
+     * 冶炼车间router信息赋值
+     *
+     * @param trackItemList
+     * @return
+     */
+    public void ylItemListSetRouterInfo(List<Assign> assignList) {
+        if (CollectionUtil.isEmpty(assignList)) {
+            return;
+        }
+        //铸件的跟单工序
+        List<Assign> castItemList = assignList.stream().filter(item -> item.getWorkblankType().equals("1")).collect(Collectors.toList());
+        List<String> castHeadIds = castItemList.stream().map(item -> item.getTrackHeadId()).collect(Collectors.toList());
+        //工艺信息取cast表的
+        Map<String, TrackHeadCast> trackHeadCastMap = new HashMap<>();
+        if (!CollectionUtil.isEmpty(castHeadIds)) {
+            List<TrackHeadCast> trackHeadCasts = trackHeadCastService.list(new QueryWrapper<TrackHeadCast>().in("head_id", castHeadIds));
+            trackHeadCastMap = trackHeadCasts.stream().collect(Collectors.toMap(item -> item.getHeadId(), Function.identity()));
+        }
+        //钢锭跟单工序list
+        Map<String, Router> routerMap = new HashMap<>();
+        List<Assign> teelIngotList = assignList.stream().filter(item -> item.getWorkblankType().equals("2")).collect(Collectors.toList());
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(teelIngotList.stream()
+                .map(item -> item.getRouterId() + "_" + item.getBranchCode()).collect(Collectors.toSet()));
+        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
+        if (!CollectionUtil.isEmpty(getRouter)) {
+            routerMap = getRouter.stream()
+                    .collect(Collectors.toMap(item -> item.getId() + "_" + item.getBranchCode(), Function.identity()));
+        }
+        for (Assign assign : assignList) {
+            Router router = routerMap.get(assign.getRouterId() + "_" + assign.getBranchCode());
+            if ("2".equals(assign.getWorkblankType()) && !Objects.isNull(router)) {
+                assign.setWeightMolten(router.getWeightMolten());
+            }
+            TrackHeadCast trackHeadCast = trackHeadCastMap.get(assign.getTrackHeadId());
+            if ("1".equals(assign.getWorkblankType()) && !ObjectUtil.isEmpty(trackHeadCast)) {
+                assign.setWeightMolten(String.valueOf(trackHeadCast.getWeightMolten()));
             }
         }
     }

@@ -343,6 +343,12 @@ public class Assign extends BaseEntity<Assign> {
     @TableField(exist = false)
     private String forgTempEnd;
 
+    /**
+     * 毛坯类型
+     */
+    @TableField(exist = false)
+    private String workblankType;
+
     public String getUserId() {
         return userId;
     }
