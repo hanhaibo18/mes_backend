@@ -1,6 +1,5 @@
 package com.richfit.plm.controller;
 
-import com.richfit.plm.common.CommonResult;
 import com.richfit.plm.service.FTPService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;

@@ -71,7 +71,7 @@ public class FTPServiceImpl implements FTPService {
     @Override
     public void uploadFile(MultipartFile file, String filePath) {
         try {
-            System.out.println(filePath + file.getOriginalFilename());
+            log.info("即将上传文件到该路径：" + filePath + "/" + file.getOriginalFilename());
             FtpUtils.uploadFile(file, filePath);
         } catch (IOException e) {
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);

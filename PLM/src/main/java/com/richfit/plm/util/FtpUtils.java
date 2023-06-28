@@ -3,7 +3,6 @@ package com.richfit.plm.util;
 import com.richfit.plm.common.ResultCode;
 import com.richfit.plm.common.exception.GlobalException;
 import com.richfit.plm.config.FtpPropertiesConfig;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
