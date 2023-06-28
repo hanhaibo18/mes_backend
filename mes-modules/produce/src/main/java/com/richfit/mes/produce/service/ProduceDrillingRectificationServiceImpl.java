@@ -277,7 +277,6 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
             produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getDutyUnit, produceDrillingRectificationDTO.getDutyUnit());
             produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getRectificationUnit, produceDrillingRectificationDTO.getRectificationUnit());
             produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getMeasure, produceDrillingRectificationDTO.getMeasure());
-            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getOptId, produceDrillingRectificationDTO.getOptId());
             produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getOptName, produceDrillingRectificationDTO.getOptName());
             produceDrillingRectificationLambdaUpdateWrapper.eq(ProduceDrillingRectification::getId, produceDrillingRectificationDTO.getId());
             produceDrillingRectificationMapper.update(null, produceDrillingRectificationLambdaUpdateWrapper);
