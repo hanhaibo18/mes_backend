@@ -92,6 +92,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         if (prechargeFurnaceId == null) {
             throw new GlobalException("请检查传入的预装炉id！", ResultCode.FAILED);
         }
+        PrechargeFurnace prechargeFurnace = prechargeFurnaceService.getById(prechargeFurnaceId);
         QueryWrapper<RecordsOfPourOperations> queryWrapperPour = new QueryWrapper<>();
         queryWrapperPour.eq("precharge_furnace_id", prechargeFurnaceId);
         RecordsOfPourOperations recordsOfPourOperation = this.getOne(queryWrapperPour);
@@ -115,6 +116,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             trackItem.setTrackNo(trackHead.getTrackNo());
         }
         recordsOfPourOperation.setItemList(trackItemList);
+        recordsOfPourOperation.setTexture(prechargeFurnace.getTexture());
         return recordsOfPourOperation;
     }
 
