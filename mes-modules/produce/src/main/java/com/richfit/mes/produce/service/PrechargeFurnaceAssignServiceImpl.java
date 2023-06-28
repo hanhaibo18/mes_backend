@@ -92,7 +92,8 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
                 //更新预装炉子信息（已派工）
                 UpdateWrapper<PrechargeFurnace> prechargeFurnaceWrapper = new UpdateWrapper<>();
                 prechargeFurnaceWrapper.eq("id", furnaceId)
-                        .set("assign_status", 1);
+                        .set("assign_status", 1)
+                        .set("status","0");
                 prechargeFurnaceService.update(prechargeFurnaceWrapper);
                 //派工
                 String furnaceAssignId = UUID.randomUUID().toString().replaceAll("-", "");
@@ -277,6 +278,7 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
             prechargeFurnaceAssign.setBranchCode(trackItem.getBranchCode());
             prechargeFurnaceAssign.setTenantId(trackItem.getTenantId());
             prechargeFurnaceAssign.setId(furnaceAssignId);
+            prechargeFurnaceAssign.setOptName(trackItem.getOptName());
         }
         prechargeFurnaceAssign.setSiteId(assign.getSiteId());
         prechargeFurnaceAssign.setSiteName(assign.getSiteName());
@@ -334,13 +336,9 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
         assign.setBranchCode(trackItem.getBranchCode());
         assign.setTenantId(trackItem.getTenantId());
         assign.setState(0);
-        if (StringUtils.isNullOrEmpty(assign.getTrackId())) {
-            assign.setTrackNo(trackHead.getTrackNo());
-            assign.setTrackId(trackHead.getId());
-        }
-        if (StringUtils.isNullOrEmpty(assign.getTenantId())) {
-            assign.setTenantId(trackHead.getTenantId());
-        }
+        assign.setTrackNo(trackHead.getTrackNo());
+        assign.setTrackId(trackHead.getId());
+        assign.setTenantId(trackHead.getTenantId());
         //处理派工人员信息  (前端没有处理userId 和userName  assignPerson为派工人列表)
         dealUserIdAndEmplNameByAssignPersons(assign);
     }
