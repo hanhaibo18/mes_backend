@@ -85,5 +85,12 @@ public interface PrechargeFurnaceService extends IService<PrechargeFurnace> {
 
    boolean furnaceRollBack(Long id);
 
+    /**
+     * 配炉跟单工序状态一致校验
+     * @param furnaceId
+     * @param furnaceAssignId
+     */
+   void checkFurnaceItemStatus(String furnaceId,String furnaceAssignId);
+
 
 }

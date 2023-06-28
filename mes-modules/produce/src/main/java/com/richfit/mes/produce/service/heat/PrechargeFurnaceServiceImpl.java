@@ -1,5 +1,6 @@
 package com.richfit.mes.produce.service.heat;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -904,6 +905,56 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
                 assignPersonItem.setUserId(assignPerson.getUserId());
                 assignPersonItem.setUserName(assignPerson.getUserName());
                 assignPersonMapper.insert(assignPersonItem);
+            }
+        }
+    }
+
+    /**
+     * 校验炉子里边跟单工序的状态是否一致，如果不一致去提示无法操作
+     * @param furnaceId
+     * @param furnaceAssignId
+     */
+    @Override
+    public void checkFurnaceItemStatus(String furnaceId, String furnaceAssignId){
+        //同一炉子里的跟单工序
+        List<TrackItem> trackItems = new ArrayList<>();
+        if(!StringUtils.isEmpty(furnaceAssignId)){
+            trackItems.addAll(trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_assignId", furnaceAssignId)));
+        }
+        if(CollectionUtil.isEmpty(trackItems) && !StringUtils.isEmpty(furnaceId)){
+            trackItems.addAll(trackItemService.list(new QueryWrapper<TrackItem>().eq("precharge_furnace_id", furnaceId).eq("is_current",1)));
+        }
+        if(!CollectionUtil.isEmpty(trackItems)){
+            //校验同一种工序
+            int sameOPtNum = trackItems.stream().filter(item ->
+                    item.getSequenceOrderBy().equals(trackItems.get(0).getSequenceOrderBy())
+                    && item.getOptName().equals(trackItems.get(0).getOptName())).collect(Collectors.toList()).size();
+            if(sameOPtNum != trackItems.size()){
+                throw new GlobalException("配炉中各个跟单工序不一致，无法进行操作！",ResultCode.FAILED);
+            }
+            //校验调度状态
+            int sameScheduleNum = trackItems.stream().filter(item ->
+                    item.getIsScheduleComplete().equals(trackItems.get(0).getIsScheduleComplete())).collect(Collectors.toList()).size();
+            if(sameScheduleNum != trackItems.size()){
+                throw new GlobalException("配炉中各个跟单工序调度状态不一致，无法进行操作！",ResultCode.FAILED);
+            }
+            //校验质检状态
+            int sameQualityNum = trackItems.stream().filter(item ->
+                    item.getIsQualityComplete().equals(trackItems.get(0).getIsQualityComplete())).collect(Collectors.toList()).size();
+            if(sameQualityNum != trackItems.size()){
+                throw new GlobalException("配炉中各个跟单工序质检状态不一致，无法进行操作！",ResultCode.FAILED);
+            }
+            //校验报工状态
+            int sameOperationNum = trackItems.stream().filter(item ->
+                    item.getIsOperationComplete().equals(trackItems.get(0).getIsOperationComplete())).collect(Collectors.toList()).size();
+            if(sameOperationNum != trackItems.size()){
+                throw new GlobalException("配炉中各个跟单工序质检状态不一致，无法进行操作！",ResultCode.FAILED);
+            }
+            //校验派工状态
+            int sameAssignNum = trackItems.stream().filter(item ->
+                    item.getIsSchedule().equals(trackItems.get(0).getIsSchedule())).collect(Collectors.toList()).size();
+            if(sameAssignNum != trackItems.size()){
+                throw new GlobalException("配炉中各个跟单工序派工状态不一致，无法进行操作！",ResultCode.FAILED);
             }
         }
     }
