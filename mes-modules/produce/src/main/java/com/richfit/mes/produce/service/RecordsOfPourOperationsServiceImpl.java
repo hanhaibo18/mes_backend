@@ -790,6 +790,10 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             lastTrackItems = trackItemService.list(trackItemQueryWrapper);
             //重置当前工序（浇注工序）信息
             trackItemService.resetStatus(itemId, 5, request);
+            UpdateWrapper<TrackItem> updateWrapperItem = new UpdateWrapper<>();
+            updateWrapperItem.set("precharge_furnace_id", null).set("precharge_furnace_assign_id", null)
+                    .eq("id",itemId);
+            trackItemService.update(updateWrapperItem);
             //回退至上工序（炼钢工序）
             trackItemService.backSequence(trackItem.getFlowId());
             //重置当前（炼钢）
@@ -797,6 +801,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
                 trackItemService.resetStatus(lastTrackItem.getId(), 5, request);
                 UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("id", lastTrackItem.getId()).set("fulance_back", 1);
+                trackItemService.update(updateWrapper);
             }
             UpdateWrapper<TrackItem> trackItemUpdateWrapper = new UpdateWrapper<>();
             trackItemUpdateWrapper.set("precharge_furnace_id", null).set("precharge_furnace_assign_id", null)
