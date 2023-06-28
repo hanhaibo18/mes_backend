@@ -181,6 +181,8 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "修改需求提报", notes = "修改需求提报")
     @PostMapping("/update_demand")
     public CommonResult updateDemand(@RequestBody HotDemand hotDemand) {
+        //修改需求数量,同时修改计划数量
+        hotDemand.setPlanNum(hotDemand.getNum());
         boolean b = hotDemandService.updateById(hotDemand);
         if (b) {
             return CommonResult.success(ResultCode.SUCCESS);
