@@ -357,10 +357,6 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             throw new GlobalException("必须要选择添加预装炉的工序", ResultCode.FAILED);
         }
         PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
-        if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus()) ||
-                !"炼钢".equals(prechargeFurnace.getOptName())) {
-            throw new GlobalException("只能在炼钢工序切未报工才可进行添加", ResultCode.FAILED);
-        }
         //未派工的配炉，只更改工序的配炉信息；
         for (Assign assign : assignList) {
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
@@ -371,12 +367,16 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         prechargeFurnace.setOptName(optNames(this.queryTrackItem(prechargeFurnace.getId())));
         //根据毛坯类型执行相应流程
         if ("1".equals(prechargeFurnace.getWorkblankType())) {
+            if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus()) ||
+                    !"炼钢".equals(prechargeFurnace.getOptName())) {
+                throw new GlobalException("只能在炼钢工序切未报工才可进行添加", ResultCode.FAILED);
+            }
             //铸件配炉
             this.executeFoundryAddZj(assignList, prechargeFurnace);
         }
         if ("2".equals(prechargeFurnace.getWorkblankType())) {
             //钢锭的配炉
-            this.executeFoundryAddGd(assignList,prechargeFurnace);
+            this.executeFoundryAddGd(assignList, prechargeFurnace);
         }
         //数量和钢水重量赋值
         int num = 0;
@@ -438,10 +438,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             throw new GlobalException("必须要选择删除预装炉的工序", ResultCode.FAILED);
         }
         PrechargeFurnace prechargeFurnace = this.getById(assignList.get(0).getPrechargeFurnaceId());
-        if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus()) ||
-                !"炼钢".equals(prechargeFurnace.getOptName())) {
-            throw new GlobalException("只能在炼钢工序切未报工才可进行移除", ResultCode.FAILED);
-        }
+
         for (Assign assign : assignList) {
             LambdaQueryWrapper<TrackItem> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(TrackItem::getId, assign.getTiId());
@@ -464,6 +461,10 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
 
         //获取毛坯类型
         if ("1".equals(prechargeFurnace.getWorkblankType())) {
+            if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus()) ||
+                    !"炼钢".equals(prechargeFurnace.getOptName())) {
+                throw new GlobalException("只能在炼钢工序切未报工才可进行移除", ResultCode.FAILED);
+            }
             //铸件移除
             this.executeFoundryRemoveZj(assignList, prechargeFurnace);
         }

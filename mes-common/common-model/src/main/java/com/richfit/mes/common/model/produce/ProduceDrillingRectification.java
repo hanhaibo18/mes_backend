@@ -213,4 +213,11 @@ public class ProduceDrillingRectification implements Serializable {
     @ApiModelProperty(value = "类别")
     @TableField(exist = false)
     private List<String> typeList;
+
+    /**
+     * 整改工序
+     */
+    @ApiModelProperty(value = "整改工序")
+    @TableField(exist = false)
+    private List<String> optList;
 }
