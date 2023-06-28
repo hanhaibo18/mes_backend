@@ -373,7 +373,7 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
         if ("1".equals(prechargeFurnace.getWorkblankType())) {
             if (PrechargeFurnace.END_START_WORK.equals(prechargeFurnace.getStatus()) ||
                     !"炼钢".equals(prechargeFurnace.getOptName())) {
-                throw new GlobalException("只能在炼钢工序切未报工才可进行添加", ResultCode.FAILED);
+                throw new GlobalException("只能在炼钢工序且未报工才可进行添加", ResultCode.FAILED);
             }
             //铸件配炉
             this.executeFoundryAddZj(assignList, prechargeFurnace);
