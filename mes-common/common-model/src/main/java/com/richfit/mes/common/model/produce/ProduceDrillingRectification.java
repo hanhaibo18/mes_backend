@@ -81,12 +81,6 @@ public class ProduceDrillingRectification implements Serializable {
     private String rectificationUnit;
 
     /**
-     * 整改工序id
-     */
-    @ApiModelProperty(value = "整改工序id")
-    private String optId;
-
-    /**
      * 整改工序名称
      */
     @ApiModelProperty(value = "整改工序名称")
