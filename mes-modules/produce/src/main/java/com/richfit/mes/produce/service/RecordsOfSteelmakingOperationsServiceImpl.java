@@ -72,7 +72,8 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
             throw new GlobalException("没有查询到炼钢记录！", ResultCode.FAILED);
         }
         QueryWrapper<ResultsOfSteelmaking> queryWrapperResult = new QueryWrapper<>();
-        queryWrapperResult.eq("steelmaking_id", recordsOfSteelmakingOperation.getId());
+        queryWrapperResult.eq("steelmaking_id", recordsOfSteelmakingOperation.getId())
+                .orderByAsc("remark");
         List<ResultsOfSteelmaking> resultsOfSteelmakings = resultsOfSteelmakingService.list(queryWrapperResult);
         recordsOfSteelmakingOperation.setResultsOfSteelmaking(resultsOfSteelmakings);
         return recordsOfSteelmakingOperation;
