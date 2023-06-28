@@ -446,9 +446,6 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             if (trackItem.getIsCurrent() != 1) {
                 throw new GlobalException("只能删除当前工序", ResultCode.FAILED);
             }
-            if (trackItem.getOptSequence() != 1) {
-                throw new GlobalException("只能移除第一道工序", ResultCode.FAILED);
-            }
             //移除跟单配炉状态；
             UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper();
             updateWrapper.eq("id", assign.getTiId());
