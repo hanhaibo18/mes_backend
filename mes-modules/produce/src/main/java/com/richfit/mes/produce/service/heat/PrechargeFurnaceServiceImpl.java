@@ -380,8 +380,11 @@ public class PrechargeFurnaceServiceImpl extends ServiceImpl<PrechargeFurnaceMap
             this.executeFoundryAddZj(assignList, prechargeFurnace);
         }
         if ("2".equals(prechargeFurnace.getWorkblankType())) {
-            //钢锭的配炉
-            this.executeFoundryAddGd(assignList, prechargeFurnace);
+            //钢锭炼钢工序添加
+            if(prechargeFurnace.getOptName().equals("炼钢")){
+                //钢锭的配炉
+                this.executeFoundryAddGd(assignList, prechargeFurnace);
+            }
         }
         //数量和钢水重量赋值
         int num = 0;

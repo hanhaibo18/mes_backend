@@ -295,7 +295,7 @@ public class ProduceDrillingRectificationServiceImpl extends ServiceImpl<Produce
         if (RectificationUnitEnum.D.getCode().equals(produceDrillingRectificationDTO.getMenuType())) {
             LambdaUpdateWrapper<ProduceDrillingRectification> produceDrillingRectificationLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             //修改状态为“已提交”
-            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getRebackUser, produceDrillingRectificationDTO.getRebackUser());
+            produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification:: getRebackUser, produceDrillingRectificationDTO.getRebackUser());
             produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getStatus, RectificationStatusEnum.HAVE_CHECK.getCode());
             produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getIsCheckCommit, CommitStatusEnum.YES.getCode());
             produceDrillingRectificationLambdaUpdateWrapper.set(ProduceDrillingRectification::getCheckUser, produceDrillingRectificationDTO.getCheckUser());
