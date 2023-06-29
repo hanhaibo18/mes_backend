@@ -203,7 +203,9 @@ public class TrackAssignController extends BaseController {
             @ApiImplicitParam(name = "state", value = "状态", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "userId", value = "操作人ID", paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "classes", value = "跟单类型", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "holdStatus", value = "保温状态 1 保温完成  2 保温中", required = false, paramType = "query", dataType = "String")
+            @ApiImplicitParam(name = "holdStatus", value = "保温状态 1 保温完成  2 保温中", required = false, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "workNo", value = "工作号", paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "drawingNo", value = "图号", paramType = "query", dataType = "String")
     })
     @GetMapping("/querypage")
     public CommonResult<IPage<Assign>> querypage(int page, int limit, String productNo, String trackNo, String routerNo, String startTime, String endTime, String state, String userId, String branchCode, String assignBy, String classes, String order, String orderCol, String holdStatus, String drawingNo, String workNo) {
