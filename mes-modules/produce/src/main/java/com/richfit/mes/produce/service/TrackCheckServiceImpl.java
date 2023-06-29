@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -9,11 +10,16 @@ import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
+import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackCheckCountMapper;
 import com.richfit.mes.produce.dao.TrackCheckMapper;
+import com.richfit.mes.produce.enmus.IdEnum;
+import com.richfit.mes.produce.enmus.PublicCodeEnum;
+import com.richfit.mes.produce.entity.BatchAddScheduleDto;
 import com.richfit.mes.produce.entity.CountDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.MaterialInspectionServiceClient;
@@ -21,8 +27,11 @@ import com.richfit.mes.produce.provider.SystemServiceClient;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -174,7 +183,6 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
         }
     }
 
-
     @Override
     public CommonResult<IPage<TrackItem>> queryDispatchPage(int page, int limit, String isExistScheduleCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo, String order, String orderCol) {
         try {
@@ -191,14 +199,16 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
             }
             //调度完成
             if (!StringUtils.isNullOrEmpty(isScheduleComplete)) {
+                if ("0".equals(isScheduleComplete)) {
+                    queryWrapper.eq("is_current", 1);
+                }
                 queryWrapper.eq("is_schedule_complete", Integer.parseInt(isScheduleComplete));
             }
             if ("1".equals(isExistScheduleCheck)) {
                 queryWrapper.and(wrapper -> wrapper.eq("is_quality_complete", 1).or().eq("is_exist_quality_check", 0));
 //                queryWrapper.inSql("id", "SELECT id FROM produce_track_item WHERE is_quality_complete = 1 OR is_exist_quality_check = 0");
             }
-            queryWrapper.eq("is_current", 1)
-                    .eq("is_operation_complete", 1);
+            queryWrapper.eq("is_operation_complete", 1);
             OrderUtil.query(queryWrapper, orderCol, order);
             IPage<TrackItem> assigns = trackItemService.page(new Page<TrackItem>(page, limit), queryWrapper);
             //收集跟单分流表id 调度审核用
@@ -233,6 +243,59 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
             return CommonResult.success(assigns);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Boolean> batchAddSchedule(BatchAddScheduleDto batchAddScheduleDto) {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        if (null == batchAddScheduleDto) {
+            return CommonResult.failed("参数不能为空！");
+        }
+        if (null == batchAddScheduleDto.getTiId()) {
+            return CommonResult.failed("工序ID列表不能为空！");
+        }
+        if (StringUtils.isNullOrEmpty(batchAddScheduleDto.getNextBranchCode()) || "/".equals(batchAddScheduleDto.getNextBranchCode())) {
+            batchAddScheduleDto.setNextBranchCode(batchAddScheduleDto.getBranchCode());
+        }
+        boolean bool = false;
+        for (String tiId : batchAddScheduleDto.getTiId()) {
+            //正常调度审核业务
+            TrackItem trackItem = trackItemService.getById(tiId);
+            trackItem.setModifyTime(new Date());
+            trackItem.setScheduleCompleteTime(new Date());
+            trackItem.setScheduleCompleteBy(SecurityUtils.getCurrentUser().getUsername());
+            trackItem.setScheduleCompleteResult(batchAddScheduleDto.getResult());
+            trackItem.setIsPrepare(batchAddScheduleDto.getIsPrepare());
+            trackItem.setIsScheduleComplete(1);
+            //查询质检规则
+            UpdateWrapper<TrackComplete> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("ti_id", trackItem.getId()).set("is_prepare", batchAddScheduleDto.getIsPrepare());
+            trackCompleteService.update(updateWrapper);
+            QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
+            completeQueryWrapper.eq("ti_id", trackItem.getId());
+            List<TrackComplete> list = trackCompleteService.list(completeQueryWrapper);
+            if (null != batchAddScheduleDto.getNextBranchCode()) {
+                trackItem.setBranchCode(batchAddScheduleDto.getNextBranchCode());
+            }
+            bool = trackItemService.updateById(trackItem);
+            if (bool) {
+                //保存操作记录
+                actionService.saveAction(ActionUtil.buildAction
+                        (batchAddScheduleDto.getBranchCode(), "4", "2",
+                                "调度审核，跟单号：" + (list.isEmpty() ? "null" : list.get(0).getTrackNo()) + "，下车间编码：" + batchAddScheduleDto.getNextBranchCode(),
+                                OperationLogAspect.getIpAddress(request)));
+            }
+            Map<String, String> map = new HashMap<>(3);
+            map.put(IdEnum.TRACK_HEAD_ID.getMessage(), trackItem.getTrackHeadId());
+            map.put(IdEnum.TRACK_ITEM_ID.getMessage(), trackItem.getId());
+            map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
+            publicService.publicUpdateState(map, PublicCodeEnum.DISPATCH.getCode());
+        }
+        if (bool) {
+            return CommonResult.success(true, "操作成功！");
+        } else {
+            return CommonResult.failed("操作失败，请重试！");
         }
     }
 

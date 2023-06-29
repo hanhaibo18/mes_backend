@@ -33,9 +33,7 @@ public class InventoryController {
     @ApiOperation(value = "手动生产人库", notes = "手动生产人库")
     @PostMapping("/handOver")
     public CommonResult<Object> handOver(@ApiParam(value = "合格证", required = true) @RequestBody List<Certificate> certificateList) {
-        for (Certificate certificate : certificateList) {
-            inventoryService.handOver(certificate);
-        }
+        inventoryService.handOver(certificateList);
         return CommonResult.success("操作完成");
     }
 }

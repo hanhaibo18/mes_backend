@@ -196,6 +196,10 @@ public class TrackItem extends BaseEntity<TrackItem> {
      */
     @ApiModelProperty(value = "是否自动派工", dataType = "Integer")
     private Integer isAutoSchedule;
+    @ApiModelProperty(value = "模型配送状态0已申请未配送1已配送 2已退库", dataType = "Integer")
+    private Integer modelStatus;
+    @ApiModelProperty(value = " 模型类型", dataType = "Integer")
+    private Integer modelType;
 
 
     /**
@@ -371,6 +375,9 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ", dataType = "Integer")
     private Integer isLongPeriod;
     @TableField(exist = false)
+    @ApiModelProperty(value = "是否为长周期 0 :否  1 是 ")
+    private String longPeriod;
+    @TableField(exist = false)
     @ApiModelProperty(value = "计划完成时间 ", dataType = "Date")
     private Date planEndTime;
     @TableField(exist = false)
@@ -379,9 +386,6 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     @ApiModelProperty(value = "单重KG ", dataType = "String")
     private String pieceWeight;
-    @TableField(exist = false)
-    @ApiModelProperty(value = "申请状态 0未配送 1已配送 2已退库 ", dataType = "Date")
-    private Integer applyStatus;
     @TableField(exist = false)
     @ApiModelProperty(value = "项目名称 ", dataType = "String")
     private String projectName;
@@ -470,6 +474,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String syncStatus;
 
     @ApiModelProperty(value = "预装炉id", dataType = "String")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Long prechargeFurnaceId;
 
 
@@ -516,6 +521,7 @@ public class TrackItem extends BaseEntity<TrackItem> {
     private String ingotCase;
 
     @ApiModelProperty(value = "预装炉派工id")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String prechargeFurnaceAssignId;
 
     @ApiModelProperty(value = "是否冶炼配炉::是；否")
@@ -543,8 +549,12 @@ public class TrackItem extends BaseEntity<TrackItem> {
     @TableField(exist = false)
     private String blankSpecifi;
 
-    @ApiModelProperty(value = "用户名称")
     @TableField(exist = false)
     private String userName;
 
+    @TableField(exist = false)
+    private String workblankType;
+
+    @ApiModelProperty(value = "退炉状态")
+    private Integer fulanceBack;
 }
