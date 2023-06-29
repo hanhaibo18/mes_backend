@@ -968,4 +968,16 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
         return trackItemList;
     }
+
+    /**
+     * 跟单记录回滚处理配炉信息接口
+     * @param item 回滚的跟单工序
+     * @param resetType 重置类型
+     */
+    public void recordRollBackDealFurnaceInfo(TrackItem item,int resetType){
+        Long prechargeFurnaceId = item.getPrechargeFurnaceId();
+        String prechargeFurnaceAssignId = item.getPrechargeFurnaceAssignId();
+
+
+    }
 }
