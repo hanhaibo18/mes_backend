@@ -84,7 +84,7 @@ public class NormalizeDehydroRecordController extends BaseController {
             queryWrapper.eq("branch_code", normalizeDehydroRecord.getBranchCode());
         }
         if (BeanUtil.isNotEmpty(normalizeDehydroRecord.getType())) {
-            queryWrapper.eq("type", normalizeDehydroRecord.getBranchCode());
+            queryWrapper.eq("type", normalizeDehydroRecord.getType());
         }
         boolean isBzz = normalizeDehydroRecordService.isBzz(currentUser);
         //班组长查询
