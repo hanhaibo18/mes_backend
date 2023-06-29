@@ -1,6 +1,7 @@
 package com.richfit.mes.produce.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -63,6 +64,12 @@ public class RecordsOfPourOperationsController extends ApiController {
     @ApiOperation(value = "批量删除浇注记录信息", notes = "批量删除炼钢信息")
     @DeleteMapping
     public CommonResult<Boolean> delete(@RequestBody List<String> ids) {
+        List<RecordsOfPourOperations> recordsOfPourOperations = recordsOfPourOperationsService.listByIds(ids);
+        for (RecordsOfPourOperations recordsOfPourOperation : recordsOfPourOperations) {
+            if (recordsOfPourOperation.getStatus() != null && recordsOfPourOperation.getStatus() == 1) {
+                return CommonResult.failed("已审核的记录不能删除！");
+            }
+        }
         return CommonResult.success(recordsOfPourOperationsService.delete(ids));
     }
 
