@@ -2,6 +2,7 @@ package com.richfit.mes.produce.controller.heat;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,6 +15,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
+import com.richfit.mes.produce.dao.TrackHeadMapper;
 import com.richfit.mes.produce.entity.ForDispatchingDto;
 import com.richfit.mes.produce.entity.TrackHeadPublicVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
@@ -58,6 +60,10 @@ public class HeatTrackAssignController extends BaseController {
     public BaseServiceClient baseServiceClient;
     @Autowired
     public ModelApplyService modelApplyService;
+    @Autowired
+    public TrackHeadMapper trackHeadMapper;
+    @Autowired
+    public TrackItemService trackItemService;
 
     @ApiOperation(value = "未装炉生产查询-（热处理）")
     @PostMapping("/query_not_produce")
@@ -129,6 +135,8 @@ public class HeatTrackAssignController extends BaseController {
         }
 
         //增加工序过滤
+        ProcessFiltrationUtil.filtration(queryWrapper, systemServiceClient, roleOperationService);
+
         if (!StringUtils.isNullOrEmpty(startTime) && !StringUtils.isNullOrEmpty(endTime)) {
             queryWrapper.le("date_format(modify_time, '%Y-%m-%d')", endTime);
             queryWrapper.ge("date_format(modify_time, '%Y-%m-%d')", startTime);
@@ -170,37 +178,16 @@ public class HeatTrackAssignController extends BaseController {
             queryWrapper.isNotNull("precharge_furnace_assign_id");
         }
         //根据毛坯类型查询
-        if (!StringUtils.isNullOrEmpty(workblankType)) {
-            queryWrapper.eq("a.workblank_type", workblankType);
+        if ("7".equals(classes)) {
+            if (!StringUtils.isNullOrEmpty(workblankType)) {
+                queryWrapper.eq("a.workblank_type", workblankType);
+                //过滤出第一道工序
+                queryWrapper.eq("a.opt_sequence", 1);
+            }
         }
 
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
-        for (TrackItem data : pageAssignsHot.getRecords()) {
-            //默认未配送
-            data.setApplyStatus(0);
-            Router router = baseServiceClient.getRouter(data.getRouterId()).getData();
-            if (!ObjectUtil.isEmpty(router)) {
-                data.setWeightMolten(router.getWeightMolten());
-                data.setBlankSpecifi(router.getBlankSpecifi());
-            }
-            //模型配送状态
-            String modelDrawingNo = data.getDrawingNo();
-            String optVer = data.getOptVer();
-            QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
-            modelApplyQueryWrapper.eq("model_drawing_no", modelDrawingNo)
-                    .eq("model_version", optVer);
-            List<ModelApply> modelApplyList = modelApplyService.list(modelApplyQueryWrapper);
-            if (modelApplyList.size() == 0) {
-                continue;
-            }
-            //一次性的
-            List<ModelApply> mode = modelApplyList.stream().filter(item -> data.getId().equals(item.getItemId())).collect(Collectors.toList());
-            if (!CollectionUtil.isEmpty(mode)) {
-                data.setApplyStatus(mode.get(0).getApplyStatus());
-            } else {
-                data.setApplyStatus(modelApplyList.get(0).getApplyStatus());
-            }
-        }
+        pageAssignsHot.setRecords(trackItemService.ylItemListSetRouterInfo(pageAssignsHot.getRecords()));
 
         return CommonResult.success(pageAssignsHot, "操作成功！");
     }
@@ -251,6 +238,7 @@ public class HeatTrackAssignController extends BaseController {
         queryWrapper.eq(!StringUtils.isNullOrEmpty(optName), "opt_name", optName);
         queryWrapper.eq(!StringUtils.isNullOrEmpty(workNo), "work_no", workNo);
         queryWrapper.ne("is_schedule", 1);
+        queryWrapper.isNotNull("precharge_furnace_id");
 
         //排序
         if (StringUtils.isNullOrEmpty(orderCol)) {
@@ -262,32 +250,7 @@ public class HeatTrackAssignController extends BaseController {
             OrderUtil.query(queryWrapper, orderCol, StringUtils.isNullOrEmpty(order) ? "desc" : order);
         }
 
-        List<TrackItem> pageAssignsHot = trackAssignService.getAssignsHot(queryWrapper);
-        for (TrackItem data : pageAssignsHot) {
-            //默认未配送
-            data.setApplyStatus(0);
-            Router router = baseServiceClient.getRouter(data.getRouterId()).getData();
-            if (!ObjectUtil.isEmpty(router)) {
-                data.setWeightMolten(router.getWeightMolten());
-            }
-            //模型配送状态
-            String modelDrawingNo = data.getDrawingNo();
-            String optVer = data.getOptVer();
-            QueryWrapper<ModelApply> modelApplyQueryWrapper = new QueryWrapper<>();
-            modelApplyQueryWrapper.eq("model_drawing_no", modelDrawingNo)
-                    .eq("model_version", optVer);
-            List<ModelApply> modelApplyList = modelApplyService.list(modelApplyQueryWrapper);
-            if (modelApplyList.size() == 0) {
-                continue;
-            }
-            //一次性的
-            List<ModelApply> mode = modelApplyList.stream().filter(item -> data.getId().equals(item.getItemId())).collect(Collectors.toList());
-            if (!CollectionUtil.isEmpty(mode)) {
-                data.setApplyStatus(mode.get(0).getApplyStatus());
-            } else {
-                data.setApplyStatus(modelApplyList.get(0).getApplyStatus());
-            }
-        }
+        List<TrackItem> pageAssignsHot = trackItemService.ylItemListSetRouterInfo(trackAssignService.getAssignsHot(queryWrapper));
         return pageAssignsHot;
     }
 
@@ -330,13 +293,21 @@ public class HeatTrackAssignController extends BaseController {
             for (TrackItem trackItem : itemList) {
                 //是否冶炼配炉
                 trackItem.setIfPrechargeFurnace(Strings.isBlank(trackItem.getPrechargeFurnaceAssignId()) ? "否" : "是");
+                //是否长周期：0：：否；1：：是；
+                if (Objects.nonNull(trackItem.getIsLongPeriod())) {
+                    trackItem.setLongPeriod(trackItem.getIsLongPeriod() == 1 ? "是" : "否");
+                }
+                LambdaQueryWrapper<TrackHead> trackHeadLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                trackHeadLambdaQueryWrapper.eq(TrackHead::getId, trackItem.getTrackHeadId());
+                TrackHead trackHead = trackHeadMapper.selectOne(trackHeadLambdaQueryWrapper);
+                trackItem.setTrackNo(trackHead.getTrackNo());
             }
 
-            String[] columnHeaders = {"序号", "跟单号", "冶炼配炉", "项目名称", "工作号", "产品名称", "产品编号", "图号", "工艺版本号", "工序顺序号", "工序号", "工序名称",
+            String[] columnHeaders = {"跟单号", "冶炼配炉", "项目名称", "工作号", "产品名称", "产品编号", "图号", "工艺版本号", "工序顺序号", "工序号", "工序名称",
                     "工序类型", "材质", "单重（KG）", "钢水（KG）", "炉号", "长周期", "优先级", "计划完成时间", "备注"};
 
-            String[] fieldNames = {"id", "trackHeadId", "ifPrechargeFurnace", "projectName", "workNo", "productName", "productNo", "drawingNo", "versions", "originalOptSequence", "optSequence", "optName",
-                    "optType", "texture", "pieceWeight", "weightMolten", "prechargeFurnaceId", "isLongPeriod", "priority", "planEndTime", "--"};
+            String[] fieldNames = {"trackNo", "ifPrechargeFurnace", "projectName", "workNo", "productName", "productNo", "drawingNo", "routerVer", "sequenceOrderBy", "optNo", "optName",
+                    "optType", "texture", "weight", "weightMolten", "prechargeFurnaceId", "longPeriod", "priority", "planEndTime", "--"};
 
 
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");

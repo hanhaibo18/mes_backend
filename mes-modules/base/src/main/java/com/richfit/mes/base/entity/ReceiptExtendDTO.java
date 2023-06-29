@@ -67,9 +67,9 @@ public class ReceiptExtendDTO {
     private Integer deliverNumber;
 
     /**
-     * 本次送货数量
+     * 已发数量
      */
-    @ApiModelProperty(value = "本次送货数量")
+    @ApiModelProperty(value = "已发数量")
     private Integer alreadyNumber;
 
     /**

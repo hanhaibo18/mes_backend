@@ -111,8 +111,11 @@ public class PrechargeFurnace {
     @ApiModelProperty(value = "工序类型", dataType = "String")
     private String optType;
 
-    @ApiModelProperty(value = "根据材质和锭型统计后的数量", dataType = "Integer")
+    @ApiModelProperty(value = "是否调度确认", dataType = "Integer")
+    private Integer isExistScheduleCheck;
+
+    @ApiModelProperty(value = "预装炉的状态0:未派工,-1 = 未开工 1= 已开工 2 = 已完工", dataType = "Integer")
     @TableField(exist = false)
-    private Integer numByTexture;
+    private String furnaceStatus;
 
 }

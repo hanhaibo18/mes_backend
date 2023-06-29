@@ -3,17 +3,21 @@ package com.tc.mes.plm.service.impl;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.richfit.mes.common.model.produce.Notice;
+import com.tc.mes.plm.common.Result;
 import com.tc.mes.plm.entity.PdmResult;
-import com.tc.mes.plm.entity.dto.ProductionSchedulingDto;
+import com.tc.mes.plm.entity.domain.MesPdmAttachment;
+import com.tc.mes.plm.entity.domain.NoticeTenant;
 import com.tc.mes.plm.entity.request.ProductionSchedulingRequest;
-import com.tc.mes.plm.entity.vo.ProduceNoticeVo;
+import com.tc.mes.plm.mapper.MesPdmAttachmentMapper;
+import com.tc.mes.plm.mapper.NoticeTenantMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.net.HttpCookie;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +46,13 @@ public class ProductToPdmServiceImpl {
     @Value("${pdm.url}")
     private String url;
 
+    @Resource
+    private NoticeTenantMapper noticeTenantMapper;
+
+    @Resource
+    private MesPdmAttachmentMapper mesPdmAttachmentMapper;
+
+
     /**
      * 获取cookie
      * @return
@@ -61,71 +72,34 @@ public class ProductToPdmServiceImpl {
      * 用户登录
      * @return
      */
-    public PdmResult login() {
+    public Result login() {
         Map<String, String> params = map();
         String s = HttpUtil.createPost(url + "/system/login").contentType("application/json").body(JSONUtil.toJsonStr(params)).execute().body();
         PdmResult result = JSONUtil.toBean(s, PdmResult.class);
-        return result;
+        return result.getCode() == 200 ? Result.success() : Result.error(String.valueOf(result.getCode()), result.getMsg());
     }
 
     /**
      * 生产排产单同步到 pdm
-     * @param produceNoticeDtoList
+     * @param notice
      * @return
      */
-    public PdmResult productionSchedulingSync(List<ProduceNoticeVo> produceNoticeDtoList) {
-        if (StringUtils.isEmpty(getCookieValue())) {
-            return null;
-        }
-        List<ProductionSchedulingDto> productionSchedulingDtoList = convertDto(produceNoticeDtoList);
-        List<ProductionSchedulingRequest> productionSchedulingRequestList = convertRequest(productionSchedulingDtoList);
+    public Result productionSchedulingSync(Notice notice) {
+        // 排产单租户
+        LambdaQueryWrapper<NoticeTenant> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(NoticeTenant::getNoticeId, notice.getId());
+        NoticeTenant noticeTenant = noticeTenantMapper.selectOne(wrapper);
+        // 附件
+        LambdaQueryWrapper<MesPdmAttachment> attachmentWrapper  = new LambdaQueryWrapper<>();
+        attachmentWrapper.eq(MesPdmAttachment::getTableId, notice.getId());
+        List<MesPdmAttachment> attachments = mesPdmAttachmentMapper.selectList(attachmentWrapper);
+        ProductionSchedulingRequest productionSchedulingRequest = new ProductionSchedulingRequest(notice, noticeTenant, attachments);
         //发送请求
-        String s = HttpUtil.createPost(url + "/produce/sync").cookie(new HttpCookie(J_SESSION_ID, getCookieValue())).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").body(String.valueOf(productionSchedulingRequestList)).execute().body();
+        String s = HttpUtil.createPost(url + "/produce/sync").cookie(new HttpCookie(J_SESSION_ID, getCookieValue())).contentType("application/x-www-form-urlencoded;charset=UTF-8").charset("UTF-8").body(String.valueOf(productionSchedulingRequest)).execute().body();
         PdmResult result = JSONUtil.toBean(s, PdmResult.class);
-        return result;
+        return result.getCode() == 200 ? Result.success() : Result.error(String.valueOf(result.getCode()), result.getMsg());
     }
 
-    private List<ProductionSchedulingDto> convertDto(List<ProduceNoticeVo> produceNoticeDtoList) {
-        List<ProductionSchedulingDto> productionSchedulingDtoList = new ArrayList<>();
-        for (ProduceNoticeVo produceNotice : produceNoticeDtoList) {
-            ProductionSchedulingDto productionSchedulingDto = new ProductionSchedulingDto();
-            productionSchedulingDto.setSchedulingNo(produceNotice.getProductionOrder());
-            productionSchedulingDto.setNoticSouce(produceNotice.getNotificationType());
-            productionSchedulingDto.setTechPlanTime(String.valueOf(produceNotice.getTechnicalCompletionTime()));
-            productionSchedulingDto.setDeliveryDate(produceNotice.getDeliveryDate());
-            productionSchedulingDto.setExecuOrganization(produceNotice.getUnit());
-            productionSchedulingDto.setWorkNo(produceNotice.getWorkNo());
-            productionSchedulingDto.setSchedulingGroup(produceNotice.getIssuingUnit());
-            productionSchedulingDto.setSchedulingDate(String.valueOf(produceNotice.getProductionScheduleDate()));
-            productionSchedulingDto.setCustomerName(produceNotice.getUserUnit());
-            productionSchedulingDto.setSchedulingType(produceNotice.getProductionType());
-            productionSchedulingDto.setProductName(produceNotice.getProduceName());
-            productionSchedulingDto.setPreviewUrl(produceNotice.getPreviewUrl());
-            productionSchedulingDtoList.add(productionSchedulingDto);
-        }
-        return productionSchedulingDtoList;
-    }
-
-    private List<ProductionSchedulingRequest> convertRequest(List<ProductionSchedulingDto> productionSchedulingDtoList) {
-        List<ProductionSchedulingRequest> productionSchedulingRequestList = new ArrayList<>();
-        productionSchedulingDtoList.forEach(e -> {
-            ProductionSchedulingRequest schedulingRequest = new ProductionSchedulingRequest();
-            schedulingRequest.setScheduling_no(e.getSchedulingNo());
-            schedulingRequest.setNotic_souce(e.getNoticSouce());
-            schedulingRequest.setTech_plan_time(e.getTechPlanTime());
-            schedulingRequest.setDelivery_date(e.getDeliveryDate());
-            schedulingRequest.setExecu_organization(e.getExecuOrganization());
-            schedulingRequest.setWork_no(e.getWorkNo());
-            schedulingRequest.setScheduling_group(e.getSchedulingGroup());
-            schedulingRequest.setScheduling_date(e.getSchedulingDate());
-            schedulingRequest.setCustomer_name(e.getCustomerName());
-            schedulingRequest.setScheduling_type(e.getSchedulingType());
-            schedulingRequest.setProduct_name(e.getProductName());
-            schedulingRequest.setPreview_url(e.getPreviewUrl());
-            productionSchedulingRequestList.add(schedulingRequest);
-        });
-        return productionSchedulingRequestList;
-    }
 
     private Map<String, String> map() {
         //构造访问参数

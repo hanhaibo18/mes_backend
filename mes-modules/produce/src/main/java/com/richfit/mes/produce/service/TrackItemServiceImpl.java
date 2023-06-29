@@ -537,6 +537,7 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         updateWrapperOld.eq("is_current", 1);
         updateWrapperOld.orderByDesc("opt_sequence");
         updateWrapperOld.set("is_current", 0);
+        updateWrapperOld.set("precharge_furnace_id", null).set("precharge_furnace_assign_id", null);
         this.update(updateWrapperOld);
         // 将上道工序is_current设为1
         UpdateWrapper<TrackItem> updateWrapper = new UpdateWrapper<>();
@@ -917,23 +918,66 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         return disqualification;
     }
 
+    @Autowired
+    private TrackHeadCastService trackHeadCastService;
+
     @Override
     public List<TrackItem> getTrackItemList(Wrapper<TrackItem> wrapper) {
         List<TrackItem> trackItemList = trackItemMapper.getTrackItemList(wrapper);
-        //工艺ids
-        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackItemList.stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        return ylItemListSetRouterInfo(trackItemList);
+    }
+
+    /**
+     * 冶炼车间router信息赋值
+     * @param trackItemList
+     * @return
+     */
+    @Override
+    public List<TrackItem> ylItemListSetRouterInfo(List<TrackItem> trackItemList) {
+        if(CollectionUtil.isEmpty(trackItemList) || !"7".equals(trackItemList.get(0).getClasses())){
+            return trackItemList;
+        }
+        //铸件的跟单工序
+        List<TrackItem> castItemList = trackItemList.stream().filter(item -> item.getWorkblankType().equals("1")).collect(Collectors.toList());
+        List<String> castHeadIds = castItemList.stream().map(item -> item.getTrackHeadId()).collect(Collectors.toList());
+        //工艺信息取cast表的
+        Map<String, TrackHeadCast> trackHeadCastMap = new HashMap<>();
+        if(!CollectionUtil.isEmpty(castHeadIds)){
+            List<TrackHeadCast> trackHeadCasts = trackHeadCastService.list(new QueryWrapper<TrackHeadCast>().in("head_id", castHeadIds));
+            trackHeadCastMap = trackHeadCasts.stream().collect(Collectors.toMap(item -> item.getHeadId(), Function.identity()));
+        }
+        //钢锭跟单工序list
+        Map<String, Router> routerMap = new HashMap<>();
+        List<TrackItem> teelIngotList = trackItemList.stream().filter(item -> item.getWorkblankType().equals("2")).collect(Collectors.toList());
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(teelIngotList.stream()
+                .map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
         List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
         if(!CollectionUtil.isEmpty(getRouter)){
-            Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
-            for (TrackItem trackItem : trackItemList) {
-                Router router = routerMap.get(trackItem.getRouterId()+"_"+trackItem.getBranchCode());
-                if(ObjectUtil.isEmpty(router)){
-                    trackItem.setWeightMolten(router.getWeightMolten());
-                    trackItem.setTexture(router.getTexture());
-                }
+            routerMap = getRouter.stream()
+                    .collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+        }
+        for (TrackItem trackItem : trackItemList) {
+            Router router = routerMap.get(trackItem.getRouterId() + "_" + trackItem.getBranchCode());
+            if("2".equals(trackItem.getWorkblankType()) && !Objects.isNull(router)){
+                trackItem.setWeightMolten(router.getWeightMolten());
+            }
+            TrackHeadCast trackHeadCast = trackHeadCastMap.get(trackItem.getTrackHeadId());
+            if("1".equals(trackItem.getWorkblankType()) && !ObjectUtil.isEmpty(trackHeadCast)){
+                trackItem.setWeightMolten(String.valueOf(trackHeadCast.getWeightMolten()));
             }
         }
+        return trackItemList;
+    }
 
-        return null;
+    /**
+     * 跟单记录回滚处理配炉信息接口
+     * @param item 回滚的跟单工序
+     * @param resetType 重置类型
+     */
+    public void recordRollBackDealFurnaceInfo(TrackItem item,int resetType){
+        Long prechargeFurnaceId = item.getPrechargeFurnaceId();
+        String prechargeFurnaceAssignId = item.getPrechargeFurnaceAssignId();
+
+
     }
 }

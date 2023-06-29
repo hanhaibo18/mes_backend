@@ -27,20 +27,6 @@ import java.util.Map;
 public interface TrackCompleteService extends IService<TrackComplete> {
     IPage<TrackComplete> queryPage(Page page, QueryWrapper<TrackComplete> query);
 
-    /**
-     * 功能描述: 工时人员统计
-     *
-     * @param trackNo
-     * @param startTime
-     * @param endTime
-     * @param branchCode
-     * @param workNo
-     * @param userId
-     * @Author: xinYu.hou
-     * @Date: 2023/2/10 15:17
-     * @return: Map<String, Object>
-     **/
-    Map<String, Object> queryTrackCompleteList(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
 
     List<TrackComplete> queryList(String tiId, String branchCode, String order, String orderCol);
 
@@ -52,7 +38,7 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @Date: 2022/7/12 14:08
      * @return: Boolean
      **/
-    CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList, HttpServletRequest request);
+    CommonResult<Boolean> saveComplete(List<CompleteDto> completeDtoList);
 
 
     /**
@@ -118,43 +104,13 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      **/
     CommonResult<Boolean> saveOutsourceNew(OutsourceCompleteDto outsource);
 
-    /**
-     * 功能描述: 根据订单id统计工时
-     *
-     * @param trackNo
-     * @param startTime
-     * @param endTime
-     * @param branchCode
-     * @param workNo
-     * @param userId
-     * @param orderNo
-     * @return
-     */
-    Map<String, Object> queryTrackCompleteListByOrder(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
-
-    /**
-     * 功能描述: 根据工作号统计工时
-     *
-     * @param trackNo
-     * @param startTime
-     * @param endTime
-     * @param branchCode
-     * @param workNo
-     * @param userId
-     * @param orderNo
-     * @return
-     */
-    Map<String, Object> queryTrackCompleteListByWorkNo(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
-
-    Map<String, Object> queryTrackCompleteListByBranch(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo);
-
     void knockoutLabel(HttpServletResponse response, String tiId);
 
     IPage<PrechargeFurnaceAssign> prechargeFurnaceYl(Long prechargeFurnaceId, String texture, String startTime, String endTime, String workblankType, String status, int page, int limit, String order, String orderCol);
 
     List<TrackItem> getItemList(String prechargeFurnaceAssignId);
 
-    Map<String, Object> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol);
+    Page<PrechargeFurnace> getPrechargeFurnaceMap(String workblankType, String branchCode, Long prechargeFurnaceId, String texture, String startTime, String endTime, int page, int limit, String order, String orderCol,String assignStatus);
 
     Boolean prechargeFurnaceChange(Long beforeId, Long afterId);
 
@@ -173,5 +129,5 @@ public interface TrackCompleteService extends IService<TrackComplete> {
      * @Date: 2023/2/10 15:17
      * @return: Map<String, Object>
      **/
-    Map<String, Object> queryWorkHours(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo, String type);
+    Map<String, Object> queryWorkHours(String trackNo, String startTime, String endTime, String branchCode, String workNo, String userId, String orderNo, String type) throws Exception;
 }

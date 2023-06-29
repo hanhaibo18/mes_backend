@@ -55,6 +55,9 @@ public class PlanExtend {
     @ApiModelProperty(value = "单重KG")
     private String pieceWeight;
 
+    @ApiModelProperty(value = "锻件重量")
+    private String forgWeight;
+
     @ApiModelProperty(value = "钢水KG")
     private String steelWaterWeight;
 

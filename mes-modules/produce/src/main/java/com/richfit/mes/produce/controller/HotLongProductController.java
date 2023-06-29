@@ -42,7 +42,7 @@ public class HotLongProductController extends BaseController {
 
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败，请重试！";
-    public static String productDrawingNoANDVERSION_ISNULL_MESSAGE = "操作失败，图号和版本号不能同时重复！";
+    public static String productDrawingNoANDVERSION_ISNULL_MESSAGE = "操作失败，图号不能重复！";
     public static String TenantId_NULL_MESSAGE = "租戶ID不能为空！";
 
     @ApiOperation(value = "新增长周期产品清单", notes = "长周期产品清单")

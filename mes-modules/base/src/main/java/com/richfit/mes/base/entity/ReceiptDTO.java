@@ -103,6 +103,12 @@ public class ReceiptDTO extends QueryPageDto implements Serializable {
     private String branchCode;
 
     /**
+     * 车间名称
+     */
+    @ApiModelProperty(value = "车间名称")
+    private String branchName;
+
+    /**
      * 验收人
      */
     @ApiModelProperty(value = "验收人")
@@ -127,6 +133,18 @@ public class ReceiptDTO extends QueryPageDto implements Serializable {
 
     @ApiModelProperty(value = "是否选中:1:选中；2：未选中")
     private Integer ifCheck;
+
+    /**
+     * 物料号
+     */
+    @ApiModelProperty(value = "物料号", dataType = "String")
+    private String materialNo;
+
+    /**
+     * 单位
+     */
+    @ApiModelProperty(value = "单位", dataType = "String")
+    private String unit;
 
     /**
      * 子bom信息

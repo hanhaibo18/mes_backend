@@ -12,6 +12,8 @@ import com.richfit.mes.base.provider.ProduceServiceClient;
 import com.richfit.mes.base.service.ProductService;
 import com.richfit.mes.base.service.ProductionBomService;
 import com.richfit.mes.base.service.RouterService;
+import com.richfit.mes.base.service.wms.MaterialService;
+import com.richfit.mes.base.service.wms.MaterialServiceImpl;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.base.BaseController;
@@ -24,6 +26,7 @@ import com.richfit.mes.common.model.base.Router;
 import com.richfit.mes.common.model.produce.Order;
 import com.richfit.mes.common.model.produce.TrackHead;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
+import com.richfit.mes.common.model.util.OrderUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.InventoryReturn;
 import com.richfit.mes.common.security.annotation.Inner;
@@ -73,6 +76,9 @@ public class ProductController extends BaseController {
     @Autowired
     private RouterService routerService;
 
+    @Autowired
+    private MaterialService materialService;
+
     @ApiOperation(value = "根据excel导入物料")
     @PostMapping("/importMaterialByExcle")
     public CommonResult<String> importMaterialByExcle(@ApiParam(value = "excel文件") @RequestParam("file") MultipartFile file, @ApiParam(value = "tenantId") @RequestParam String tenantId, @ApiParam(value = "branchCode") @RequestParam String branchCode) {
@@ -97,6 +103,8 @@ public class ProductController extends BaseController {
             } else {
                 product.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 product.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
+                //导入同步状态为初始值
+                product.setSynchronousRegime(0);
                 boolean bool = productService.save(product);
                 if (bool) {
                     return CommonResult.success(product, PRODUCT_SUCCESS_MESSAGE);
@@ -159,6 +167,8 @@ public class ProductController extends BaseController {
 
             product.setModifyBy(SecurityUtils.getCurrentUser().getUsername());
             product.setModifyTime(new Date());
+            //导入同步状态为初始值
+            product.setSynchronousRegime(0);
             boolean bool = productService.updateById(product);
             if (bool) {
                 return CommonResult.success(product, PRODUCT_SUCCESS_MESSAGE);
@@ -210,11 +220,19 @@ public class ProductController extends BaseController {
 
     @ApiOperation(value = "分页查询物料", notes = "根据图号、物料编码等参数分页查询物料")
     @GetMapping("/product")
-    public CommonResult<IPage<Product>> selectProduct(@ApiParam(value = "页码", required = true) @RequestParam(defaultValue = "1") int page, @ApiParam(value = "条数", required = true) @RequestParam(defaultValue = "10") int limit, @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo, @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo, @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType, @ApiParam(value = "排序方式") @RequestParam(required = false) String order, @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol, @ApiParam(value = "产品名称") @RequestParam(required = false) String productName, @ApiParam(value = "反向查询物料类型") @RequestParam(required = false, defaultValue = "false") Boolean material_type_reverse) {
+    public CommonResult<IPage<Product>> selectProduct(@ApiParam(value = "页码", required = true) @RequestParam int page,
+                                                      @ApiParam(value = "条数", required = true) @RequestParam int limit,
+                                                      @ApiParam(value = "图号") @RequestParam(required = false) Integer synchronousRegime,
+                                                      @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                      @ApiParam(value = "物料号") @RequestParam(required = false) String materialNo,
+                                                      @ApiParam(value = "物料类型") @RequestParam(required = false) String materialType,
+                                                      @ApiParam(value = "排序方式") @RequestParam(required = false) String order,
+                                                      @ApiParam(value = "排序列") @RequestParam(required = false) String orderCol,
+                                                      @ApiParam(value = "产品名称") @RequestParam(required = false) String productName,
+                                                      @ApiParam(value = "反向查询物料类型") @RequestParam(required = false, defaultValue = "false") Boolean material_type_reverse) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<Product>();
         if (!StringUtils.isNullOrEmpty(drawingNo)) {
             DrawingNoUtil.queryLike(queryWrapper, "p.drawing_no", drawingNo);
-            //queryWrapper.like("p.drawing_no", drawingNo);
         }
         if (!StringUtils.isNullOrEmpty(materialNo)) {
             queryWrapper.like("p.material_no", materialNo);
@@ -225,30 +243,17 @@ public class ProductController extends BaseController {
             } else {
                 queryWrapper.eq("p.material_type", materialType);
             }
-
         }
         if (!StringUtils.isNullOrEmpty(productName)) {
             queryWrapper.like("p.product_name", productName);
         }
-        // queryWrapper.eq("p.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-        if (!StringUtils.isNullOrEmpty(orderCol)) {
-            if (!StringUtils.isNullOrEmpty(order)) {
-                if (order.equals("desc")) {
-                    queryWrapper.orderByDesc("p." + StrUtil.toUnderlineCase(orderCol));
-                } else if (order.equals("asc")) {
-                    queryWrapper.orderByAsc("p." + StrUtil.toUnderlineCase(orderCol));
-                }
-            } else {
-                queryWrapper.orderByDesc("p." + StrUtil.toUnderlineCase(orderCol));
-            }
-        } else {
-            queryWrapper.orderByDesc("p.modify_time");
+        if (synchronousRegime != null) {
+            queryWrapper.eq("p.synchronous_regime", synchronousRegime);
         }
         //只查询当前租户下的物料数据
         queryWrapper.eq("p.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
+        OrderUtil.query(queryWrapper, orderCol, order);
         IPage<Product> result = productService.selectProduct(new Page<Product>(page, limit), queryWrapper);
-//        List<Product> data = result.getRecords();
-//        result.setRecords(findBomAndRouterByProduct(data));
         return CommonResult.success(result, PRODUCT_SUCCESS_MESSAGE);
     }
 
@@ -483,6 +488,8 @@ public class ProductController extends BaseController {
                 item.setTenantId(SecurityUtils.getCurrentUser().getTenantId());
                 item.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
                 item.setCreateTime(new Date());
+                //导入同步状态为初始值
+                item.setSynchronousRegime(0);
             });
 
             boolean bool = productService.saveBatch(list);
@@ -712,12 +719,6 @@ public class ProductController extends BaseController {
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         IPage<Product> result = productService.page(new Page<Product>(page, limit), queryWrapper);
         return CommonResult.success(result.getRecords());
-    }
-
-    @ApiOperation(value = "根据勾选数据同步到wms", notes = "根据勾选数据同步到wms")
-    @PostMapping("/save_wms_sync")
-    public CommonResult<Boolean> saveWmsSync(@RequestBody List<String> ids) {
-        return productService.saveWmsSync(ids);
     }
 
     @ApiOperation(value = "MES实时查询WMS库存", notes = "MES实时查询WMS库存")

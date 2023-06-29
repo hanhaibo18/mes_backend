@@ -93,7 +93,9 @@ public class DataDictionaryController extends BaseController {
 
     @ApiOperation(value = "分页查询车间物料列表")
     @GetMapping("/param/page/{dictionary_id}")
-    public CommonResult<IPage<DataDictionaryParam>> page(@PathVariable("dictionary_id") String id, @ApiParam(value = "物料编码") String materialNo, @ApiParam(value = "物料名称") String materialName, @ApiParam(value = "材质") String texture, @ApiParam(value = "物料规格") String specification, int page, int limit) {
+    public CommonResult<IPage<DataDictionaryParam>> page(@PathVariable("dictionary_id") String id, @ApiParam(value = "物料编码") String materialNo,
+                                                         @ApiParam(value = "物料名称") String materialName, @ApiParam(value = "材质") String texture,
+                                                         @ApiParam(value = "物料规格") String specification, @ApiParam(value = "单位") String unit, int page, int limit) {
         QueryWrapper<DataDictionaryParam> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("dictionary_id", id);
         if (null != materialNo) {
@@ -107,6 +109,9 @@ public class DataDictionaryController extends BaseController {
         }
         if (null != specification) {
             DrawingNoUtil.queryLike(queryWrapper, "specifications", specification);
+        }
+        if (null != unit) {
+            DrawingNoUtil.queryLike(queryWrapper, "unit", unit);
         }
         queryWrapper.orderByAsc("order_num");
         return CommonResult.success(dataDictionaryParamService.page(new Page<DataDictionaryParam>(page, limit), queryWrapper));

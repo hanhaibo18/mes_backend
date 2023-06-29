@@ -80,7 +80,7 @@ public class SkillNoticeServiceImpl extends ServiceImpl<SkillNoticeMapper, Skill
     @Override
     public IPage<SkillNotice> queryDispatchPage(DispatchDto dispatchDto) {
         QueryWrapper<SkillNotice> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("dispatch_state", "1");
+        queryWrapper.eq("notification_state", "1");
         queryWrapper.eq(StrUtil.isNotBlank(dispatchDto.getSkillNoticeNumber()), "dispatch_notice_number", dispatchDto.getSkillNoticeNumber());
         queryWrapper.eq(StrUtil.isNotBlank(dispatchDto.getWorkNo()), "work_no", dispatchDto.getWorkNo());
         queryWrapper.eq(StrUtil.isNotBlank(dispatchDto.getDrillingRigName()), "drilling_rig_name", dispatchDto.getDrillingRigName());

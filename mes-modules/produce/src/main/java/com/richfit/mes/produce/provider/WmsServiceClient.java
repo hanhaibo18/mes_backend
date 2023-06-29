@@ -21,7 +21,7 @@ import java.util.List;
  * @Author: GaoLiang
  * @Date: 2022/7/25 11:27
  */
-@FeignClient(name = "wms-service", decode404 = true, fallback = WmsServiceClientFallbackImpl.class)
+@FeignClient(name = "wms-service-old", decode404 = true, fallback = WmsServiceClientFallbackImpl.class)
 public interface WmsServiceClient {
 
     /**

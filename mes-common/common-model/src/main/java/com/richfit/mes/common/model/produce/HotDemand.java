@@ -241,18 +241,19 @@ public class HotDemand extends BaseEntity<HotDemand> implements Serializable {
     /**
      * 优先级
      */
-    @ApiModelProperty(value = "优先级: 高 ,中, 低", dataType = "String")
+    @ApiModelProperty(value = " 优先级 高3  中3  低0  一般1", dataType = "String")
     private String priority;
 
-    @ApiModelProperty(value = "单重KG")
+    @ApiModelProperty(value = "单重KG(废弃字段)")
     private String pieceWeight;
 
     @ApiModelProperty(value = "钢水KG")
     private String steelWaterWeight;
 
-    @ApiModelProperty(value = "重量")
+    @ApiModelProperty(value = "单重")
     private String weight;
-
+    @ApiModelProperty(value = "锻件重量")
+    private String forgWeight;
     @ApiModelProperty(value = "计划id")
     private String planId;
 

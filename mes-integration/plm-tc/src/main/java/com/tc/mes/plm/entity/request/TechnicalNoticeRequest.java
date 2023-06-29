@@ -14,7 +14,7 @@ public class TechnicalNoticeRequest {
      */
     private String tech_notice_no;
     /**
-     *  技术通知单版本id
+     *  技术通知单版本
      */
     private String tech_notice_rev_id;
     /**

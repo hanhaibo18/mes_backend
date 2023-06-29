@@ -13,6 +13,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 /**
  * @author sun
@@ -31,7 +34,9 @@ public class SystemServiceApplication {
         SpringApplication.run(SystemServiceApplication.class, args);
     }
 
-    //json参数去空格
+    /**
+     * 全局返回json格式化
+     */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
         return builder -> builder

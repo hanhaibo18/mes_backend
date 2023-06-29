@@ -11,6 +11,9 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 /**
  * @author sun
@@ -24,7 +27,9 @@ public class BaseServiceApplication {
         SpringApplication.run(BaseServiceApplication.class, args);
     }
 
-    //json参数去空格
+    /**
+     * 全局返回json格式化
+     */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
         return builder -> builder

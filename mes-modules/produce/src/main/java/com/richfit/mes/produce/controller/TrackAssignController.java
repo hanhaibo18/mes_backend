@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mysql.cj.util.StringUtils;
 import com.richfit.mes.common.core.api.CommonResult;
@@ -18,9 +19,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.ActionUtil;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
-import com.richfit.mes.common.model.wms.ApplyLineList;
-import com.richfit.mes.common.model.wms.ApplyLineProductList;
-import com.richfit.mes.common.model.wms.ApplyListUpload;
+import com.richfit.mes.common.model.wms.MaterialRequisitionUpload;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.dao.TrackAssignPersonMapper;
@@ -32,6 +31,7 @@ import com.richfit.mes.produce.entity.KittingVo;
 import com.richfit.mes.produce.entity.QueryProcessVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.WmsServiceClient;
+import com.richfit.mes.produce.provider.WmsThreeServiceClient;
 import com.richfit.mes.produce.service.*;
 import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.service.quality.InspectionPowerService;
@@ -105,6 +105,9 @@ public class TrackAssignController extends BaseController {
     private String off;
     @Resource
     private TrackHeadMapper trackHeadMapper;
+
+    @Resource
+    private WmsThreeServiceClient wmsThreeServiceClient;
 
     /**
      * ***
@@ -269,157 +272,6 @@ public class TrackAssignController extends BaseController {
         }
     }
 
-//    @ApiOperation(value = "批量新增派工", notes = "批量新增派工")
-//    @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "path")
-//    @PostMapping("/batchAdd")
-//    @Transactional(rollbackFor = Exception.class)
-//    public CommonResult<Assign[]> batchAssign(@RequestBody Assign[] assigns) {
-//        //获取request
-//        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-//        try {
-//            //设备code添加
-//            Device device = baseServiceClient.getDeviceById(assigns[0].getDeviceId()).getData();
-//            for (Assign assign : assigns) {
-//                assign.setDeviceCode(ObjectUtil.isEmpty(device) ? "" : device.getCode());
-//                if (StringUtils.isNullOrEmpty(assign.getTiId())) {
-//                    throw new GlobalException("未关联工序", ResultCode.FAILED);
-//                }
-//                if (StrUtil.isNotBlank(assign.getUserId())) {
-//                    assign.setUserId(assign.getUserId() + ",");
-//                }
-//                TrackItem trackItem = trackItemService.getById(assign.getTiId());
-//                TrackHead trackHead = trackHeadService.getById(trackItem.getTrackHeadId());
-//                if (null != trackItem) {
-//                    if (trackItem.getAssignableQty() < assign.getQty()) {
-//                        return CommonResult.failed(trackItem.getOptName() + " 工序可派工数量不足, 最大数量为" + trackItem.getAssignableQty());
-//                    }
-//                    trackItem.setIsCurrent(1);
-//                    trackItem.setIsDoing(0);
-//                    trackItem.setAssignableQty(trackItem.getAssignableQty() - assign.getQty());
-//                    if (0 == trackItem.getAssignableQty()) {
-//                        trackItem.setIsSchedule(1);
-//                    }
-//                    trackItem.setDeviceId(assign.getDeviceId());
-//                    //锻造计算额定工时
-//                    if ("4".equals(trackHead.getClasses())) {
-//                        trackAssignService.calculationSinglePieceHours(trackHead, trackItem);
-//                    }
-//                    trackItemService.updateById(trackItem);
-//                    if (StringUtils.isNullOrEmpty(assign.getTrackNo())) {
-//                        assign.setTrackNo(trackHead.getTrackNo());
-//                    }
-//                    if (!StringUtils.isNullOrEmpty(trackHead.getStatus()) || "0".equals(trackHead.getStatus())) {
-//                        //将跟单状态改为在制
-//                        trackHead.setStatus("1");
-//                        trackHeadService.updateById(trackHead);
-//                        UpdateWrapper<TrackFlow> update = new UpdateWrapper<>();
-//                        update.set("status", "1");
-//                        update.eq("id", trackItem.getFlowId());
-//                        trackHeadFlowService.update(update);
-//                    }
-//                    if (0 == trackItem.getIsExistQualityCheck() && 0 == trackItem.getIsExistScheduleCheck()) {
-//                        //下工序激活
-//                        Map<String, String> map = new HashMap<>(3);
-//                        map.put(IdEnum.FLOW_ID.getMessage(), trackItem.getFlowId());
-//                        map.put(IdEnum.TRACK_HEAD_ID.getMessage(), assign.getTrackId());
-//                        map.put(IdEnum.TRACK_ITEM_ID.getMessage(), assign.getTiId());
-//                        map.put("number", String.valueOf(assign.getQty()));
-//                        publicService.publicUpdateState(map, PublicCodeEnum.DISPATCHING.getCode());
-//                    }
-//
-//                    assign.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-//                    if (null != SecurityUtils.getCurrentUser()) {
-//                        assign.setCreateBy(SecurityUtils.getCurrentUser().getUsername());
-//                        assign.setAssignBy(SecurityUtils.getCurrentUser().getUsername());
-//                    }
-//                    CommonResult<TenantUserVo> user = systemServiceClient.queryByUserId(assign.getAssignBy());
-//                    assign.setAssignName(user.getData().getEmplName());
-//                    assign.setAssignTime(new Date());
-//                    assign.setModifyTime(new Date());
-//                    assign.setCreateTime(new Date());
-//                    assign.setAvailQty(assign.getQty());
-//                    assign.setFlowId(trackItem.getFlowId());
-//                    if (StringUtils.isNullOrEmpty(assign.getTrackId())) {
-//                        assign.setTrackId(trackHead.getId());
-//                    }
-//                    if (StringUtils.isNullOrEmpty(assign.getTenantId())) {
-//                        assign.setTenantId(trackHead.getTenantId());
-//                    }
-//                    //处理派工人员信息  (前端没有处理userId 和userName  assignPerson为派工人列表)
-//                    if (StringUtils.isNullOrEmpty(assign.getUserId()) && !CollectionUtil.isEmpty(assign.getAssignPersons())) {
-//                        StringBuilder userId = new StringBuilder();
-//                        StringBuilder userName = new StringBuilder();
-//                        for (AssignPerson assignPerson : assign.getAssignPersons()) {
-//                            if (!StringUtils.isNullOrEmpty(String.valueOf(userId))) {
-//                                userId.append(",");
-//                                userName.append(",");
-//                            }
-//                            userId.append(assignPerson.getUserId());
-//                            userName.append(assignPerson.getUserName());
-//                        }
-//                        assign.setUserId(String.valueOf(userId));
-//                        assign.setEmplName(String.valueOf(userName));
-//                    }
-//                    boolean isAllUser = assign.getUserId().contains("/") ? true : false;
-//                    if (isAllUser) {
-//                        assign.setUserId("/");
-//                        assign.setEmplName("/");
-//                    }
-//                    trackAssignService.save(assign);
-//                    for (AssignPerson person : assign.getAssignPersons()) {
-//                        person.setModifyTime(new Date());
-//                        person.setAssignId(assign.getId());
-//                        trackAssignPersonMapper.insert(person);
-//                    }
-//                    //判断是否存在BOM 没有BOM不进行齐套检查
-//                    boolean bom = StrUtil.isNotBlank(trackHead.getProjectBomId());
-//                    //判断是否是装配
-//                    boolean assembly = "2".equals(trackHead.getClasses());
-//                    //是否进行齐套并发送申请单 true = 发送 false = 不发送
-//                    boolean switchOff = "true".equals(off);
-//                    //配料工序校验
-//                    int sendWMSA = sendWMSA(trackItem);
-//                    if (assembly && sendWMSA != 0 && switchOff && bom) {
-//                        //无生产订单编号不允许发送申请单
-//                        if (StrUtil.isBlank(trackHead.getProductionOrder())) {
-//                            throw new GlobalException("无生产订单编号", ResultCode.FAILED);
-//                        }
-//                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode(), sendWMSA);
-//                        requestNoteService.saveRequestNoteNew(ingredient, trackHead, trackHead.getBranchCode());
-//                        ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
-////                        ApplyListUpload ingredient = collect(trackItem, trackHead, trackHead.getBranchCode());
-////                        requestNoteService.saveRequestNoteInfo(ingredient, trackHead, trackItem, trackHead.getBranchCode());
-////                        List<ApplyListUpload> list = new ArrayList<>();
-////                        list.add(ingredient);
-////                        ApplicationResult application = wmsServiceClient.applyListUpload(list).getData();
-//                        //请勿重复上传！
-//                        boolean upload = !application.getRetMsg().contains("请勿重复上传");
-//                        if ("N".equals(application.getRetCode()) && upload) {
-//                            numberService.deleteApplicationNumberByItemId(trackItem.getId());
-//                            log.error("仓储数据:" + ingredient);
-//                            throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
-//                        }
-//                    }
-//                }
-//                systemServiceClient.savenote(assign.getAssignBy(),
-//                        "您有新的派工跟单需要报工！",
-//                        assign.getTrackNo(),
-//                        assign.getUserId().substring(0, assign.getUserId().length() - 1),
-//                        assign.getBranchCode(),
-//                        assign.getTenantId());
-//
-//                //保存派工操作记录
-//                actionService.saveAction(ActionUtil.buildAction
-//                        (assign.getBranchCode(), "4", "2",
-//                                "跟单派工，跟单号：" + assign.getTrackNo(),
-//                                OperationLogAspect.getIpAddress(request)));
-//            }
-//            return CommonResult.success(assigns, "操作成功！");
-//        } catch (Exception e) {
-//            throw new GlobalException(e.getMessage(), ResultCode.FAILED);
-//        }
-//    }
-
     @ApiOperation(value = "批量新增派工", notes = "批量新增派工")
     @ApiImplicitParam(name = "assigns", value = "派工", required = true, dataType = "Assign[]", paramType = "path")
     @PostMapping("/batchAdd")
@@ -526,35 +378,26 @@ public class TrackAssignController extends BaseController {
                     boolean bom = StrUtil.isNotBlank(trackHead.getProjectBomId());
                     //判断是否是装配
                     boolean assembly = "2".equals(trackHead.getClasses());
-                    //是否是第一道工序
-                    boolean item = 1 == trackItem.getOptSequence();
-                    //判断是否开工
-                    boolean isDoing = 0 == trackItem.getIsDoing();
-                    //判断当前工序
-                    boolean isCurrent = 1 == trackItem.getIsCurrent();
                     //是否进行齐套并发送申请单 true = 发送 false = 不发送
                     boolean switchOff = "true".equals(off);
-                    //外协工序不允许发送申请单
-//                    boolean optType = !trackItem.getOptType().equals("3");
-                    if (assembly && item && isDoing && isCurrent && switchOff && bom) {
-                        //控制第一道工序是否发送申请单
+                    //配料工序校验
+                    int sendWMSA = sendWMSA(trackItem);
+                    if (assembly && sendWMSA != 0 && switchOff && bom) {
+                        //无生产订单编号不允许发送申请单
                         if (StrUtil.isBlank(trackHead.getProductionOrder())) {
                             throw new GlobalException("无生产订单编号", ResultCode.FAILED);
                         }
-                        IngredientApplicationDto ingredient = assemble(trackItem, trackHead, trackHead.getBranchCode());
-                        requestNoteService.saveRequestNoteNew(ingredient, trackHead, trackHead.getBranchCode());
-                        ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+                        List<MaterialRequisitionUpload> materialRequisitionUploads = assemble(trackItem, trackHead, trackHead.getBranchCode(), sendWMSA);
+                        requestNoteService.saveRequestNoteNew(materialRequisitionUploads, trackHead, trackHead.getBranchCode(), trackItem.getId());
+//                        ApplicationResult application = wmsServiceClient.anApplicationForm(ingredient).getData();
+                        CommonResult commonResult = wmsThreeServiceClient.materialRequisitionUpload(materialRequisitionUploads);
 //                        ApplyListUpload ingredient = collect(trackItem, trackHead, trackHead.getBranchCode());
 //                        requestNoteService.saveRequestNoteInfo(ingredient, trackHead, trackItem, trackHead.getBranchCode());
 //                        List<ApplyListUpload> list = new ArrayList<>();
 //                        list.add(ingredient);
 //                        ApplicationResult application = wmsServiceClient.applyListUpload(list).getData();
-                        //请勿重复上传！
-                        boolean upload = !application.getRetMsg().contains("请勿重复上传");
-                        if ("N".equals(application.getRetCode()) && upload) {
-                            numberService.deleteApplicationNumberByItemId(trackItem.getId());
-                            log.error("仓储数据:" + ingredient);
-                            throw new GlobalException("仓储服务:" + application.getRetMsg(), ResultCode.FAILED);
+                        if (commonResult.getStatus() != ResultCode.SUCCESS.getCode()) {
+                            throw new GlobalException(commonResult.getMessage(), ResultCode.FAILED);
                         }
                     }
                 }
@@ -611,181 +454,51 @@ public class TrackAssignController extends BaseController {
         }
     }
 
-    /**
-     * @param trackItem  跟单工序
-     * @param trackHead  跟单表（主表）
-     * @param branchCode 车间
-     * @return
-     */
-    private ApplyListUpload collect(TrackItem trackItem, TrackHead trackHead, String branchCode) {
-        // 跟单配送
+
+    private List<MaterialRequisitionUpload> assemble(TrackItem trackItem, TrackHead trackHead, String branchCode, int sendState) {
+        //获取所有关键件
         QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
         assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
-        List<TrackAssembly> assemblyList = trackAssemblyService.list(assemblyQueryWrapper);
+        assemblyQueryWrapper.eq("is_need_picking", 1);
+        assemblyQueryWrapper.orderByAsc("create_time");
+        List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(assemblyQueryWrapper);
+        //处理后数据
+        List<TrackAssembly> assemblyList = new ArrayList<>();
+        //所有非配料工序关键件+当前工序是配料工序
+        if (sendState == 3) {
+            //获取所有非配料工序的领料件
+            assemblyList.addAll(trackAssemblyList.stream().filter(assembly -> StrUtil.isBlank(assembly.getOptName())).collect(Collectors.toList()));
+            //筛选配料工序绑定数量为0的
+            List<TrackAssembly> optName = trackAssemblyList.stream().filter(assembly -> assembly.getOptName().equals(trackItem.getOptName()) && assembly.getNumberInstall() == 0).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(optName)) {
+                throw new GlobalException("未查询到当前工序可配料的工序", ResultCode.FAILED);
+            }
+            assemblyList.add(optName.get(0));
+        } else if (sendState == 2) {
+            //获取所有非配料工序的领料件
+            assemblyList.addAll(trackAssemblyList.stream().filter(assembly -> StrUtil.isBlank(assembly.getOptName())).collect(Collectors.toList()));
+        } else {
+            //筛选配料工序绑定数量为0的
+            List<TrackAssembly> optName = trackAssemblyList.stream().filter(assembly -> assembly.getOptName().equals(trackItem.getOptName()) && assembly.getNumberInstall() == 0).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(optName)) {
+                throw new GlobalException("未查询到当前工序可配料的工序", ResultCode.FAILED);
+            }
+            assemblyList.add(optName.get(0));
+        }
+        if (CollectionUtils.isEmpty(assemblyList)) {
+            throw new GlobalException("未查询到可配料信息", ResultCode.FAILED);
+        }
         QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("ti_id", trackItem.getId());
-        //组装申请单信息
-        ApplyListUpload applyListUpload = new ApplyListUpload();
-        //id
-        applyListUpload.setId(UUID.randomUUID().toString().replace("-", ""));
+        //查询派工工位信息
+        Assign assign = trackAssignService.getOne(queryWrapper);
         //申请单号
         Long applicationNumber = numberService.acquireApplicationNumber(trackItem.getId(), branchCode);
-        applyListUpload.setApplyNum(applicationNumber + "@0");
-        // 单据类型
-        applyListUpload.setTransType(null);
-        //工厂编码
-        applyListUpload.setWorkCode(SecurityUtils.getCurrentUser().getTenantErpCode());
-        //车间
-        applyListUpload.setWorkshop(branchCode);
-        //库存地点
-        applyListUpload.setInvCode(null);
-        //工作号
-        applyListUpload.setJobNo(trackItem.getWorkNo());
-        //生产订单
-        applyListUpload.setProdNum(trackHead.getProductionOrder());
-        //合格证 结构化
-        applyListUpload.setCertificate(null);
-        //创建人
-        applyListUpload.setCreateBy(trackHead.getCreateBy());
-        //创建日期
-        applyListUpload.setCreateTime(new Date());
-        //行数据
-        List<ApplyLineList> lineList = new ArrayList<>();
-        int num = 0;
-        for (TrackAssembly trackAssembly : assemblyList) {
-            ApplyLineList applyLine = new ApplyLineList();
-            //MES申请单ID
-            applyLine.setApplyId(applyListUpload.getId());
-            //MES申请单行id
-            applyLine.setId(UUID.randomUUID().toString().replace("-", ""));
-            //MES申请单行项目
-            applyLine.setLineNum(num + 1);
-            //物料编码
-            applyLine.setMaterialNum(trackAssembly.getMaterialNo());
-            //物料名称
-            applyLine.setMaterialDesc(trackAssembly.getName());
-            //计量单位
-            applyLine.setUnit(trackAssembly.getUnit());
-            //申请单数量
-            applyLine.setQuantity(1D);
-            //物料类型
-            applyLine.setMaterialType(trackAssembly.getSourceType());
-            //关键件
-            applyLine.setCrucialFlag(trackAssembly.getIsKeyPart());
-            //跟踪方式
-            applyLine.setTrackingMode(trackAssembly.getTrackType());
-            //产品编号明细列表
-            List<ApplyLineProductList> lineProductList = new ArrayList<>();
-            ApplyLineProductList product = new ApplyLineProductList();
-            //MES申请单行id
-            product.setApplyLineId(applyLine.getId());
-            //产品编号
-            product.setProductNum(trackAssembly.getProductNo());
-            //数量
-            product.setQuantity(trackAssembly.getNumber());
-
-            lineProductList.add(product);
-            applyLine.setLineList(lineProductList);
-
-            lineList.add(applyLine);
-        }
-        applyListUpload.setLineList(lineList);
-        return applyListUpload;
+        List<MaterialRequisitionUpload> materialRequisitionUploadList = new ArrayList<>();
+        MaterialRequisitionUpload materialRequisitionUpload = new MaterialRequisitionUpload(assign, trackHead, assemblyList, branchCode, applicationNumber + "@0");
+        materialRequisitionUploadList.add(materialRequisitionUpload);
+        return materialRequisitionUploadList;
     }
-
-
-//    private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode, int sendState) {
-//        //获取所有关键件
-//        QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();
-//        assemblyQueryWrapper.eq("track_head_id", trackHead.getId());
-//        assemblyQueryWrapper.eq("is_need_picking", 1);
-//        assemblyQueryWrapper.orderByAsc("create_time");
-//        List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(assemblyQueryWrapper);
-//        //处理后数据
-//        List<TrackAssembly> assemblyList = new ArrayList<>();
-//        //所有非配料工序关键件+当前工序是配料工序
-//        if (sendState == 3) {
-//            //获取所有非配料工序的领料件
-//            assemblyList.addAll(trackAssemblyList.stream().filter(assembly -> StrUtil.isBlank(assembly.getOptName())).collect(Collectors.toList()));
-//            //筛选配料工序绑定数量为0的
-//            List<TrackAssembly> optName = trackAssemblyList.stream().filter(assembly -> assembly.getOptName().equals(trackItem.getOptName()) && assembly.getNumberInstall() == 0).collect(Collectors.toList());
-//            if (CollectionUtils.isEmpty(optName)) {
-//                throw new GlobalException("未查询到当前工序可配料的工序", ResultCode.FAILED);
-//            }
-//            assemblyList.add(optName.get(0));
-//        } else if (sendState == 2) {
-//            //获取所有非配料工序的领料件
-//            assemblyList.addAll(trackAssemblyList.stream().filter(assembly -> StrUtil.isBlank(assembly.getOptName())).collect(Collectors.toList()));
-//        } else {
-//            //筛选配料工序绑定数量为0的
-//            List<TrackAssembly> optName = trackAssemblyList.stream().filter(assembly -> assembly.getOptName().equals(trackItem.getOptName()) && assembly.getNumberInstall() == 0).collect(Collectors.toList());
-//            if (CollectionUtils.isEmpty(optName)) {
-//                throw new GlobalException("未查询到当前工序可配料的工序", ResultCode.FAILED);
-//            }
-//            assemblyList.add(optName.get(0));
-//        }
-//        if (CollectionUtils.isEmpty(assemblyList)) {
-//            throw new GlobalException("未查询到可配料信息", ResultCode.FAILED);
-//        }
-//        QueryWrapper<Assign> queryWrapper = new QueryWrapper<>();
-//        queryWrapper.eq("ti_id", trackItem.getId());
-//        //查询派工工位信息
-//        Assign assign = trackAssignService.getOne(queryWrapper);
-//        //组装申请单信息
-//        IngredientApplicationDto ingredient = new IngredientApplicationDto();
-//        //申请单号
-//        Long applicationNumber = numberService.acquireApplicationNumber(trackItem.getId(), branchCode);
-//        ingredient.setSqd(applicationNumber + "@0");
-//        //工厂编码
-//        ingredient.setGc(SecurityUtils.getCurrentUser().getTenantErpCode());
-//        //车间
-//        ingredient.setCj(branchCode);
-//        //车间名称
-//        CommonResult<Branch> branch = baseServiceClient.selectBranchByCodeAndTenantId(branchCode, null);
-//        ingredient.setCjName(branch.getData().getBranchName());
-//        //工位
-//        ingredient.setGw(assign.getSiteId());
-//        //工位名称
-//        ingredient.setGwName(assign.getSiteName());
-//        //工序
-//        ingredient.setGx(trackItem.getId());
-//        //工序名称
-//        ingredient.setGxName(trackItem.getOptName());
-//        //生产订单编号
-//        ingredient.setScdd(trackHead.getProductionOrder());
-//        //跟单Id
-//        ingredient.setGd(trackHead.getId());
-//        //产品编号
-//        ingredient.setCp(trackHead.getProductNo());
-//        //产品名称
-//        ingredient.setCpName(trackHead.getProductName());
-//        //优先级
-//        ingredient.setYxj(Integer.parseInt(trackHead.getPriority()));
-//        //派工时间
-//        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmss");
-//        ingredient.setPgsj(format.format(new Date()));
-//        //追加物料
-//        List<LineList> lineLists = new ArrayList<>();
-////        List<String> numberList = assemblyList.stream().map(TrackAssembly::getMaterialNo).collect(Collectors.toList());
-////        List<Product> list = baseServiceClient.listByMaterialNoList(numberList);
-////        Map<String, String> materialNoMap = list.stream().collect(Collectors.toMap(Product::getMaterialNo, Product::getProductName, (value1, value2) -> value2));
-//        for (TrackAssembly trackAssembly : assemblyList) {
-//            LineList lineList = new LineList();
-//            //物料编码
-//            lineList.setMaterialNum(trackAssembly.getMaterialNo());
-//            //物料名称
-//            lineList.setMaterialDesc(trackAssembly.getName());
-//            //单位
-//            lineList.setUnit("单位");
-//            //数量
-//            lineList.setQuantity(trackAssembly.getNumber());
-//            //实物配送标识
-//            lineList.setSwFlag(trackAssembly.getIsEdgeStore());
-//            lineLists.add(lineList);
-//        }
-//        ingredient.setLineList(lineLists);
-//        return ingredient;
-//    }
 
     private IngredientApplicationDto assemble(TrackItem trackItem, TrackHead trackHead, String branchCode) {
         QueryWrapper<TrackAssembly> assemblyQueryWrapper = new QueryWrapper<>();

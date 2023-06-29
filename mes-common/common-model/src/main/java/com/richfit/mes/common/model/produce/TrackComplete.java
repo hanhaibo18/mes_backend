@@ -4,11 +4,17 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import com.richfit.mes.common.model.heat.CompleteUserInfoDto;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 马峰
@@ -16,7 +22,10 @@ import java.util.List;
  * @CreateTime: 2022年02月02日 08:08:00
  * @ModifyTime: 2022年08月15日 12:08:00
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TrackComplete extends BaseEntity<TrackComplete> implements Comparable<TrackComplete> {
 
     private static final long serialVersionUID = 2731220432204410300L;
@@ -102,7 +111,6 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     /**
      * 报工人
      */
-    //报工人
     protected String completeBy;
 
     /**
@@ -197,7 +205,7 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @ApiModelProperty(value = "步骤分组id", dataType = "String")
     protected String stepGroupId;
     @TableField(exist = false)
-    @ApiModelProperty(value = "标准工时", dataType = "")
+    @ApiModelProperty(value = "标准工时", dataType = "double")
     protected BigDecimal heatHour;
     @ApiModelProperty(value = "工时权重", dataType = "double")
     private Double ratioHours;
@@ -270,7 +278,6 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @TableField(exist = false)
     private String optId;
 
-
     /**
      * 工时查询总工时
      */
@@ -330,4 +337,60 @@ public class TrackComplete extends BaseEntity<TrackComplete> implements Comparab
     @TableField(exist = false)
     @ApiModelProperty(value = "班组名称", dataType = "String")
     private String branchName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否质检确认", dataType = "Integer")
+    private Integer isExistQualityCheck;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否质检完成", dataType = "Integer")
+    private Integer isQualityComplete;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否调度确认", dataType = "Integer")
+    private Integer isExistScheduleCheck;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否调度完成", dataType = "Integer")
+    private Integer isScheduleComplete;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "规则Id", dataType = "String")
+    private String ruleId;
+
+
+    public TrackComplete(Map<String, List<TrackComplete>> completeMap, String id, List<TrackComplete> trackCompleteShowList, BigDecimal sumNumber, BigDecimal sumTotalHours, BigDecimal sumPrepareEndHours, BigDecimal sumReportHours, BigDecimal sumRealityPrepareEndHours, BigDecimal sumRealityReportHours, TrackComplete temp, String type) {
+        buildSummaryColum(temp, type);
+        this.setId(id);
+        //总报工数量
+        this.setCompletedQty(sumNumber.setScale(4, RoundingMode.HALF_UP).doubleValue());
+        //实际准备工时
+        this.setRealityPrepareEndHours(sumRealityPrepareEndHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
+        //实际额定工时
+        this.setRealityReportHours(sumRealityReportHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
+        //准备工时
+        this.setPrepareEndHours(sumPrepareEndHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
+        //额定工时
+        this.setReportHours(sumReportHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
+        //总工时
+        this.setTotalHours(sumTotalHours.setScale(4, RoundingMode.HALF_UP).doubleValue());
+        this.setTrackCompleteList(trackCompleteShowList);
+        //判断是否包含叶子结点
+        this.setIsLeafNodes(!CollectionUtils.isEmpty(completeMap.get(id)));
+    }
+
+    private void buildSummaryColum(TrackComplete temp, String type) {
+        if ("branch".equals(type)) {
+            this.setBranchName(temp.getBranchName());
+        }
+        if ("person".equals(type)) {
+            this.setUserName(temp.getUserName());
+        }
+        if ("workNo".equals(type)) {
+            this.setWorkNo(temp.getWorkNo());
+        }
+        if ("order".equals(type)) {
+            this.setProductionOrder(temp.getProductionOrder());
+        }
+    }
 }

@@ -46,7 +46,7 @@ public class HotModelStoreController extends BaseController {
 
     public static String SUCCESS_MESSAGE = "操作成功！";
     public static String FAILED_MESSAGE = "操作失败，请重试！";
-    public static String ModelDrawingNo_ISNULL_MESSAGE = "操作失败，该图号的模型版本冲突";
+    public static String ModelDrawingNo_ISNULL_MESSAGE = "操作失败，该图号的模型版本类型冲突";
     public static String TenantId_NULL_MESSAGE = "租戶ID不能为空！";
 
     @ApiOperation(value = "新增模型库", notes = "新增模型库")
@@ -55,7 +55,8 @@ public class HotModelStoreController extends BaseController {
         try {
             QueryWrapper<HotModelStore> hotModelStoreQueryWrapper = new QueryWrapper<>();
             DrawingNoUtil.queryEq(hotModelStoreQueryWrapper, "model_drawing_no", hotModelStore.getModelDrawingNo());
-            hotModelStoreQueryWrapper.eq("version",hotModelStore.getVersion());
+            hotModelStoreQueryWrapper.eq("version", hotModelStore.getVersion());
+            hotModelStoreQueryWrapper.eq("model_type", hotModelStore.getModelType());
             //根据图号和版本查重
             List<HotModelStore> list = hotModelStoreService.list(hotModelStoreQueryWrapper);
             if (CollectionUtils.isNotEmpty(list)) {
@@ -130,6 +131,9 @@ public class HotModelStoreController extends BaseController {
         if (StringUtils.isNotEmpty(hotModelStorQueryVo.getModelTexture())) {
             queryWrapper.like("model_texture", hotModelStorQueryVo.getModelTexture());
         }
+        if (StringUtils.isNotEmpty(hotModelStorQueryVo.getVersion())) {
+            queryWrapper.eq("version", hotModelStorQueryVo.getVersion());
+        }
         queryWrapper.eq("tenant_id", hotModelStorQueryVo.getTenantId());
         //排序工具
         OrderUtil.query(queryWrapper, hotModelStorQueryVo.getOrderCol(), hotModelStorQueryVo.getOrder());
@@ -157,6 +161,9 @@ public class HotModelStoreController extends BaseController {
             }
             if (hotModelStor.getModelType() != null) {
                 queryWrapper.eq("model_type", hotModelStor.getModelType());
+            }
+            if (StringUtils.isNotEmpty(hotModelStor.getModelTexture())) {
+                queryWrapper.like("model_texture", hotModelStor.getModelTexture());
             }
             queryWrapper.eq("tenant_id", hotModelStor.getTenantId());
             queryWrapper.orderByDesc("create_time");
@@ -194,9 +201,9 @@ public class HotModelStoreController extends BaseController {
             String fileName = "模型库信息_" + format.format(new Date()) + ".xlsx";
 
 
-            String[] columnHeaders = {"模型名称", "模型类型", "模型数量(正常)", "模型图号", "货位号", "模型数量(报废)", "模型备注","版本"};
+            String[] columnHeaders = {"模型名称", "模型类型", "模型数量(正常)", "模型图号", "货位号", "模型数量(报废)", "模型备注", "版本","模型材质"};
 
-            String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark","version"};
+            String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark", "version","modelTexture"};
 
             //export
             ExcelUtils.exportExcel(fileName, hotModelStores, columnHeaders, fieldNames, rsp);

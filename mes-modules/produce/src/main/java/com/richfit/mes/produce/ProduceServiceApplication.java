@@ -3,6 +3,7 @@ package com.richfit.mes.produce;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.richfit.mes.produce.aop.OperationLogAspect;
 import com.richfit.mes.produce.service.ActionService;
 import org.springframework.boot.SpringApplication;
@@ -17,6 +18,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 
 /**
  * @author sun
@@ -32,7 +38,9 @@ public class ProduceServiceApplication {
         SpringApplication.run(ProduceServiceApplication.class, args);
     }
 
-    //json参数去空格
+    /**
+     * 全局返回json格式化
+     */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
         return builder -> builder

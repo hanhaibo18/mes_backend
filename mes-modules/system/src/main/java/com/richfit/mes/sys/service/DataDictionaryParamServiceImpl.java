@@ -46,7 +46,7 @@ public class DataDictionaryParamServiceImpl extends ServiceImpl<DataDictionaryPa
             throw new GlobalException("为查询到该字典ID！", ResultCode.FAILED);
         }
         //封装物料信息
-        String[] materialColumns = {"orderNum", "materialNo", "materialName", "texture", "specifications"};
+        String[] materialColumns = {"orderNum", "materialNo", "materialName", "texture", "specifications", "unit"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());

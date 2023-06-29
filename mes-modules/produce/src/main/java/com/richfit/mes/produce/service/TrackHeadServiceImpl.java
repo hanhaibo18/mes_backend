@@ -56,6 +56,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -1456,6 +1457,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 }
             });
             List<TrackItem> collect = trackItemListZG.stream().filter(item -> "16".equals(item.getOptType())).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(collect)){
+                return;
+            }
             currentItem = collect.get(0);
         }
         //激活下工序
@@ -1750,6 +1754,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         wrapperTrackAssembly.gt("number_install", 0);
         List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(wrapperTrackAssembly);
         List<TrackHead> trackHeads = new ArrayList<>();
+        //拼接自己的跟单
+        TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+        trackHeads.add(this.getById(trackFlow.getTrackHeadId()));
+        //寻找BOM的跟单
         trackAssemblyList.forEach(trackAssembly -> {
             QueryWrapper<TrackAssemblyBinding> wrapperTrackAssemblyBinding = new QueryWrapper();
             wrapperTrackAssemblyBinding.eq("assembly_id", trackAssembly.getId());
@@ -1768,14 +1776,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     wrapperTrackFlow.eq("tenant_id", trackAssembly.getTenantId());
                     List<TrackFlow> trackFlows = trackHeadFlowService.list(wrapperTrackFlow);
                     if (ObjectUtils.isNotNull(trackFlows)) {
-                        TrackHead trackHead = this.getById(trackFlows.get(0).getTrackHeadId());
-                        trackHeads.add(trackHead);
+                        trackHeads.add(this.getById(trackFlows.get(0).getTrackHeadId()));
                     }
                 }
             });
         });
-        Map<String, TrackHead> collect = trackHeads.stream().collect(Collectors.toMap(TrackHead::getProductNo, v -> v, (a, b) -> a));
-        return new ArrayList<>(collect.values());
+        return trackHeads;
     }
 
     @Override
@@ -2273,6 +2279,50 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             List<TrackHead> testBarNos = getTestBarNo(trackHead.getTexture(), trackHead.getTestBar(), trackHead.getBranchCode(), trackHead.getTestBarNo());
             if (!CollectionUtil.isEmpty(testBarNos)) {
                 throw new GlobalException("试棒编码已存在", ResultCode.FAILED);
+            }
+        }
+    }
+
+    /**
+     * 热工跟单赋值工艺属性
+     * @param classes
+     * @param trackHeadPublicVoIPage
+     */
+    @Override
+    public void headUpdateRouterInfo(String classes, IPage<TrackHeadPublicVo> trackHeadPublicVoIPage) {
+        //工艺ids
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackHeadPublicVoIPage.getRecords().stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
+        if(!CollectionUtil.isEmpty(getRouter)){
+            Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+            //capp工艺属性赋值
+            for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
+                //冶炼车间的铸件 匹配从铸钢车间过来的工艺信息
+                if("7".equals(classes) && "1".equals(record.getWorkblankType())){
+                    continue;
+                }else{
+                    Router router = routerMap.get(record.getRouterId()+"_"+record.getBranchCode());
+                    if(!ObjectUtil.isEmpty(router)){
+                        //锻造材料规格
+                        record.setBlankSpecifi(router.getBlankSpecifi());
+                        //锻造下料重量
+                        record.setBlankWeight(router.getBlankWeight());
+                        //材质
+                        record.setTexture(router.getTexture());
+                        //单重
+                        record.setWeight(router.getWeight());
+                        //钢水重量
+                        record.setWeightMolten(router.getWeightMolten());
+                        //工艺保温时间
+                        record.setProcessHoldTime(router.getProcessHoldTime());
+                        //浇筑温度
+                        record.setPourTemp(router.getPourTemp());
+                        //浇筑时间
+                        record.setPourTime(router.getPourTime());
+                        //试棒型号
+                        record.setTestBar(router.getTestBar());
+                    }
+                }
             }
         }
     }

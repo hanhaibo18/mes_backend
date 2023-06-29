@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kld.mes.attachment.mapper.AttachmentMapper">
+
+    <resultMap id="BaseResultMap" type="com.kld.mes.attachment.entity.Attachment">
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="attachName" column="attach_name" jdbcType="VARCHAR"/>
+            <result property="attachType" column="attach_type" jdbcType="VARCHAR"/>
+            <result property="attachSize" column="attach_size" jdbcType="VARCHAR"/>
+            <result property="fastFileId" column="fast_file_id" jdbcType="VARCHAR"/>
+            <result property="previewUrl" column="preview_url" jdbcType="VARCHAR"/>
+            <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="modifyBy" column="modify_by" jdbcType="VARCHAR"/>
+            <result property="modifyTime" column="modify_time" jdbcType="TIMESTAMP"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="VARCHAR"/>
+            <result property="tenantId" column="tenant_id" jdbcType="VARCHAR"/>
+            <result property="groupName" column="group_name" jdbcType="VARCHAR"/>
+            <result property="module" column="module" jdbcType="VARCHAR"/>
+            <result property="classify" column="classify" jdbcType="VARCHAR"/>
+            <result property="relationId" column="relation_id" jdbcType="VARCHAR"/>
+            <result property="relationName" column="relation_name" jdbcType="VARCHAR"/>
+            <result property="relationType" column="relation_type" jdbcType="VARCHAR"/>
+            <result property="type" column="type" jdbcType="VARCHAR"/>
+            <result property="drawingNo" column="drawing_no" jdbcType="VARCHAR"/>
+            <result property="productNo" column="product_no" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,attach_name,attach_type,
+        attach_size,fast_file_id,preview_url,
+        create_by,create_time,modify_by,
+        modify_time,remark,status,
+        tenant_id,group_name,module,
+        classify,relation_id,relation_name,
+        relation_type,type,drawing_no,
+        product_no
+    </sql>
+</mapper>

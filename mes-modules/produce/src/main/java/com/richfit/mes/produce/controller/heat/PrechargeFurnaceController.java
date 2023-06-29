@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author zhiqiang.lu
@@ -58,8 +57,9 @@ public class PrechargeFurnaceController extends BaseController {
     public CommonResult furnaceChargingHot(@ApiParam(value = "保存信息", required = true) @RequestBody List<Assign> assignList,
                                            @ApiParam(value = "材质") @RequestParam(required = false) String texture,
                                            @ApiParam(value = "车间编码") @RequestParam(required = false) String branchCode,
-                                           @ApiParam(value = "毛坯类型") @RequestParam(required = false) String workblankType) {
-        prechargeFurnaceService.furnaceChargingHot(assignList, texture, branchCode, workblankType);
+                                           @ApiParam(value = "毛坯类型") @RequestParam(required = false) String workblankType,
+                                           @ApiParam(value = "车间类型") @RequestParam(required = false) String classes) {
+        prechargeFurnaceService.furnaceChargingHot(assignList, texture, branchCode, workblankType,classes);
         return CommonResult.success("装炉成功");
     }
 
@@ -166,20 +166,40 @@ public class PrechargeFurnaceController extends BaseController {
         if (!StringUtils.isNullOrEmpty(dispatchingDto.getWorkblankType())) {
             queryWrapper.eq("workblank_type", dispatchingDto.getWorkblankType());
         }
-        queryWrapper.eq("branch_code", dispatchingDto.getBranchCode());
+        if(!StringUtils.isNullOrEmpty(dispatchingDto.getBranchCode())){
+            queryWrapper.eq("branch_code", dispatchingDto.getBranchCode());
+        }
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
-
+        //根据状态查询
+        if (!StringUtils.isNullOrEmpty(dispatchingDto.getFurnaceStatus())) {
+            if (dispatchingDto.getFurnaceStatus().equals("0")) {
+                queryWrapper.eq("assign_status", "0").eq("status", "0");
+            }
+            if (dispatchingDto.getFurnaceStatus().equals("-1")) {
+                queryWrapper.eq("status", "0").eq("assign_status", "1");
+            }
+            if (dispatchingDto.getFurnaceStatus().equals("1")) {
+                queryWrapper.eq("status", "1").eq("assign_status", "1");
+            }
+            if (dispatchingDto.getFurnaceStatus().equals("2")) {
+                queryWrapper.eq("status", "2");
+            }
+        }
         Page<PrechargeFurnace> page = prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
-        //根据材质和锭型进行分组
-        Map<String, Map<String, List<PrechargeFurnace>>> collect = page.getRecords().stream().collect(
-                Collectors.groupingBy(e -> Optional.ofNullable(e.getTexture()).orElse("null"),
-                        Collectors.groupingBy(e -> Optional.ofNullable(e.getIngotCase()).orElse("null"))));
+        //页面展示状态处理
         for (PrechargeFurnace record : page.getRecords()) {
-            //根据材质和锭型获取数量
-            if (!StringUtils.isNullOrEmpty(record.getTexture()) && !StringUtils.isNullOrEmpty(record.getIngotCase())) {
-                record.setNumByTexture(collect.get(record.getTexture()).get(record.getIngotCase()).size());
-            } else {
-                record.setNumByTexture(0);
+            if (record.getAssignStatus() == 0) {
+                record.setFurnaceStatus("0");
+            }
+            if (record.getAssignStatus() == 1) {
+                if ("0".equals(record.getStatus())) {
+                    record.setFurnaceStatus("-1");
+                } else {
+                    record.setFurnaceStatus(record.getStatus());
+                }
+            }
+            if ("2".equals(record.getStatus())) {
+                record.setFurnaceStatus("2");
             }
         }
         return CommonResult.success(page);
@@ -236,18 +256,6 @@ public class PrechargeFurnaceController extends BaseController {
         queryWrapper.eq("tenant_id", SecurityUtils.getCurrentUser().getTenantId());
 
         Page<PrechargeFurnace> page = prechargeFurnaceService.page(new Page<>(dispatchingDto.getPage(), dispatchingDto.getLimit()), queryWrapper);
-        //根据材质和锭型进行分组
-        Map<String, Map<String, List<PrechargeFurnace>>> collect = page.getRecords().stream().collect(
-                Collectors.groupingBy(e -> Optional.ofNullable(e.getTexture()).orElse("null"),
-                        Collectors.groupingBy(e -> Optional.ofNullable(e.getIngotCase()).orElse("null"))));
-        for (PrechargeFurnace record : page.getRecords()) {
-            //根据材质和锭型获取数量
-            if (!StringUtils.isNullOrEmpty(record.getTexture()) && !StringUtils.isNullOrEmpty(record.getIngotCase())) {
-                record.setNumByTexture(collect.get(record.getTexture()).get(record.getIngotCase()).size());
-            } else {
-                record.setNumByTexture(0);
-            }
-        }
         return CommonResult.success(page);
     }
 
@@ -269,10 +277,22 @@ public class PrechargeFurnaceController extends BaseController {
         return CommonResult.success(prechargeFurnaceService.addTrackItemHot(assignList), "更新成功");
     }
 
+    @ApiOperation(value = "装炉跟单工序添加(热工冶炼车间)", tags = "装炉跟单工序添加(热工冶炼车间)")
+    @PostMapping("/add/track/item_hot/YL")
+    public CommonResult addTrackItemHotYl(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
+        return CommonResult.success(prechargeFurnaceService.addTrackItemHotYl(assignList), "更新成功");
+    }
+
     @ApiOperation(value = "装炉跟单工序删除", tags = "装炉跟单工序删除")
     @PostMapping("/delete/track/item")
     public CommonResult deleteTrackItem(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
         return CommonResult.success(prechargeFurnaceService.deleteTrackItem(assignList), "删除成功");
+    }
+
+    @ApiOperation(value = "装炉跟单工序删除(冶炼车间)", tags = "装炉跟单工序删除")
+    @PostMapping("/delete/track/item/YL")
+    public CommonResult deleteTrackItemYl(@ApiParam(value = "跟单工序列表", required = true) @RequestBody List<Assign> assignList) {
+        return CommonResult.success(prechargeFurnaceService.deleteTrackItemYl(assignList), "删除成功");
     }
 
     @ApiOperation(value = "冶炼配炉 根据材质分类合计钢水重量列表")
@@ -289,7 +309,7 @@ public class PrechargeFurnaceController extends BaseController {
 
     @ApiOperation(value = "配炉未派工列表查询")
     @GetMapping("/assign_furnace_page_list")
-    public CommonResult<Page> assignFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType){
+    public CommonResult<Page> assignFurnacePageList(Long id, String texture, String endTime, String startTime, int page, int limit, String branchCode, String workblankType,String order,String orderCol){
         QueryWrapper<PrechargeFurnace> prechargeFurnaceQueryWrapper = new QueryWrapper<>();
         prechargeFurnaceQueryWrapper.eq("branch_code",branchCode)
                 .eq(!ObjectUtil.isEmpty(id),"id",id)
@@ -298,6 +318,7 @@ public class PrechargeFurnaceController extends BaseController {
                 .le(!StringUtils.isNullOrEmpty(endTime),"date_format(create_time, '%Y-%m-%d')", endTime)
                 .eq(!ObjectUtil.isEmpty(workblankType),"workblank_type",workblankType)
                 .eq("assign_status",0);
+        OrderUtil.query(prechargeFurnaceQueryWrapper,orderCol,order);
         return CommonResult.success(prechargeFurnaceService.page(new Page<>(page, limit), prechargeFurnaceQueryWrapper));
     }
 
@@ -307,7 +328,8 @@ public class PrechargeFurnaceController extends BaseController {
         QueryWrapper<TrackItem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("is_current",1)
                 .eq("precharge_furnace_id",id);
-        return CommonResult.success(trackItemMapper.getTrackItemList(queryWrapper));
+        List<TrackItem> trackItemList = trackItemMapper.getTrackItemList(queryWrapper);
+        return CommonResult.success(trackItemService.ylItemListSetRouterInfo(trackItemList));
     }
 
     @ApiOperation(value = "配炉工序列表查询")

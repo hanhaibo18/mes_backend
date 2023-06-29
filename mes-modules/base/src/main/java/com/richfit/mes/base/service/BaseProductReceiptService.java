@@ -1,10 +1,12 @@
 package com.richfit.mes.base.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.richfit.mes.base.entity.ReceiptDTO;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.base.BaseProductReceipt;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.richfit.mes.common.model.base.BaseProductReceiptDetail;
 import com.richfit.mes.common.model.base.BaseProductReceiptExtend;
 
 import java.util.List;
@@ -33,9 +35,10 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
      * @param drawNo
      * @param branchCode
      * @param tenantId
+     * @param operate::1::编辑；2：：详情
      * @return
      */
-    List<BaseProductReceiptExtend> queryReceiptDetailInfo(String connectId, Integer number, String workNo, String drawNo, String branchCode, String tenantId);
+    List<BaseProductReceiptExtend> queryReceiptDetailInfo(String connectId, Integer number, String workNo, String drawNo, String branchCode, String tenantId, String operate);
 
     /**
      * 新增交接单据
@@ -56,16 +59,43 @@ public interface BaseProductReceiptService extends IService<BaseProductReceipt> 
     /**
      * 接收单据
      *
-     * @param connectNo
+     * @param receiptDTO
      * @return
      */
-    CommonResult receive(String connectNo);
+    CommonResult receive(ReceiptDTO receiptDTO);
 
     /**
      * 拒收单据
      *
-     * @param connectNo
+     * @param connectId
      * @return
      */
-    CommonResult rejection(String connectNo);
+    CommonResult rejection(String connectId);
+
+    /**
+     * 返回接收单据
+     *
+     * @param connectId
+     * @return
+     */
+    CommonResult returnBack(String connectId);
+
+    /**
+     * 物料接收列表
+     *
+     * @param receiptDTO
+     * @return
+     */
+    IPage<BaseProductReceipt> receivePage(ReceiptDTO receiptDTO);
+
+    /**
+     * 物料接收明细列表
+     *
+     * @param workNo
+     * @param drawNo
+     * @param branchCode
+     * @param tenantId
+     * @return
+     */
+    List<BaseProductReceiptDetail> receiveDetail(String workNo, String drawNo, String branchCode, String tenantId);
 }

@@ -15,7 +15,6 @@ import lombok.Data;
  * 产品交接单据
  *
  * @author wangchenyu
- *
  * @TableName base_product_connect
  */
 @TableName(value = "base_product_receipt")
@@ -114,6 +113,12 @@ public class BaseProductReceipt implements Serializable {
     private String branchCode;
 
     /**
+     * 车间编码
+     */
+    @ApiModelProperty(value = "车间编码")
+    private String branchName;
+
+    /**
      * 验收人
      */
     @ApiModelProperty(value = "验收人")
@@ -146,10 +151,29 @@ public class BaseProductReceipt implements Serializable {
     private String status;
 
     /**
+     * 物料号
+     */
+    @ApiModelProperty(value = "物料号", dataType = "String")
+    private String materialNo;
+
+    /**
+     * 单位
+     */
+    @ApiModelProperty(value = "单位", dataType = "String")
+    private String unit;
+
+    /**
      * 租户id
      */
     @ApiModelProperty(value = "租户id")
     private String tenantId;
+
+    /**
+     * 是否齐套
+     */
+    @ApiModelProperty(value = "是否齐套")
+    @TableField(exist = false)
+    private Integer isKitting;
 
 
     @TableField(exist = false)

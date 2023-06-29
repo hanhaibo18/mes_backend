@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Api(tags = "理化检测接口")
 @RestController
+//TODO  路径不规范参考erp  wms
 @RequestMapping("/api/material")
 public class PhysChemOrderInnerController extends BaseController {
 

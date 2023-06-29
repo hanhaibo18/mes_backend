@@ -34,7 +34,7 @@ public class HotModelStoreServiceImpl extends ServiceImpl<HotModelStoreMapper, H
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult importExcel(MultipartFile file, String tenantId) {
-        String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark","version"};
+        String[] fieldNames = {"modelName", "modelType", "normalNum", "modelDrawingNo", "locationNo", "scrapNum", "modelRemark","version","modelTexture"};
         File excelFile = null;
         //给导入的excel一个临时的文件名
         StringBuilder tempName = new StringBuilder(UUID.randomUUID().toString());

@@ -31,15 +31,6 @@ public interface ProductService extends IService<Product> {
     CommonResult importMaterialExcel(MultipartFile file);
 
     /**
-     * 同步选中物料数据物料到wms
-     *
-     * @param ids
-     * @return
-     */
-    CommonResult<Boolean> saveWmsSync(List<String> ids);
-
-
-    /**
      * MES实时查询WMS库存
      *
      * @param inventoryQuery
@@ -49,4 +40,12 @@ public interface ProductService extends IService<Product> {
 
     Page<InventoryReturn> selectMaterial(String branchCode, int limit, int page, String materialNo, String materialName, Integer invType, String texture);
 
+    /**
+     * 功能描述: 定时同步接口
+     *
+     * @Author: xinYu.hou
+     * @Date: 2023/6/9 15:27
+     * @return: void
+     **/
+    void synchronizedMaterial();
 }

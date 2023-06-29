@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.model.produce.TrackCheck;
 import com.richfit.mes.common.model.produce.TrackItem;
+import com.richfit.mes.produce.entity.BatchAddScheduleDto;
 import com.richfit.mes.produce.entity.CountDto;
 
 import java.util.List;
@@ -105,4 +106,5 @@ public interface TrackCheckService extends IService<TrackCheck> {
      **/
     CommonResult<IPage<TrackItem>> queryDispatchPage(int page, int limit, String isExistScheduleCheck, String isScheduleComplete, String startTime, String endTime, String trackNo, String productNo, String branchCode, String tenantId, String drawingNo, String order, String orderCol);
 
+    CommonResult<Boolean> batchAddSchedule(BatchAddScheduleDto batchAddScheduleDto);
 }

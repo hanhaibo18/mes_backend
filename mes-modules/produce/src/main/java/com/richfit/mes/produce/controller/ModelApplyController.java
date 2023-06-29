@@ -43,6 +43,13 @@ public class ModelApplyController extends ApiController {
         return modelApplyService.applyModel(branchCode, itemInfo);
     }
 
+    @ApiOperation(value = "根据图号版本号请求模型")
+    @PostMapping("/apply_model_new")
+    public CommonResult<Boolean> applyModelNew(@ApiParam(value = "车间编码") @RequestParam String branchCode,
+                                               @ApiParam(value = "工序信息") @RequestBody List<TrackItem> itemInfo) {
+        return modelApplyService.applyModelNew(branchCode, itemInfo);
+    }
+
     /**
      * 分页展示模型请求
      */
@@ -55,13 +62,34 @@ public class ModelApplyController extends ApiController {
                                                         @ApiParam(value = "请求日期结束") @RequestParam(required = false) String endTime,
                                                         @ApiParam(value = "页数") @RequestParam(defaultValue = "1") int page,
                                                         @ApiParam(value = "每页数量") @RequestParam(defaultValue = "10") int limit) {
-        return modelApplyService.getPageInfo(sign,branchCode,drawingNo,startTime,endTime,page,limit);
+        return modelApplyService.getPageInfo(sign, branchCode, drawingNo, startTime, endTime, page, limit);
+    }
+
+    /**
+     * 分页展示模型请求
+     */
+    @ApiOperation(value = "分页展示模型请求")
+    @GetMapping("/get_model_apply_new")
+    public CommonResult<Page<ModelApply>> getModelApplyNew(@ApiParam(value = "展示标识：未配送0，已配送1") @RequestParam(defaultValue = "0") int sign,
+                                                           @ApiParam(value = "车间编码") @RequestParam String branchCode,
+                                                           @ApiParam(value = "图号") @RequestParam(required = false) String drawingNo,
+                                                           @ApiParam(value = "请求日期开始") @RequestParam(required = false) String startTime,
+                                                           @ApiParam(value = "请求日期结束") @RequestParam(required = false) String endTime,
+                                                           @ApiParam(value = "页数") @RequestParam(defaultValue = "1") int page,
+                                                           @ApiParam(value = "每页数量") @RequestParam(defaultValue = "10") int limit) {
+        return modelApplyService.getPageInfoNew(sign, branchCode, drawingNo, startTime, endTime, page, limit);
     }
 
     @ApiOperation(value = "配送确认")
     @PostMapping("/delivery")
     public CommonResult<Boolean> delivery(@ApiParam(value = "模型请求实体") @RequestBody List<ModelApply> modelApplyList) {
         return CommonResult.success(modelApplyService.delivery(modelApplyList));
+    }
+
+    @ApiOperation(value = "配送确认（新）")
+    @GetMapping("/delivery_new")
+    public CommonResult<Boolean> delivery(@ApiParam(value = "模型id") @RequestParam String modelId, @ApiParam(value = "模型申请Id") @RequestParam String modelApplyId) {
+        return CommonResult.success(modelApplyService.deliveryNew(modelId, modelApplyId));
     }
 
     @ApiOperation(value = "模型退库")
@@ -72,7 +100,7 @@ public class ModelApplyController extends ApiController {
 
     @ApiOperation(value = "模型车间主动配送")
     @PostMapping("/delivery_active")
-    public CommonResult<Boolean> deliveryActive(@ApiParam("模型实体") @RequestBody List<HotModelStore> hotModelStoreList){
+    public CommonResult<Boolean> deliveryActive(@ApiParam("模型实体") @RequestBody List<HotModelStore> hotModelStoreList) {
         return CommonResult.success(modelApplyService.deliveryActive(hotModelStoreList));
     }
 

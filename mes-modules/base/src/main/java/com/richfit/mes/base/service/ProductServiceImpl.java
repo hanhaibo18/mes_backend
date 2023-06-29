@@ -13,6 +13,7 @@ import com.richfit.mes.base.enmus.MessageEnum;
 import com.richfit.mes.base.enmus.TrackTypeEnum;
 import com.richfit.mes.base.provider.SystemServiceClient;
 import com.richfit.mes.base.provider.WmsServiceClient;
+import com.richfit.mes.base.service.wms.MaterialService;
 import com.richfit.mes.common.core.api.CommonResult;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
@@ -24,16 +25,21 @@ import com.richfit.mes.common.model.sys.Tenant;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.model.wms.InventoryQuery;
 import com.richfit.mes.common.model.wms.InventoryReturn;
-import com.richfit.mes.common.model.wms.MaterialBasis;
+import com.richfit.mes.common.security.constant.SecurityConstants;
 import com.richfit.mes.common.security.userdetails.TenantUserDetails;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,6 +48,7 @@ import java.util.stream.Collectors;
  * @Description 物料服务
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
 
     @Autowired
@@ -55,7 +62,11 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Autowired
     private SystemServiceClient systemServiceClient;
 
+    @Resource
+    private MaterialService materialService;
+
     @Override
+
     public IPage<Product> selectProduct(Page<Product> page, QueryWrapper<Product> query) {
         return productMapper.selectProduct(page, query);
     }
@@ -208,51 +219,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     /**
-     * 勾选物料同步到wms
-     *
-     * @param ids
-     * @return
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public CommonResult<Boolean> saveWmsSync(List<String> ids) {
-        List<Product> productList = productMapper.selectBatchIds(ids);
-        if (CollectionUtils.isEmpty(productList)) {
-            return CommonResult.failed("未勾选中物料数据");
-        }
-        // 查询所有的租户信息
-        Map<String, Tenant> tenantMap = systemServiceClient.queryTenantAllList().getData().stream().collect(Collectors.toMap(Tenant::getId, x -> x, (value1, value2) -> value2));
-        Map<String, Product> productMap = productList.stream().collect(Collectors.toMap(e -> e.getId(), product -> product, (value1, value2) -> value2));
-        if (CollectionUtils.isNotEmpty(productList)) {
-            List<MaterialBasis> materialBasisList = new ArrayList<>();
-            MaterialBasis materialBasis = new MaterialBasis();
-            for (Product product : productList) {
-                materialBasis.setWorkCode(tenantMap.get(product.getTenantId()).getTenantErpCode());
-                materialBasis.setMaterialNum(productMap.get(product.getId()).getMaterialNo());
-                materialBasis.setMaterialDesc(productMap.get(product.getId()).getMaterialDesc());
-                materialBasis.setUnit(productMap.get(product.getId()).getUnit());
-                materialBasis.setCrucialFlag(productMap.get(product.getId()).getIsKeyPart());
-                materialBasis.setTrackingMode(productMap.get(product.getId()).getTrackType());
-                materialBasis.setPartsMaterial(productMap.get(product.getId()).getTexture());
-                materialBasis.setSpec(productMap.get(product.getId()).getSpecification());
-                if (productMap.get(product.getId()).getWeight() == null) {
-                    materialBasis.setSingleWeight(null);
-                } else {
-                    materialBasis.setSingleWeight(productMap.get(product.getId()).getWeight().toString());
-                }
-                materialBasis.setDeliveryFlag(productMap.get(product.getId()).getIsEdgeStore());
-                materialBasis.setMaterialType(MaterialTypeEnum.getName(productMap.get(product.getId()).getMaterialType()));
-                materialBasis.setWorkshop(productMap.get(product.getId()).getBranchCode());
-                materialBasisList.add(materialBasis);
-            }
-            // 同步到wms中
-            wmsServiceClient.materialBasis(materialBasisList);
-            return CommonResult.success(true, "操作成功");
-        }
-        return CommonResult.failed("操作失败");
-    }
-
-    /**
      * 查询库存
      *
      * @param inventoryQuery
@@ -345,4 +311,34 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
 
+    /**
+     * 功能描述: 每天执行一次
+     *
+     * @Author: xinYu.hou
+     * @Date: 2023/6/9 17:18
+     * @return: void
+     **/
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @Scheduled(cron = "0 0 0 1/1 * ? ")
+    public void synchronizedMaterial() {
+        //获取所有未同步数据
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("synchronous_regime", 0);
+        List<Product> productList = this.list(queryWrapper);
+        //根据租户分组
+        Map<String, List<Product>> collect = productList.stream().collect(Collectors.groupingBy(Product::getTenantId));
+        //获取所有租户信息
+        CommonResult<List<Tenant>> commonResult = systemServiceClient.queryTenantList(SecurityConstants.FROM_INNER);
+        Map<String, String> map = commonResult.getData().stream().collect(Collectors.toMap(Tenant::getId, Tenant::getTenantErpCode));
+        for (List<Product> products : collect.values()) {
+            //计算需要循环多少次 向上取整
+            double ceil = Math.ceil((double) products.size() / (double) 1000);
+            for (int i = 0; i < ceil; i++) {
+                List<Product> list = products.subList(i, 1000);
+                //调用方法时传入erpCode
+                materialService.sync(list, map.get(products.get(0).getTenantId()));
+            }
+        }
+    }
 }

@@ -40,6 +40,6 @@ public interface RecordsOfPourOperationsService extends IService<RecordsOfPourOp
 
     Boolean addItem(Long prechargeFurnaceId, List<String> itemIds);
 
-    Boolean deleteItem(List<String> itemIds);
+    Boolean deleteItem(List<String> itemIds, Long prechargeFurnaceId);
 }
 

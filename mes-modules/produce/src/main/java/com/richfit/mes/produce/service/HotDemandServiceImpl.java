@@ -448,47 +448,47 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
      * @param branchType  1 模型车间
      */
 
-    private Map convertAndSave(TenantUserDetails currentUser, List<HotDemand> hotDemands ,int branchType) {
+    private Map convertAndSave(TenantUserDetails currentUser, List<HotDemand> hotDemands, int branchType) {
         //根据需求信息自动生成生产计划数据
-        Map<String,String> planIdMap=new HashMap<>();
+        Map<String, String> planIdMap = new HashMap<>();
         for (HotDemand hotDemand : hotDemands) {
             Plan plan = new Plan();
-                plan.setStatus(0);//状态 0未开始 1进行中 2关闭 3已完成
-                plan.setProjCode(DateUtils.formatDate(new Date(), "yyyy-MM"));//计划编号
-                plan.setWorkNo(hotDemand.getWorkNo());//工作号
-                plan.setDrawNo(hotDemand.getDrawNo());//图号
-                plan.setProjNum(hotDemand.getPlanNum());//计划数量
-                plan.setStartTime(new Date());//开始时间
-                plan.setPriority("0");//优先级 0低 1中 2高
-                plan.setCreateBy(currentUser.getUsername());//创建人
-                plan.setCreateTime(new Date());//创建时间
-                plan.setTenantId(hotDemand.getTenantId());//租户id
-                plan.setSource(1);//来源  1 分公司计划  2车间计划
-                //车间码处理
-                this.disposeBranchCode(branchType, hotDemand, plan);
+            plan.setStatus(0);//状态 0未开始 1进行中 2关闭 3已完成
+            plan.setProjCode(DateUtils.formatDate(new Date(), "yyyy-MM"));//计划编号
+            plan.setWorkNo(hotDemand.getWorkNo());//工作号
+            plan.setDrawNo(hotDemand.getDrawNo());//图号
+            plan.setProjNum(hotDemand.getPlanNum());//计划数量
+            plan.setStartTime(new Date());//开始时间
+            plan.setPriority(hotDemand.getPriority());//优先级 高3  中3  低0  一般1
+            plan.setCreateBy(currentUser.getUsername());//创建人
+            plan.setCreateTime(new Date());//创建时间
+            plan.setTenantId(hotDemand.getTenantId());//租户id
+            plan.setSource(1);//来源  1 分公司计划  2车间计划
+            //车间码处理
+            this.disposeBranchCode(branchType, hotDemand, plan);
 
-                plan.setTexture(hotDemand.getTexture());//材质
-                plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
-    //            plan.setApprovalBy(currentUser.getUsername());//审批人
-    //            plan.setApprovalTime(new Date());//审批时间
-                plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
-                //--------------------------
-                plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
-                plan.setInchargeOrgName(hotDemand.getInchargeOrgName());//加工单位
-                plan.setInchargeOrg(hotDemand.getInchargeOrg());
-                plan.setBlank(hotDemand.getWorkblankType());//毛坯
-                plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
-                plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
-                plan.setModifyBy(currentUser.getUsername());
-                plan.setModifyTime(new Date());
-                plan.setDrawNoName("");//图号名称
-                plan.setMaterialName(hotDemand.getDemandName());//零件名称
-                plan.setInchargeWorkshopName(hotDemand.getInchargeWorkshopName());
-                plan.setInchargeWorkshop(hotDemand.getInchargeWorkshop());
-                planService.save(plan);
-                //扩展字段保存
-                this.saveExtend(hotDemand, plan);
-            planIdMap.put(hotDemand.getId(),plan.getId());
+            plan.setTexture(hotDemand.getTexture());//材质
+            plan.setStoreNumber(hotDemand.getRepertoryNum());//库存数量
+            //            plan.setApprovalBy(currentUser.getUsername());//审批人
+            //            plan.setApprovalTime(new Date());//审批时间
+            plan.setMissingNum(hotDemand.getPlanNum());//缺件数量等于计划数量
+            //--------------------------
+            plan.setTotalNumber(hotDemand.getPlanNum());//计划数量
+            plan.setInchargeOrgName(hotDemand.getInchargeOrgName());//加工单位
+            plan.setInchargeOrg(hotDemand.getInchargeOrg());
+            plan.setBlank(hotDemand.getWorkblankType());//毛坯
+            plan.setEndTime(hotDemand.getPlanEndTime());//结束时间
+            plan.setAlarmStatus(0);//预警状态 0正常  1提前 2警告 3延期
+            plan.setModifyBy(currentUser.getUsername());
+            plan.setModifyTime(new Date());
+            plan.setDrawNoName("");//图号名称
+            plan.setMaterialName(hotDemand.getDemandName());//零件名称
+            plan.setInchargeWorkshopName(hotDemand.getInchargeWorkshopName());//加工车间名称
+            plan.setInchargeWorkshop(hotDemand.getInchargeWorkshop());//加工车间编码
+            planService.save(plan);
+            //扩展字段保存
+            this.saveExtend(hotDemand, plan);
+            planIdMap.put(hotDemand.getId(), plan.getId());
         }
         return planIdMap;
     }
@@ -506,8 +506,8 @@ public class HotDemandServiceImpl extends ServiceImpl<HotDemandMapper, HotDemand
             planExtend.setSampleNum(0);//实样数量
             planExtend.setDemandId(hotDemand.getId());//需求表id
             planExtend.setPlanId(plan.getId());//生产计划id
-            planExtend.setWeight(hotDemand.getWeight());//重量
-            planExtend.setPieceWeight(hotDemand.getPieceWeight());//单重
+            planExtend.setWeight(hotDemand.getWeight());//单重
+            planExtend.setPieceWeight(hotDemand.getPieceWeight());//单重(废弃)
             planExtend.setSteelWaterWeight(hotDemand.getSteelWaterWeight());//钢水重
             planExtend.setDemandTime(hotDemand.getDemandTime());//需求日期
             planExtend.setSubmitBy(hotDemand.getSubmitBy());//提单人

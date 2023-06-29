@@ -167,7 +167,11 @@ public class HotDemandController extends BaseController {
         if (StringUtils.isNotEmpty(hotDemandParam.getOrderByColumns())) {//多字段排序
             queryWrapper.orderByAsc(hotDemandParam.getOrderByColumns());
         }
-        queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        //批准生产状态是需求确认页面特有参数,为空时是需求提报页面发送的请求,需要做租户间数据隔离查询
+        if (hotDemandParam.getProduceRatifyState() == null){
+            queryWrapper.eq("tenant_id",currentUser.getTenantId());
+        }
+
         //排序工具
         OrderUtil.query(queryWrapper, hotDemandParam.getOrderCol(), hotDemandParam.getOrder());
         Page<HotDemand> page = hotDemandService.page(new Page<HotDemand>(hotDemandParam.getPage(), hotDemandParam.getLimit()), queryWrapper);
@@ -177,6 +181,8 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "修改需求提报", notes = "修改需求提报")
     @PostMapping("/update_demand")
     public CommonResult updateDemand(@RequestBody HotDemand hotDemand) {
+        //修改需求数量,同时修改计划数量
+        hotDemand.setPlanNum(hotDemand.getNum());
         boolean b = hotDemandService.updateById(hotDemand);
         if (b) {
             return CommonResult.success(ResultCode.SUCCESS);
@@ -494,8 +500,9 @@ public class HotDemandController extends BaseController {
                 }
                 //updateWrapper.set("workblank_type", );//设置毛坯类型
                 updateWrapper.set("steel_water_weight", router.getWeightMolten());//设置钢水重量
-                updateWrapper.set("piece_weight", router.getPieceWeight());//设置单重
-                updateWrapper.set("weight", router.getForgWeight());//设置重量
+                updateWrapper.set("piece_weight", router.getPieceWeight());//设置单重(废弃)
+                updateWrapper.set("weight", router.getWeight());//设置单重
+                updateWrapper.set("forg_weight", router.getForgWeight());//设置锻件重量
                 updateWrapper.eq("id", hotDemand.getId());
                 hotDemandService.update(updateWrapper);
             }
@@ -586,7 +593,7 @@ public class HotDemandController extends BaseController {
     @ApiOperation(value = "设置优先级", notes = "设置优先级")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "idList", value = "IdList", required = true, paramType = "query"),
-            @ApiImplicitParam(name = "priority", value = "优先级 :高 ,中, 低", required = true, dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "priority", value = "优先级 高3  中3  低0  一般1", required = true, dataType = "String", paramType = "query")
     })
     @PostMapping("/set_priority")
     public CommonResult setPriority(@RequestBody List<String> idList, String priority) {

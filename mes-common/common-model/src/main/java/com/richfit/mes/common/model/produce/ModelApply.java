@@ -25,6 +25,8 @@ public class ModelApply extends BaseEntity<ModelApply> {
     private String modelDrawingNo;
     //申请数量
     private Integer applyNum;
+    //派送数量
+    private Integer assignNum;
     //模型类型（0：一次性(气化膜)，1：重复性(木制)）
     private Integer modelType;
     //模型版本号
@@ -39,4 +41,6 @@ public class ModelApply extends BaseEntity<ModelApply> {
     private String itemId;
     //计划完成时间
     private Date planFinishTime;
+    //退库时间
+    private Date backTime;
 }

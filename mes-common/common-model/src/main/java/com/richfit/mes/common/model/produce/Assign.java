@@ -318,6 +318,10 @@ public class Assign extends BaseEntity<Assign> {
     @ApiModelProperty(value = "是否当前工序 1是  0 否")
     private Integer isCurrent;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "跟单id")
+    private String trackHeadId;
+
     /**
      * 下料重量
      */
@@ -338,6 +342,12 @@ public class Assign extends BaseEntity<Assign> {
 
     @TableField(exist = false)
     private String forgTempEnd;
+
+    /**
+     * 毛坯类型
+     */
+    @TableField(exist = false)
+    private String workblankType;
 
     public String getUserId() {
         return userId;

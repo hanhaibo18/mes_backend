@@ -275,4 +275,8 @@ public interface BaseServiceClient {
     @ApiOperation(value = "根据branchCode获取机构信息")
     @PostMapping("/api/base/branch/getBranchInfoMapByBranchCodeList")
     Map<String, Branch> getBranchInfoMapByBranchCodeList(@RequestBody ArrayList<String> strings);
+
+    @ApiOperation(value = "根据图号和工序name查询工艺工序派工", notes = "根据图号和工序name查询工艺工序派工")
+    @GetMapping("/api/base/router/router/opt/assign/get")
+    public CommonResult<RouterOptAssign> routerAssignGet(@RequestParam  String routerNo, @RequestParam  String optName, @RequestParam  String branchCode);
 }
