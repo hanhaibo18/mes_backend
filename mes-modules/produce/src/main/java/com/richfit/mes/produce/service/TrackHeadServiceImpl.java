@@ -1457,6 +1457,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 }
             });
             List<TrackItem> collect = trackItemListZG.stream().filter(item -> "16".equals(item.getOptType())).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(collect)){
+                return;
+            }
             currentItem = collect.get(0);
         }
         //激活下工序
