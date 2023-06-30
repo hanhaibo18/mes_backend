@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @Api(tags = "消息管理")
 @RestController
-//TODO  路径不规范参考erp  wms
 @RequestMapping("/api/wechat/message")
 public class MessageController extends BaseController {
     @Autowired

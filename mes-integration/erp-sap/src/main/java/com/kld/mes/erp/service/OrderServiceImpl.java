@@ -1,21 +1,31 @@
 package com.kld.mes.erp.service;
 
-import com.kld.mes.erp.entity.order.select.WERKS;
-import com.kld.mes.erp.entity.order.select.ZC80PPIF009;
-import com.kld.mes.erp.entity.order.select.ZC80PPIF009Response;
-import com.kld.mes.erp.entity.order.select.ZPPS0008;
+import com.alibaba.fastjson.JSON;
+import com.kld.mes.erp.entity.order.WERKS;
+import com.kld.mes.erp.entity.order.ZC80PPIF009;
+import com.kld.mes.erp.entity.order.ZC80PPIF009Response;
+import com.kld.mes.erp.entity.order.ZPPS0008;
 import com.kld.mes.erp.entity.order.creat.*;
 import com.kld.mes.erp.utils.WsTemplateFactory;
 import com.richfit.mes.common.core.api.ResultCode;
 import com.richfit.mes.common.core.exception.GlobalException;
 import com.richfit.mes.common.model.produce.Order;
+import com.richfit.mes.common.model.produce.ProducePurchaseOrder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
+import java.sql.SQLOutput;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,12 +50,14 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private WsTemplateFactory wsTemplateFactory;
 
+    private final String packageName = "com.kld.mes.erp.entity.order";
+
     @Override
     public List<Order> getErpCode(String erpCode, String selectDate, String controller, String orderNo) throws Exception {
         ZC80PPIF009 zc80PPIF009 = generateRequestBody(erpCode, selectDate);
 
         //获取调用服务接口类实例
-        WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate("com.kld.mes.erp.entity.order.select");
+        WebServiceTemplate webServiceTemplate = wsTemplateFactory.generateTemplate(packageName);
         List<ZPPS0008> list = new ArrayList<>();
         try {
             ZC80PPIF009Response o = (ZC80PPIF009Response) webServiceTemplate.marshalSendAndReceive(URL_SEARCH, zc80PPIF009);
