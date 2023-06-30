@@ -368,18 +368,6 @@ public class HotDemandController extends BaseController {
             }
         }
         return CommonResult.success("操作成功");
-//        if (CollectionUtils.isNotEmpty(ids)) {
-//            UpdateWrapper updateWrapper = new UpdateWrapper();
-//            updateWrapper.set("is_exist_model", 1);//设置为有模型
-//            updateWrapper.in("id", ids);
-//            boolean update = hotDemandService.update(updateWrapper);
-//            if (update) {
-//                return CommonResult.success(ResultCode.SUCCESS);
-//            }
-//            return CommonResult.failed();
-//        } else {
-//            return CommonResult.success("操作成功");
-//        }
     }
 
     @ApiOperation(value = "检查外协件", notes = "检查外协件")
