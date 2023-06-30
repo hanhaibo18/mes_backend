@@ -16,7 +16,6 @@
         <module>wms-kld</module>
         <module>material-inspection</module>
         <module>wechat</module>
-        <module>plm-tc</module>
         <module>marketing</module>
     </modules>
     <dependencies>
