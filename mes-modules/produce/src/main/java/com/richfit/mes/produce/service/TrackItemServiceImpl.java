@@ -38,6 +38,7 @@ import com.richfit.mes.produce.entity.QueryFlawDetectionListDto;
 import com.richfit.mes.produce.entity.quality.DisqualificationItemVo;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
+import com.richfit.mes.produce.service.heat.PrechargeFurnaceService;
 import com.richfit.mes.produce.service.quality.DisqualificationService;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -968,6 +969,9 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
         }
         return trackItemList;
     }
+
+    @Autowired
+    private PrechargeFurnaceService prechargeFurnaceService;
 
     /**
      * 跟单记录回滚处理配炉信息接口

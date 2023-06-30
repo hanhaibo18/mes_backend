@@ -68,10 +68,6 @@ public class PrechargeFurnaceAssignServiceImpl extends ServiceImpl<PrechargeFurn
     @Autowired
     private PrechargeFurnaceAssignPersonService prechargeFurnaceAssignPersonService;
     @Autowired
-    private TrackCompleteService trackCompleteService;
-    @Autowired
-    private TrackCompleteServiceImpl trackCompleteServiceImpl;
-    @Autowired
     private BaseServiceClient baseServiceClient;
 
 

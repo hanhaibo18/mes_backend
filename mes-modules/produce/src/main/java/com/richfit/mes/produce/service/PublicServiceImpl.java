@@ -470,16 +470,18 @@ public class PublicServiceImpl implements PublicService {
         assign.setTrackNo(trackHead.getTrackNo());
         assign.setClasses(trackHead.getClasses());
         List<AssignPerson> list = new ArrayList<>();
-
-        String[] userIds = assignGet.getData().getUserId().split(",");
-        String[] userNames = assignGet.getData().getUserName().split(",");
-        for (int i = 0; i < userIds.length; i++) {
-            AssignPerson assignPerson = new AssignPerson();
-            assignPerson.setUserId(userIds[i]);
-            assignPerson.setUserName(userNames[i]);
-            list.add(assignPerson);
+        if(!StringUtils.isNullOrEmpty(assignGet.getData().getUserId()) && !StringUtils.isNullOrEmpty(assignGet.getData().getUserName())){
+            String[] userIds = assignGet.getData().getUserId().split(",");
+            String[] userNames = assignGet.getData().getUserName().split(",");
+            for (int i = 0; i < userIds.length; i++) {
+                AssignPerson assignPerson = new AssignPerson();
+                assignPerson.setUserId(userIds[i]);
+                assignPerson.setUserName(userNames[i]);
+                list.add(assignPerson);
+            }
+            assign.setAssignPersons(list);
         }
-        assign.setAssignPersons(list);
+
         CommonResult<Assign[]> commonResult = trackAssignController.batchAssign(new Assign[]{assign});
         trackItem.setIsSchedule(1);
         trackItemService.updateById(trackItem);

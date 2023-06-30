@@ -283,7 +283,11 @@ TrackAssignServiceImpl extends ServiceImpl<TrackAssignMapper, Assign> implements
 //        queryWrapper.eq("u.branch_code", branchCode);
         queryWrapper.eq("u.tenant_id", SecurityUtils.getCurrentUser().getTenantId());
         //queryWrapper.eq("site_id",SecurityUtils.getCurrentUser().getBelongOrgId());
-        //queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
+        //机架和装配历史数据派工的组织结构为空，不能用以下代码 所以需要判断只在热工用
+        if(classes.equals("4") || classes.equals("7") || classes.equals("6")){
+            queryWrapper.apply("FIND_IN_SET('" + SecurityUtils.getCurrentUser().getBelongOrgId() + "',u.site_id)");
+        }
+
         //根据classes判断  对下料、锻造、去氢、正火进行查询控制
         if ("4".equals(classes) || "6".equals(classes) || "7".equals(classes)) {
             queryWrapper.ne("opt_type", "14")
