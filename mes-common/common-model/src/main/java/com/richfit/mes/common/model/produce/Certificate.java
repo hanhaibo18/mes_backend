@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
@@ -205,6 +206,7 @@ public class Certificate extends BaseEntity<Certificate> {
         } else if ("2".equals(workblankType)) {
             this.nextOptWork = "BOMCO_SC";
         }
+        BeanUtil.copyProperties(trackHead, this, new String[]{"id", "createTime", "modifyTime", "modifyBy"});
         this.optSequence = (item.getOptSequence());
         this.optNo = (item.getOptNo());
         this.optName = (item.getOptName());
