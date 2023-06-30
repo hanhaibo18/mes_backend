@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling()
 @MapperScan("com/tc/mes/plm/mapper")
 @SpringBootApplication
-public class PlmtcApplication {
+public class PlmApplication {
     public static void main(String[] args) {
-        SpringApplication.run(PlmtcApplication.class, args);
+        SpringApplication.run(PlmApplication.class, args);
     }
 }
