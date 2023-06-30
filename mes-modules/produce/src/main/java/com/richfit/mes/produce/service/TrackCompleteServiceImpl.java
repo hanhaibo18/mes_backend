@@ -349,6 +349,10 @@ public class TrackCompleteServiceImpl extends ServiceImpl<TrackCompleteMapper, T
                 assignInfo.setCompleteBy(SecurityUtils.getCurrentUser().getUsername());
                 prechargeFurnaceAssignService.updateById(assignInfo);
             }
+            //锻造车间 报工后修改炉报工状态
+            if(trackHead.getClasses().equals("4")){
+                prechargeFurnaceService.update(new UpdateWrapper<PrechargeFurnace>().eq("id",trackItem.getPrechargeFurnaceId()).set("status","2"));
+            }
 
             log.error(completeDto.getTrackCompleteList().toString());
 
