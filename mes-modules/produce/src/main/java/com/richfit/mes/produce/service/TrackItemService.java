@@ -213,4 +213,19 @@ public interface TrackItemService extends IService<TrackItem> {
      * @return
      */
     List<TrackItem> ylItemListSetRouterInfo(List<TrackItem> trackItemList);
+
+    /**
+     * 炼钢车间工艺信息赋值
+     * @param trackItemList
+     * @return
+     */
+    List<TrackItem> zGItemListSetRouterInfo(List<TrackItem> trackItemList);
+
+
+    /**
+     * 热工设置工艺信息
+     * @param trackItemList
+     * @return
+     */
+    public List<TrackItem> rGSetRouterInfo(List<TrackItem> trackItemList);
 }

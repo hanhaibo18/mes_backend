@@ -187,7 +187,7 @@ public class HeatTrackAssignController extends BaseController {
         }
 
         IPage<TrackItem> pageAssignsHot = trackAssignService.getPageAssignsHot(new Page(page, limit), queryWrapper);
-        pageAssignsHot.setRecords(trackItemService.ylItemListSetRouterInfo(pageAssignsHot.getRecords()));
+        pageAssignsHot.setRecords(trackItemService.rGSetRouterInfo(pageAssignsHot.getRecords()));
 
         return CommonResult.success(pageAssignsHot, "操作成功！");
     }

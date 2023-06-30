@@ -934,6 +934,24 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
      * @return
      */
     @Override
+    public List<TrackItem> rGSetRouterInfo(List<TrackItem> trackItemList) {
+        if(CollectionUtil.isEmpty(trackItemList)){
+            return trackItemList;
+        }
+        if("7".equals(trackItemList.get(0).getClasses())){
+            return ylItemListSetRouterInfo(trackItemList);
+        }else if("6".equals(trackItemList.get(0).getClasses()) || "4".equals(trackItemList.get(0).getClasses())){
+            return zGItemListSetRouterInfo(trackItemList);
+        }
+        return trackItemList;
+    }
+
+    /**
+     * 冶炼车间router信息赋值
+     * @param trackItemList
+     * @return
+     */
+    @Override
     public List<TrackItem> ylItemListSetRouterInfo(List<TrackItem> trackItemList) {
         if(CollectionUtil.isEmpty(trackItemList) || !"7".equals(trackItemList.get(0).getClasses())){
             return trackItemList;
@@ -965,6 +983,30 @@ public class TrackItemServiceImpl extends ServiceImpl<TrackItemMapper, TrackItem
             TrackHeadCast trackHeadCast = trackHeadCastMap.get(trackItem.getTrackHeadId());
             if("1".equals(trackItem.getWorkblankType()) && !ObjectUtil.isEmpty(trackHeadCast)){
                 trackItem.setWeightMolten(String.valueOf(trackHeadCast.getWeightMolten()));
+            }
+        }
+        return trackItemList;
+    }
+
+    /**
+     * 铸钢车间router信息赋值
+     * @param trackItemList
+     * @return
+     */
+    @Override
+    public List<TrackItem> zGItemListSetRouterInfo(List<TrackItem> trackItemList) {
+        Map<String, Router> routerMap = new HashMap<>();
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackItemList.stream()
+                .map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
+        if(!CollectionUtil.isEmpty(getRouter)){
+            routerMap = getRouter.stream()
+                    .collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+        }
+        for (TrackItem trackItem : trackItemList) {
+            Router router = routerMap.get(trackItem.getRouterId() + "_" + trackItem.getBranchCode());
+            if(!Objects.isNull(router)){
+                trackItem.setWeightMolten(router.getWeightMolten());
             }
         }
         return trackItemList;
