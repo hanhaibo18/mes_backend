@@ -17,10 +17,9 @@
         <module>material-inspection</module>
         <module>wechat</module>
         <module>plm-tc</module>
-        <!--  这个加的时候代码没提交 服务器启动不了了      <module>pdm-bs</module>-->
+        <module>marketing</module>
     </modules>
     <dependencies>
-
         <!-- common-core -->
         <dependency>
             <groupId>com.richfit.mes</groupId>
@@ -32,5 +31,4 @@
             <artifactId>common-model</artifactId>
         </dependency>
     </dependencies>
-
 </project>
