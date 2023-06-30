@@ -1,0 +1,45 @@
+server:
+  port: ${SERVER_PORT:8020}
+spring:
+  application:
+    name: plmtc-service
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos0
+      discovery:
+        enabled: ${DISCOVERY_ENABLED:true}
+        server-addr: ${DISCOVERY_HOST:11.54.85.62}:${DISCOVERY_PORT:8848}
+        group: ${DISCOVERY_GROUP:DEVELOP_GROUP}
+        namespace: ${DISCOVERY_NAMESPACE:mes_dev}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:${DATASOURCE_DBTYPE:mysql}://${DATASOURCE_HOST:11.54.85.62}:${DATASOURCE_PORT:3306}/${DB_SYSTEM:mes_produce}?characterEncoding=UTF-8&useUnicode=true&useSSL=false&allowPublicKeyRetrieval=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=CTT
+    username: ${DATASOURCE_USERNAME:mes_produce}
+    password: ${DATASOURCE_PASSWORD:Mes_produce@mes}
+    servlet:
+      multipart:
+        # 单个文件的大小
+        max-file-size: 10MB
+        # 单次请求的文件的总大小
+        max-request-size: 100MB
+    jackson:
+      time-zone: GMT+8
+# Mybatis-plus
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  global-config:
+    db-config:
+      table-prefix: produce_
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+ribbon:
+  ConnectTimeout: 1200000 #ribbon 链接超时时长
+  ReadTimeout: 1200000 #ribbon 读取超时时长
+timer:
+  time-interval: 15000
+pdm:
+  user_id: admin
+  password: infodba
+  url: http://192.168.2.48:8093
