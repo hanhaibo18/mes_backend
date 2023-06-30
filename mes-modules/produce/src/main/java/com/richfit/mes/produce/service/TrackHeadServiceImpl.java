@@ -1750,6 +1750,10 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
         wrapperTrackAssembly.gt("number_install", 0);
         List<TrackAssembly> trackAssemblyList = trackAssemblyService.list(wrapperTrackAssembly);
         List<TrackHead> trackHeads = new ArrayList<>();
+        //拼接自己的跟单
+        TrackFlow trackFlow = trackHeadFlowService.getById(flowId);
+        trackHeads.add(this.getById(trackFlow.getTrackHeadId()));
+        //寻找BOM的跟单
         trackAssemblyList.forEach(trackAssembly -> {
             QueryWrapper<TrackAssemblyBinding> wrapperTrackAssemblyBinding = new QueryWrapper();
             wrapperTrackAssemblyBinding.eq("assembly_id", trackAssembly.getId());
@@ -1768,14 +1772,12 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                     wrapperTrackFlow.eq("tenant_id", trackAssembly.getTenantId());
                     List<TrackFlow> trackFlows = trackHeadFlowService.list(wrapperTrackFlow);
                     if (ObjectUtils.isNotNull(trackFlows)) {
-                        TrackHead trackHead = this.getById(trackFlows.get(0).getTrackHeadId());
-                        trackHeads.add(trackHead);
+                        trackHeads.add(this.getById(trackFlows.get(0).getTrackHeadId()));
                     }
                 }
             });
         });
-        Map<String, TrackHead> collect = trackHeads.stream().collect(Collectors.toMap(TrackHead::getProductNo, v -> v, (a, b) -> a));
-        return new ArrayList<>(collect.values());
+        return trackHeads;
     }
 
     @Override
