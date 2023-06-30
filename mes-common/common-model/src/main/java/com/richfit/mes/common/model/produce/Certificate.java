@@ -1,10 +1,15 @@
 package com.richfit.mes.common.model.produce;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -13,6 +18,8 @@ import java.util.List;
  * @Description 合格证表
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Certificate extends BaseEntity<Certificate> {
 
     private static final long serialVersionUID = -5801277389681557358L;
@@ -192,4 +199,27 @@ public class Certificate extends BaseEntity<Certificate> {
     @ApiModelProperty(value = "工序产品数量")
     private String itemNumber;
 
+    public Certificate(TrackHead trackHead, TrackItem item, TenantUserVo tenantUser, String workblankType, String certificateNo) {
+        if ("1".equals(workblankType)) {
+            this.nextOptWork = "BOMCO_RG_ZG";
+        } else if ("2".equals(workblankType)) {
+            this.nextOptWork = "BOMCO_SC";
+        }
+        this.optSequence = (item.getOptSequence());
+        this.optNo = (item.getOptNo());
+        this.optName = (item.getOptName());
+        this.certOrigin = ("0");
+        this.certificateNo = (certificateNo);
+        this.checkName = (tenantUser.getEmplName());
+        this.checkTime = (new Date());
+        this.nextOpt = ("/");
+        //未接收
+        this.isPush = ("0");
+        List<TrackCertificate> trackCertificates = new ArrayList<>();
+        TrackCertificate trackCertificate = new TrackCertificate();
+        trackCertificate.setThId(trackHead.getId());
+        trackCertificates.add(trackCertificate);
+        this.trackCertificates = (trackCertificates);
+        this.type = ("1");
+    }
 }

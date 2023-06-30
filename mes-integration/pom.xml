@@ -14,12 +14,8 @@
     <modules>
         <module>erp-sap</module>
         <module>wms-kld</module>
-        <module>erp-bs</module>
         <module>material-inspection</module>
-        <module>bsjby-data-sync</module>
         <module>wechat</module>
-        <module>wms-bs</module>
-        <module>dnc-bs</module>
         <module>plm-tc</module>
         <module>marketing</module>
         <module>attachment</module>

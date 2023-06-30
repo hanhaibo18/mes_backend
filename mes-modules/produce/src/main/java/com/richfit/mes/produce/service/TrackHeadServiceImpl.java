@@ -26,6 +26,7 @@ import com.richfit.mes.common.model.produce.*;
 import com.richfit.mes.common.model.produce.store.StoreAttachRel;
 import com.richfit.mes.common.model.sys.Attachment;
 import com.richfit.mes.common.model.sys.Tenant;
+import com.richfit.mes.common.model.sys.vo.TenantUserVo;
 import com.richfit.mes.common.model.util.DrawingNoUtil;
 import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.controller.CodeRuleController;
@@ -35,10 +36,7 @@ import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.print.TemplateService;
 import com.richfit.mes.produce.service.quality.ProduceInspectionRecordCardService;
-import com.richfit.mes.produce.utils.FilesUtil;
-import com.richfit.mes.produce.utils.InspectionRecordCardUtil;
-import com.richfit.mes.produce.utils.TrackHeadUtil;
-import com.richfit.mes.produce.utils.Utils;
+import com.richfit.mes.produce.utils.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,6 +132,9 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     @Autowired
     private BaseServiceClient baseServiceClient;
+
+    @Autowired
+    private TrackHeadService trackHeadService;
 
 
     //锻造
@@ -1412,10 +1413,37 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
             //订单数据更新
             orderService.orderDataTrackHead(trackHead);
 
+            //冶炼车间最后一道工序结束后开完工合格证
+            if ("7".equals(trackHead.getClasses())) {
+                //铸件产品下车间是铸钢车间
+                if ("1".equals(trackHead.getWorkblankType())) {
+                    aotoTakeCertificateBy(flowId, "1");
+                }
+                //钢锭产品下车间是生产入库
+                else if ("2".equals(trackHead.getWorkblankType())) {
+                    aotoTakeCertificateBy(flowId, "2");
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new GlobalException(e.getMessage(), ResultCode.FAILED);
         }
+    }
+
+    private void aotoTakeCertificateBy(String flowId, String workblankType) throws Exception {
+        QueryWrapper<TrackItem> trackItemQueryWrapper = new QueryWrapper<>();
+        trackItemQueryWrapper.eq("flow_id", flowId).eq("next_opt_sequence", 0);
+        List<TrackItem> trackItems = trackItemService.list(trackItemQueryWrapper);
+        if (CollectionUtils.isEmpty(trackItems)) {
+            return;
+        }
+        TrackFlow trackFlow = trackFlowMapper.selectById(flowId);
+        TrackHead trackHead = trackHeadService.getById(trackFlow.getTrackHeadId());
+        TenantUserVo tenantUser = systemServiceClient.queryByUserId(SecurityUtils.getCurrentUser().getUserId()).getData();
+        String certificateNo = Code.valueOnUpdate("hege_no", trackHead.getTenantId(), trackHead.getBranchCode(), codeRuleService);
+        Certificate certificate = new Certificate(trackHead, trackItems.get(0), tenantUser, workblankType, certificateNo);
+        certificateService.saveCertificate(certificate);
     }
 
     private void syncStatus(TrackHead trackHead, String flowId) {
@@ -1457,7 +1485,7 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
                 }
             });
             List<TrackItem> collect = trackItemListZG.stream().filter(item -> "16".equals(item.getOptType())).collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(collect)){
+            if (CollectionUtils.isEmpty(collect)) {
                 return;
             }
             currentItem = collect.get(0);
@@ -2285,24 +2313,25 @@ public class TrackHeadServiceImpl extends ServiceImpl<TrackHeadMapper, TrackHead
 
     /**
      * 热工跟单赋值工艺属性
+     *
      * @param classes
      * @param trackHeadPublicVoIPage
      */
     @Override
     public void headUpdateRouterInfo(String classes, IPage<TrackHeadPublicVo> trackHeadPublicVoIPage) {
         //工艺ids
-        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackHeadPublicVoIPage.getRecords().stream().map(item -> item.getRouterId()+"_"+item.getBranchCode()).collect(Collectors.toSet()));
+        List<String> routerIdAndBranchCodeList = new ArrayList<>(trackHeadPublicVoIPage.getRecords().stream().map(item -> item.getRouterId() + "_" + item.getBranchCode()).collect(Collectors.toSet()));
         List<Router> getRouter = baseServiceClient.getRouterByIdAndBranchCode(routerIdAndBranchCodeList).getData();
-        if(!CollectionUtil.isEmpty(getRouter)){
-            Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId()+"_"+item.getBranchCode(), Function.identity()));
+        if (!CollectionUtil.isEmpty(getRouter)) {
+            Map<String, Router> routerMap = getRouter.stream().collect(Collectors.toMap(item -> item.getId() + "_" + item.getBranchCode(), Function.identity()));
             //capp工艺属性赋值
             for (TrackHeadPublicVo record : trackHeadPublicVoIPage.getRecords()) {
                 //冶炼车间的铸件 匹配从铸钢车间过来的工艺信息
-                if("7".equals(classes) && "1".equals(record.getWorkblankType())){
+                if ("7".equals(classes) && "1".equals(record.getWorkblankType())) {
                     continue;
-                }else{
-                    Router router = routerMap.get(record.getRouterId()+"_"+record.getBranchCode());
-                    if(!ObjectUtil.isEmpty(router)){
+                } else {
+                    Router router = routerMap.get(record.getRouterId() + "_" + record.getBranchCode());
+                    if (!ObjectUtil.isEmpty(router)) {
                         //锻造材料规格
                         record.setBlankSpecifi(router.getBlankSpecifi());
                         //锻造下料重量
