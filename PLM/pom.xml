@@ -31,6 +31,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>1.18.16</version>
         </dependency>
         <!--文件上传-->
         <dependency>

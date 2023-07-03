@@ -9,3 +9,6 @@ ftp:
     password: Abcd123456-1
 logging:
   config: classpath:logback-spring.xml
+secure:
+  ignore:
+    authorization: 14df8d45b8eb450b803ff8fe288d0ec4
