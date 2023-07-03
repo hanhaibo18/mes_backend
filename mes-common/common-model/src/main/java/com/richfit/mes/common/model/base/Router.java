@@ -251,6 +251,11 @@ public class Router extends BaseEntity<Router> {
      */
     private String pieceWeight;
 
+    /**
+     * 关重
+     */
+    private String thresholdWeight;
+
 
 
 

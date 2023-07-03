@@ -24,20 +24,17 @@ import com.richfit.mes.common.security.util.SecurityUtils;
 import com.richfit.mes.produce.dao.CertificateMapper;
 import com.richfit.mes.produce.enmus.OptTypeEnum;
 import com.richfit.mes.produce.entity.CertQueryDto;
-import com.richfit.mes.produce.entity.TrackHeadPublicDto;
 import com.richfit.mes.produce.provider.BaseServiceClient;
 import com.richfit.mes.produce.provider.SystemServiceClient;
 import com.richfit.mes.produce.service.bsns.CertAdditionalBsns;
 import com.richfit.mes.produce.utils.Code;
 import com.richfit.mes.produce.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Update;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -351,6 +348,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
                 BeanUtil.copyProperties(router, trackHeadCast, new String[]{"id", "branchCode", "tenantId", "remark"});
                 trackHeadCast.setBranchCode(branchCode);
                 trackHeadCast.setHeadId(newTrackHead.getId());
+                trackHeadCast.setWeightMolten(new BigDecimal(router.getWeightMolten()));
                 trackHeadCastService.save(trackHeadCast);
             }
         }
@@ -391,6 +389,7 @@ public class CertificateServiceImpl extends ServiceImpl<CertificateMapper, Certi
             newTrackItem.setIsSchedule(0);
             newTrackItem.setBranchCode(branchCode);
             newTrackItem.setTenantId(tenantId);
+            newTrackItem.setPriority(trackHead.getPriority());
             newTrackItems.add(newTrackItem);
         }
         //绑定工艺
