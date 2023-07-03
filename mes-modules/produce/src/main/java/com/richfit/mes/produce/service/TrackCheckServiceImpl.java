@@ -174,6 +174,7 @@ public class TrackCheckServiceImpl extends ServiceImpl<TrackCheckMapper, TrackCh
                 item.setMaterialName(trackHead.getMaterialName());
                 item.setWeight(trackHead.getWeight());
                 item.setBatchNo(trackHead.getBatchNo());
+                //报工人
                 if (null != completeUserList.get(item.getId())) {
                     String userName = completeUserList.get(item.getId()).stream().map(TrackComplete::getUserId).distinct().collect(Collectors.joining(","));
                     item.setUserName(userName);

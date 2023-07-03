@@ -277,6 +277,26 @@ public class TrackCheckController extends BaseController {
                 flowMap = flowList.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
             }
 
+            //查询所有报工数据
+            List<String> list = checks.getRecords().stream().map(TrackCheck::getTiId).collect(Collectors.toList());
+            //没查询到报工数据不进行查询
+            Map<String, List<TrackComplete>> completeUserList = new HashMap<>();
+            if (CollectionUtils.isNotEmpty(list)) {
+                QueryWrapper<TrackComplete> completeQueryWrapper = new QueryWrapper<>();
+                completeQueryWrapper.in("ti_id", list);
+                List<TrackComplete> completeList = trackCompleteService.list(completeQueryWrapper);
+                //获取所有人员信息
+                List<String> collect = completeList.stream().map(TrackComplete::getUserId).collect(Collectors.toList());
+                Map<String, TenantUserVo> userAccountList = systemServiceClient.queryByUserAccountList(collect);
+                completeList.forEach(complete -> {
+                    if (userAccountList.get(complete.getUserId()) != null) {
+                        complete.setUserId(userAccountList.get(complete.getUserId()).getEmplName());
+                    }
+                });
+                //根据工序ID分组报工信息
+                completeUserList = completeList.stream().collect(Collectors.groupingBy(TrackComplete::getTiId));
+            }
+
             for (TrackCheck check : checks.getRecords()) {
                 TrackHead trackHead = trackHeadService.getById(check.getThId());
                 TrackItem trackItem = trackItemService.getById(check.getTiId());
@@ -295,9 +315,15 @@ public class TrackCheckController extends BaseController {
                     check.setOptNo(trackItem.getOptNo());
                     check.setOptType(trackItem.getOptType());
                     check.setIsCurrent(trackItem.getIsCurrent());
+                    check.setDealBy(trackItem.getQualityCheckBy());
                 }
                 TrackFlow trackFlow = flowMap.get(check.getFlowId());
                 check.setProductSourceName(trackFlow == null ? "" : trackFlow.getProductSourceName());//产品来源名称（热工）
+                //报工人
+                if (null != completeUserList.get(check.getTiId())) {
+                    String userName = completeUserList.get(check.getTiId()).stream().map(TrackComplete::getUserId).distinct().collect(Collectors.joining(","));
+                    check.setUserName(userName);
+                }
             }
             return CommonResult.success(checks);
         } catch (Exception e) {
