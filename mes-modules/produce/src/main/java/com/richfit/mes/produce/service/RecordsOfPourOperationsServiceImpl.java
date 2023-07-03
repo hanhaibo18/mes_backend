@@ -157,7 +157,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
         if (prechargeFurnace == null) {
             throw new GlobalException("没有找到预装炉信息！", ResultCode.FAILED);
         }
-        recordsOfPourOperations.setTypeOfSteel(prechargeFurnace.getTypeOfSteel());
+        recordsOfPourOperations.setTypeOfSteel(steelmakingOperations.getTypeOfSteel());
         recordsOfPourOperations.setFurnaceNo(steelmakingOperations == null ? "" : steelmakingOperations.getFurnaceNo());
         recordsOfPourOperations.setIngotCase(prechargeFurnace.getIngotCase());
         UpdateWrapper<PrechargeFurnaceAssign> assignUpdateWrapper = new UpdateWrapper<>();
