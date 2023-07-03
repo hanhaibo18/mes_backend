@@ -135,6 +135,7 @@ public class RecordsOfSteelmakingOperationsServiceImpl extends ServiceImpl<Recor
             resultsOfSteelmaking.setSteelmakingId(recordsOfSteelmakingOperations.getId());
         }
         resultsOfSteelmakingService.saveBatch(recordsOfSteelmakingOperations.getResultsOfSteelmaking());
+        recordsOfSteelmakingOperations.setStatus(null);
         return this.updateById(recordsOfSteelmakingOperations);
     }
 

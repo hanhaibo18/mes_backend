@@ -169,6 +169,7 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean update(RecordsOfPourOperations recordsOfPourOperations) {
+        recordsOfPourOperations.setStatus(null);
         //先保存工序信息
         List<TrackItem> itemList = recordsOfPourOperations.getItemList();
         //计算保温完成时间
@@ -179,7 +180,6 @@ public class RecordsOfPourOperationsServiceImpl extends ServiceImpl<RecordsOfPou
             String holdTime = trackItem.getHoldTime();
             this.countHoldFinishedTime(trackItem, pourTime, holdTime);
         }
-
         trackItemService.updateBatchById(itemList);
         return this.updateById(recordsOfPourOperations);
     }

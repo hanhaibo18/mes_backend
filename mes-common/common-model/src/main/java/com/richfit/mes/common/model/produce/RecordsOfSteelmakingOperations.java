@@ -3,6 +3,7 @@ package com.richfit.mes.common.model.produce;
 import java.util.Date;
 import java.util.List;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
@@ -170,6 +171,7 @@ public class RecordsOfSteelmakingOperations extends BaseEntity<RecordsOfSteelmak
     private Double pengTie;
     //钛铁总重量
     private Double taiTie;
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     //审核状态
     private Integer status;
     //结果分析数据

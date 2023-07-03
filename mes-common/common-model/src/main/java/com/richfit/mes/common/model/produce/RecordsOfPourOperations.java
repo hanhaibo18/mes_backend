@@ -1,5 +1,6 @@
 package com.richfit.mes.common.model.produce;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.richfit.mes.common.core.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
@@ -30,6 +31,7 @@ public class RecordsOfPourOperations extends BaseEntity<RecordsOfPourOperations>
     /**
      * 审核状态0未通过1通过
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "审核状态0未通过1通过", dataType = "Integer")
     private Integer status;
     /**
